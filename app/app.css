@@ -1,15 +1,90 @@
 @import "tailwindcss";
 
-@theme {
-  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
-    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+@plugin "daisyui" {
+  themes: nbe-financial-advisor --default;
 }
 
-html,
-body {
-  @apply bg-white dark:bg-gray-950;
+@theme {
+  /* Global Layout Constraints */
+  --max-width-dashboard: 1440px;
+  --max-width-form: 640px;
+  --max-width-modal: 480px;
+  --spacing-app-inline: 1.5rem;
 
-  @media (prefers-color-scheme: dark) {
-    color-scheme: dark;
+  --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif,
+    "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  --font-arabic: "Tajawal", ui-sans-serif, system-ui, sans-serif;
+}
+
+/* Responsive override — must live outside @theme in current Tailwind v4 */
+@media (min-width: 768px) {
+  :root {
+    --spacing-app-inline: 2.5rem;
   }
+}
+
+@utility container {
+  margin-inline: auto;
+  max-width: var(--max-width-dashboard);
+  padding-inline: 1rem;
+
+  @variant md {
+    padding-inline: 2rem;
+  }
+
+  @variant xl {
+    padding-inline: 3rem;
+  }
+}
+
+@plugin "daisyui/theme" {
+  name: "nbe-financial-advisor";
+  default: true;
+  prefersdark: false;
+  color-scheme: light;
+
+  --color-primary: oklch(40% 0.05 155);
+  --color-primary-content: oklch(98% 0.01 155);
+
+  --color-secondary: oklch(72% 0.15 65);
+  --color-secondary-content: oklch(20% 0.02 65);
+
+  --color-accent: oklch(80% 0.13 70);
+  --color-accent-content: oklch(20% 0.02 70);
+
+  --color-neutral: oklch(25% 0.03 155);
+  --color-neutral-content: oklch(95% 0.01 155);
+
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(97% 0 0);
+  --color-base-300: oklch(93% 0 0);
+  --color-base-content: oklch(20% 0.02 155);
+
+  --color-info: oklch(70% 0.12 220);
+  --color-info-content: oklch(20% 0.02 220);
+  --color-success: oklch(65% 0.15 145);
+  --color-success-content: oklch(15% 0.02 145);
+  --color-warning: oklch(80% 0.15 85);
+  --color-warning-content: oklch(20% 0.02 85);
+  --color-error: oklch(60% 0.18 25);
+  --color-error-content: oklch(97% 0.01 25);
+
+  --radius-selector: 0.5rem;
+  --radius-field: 0.5rem;
+  --radius-box: 1rem;
+  --size-selector: 0.25rem;
+  --size-field: 0.25rem;
+  --border: 1px;
+  --depth: 1;
+  --noise: 0;
+}
+
+html[dir="rtl"] body {
+  font-family: var(--font-arabic);
+}
+
+.numerals {
+  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-variant-numeric: lining-nums tabular-nums;
+  unicode-bidi: isolate;
 }

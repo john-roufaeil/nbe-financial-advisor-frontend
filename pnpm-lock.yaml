@@ -18,6 +18,9 @@ importers:
       '@react-router/serve':
         specifier: 8.0.0
         version: 8.0.0(react-router@8.0.0(react-dom@19.2.7(react@19.2.7))(react@19.2.7))(typescript@5.9.3)
+      daisyui:
+        specifier: ^5.6.13
+        version: 5.6.13
       i18next:
         specifier: ^26.3.4
         version: 26.3.4(typescript@5.9.3)
@@ -682,6 +685,9 @@ packages:
 
   csstype@3.2.3:
     resolution: {integrity: sha512-z1HGKcYy2xA8AGQfwrn0PAy+PB7X/GSj3UVJW9qKyn43xWa+gl5nXmU4qqLMRzWVLFC8KusUX8T/0kCiOYpAIQ==}
+
+  daisyui@5.6.13:
+    resolution: {integrity: sha512-0UHyNG3TzF7pDIbPcWyLKQfgtGhJcIq2x26jwsDKp7ZhL0GwaqIMZ12+TWfp8p+mE4NNc29SJk63hEXTz3MQkg==}
 
   debug@2.6.9:
     resolution: {integrity: sha512-bC7ElrdJaJnPbAP+1EotYvqZsb3ecl5wi6Bfi6BJTUcNowp6cvspg0jXznRTKDjm/E7AdgFBVeAPVMNcKGsHMA==}
@@ -2132,6 +2138,8 @@ snapshots:
       which: 2.0.2
 
   csstype@3.2.3: {}
+
+  daisyui@5.6.13: {}
 
   debug@2.6.9:
     dependencies:

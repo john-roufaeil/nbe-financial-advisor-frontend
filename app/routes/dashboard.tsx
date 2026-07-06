@@ -3,9 +3,15 @@ import { useTranslation } from "react-i18next";
 export default function Dashboard() {
   const { t } = useTranslation();
   return (
-    <div className="p-4">
-      <h1 className="text-xl font-semibold">{t("nav.dashboard")}</h1>
-      <p>Placeholder — replace with real content.</p>
+    <div className="container py-6">
+      <div className="card bg-base-100 shadow-sm rounded-box">
+        <div className="card-body">
+          <h1 className="card-title">{t("nav.dashboard")}</h1>
+          <button className="btn btn-primary w-fit">
+            {t("nav.dashboard")}
+          </button>
+        </div>
+      </div>
     </div>
   );
 }
