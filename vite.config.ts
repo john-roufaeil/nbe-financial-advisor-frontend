@@ -1,14 +1,15 @@
 import { reactRouter } from "@react-router/dev/vite";
 import tailwindcss from "@tailwindcss/vite";
 import { defineConfig } from "vite";
-import tsconfigPaths from "vite-tsconfig-paths";
 import babel from "vite-plugin-babel";
 
 export default defineConfig({
+  resolve: {
+    tsconfigPaths: true,
+  },
   plugins: [
     tailwindcss(),
     reactRouter(),
-    tsconfigPaths(),
     babel({
       filter: /\.[jt]sx?$/,
       babelConfig: {
