@@ -1,13 +1,16 @@
 import { Navigate, Outlet, useParams } from "react-router";
 import { useEffect } from "react";
-
-export const SUPPORTED_LANGUAGES = ["en", "ar"] as const;
-export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
-export const DEFAULT_LANGUAGE: SupportedLanguage = "en";
-const RTL_LANGUAGES: SupportedLanguage[] = ["ar"];
+import { useTranslation } from "react-i18next";
+import {
+  DEFAULT_LANGUAGE,
+  RTL_LANGUAGES,
+  SUPPORTED_LANGUAGES,
+  type SupportedLanguage,
+} from "@/i18n";
 
 export default function LangLayout() {
   const { lang } = useParams<{ lang: string }>();
+  const { i18n } = useTranslation();
   const isValid = SUPPORTED_LANGUAGES.includes(lang as SupportedLanguage);
 
   useEffect(() => {
@@ -18,7 +21,8 @@ export default function LangLayout() {
     )
       ? "rtl"
       : "ltr";
-  }, [lang, isValid]);
+    if (i18n.language !== lang) void i18n.changeLanguage(lang);
+  }, [lang, isValid, i18n]);
 
   if (!isValid) return <Navigate to={`/${DEFAULT_LANGUAGE}`} replace />;
 
