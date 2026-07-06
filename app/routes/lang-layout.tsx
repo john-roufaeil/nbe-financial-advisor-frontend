@@ -16,9 +16,7 @@ export default function LangLayout() {
   useEffect(() => {
     if (!isValid) return;
     document.documentElement.lang = lang as string;
-    document.documentElement.dir = RTL_LANGUAGES.includes(
-      lang as SupportedLanguage,
-    )
+    document.documentElement.dir = RTL_LANGUAGES.includes(lang as SupportedLanguage)
       ? "rtl"
       : "ltr";
     if (i18n.language !== lang) void i18n.changeLanguage(lang);
