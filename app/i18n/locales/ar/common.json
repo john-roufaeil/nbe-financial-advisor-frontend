@@ -66,6 +66,64 @@
   "actions": {
     "delete": "حذف {{name}}",
     "done": "تم",
-    "close": "إغلاق"
+    "close": "إغلاق",
+    "cancel": "إلغاء",
+    "edit": "تعديل"
+  },
+  "data": {
+    "personalData": "البيانات الشخصية",
+    "transactions": "المعاملات",
+    "documents": "المستندات",
+    "search": "بحث...",
+    "noResults": "لا توجد نتائج.",
+    "replan": "اطلب من المستشار إعادة التخطيط",
+    "dateFrom": "من",
+    "dateTo": "إلى",
+    "filters": {
+      "all": "الكل",
+      "income": "دخل",
+      "expense": "مصروف",
+      "pdf": "PDF",
+      "image": "صورة",
+      "doc": "مستند"
+    },
+    "pagination": {
+      "prev": "السابق",
+      "next": "التالي",
+      "page": "صفحة {{page}} من {{totalPages}}"
+    },
+    "sections": {
+      "profile": {
+        "title": "الملف الشخصي",
+        "fields": {
+          "fullName": "الاسم الكامل",
+          "dob": "تاريخ الميلاد",
+          "nationalId": "الرقم القومي"
+        }
+      },
+      "contact": {
+        "title": "التواصل",
+        "fields": {
+          "email": "البريد الإلكتروني",
+          "phone": "الهاتف"
+        }
+      },
+      "address": {
+        "title": "العنوان",
+        "fields": {
+          "country": "الدولة",
+          "city": "المدينة",
+          "addressLine": "عنوان الشارع"
+        }
+      },
+      "financial": {
+        "title": "الملف المالي",
+        "fields": {
+          "employmentStatus": "الحالة الوظيفية",
+          "monthlyIncome": "الدخل الشهري",
+          "riskTolerance": "تحمل المخاطر"
+        }
+      }
+    }
   }
 }

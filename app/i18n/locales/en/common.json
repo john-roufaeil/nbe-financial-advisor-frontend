@@ -66,6 +66,64 @@
   "actions": {
     "delete": "Delete {{name}}",
     "done": "Done",
-    "close": "Close"
+    "close": "Close",
+    "cancel": "Cancel",
+    "edit": "Edit"
+  },
+  "data": {
+    "personalData": "Personal Data",
+    "transactions": "Transactions",
+    "documents": "Documents",
+    "search": "Search...",
+    "noResults": "No results found.",
+    "replan": "Ask advisor to re-plan",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "filters": {
+      "all": "All",
+      "income": "Income",
+      "expense": "Expense",
+      "pdf": "PDF",
+      "image": "Image",
+      "doc": "Doc"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page {{page}} of {{totalPages}}"
+    },
+    "sections": {
+      "profile": {
+        "title": "Profile",
+        "fields": {
+          "fullName": "Full name",
+          "dob": "Date of birth",
+          "nationalId": "National ID"
+        }
+      },
+      "contact": {
+        "title": "Contact",
+        "fields": {
+          "email": "Email",
+          "phone": "Phone"
+        }
+      },
+      "address": {
+        "title": "Address",
+        "fields": {
+          "country": "Country",
+          "city": "City",
+          "addressLine": "Street address"
+        }
+      },
+      "financial": {
+        "title": "Financial Profile",
+        "fields": {
+          "employmentStatus": "Employment status",
+          "monthlyIncome": "Monthly income",
+          "riskTolerance": "Risk tolerance"
+        }
+      }
+    }
   }
 }
