@@ -11,6 +11,7 @@ import {
 import "@/i18n";
 import type { Route } from "./+types/root";
 import "./app.css";
+import { useTranslation } from "react-i18next";
 
 export const links: Route.LinksFunction = () => [
   { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -26,6 +27,7 @@ export const links: Route.LinksFunction = () => [
 ];
 
 export function Layout({ children }: { children: React.ReactNode }) {
+  const { t } = useTranslation();
   return (
     <html lang="en">
       <head>
@@ -35,6 +37,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
+        <title>{t("app.name ")}</title>
         {children}
         <ScrollRestoration />
         <Scripts />
