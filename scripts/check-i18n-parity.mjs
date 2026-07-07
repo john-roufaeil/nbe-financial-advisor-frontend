@@ -50,8 +50,10 @@ for (const lang of otherLangs) {
     if (missingInB.length || missingInA.length) {
       hasMismatch = true;
       console.log(`❌ Mismatch in "${ns}" (${baseLang} vs ${lang}):`);
-      if (missingInB.length) console.log(`  Missing in ${lang}: ${missingInB.join(", ")}`);
-      if (missingInA.length) console.log(`  Missing in ${baseLang}: ${missingInA.join(", ")}`);
+      if (missingInB.length)
+        console.log(`  Missing in ${lang}: ${missingInB.join(", ")}`);
+      if (missingInA.length)
+        console.log(`  Missing in ${baseLang}: ${missingInA.join(", ")}`);
     }
   }
 }
