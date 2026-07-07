@@ -1,3 +1,5 @@
+packages:
+  - "."
 minimumReleaseAge: 1440
 overrides:
   browserslist: "4.24.2"
