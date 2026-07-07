@@ -1,9 +1,130 @@
 {
   "app": {
-    "name": "Bank App"
+    "name": "Financial Advisor",
+    "bank": "| National Bank of Egypt"
   },
   "nav": {
-    "dashboard": "Dashboard"
+    "dashboard": "Dashboard",
+    "chat": "Advisor",
+    "data": "Data",
+    "menu": "Open menu"
+  },
+  "actions": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "back": "Back",
+    "upload": "Upload",
+    "delete": "Delete {{name}}",
+    "done": "Done",
+    "close": "Close",
+    "edit": "Edit"
+  },
+  "status": {
+    "processing": "Processing",
+    "parsed": "Parsed",
+    "error": "Error"
+  },
+  "splash": {
+    "welcome": "Welcome to your personal financial advisor",
+    "tagline": "Your finances, simplified",
+    "getStarted": "Get Started",
+    "continue": "Continue where you left off",
+    "login": "Log In"
+  },
+  "consent": {
+    "title": "Before we continue",
+    "body": "Please review and accept our terms to proceed with setting up your profile.",
+    "checkbox": "I agree to the terms and privacy policy"
+  },
+  "onboarding": {
+    "personalInfo": {
+      "title": "Personal Information",
+      "subtitle": "Tell us a bit about yourself.",
+      "fullName": "Full name",
+      "email": "Email",
+      "phone": "Phone"
+    },
+    "employment": {
+      "title": "Employment",
+      "subtitle": "Help us understand your financial situation.",
+      "status": "Employment status",
+      "statusPlaceholder": "Select one",
+      "options": {
+        "employed": "Employed",
+        "selfEmployed": "Self-employed",
+        "student": "Student",
+        "unemployed": "Unemployed",
+        "retired": "Retired"
+      },
+      "monthlyIncome": "Monthly income"
+    },
+    "financialGoals": {
+      "title": "Financial Goals",
+      "subtitle": "Select all that apply.",
+      "options": {
+        "emergencyFund": "Build an emergency fund",
+        "buyHome": "Buy a home",
+        "retireEarly": "Retire early",
+        "payDebt": "Pay off debt",
+        "growInvestments": "Grow investments"
+      }
+    },
+    "riskTolerance": {
+      "title": "Risk Tolerance",
+      "subtitle": "This helps us tailor recommendations.",
+      "options": {
+        "conservative": {
+          "title": "Conservative",
+          "description": "Preserve capital, minimal risk."
+        },
+        "moderate": {
+          "title": "Moderate",
+          "description": "Balanced growth and safety."
+        },
+        "aggressive": {
+          "title": "Aggressive",
+          "description": "Maximize growth, higher risk."
+        }
+      }
+    },
+    "finish": "Finish",
+    "login": "Already have an account? Log in"
+  },
+  "signIn": {
+    "title": "Sign In",
+    "email": "Email",
+    "password": "Password",
+    "submit": "Sign In",
+    "getStarted": "New here? Get started"
+  },
+  "dashboard": {
+    "placeholder": "Placeholder — dashboard widgets go here.",
+    "subtitle": "A snapshot of your finances this month.",
+    "askAdvisor": "Ask the advisor",
+    "stats": {
+      "balance": "Total Balance",
+      "income": "Monthly Income",
+      "spending": "Monthly Spending",
+      "savingsRate": "Savings Rate",
+      "vsLastMonth": "vs last month"
+    },
+    "goals": {
+      "title": "Goal Progress",
+      "remaining": "{{amount}} {{currency}} to go",
+      "empty": "No goals yet — add one to start tracking.",
+      "editTitle": "Edit goals",
+      "name": "Name",
+      "current": "Saved",
+      "target": "Target",
+      "newNamePlaceholder": "e.g. Home renovation",
+      "add": "Add goal"
+    },
+    "budget": {
+      "title": "Budget Plan Split",
+      "over": "Over budget",
+      "spent": "spent"
+    }
   },
   "chat": {
     "placeholder": "Ask me anything about your finances...",
@@ -34,43 +155,6 @@
         "loading": "Analyzing your spending..."
       }
     }
-  },
-  "dashboard": {
-    "placeholder": "Placeholder — dashboard widgets go here.",
-    "subtitle": "A snapshot of your finances this month.",
-    "askAdvisor": "Ask the advisor",
-    "stats": {
-      "balance": "Total Balance",
-      "income": "Monthly Income",
-      "spending": "Monthly Spending",
-      "savingsRate": "Savings Rate",
-      "vsLastMonth": "vs last month"
-    },
-    "goals": {
-      "title": "Goal Progress",
-      "remaining": "{{amount}} {{currency}} to go",
-      "empty": "No goals yet — add one to start tracking.",
-      "editTitle": "Edit goals",
-      "name": "Name",
-      "current": "Saved",
-      "target": "Target",
-      "newNamePlaceholder": "e.g. Home renovation",
-      "add": "Add goal"
-    },
-    "budget": {
-      "title": "Budget Plan Split",
-      "over": "Over budget",
-      "spent": "spent"
-    }
-  },
-  "actions": {
-    "delete": "Delete {{name}}",
-    "done": "Done",
-    "close": "Close",
-    "cancel": "Cancel",
-    "edit": "Edit",
-    "back": "Back",
-    "continue": "Continue"
   },
   "data": {
     "personalData": "Personal Data",
@@ -128,58 +212,11 @@
       }
     }
   },
-  "onboarding": {
-    "personalInfo": {
-      "title": "Personal Information",
-      "subtitle": "Tell us a bit about yourself.",
-      "fullName": "Full name",
-      "email": "Email",
-      "phone": "Phone"
-    },
-    "employment": {
-      "title": "Employment",
-      "subtitle": "Help us understand your financial situation.",
-      "status": "Employment status",
-      "statusPlaceholder": "Select one",
-      "options": {
-        "employed": "Employed",
-        "selfEmployed": "Self-employed",
-        "student": "Student",
-        "unemployed": "Unemployed",
-        "retired": "Retired"
-      },
-      "monthlyIncome": "Monthly income"
-    },
-    "financialGoals": {
-      "title": "Financial Goals",
-      "subtitle": "Select all that apply.",
-      "options": {
-        "emergencyFund": "Build an emergency fund",
-        "buyHome": "Buy a home",
-        "retireEarly": "Retire early",
-        "payDebt": "Pay off debt",
-        "growInvestments": "Grow investments"
-      }
-    },
-    "riskTolerance": {
-      "title": "Risk Tolerance",
-      "subtitle": "This helps us tailor recommendations.",
-      "options": {
-        "conservative": {
-          "title": "Conservative",
-          "description": "Preserve capital, minimal risk."
-        },
-        "moderate": {
-          "title": "Moderate",
-          "description": "Balanced growth and safety."
-        },
-        "aggressive": {
-          "title": "Aggressive",
-          "description": "Maximize growth, higher risk."
-        }
-      }
-    },
-    "finish": "Finish",
-    "login": "Already have an account? Log in"
+  "settings": {
+    "signOut": "Sign Out"
+  },
+  "notFound": {
+    "message": "This page doesn't exist.",
+    "backHome": "Back to Home"
   }
 }

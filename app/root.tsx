@@ -37,7 +37,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <Links />
       </head>
       <body>
-        <title>{t("app.name ")}</title>
+        <title>{t("app.name")}</title>
         {children}
         <ScrollRestoration />
         <Scripts />

@@ -1,9 +1,130 @@
 {
   "app": {
-    "name": "التطبيق المصرفي"
+    "name": "المستشار المالي ",
+    "bank": " | البنك الأهلي المصري"
   },
   "nav": {
-    "dashboard": "لوحة التحكم"
+    "dashboard": "لوحة التحكم",
+    "chat": "المستشار",
+    "data": "البيانات",
+    "menu": "فتح القائمة"
+  },
+  "actions": {
+    "submit": "إرسال",
+    "cancel": "إلغاء",
+    "continue": "متابعة",
+    "back": "رجوع",
+    "upload": "رفع",
+    "delete": "حذف {{name}}",
+    "done": "تم",
+    "close": "إغلاق",
+    "edit": "تعديل"
+  },
+  "status": {
+    "processing": "قيد المعالجة",
+    "parsed": "تمت المعالجة",
+    "error": "خطأ"
+  },
+  "splash": {
+    "welcome": "أهلاً بك في مستشارك المالي الشخصي",
+    "tagline": "فلوسك، أسهل من أي وقت فات",
+    "getStarted": "ابدأ الآن",
+    "continue": "متابعة من حيث توقفت",
+    "login": "تسجيل الدخول"
+  },
+  "consent": {
+    "title": "قبل أن نتابع",
+    "body": "يرجى مراجعة الشروط والموافقة عليها للمتابعة في إعداد ملفك الشخصي.",
+    "checkbox": "أوافق على الشروط وسياسة الخصوصية"
+  },
+  "onboarding": {
+    "personalInfo": {
+      "title": "المعلومات الشخصية",
+      "subtitle": "أخبرنا قليلاً عن نفسك.",
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف"
+    },
+    "employment": {
+      "title": "الوضع الوظيفي",
+      "subtitle": "ساعدنا في فهم وضعك المالي.",
+      "status": "الحالة الوظيفية",
+      "statusPlaceholder": "اختر واحدًا",
+      "options": {
+        "employed": "موظف",
+        "selfEmployed": "أعمال حرة",
+        "student": "طالب",
+        "unemployed": "غير موظف",
+        "retired": "متقاعد"
+      },
+      "monthlyIncome": "الدخل الشهري"
+    },
+    "financialGoals": {
+      "title": "الأهداف المالية",
+      "subtitle": "اختر كل ما ينطبق.",
+      "options": {
+        "emergencyFund": "بناء صندوق للطوارئ",
+        "buyHome": "شراء منزل",
+        "retireEarly": "التقاعد المبكر",
+        "payDebt": "سداد الديون",
+        "growInvestments": "تنمية الاستثمارات"
+      }
+    },
+    "riskTolerance": {
+      "title": "تحمل المخاطر",
+      "subtitle": "هذا يساعدنا على تخصيص التوصيات.",
+      "options": {
+        "conservative": {
+          "title": "متحفظ",
+          "description": "الحفاظ على رأس المال، مخاطرة أقل."
+        },
+        "moderate": {
+          "title": "متوسط",
+          "description": "توازن بين النمو والأمان."
+        },
+        "aggressive": {
+          "title": "جريء",
+          "description": "أقصى نمو، مخاطرة أعلى."
+        }
+      }
+    },
+    "finish": "إنهاء",
+    "login": "لديك حساب بالفعل؟ سجّل الدخول"
+  },
+  "signIn": {
+    "title": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "submit": "تسجيل الدخول",
+    "getStarted": "جديد هنا؟ ابدأ الآن"
+  },
+  "dashboard": {
+    "placeholder": "عناصر لوحة التحكم ستكون هنا.",
+    "subtitle": "لمحة عن أموالك هذا الشهر.",
+    "askAdvisor": "اسأل المستشار",
+    "stats": {
+      "balance": "الرصيد الإجمالي",
+      "income": "الدخل الشهري",
+      "spending": "المصروفات الشهرية",
+      "savingsRate": "معدل الادخار",
+      "vsLastMonth": "مقارنة بالشهر الماضي"
+    },
+    "goals": {
+      "title": "تقدم الأهداف",
+      "remaining": "متبقي {{amount}} {{currency}}",
+      "empty": "لا توجد أهداف بعد — أضف هدفًا للبدء.",
+      "editTitle": "تعديل الأهداف",
+      "name": "الاسم",
+      "current": "المدخر",
+      "target": "الهدف",
+      "newNamePlaceholder": "مثال: تجديد المنزل",
+      "add": "إضافة هدف"
+    },
+    "budget": {
+      "title": "توزيع خطة الميزانية",
+      "over": "تجاوز الميزانية",
+      "spent": "منفق"
+    }
   },
   "chat": {
     "placeholder": "اسألني عن أي شيء يتعلق بأموالك...",
@@ -34,43 +155,6 @@
         "loading": "جاري تحليل مصروفاتك..."
       }
     }
-  },
-  "dashboard": {
-    "placeholder": "عناصر لوحة التحكم ستكون هنا.",
-    "subtitle": "لمحة عن أموالك هذا الشهر.",
-    "askAdvisor": "اسأل المستشار",
-    "stats": {
-      "balance": "الرصيد الإجمالي",
-      "income": "الدخل الشهري",
-      "spending": "المصروفات الشهرية",
-      "savingsRate": "معدل الادخار",
-      "vsLastMonth": "مقارنة بالشهر الماضي"
-    },
-    "goals": {
-      "title": "تقدم الأهداف",
-      "remaining": "متبقي {{amount}} {{currency}}",
-      "empty": "لا توجد أهداف بعد — أضف هدفًا للبدء.",
-      "editTitle": "تعديل الأهداف",
-      "name": "الاسم",
-      "current": "المدخر",
-      "target": "الهدف",
-      "newNamePlaceholder": "مثال: تجديد المنزل",
-      "add": "إضافة هدف"
-    },
-    "budget": {
-      "title": "توزيع خطة الميزانية",
-      "over": "تجاوز الميزانية",
-      "spent": "منفق"
-    }
-  },
-  "actions": {
-    "delete": "حذف {{name}}",
-    "done": "تم",
-    "close": "إغلاق",
-    "cancel": "إلغاء",
-    "edit": "تعديل",
-    "back": "رجوع",
-    "continue": "متابعة"
   },
   "data": {
     "personalData": "البيانات الشخصية",
@@ -128,58 +212,11 @@
       }
     }
   },
-  "onboarding": {
-    "personalInfo": {
-      "title": "المعلومات الشخصية",
-      "subtitle": "أخبرنا قليلاً عن نفسك.",
-      "fullName": "الاسم الكامل",
-      "email": "البريد الإلكتروني",
-      "phone": "الهاتف"
-    },
-    "employment": {
-      "title": "الوضع الوظيفي",
-      "subtitle": "ساعدنا في فهم وضعك المالي.",
-      "status": "الحالة الوظيفية",
-      "statusPlaceholder": "اختر واحدًا",
-      "options": {
-        "employed": "موظف",
-        "selfEmployed": "أعمال حرة",
-        "student": "طالب",
-        "unemployed": "غير موظف",
-        "retired": "متقاعد"
-      },
-      "monthlyIncome": "الدخل الشهري"
-    },
-    "financialGoals": {
-      "title": "الأهداف المالية",
-      "subtitle": "اختر كل ما ينطبق.",
-      "options": {
-        "emergencyFund": "بناء صندوق للطوارئ",
-        "buyHome": "شراء منزل",
-        "retireEarly": "التقاعد المبكر",
-        "payDebt": "سداد الديون",
-        "growInvestments": "تنمية الاستثمارات"
-      }
-    },
-    "riskTolerance": {
-      "title": "تحمل المخاطر",
-      "subtitle": "هذا يساعدنا على تخصيص التوصيات.",
-      "options": {
-        "conservative": {
-          "title": "متحفظ",
-          "description": "الحفاظ على رأس المال، مخاطرة أقل."
-        },
-        "moderate": {
-          "title": "متوسط",
-          "description": "توازن بين النمو والأمان."
-        },
-        "aggressive": {
-          "title": "جريء",
-          "description": "أقصى نمو، مخاطرة أعلى."
-        }
-      }
-    },
-    "finish": "إنهاء",
-    "login": "لديك حساب بالفعل؟ سجّل الدخول"
+  "settings": {
+    "signOut": "تسجيل الخروج"
+  },
+  "notFound": {
+    "message": "هذه الصفحة غير موجودة.",
+    "backHome": "العودة للرئيسية"
   }
 }
