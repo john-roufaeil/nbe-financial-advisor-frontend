@@ -11,7 +11,8 @@
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "check:i18n": "node scripts/check-i18n-parity.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
