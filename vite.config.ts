@@ -4,6 +4,9 @@ import { defineConfig } from "vite";
 import babel from "vite-plugin-babel";
 
 export default defineConfig({
+  server: {
+    host: true,   // bind to 0.0.0.0 inside Docker
+  },
   resolve: {
     tsconfigPaths: true,
   },
