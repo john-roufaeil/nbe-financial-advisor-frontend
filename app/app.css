@@ -97,3 +97,16 @@ html[dir="rtl"] .badge {
   font-variant-numeric: lining-nums tabular-nums;
   unicode-bidi: isolate;
 }
+
+/* Direction set via the --step-enter-x custom property (positive = from end, negative = from start). */
+@keyframes step-enter {
+  from {
+    opacity: 0;
+    transform: translateX(var(--step-enter-x, 16px));
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}

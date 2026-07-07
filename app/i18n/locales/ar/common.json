@@ -68,7 +68,9 @@
     "done": "تم",
     "close": "إغلاق",
     "cancel": "إلغاء",
-    "edit": "تعديل"
+    "edit": "تعديل",
+    "back": "رجوع",
+    "continue": "متابعة"
   },
   "data": {
     "personalData": "البيانات الشخصية",
@@ -125,5 +127,59 @@
         }
       }
     }
+  },
+  "onboarding": {
+    "personalInfo": {
+      "title": "المعلومات الشخصية",
+      "subtitle": "أخبرنا قليلاً عن نفسك.",
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف"
+    },
+    "employment": {
+      "title": "الوضع الوظيفي",
+      "subtitle": "ساعدنا في فهم وضعك المالي.",
+      "status": "الحالة الوظيفية",
+      "statusPlaceholder": "اختر واحدًا",
+      "options": {
+        "employed": "موظف",
+        "selfEmployed": "أعمال حرة",
+        "student": "طالب",
+        "unemployed": "غير موظف",
+        "retired": "متقاعد"
+      },
+      "monthlyIncome": "الدخل الشهري"
+    },
+    "financialGoals": {
+      "title": "الأهداف المالية",
+      "subtitle": "اختر كل ما ينطبق.",
+      "options": {
+        "emergencyFund": "بناء صندوق للطوارئ",
+        "buyHome": "شراء منزل",
+        "retireEarly": "التقاعد المبكر",
+        "payDebt": "سداد الديون",
+        "growInvestments": "تنمية الاستثمارات"
+      }
+    },
+    "riskTolerance": {
+      "title": "تحمل المخاطر",
+      "subtitle": "هذا يساعدنا على تخصيص التوصيات.",
+      "options": {
+        "conservative": {
+          "title": "متحفظ",
+          "description": "الحفاظ على رأس المال، مخاطرة أقل."
+        },
+        "moderate": {
+          "title": "متوسط",
+          "description": "توازن بين النمو والأمان."
+        },
+        "aggressive": {
+          "title": "جريء",
+          "description": "أقصى نمو، مخاطرة أعلى."
+        }
+      }
+    },
+    "finish": "إنهاء",
+    "login": "لديك حساب بالفعل؟ سجّل الدخول"
   }
 }
