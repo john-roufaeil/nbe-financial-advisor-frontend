@@ -1,1 +1,3 @@
 pnpm exec lint-staged
+pnpm check:i18n
+./scripts/check-no-hardcoded-hex.sh

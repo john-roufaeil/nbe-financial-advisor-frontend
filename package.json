@@ -12,7 +12,7 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "prepare": "husky",
-    "check:i18n": "node scripts/check-i18n-parity.mjs"
+    "check:i18n": "node scripts/check-i18n-parity.mjs && node scripts/check-i18n-usage.mjs"
   },
   "lint-staged": {
     "*.{ts,tsx}": [
