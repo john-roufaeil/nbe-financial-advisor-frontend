@@ -84,6 +84,14 @@ html[dir="rtl"] body {
   font-family: var(--font-arabic);
 }
 
+/* Tajawal's ascent/descent metrics are taller than Inter's, so buttons/tabs/badges
+   otherwise look bottom-heavy — tighten the line box and let flex centering do the rest. */
+html[dir="rtl"] .btn,
+html[dir="rtl"] .tab,
+html[dir="rtl"] .badge {
+  line-height: 1;
+}
+
 .numerals {
   font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
   font-variant-numeric: lining-nums tabular-nums;
