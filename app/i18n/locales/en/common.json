@@ -34,5 +34,38 @@
         "loading": "Analyzing your spending..."
       }
     }
+  },
+  "dashboard": {
+    "placeholder": "Placeholder — dashboard widgets go here.",
+    "subtitle": "A snapshot of your finances this month.",
+    "askAdvisor": "Ask the advisor",
+    "stats": {
+      "balance": "Total Balance",
+      "income": "Monthly Income",
+      "spending": "Monthly Spending",
+      "savingsRate": "Savings Rate",
+      "vsLastMonth": "vs last month"
+    },
+    "goals": {
+      "title": "Goal Progress",
+      "remaining": "{{amount}} {{currency}} to go",
+      "empty": "No goals yet — add one to start tracking.",
+      "editTitle": "Edit goals",
+      "name": "Name",
+      "current": "Saved",
+      "target": "Target",
+      "newNamePlaceholder": "e.g. Home renovation",
+      "add": "Add goal"
+    },
+    "budget": {
+      "title": "Budget Plan Split",
+      "over": "Over budget",
+      "spent": "spent"
+    }
+  },
+  "actions": {
+    "delete": "Delete {{name}}",
+    "done": "Done",
+    "close": "Close"
   }
 }
