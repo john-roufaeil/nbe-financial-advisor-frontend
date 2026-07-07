@@ -5,6 +5,18 @@ React Router v7 (SPA) · TypeScript · Tailwind v4/DaisyUI · i18next (en/ar)
 ## Setup
 
 ```bash
+# Run this first time configuring your local folder
+echo '
+cd() {
+  builtin cd "$@"
+  if [ -f .nvmrc ]; then
+    nvm use --silent
+  fi
+}' >> ~/.bashrc
+source ~/.bashrc
+```
+
+```bash
 nvm use && corepack enable && corepack prepare pnpm@11.10.0 --activate
 pnpm install
 cp .env.example .env.local
