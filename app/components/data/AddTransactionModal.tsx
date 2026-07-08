@@ -1,8 +1,8 @@
 import { forwardRef, useEffect, useState, type Ref } from "react";
 import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
-import { TRANSACTION_CATEGORIES, type Transaction } from "@/lib/demo-transactions";
-import { useTransactionsStore } from "@/store/use-transactions-store";
+import { TRANSACTION_CATEGORIES, type Transaction } from "@/types/transaction";
+import { useCreateTransaction, useUpdateTransaction } from "@/queries/transactions";
 
 function closeDialog(ref: Ref<HTMLDialogElement>) {
   if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
@@ -17,8 +17,8 @@ export const AddTransactionModal = forwardRef<
   { editing?: Transaction | null }
 >(function AddTransactionModal({ editing }, ref) {
   const { t } = useTranslation();
-  const addTransaction = useTransactionsStore((s) => s.addTransaction);
-  const updateTransaction = useTransactionsStore((s) => s.updateTransaction);
+  const createTransaction = useCreateTransaction();
+  const updateTransaction = useUpdateTransaction();
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState<string>(TRANSACTION_CATEGORIES[0]);
   const [type, setType] = useState<"income" | "expense">("expense");
@@ -49,26 +49,23 @@ export const AddTransactionModal = forwardRef<
     e.preventDefault();
     const amountNum = Number(amount);
     if (!title.trim() || !amountNum || amountNum <= 0) return;
+    const patch = {
+      datetime: `${date}T00:00:00`,
+      title: title.trim(),
+      category,
+      type,
+      amount: amountNum,
+    };
     if (editing) {
-      updateTransaction(editing.id, {
-        datetime: `${date}T00:00:00`,
-        title: title.trim(),
-        category,
-        type,
-        amount: amountNum,
-      });
+      updateTransaction.mutate({ id: editing.id, patch });
     } else {
-      addTransaction({
-        datetime: `${date}T00:00:00`,
-        title: title.trim(),
-        category,
-        type,
-        amount: amountNum,
-      });
+      createTransaction.mutate(patch);
     }
     reset();
     closeDialog(ref);
   }
+
+  const isSaving = createTransaction.isPending || updateTransaction.isPending;
 
   return (
     <dialog ref={ref} className="modal">
@@ -171,7 +168,7 @@ export const AddTransactionModal = forwardRef<
             >
               {t("actions.cancel")}
             </button>
-            <button type="submit" className="btn btn-primary">
+            <button type="submit" disabled={isSaving} className="btn btn-primary">
               {editing ? t("actions.done") : t("data.addTransaction.add")}
             </button>
           </div>

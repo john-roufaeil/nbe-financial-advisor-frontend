@@ -1,9 +1,11 @@
 import { useRef } from "react";
 import { Target, Pencil } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { FinancialGoal } from "@/lib/demo-financials";
-import { useGoalsStore } from "@/store/use-goals-store";
+import type { FinancialGoal } from "@/types/goal";
+import { useGoals } from "@/queries/goals";
 import { GoalsEditModal } from "@/components/dashboard/GoalsEditModal";
+import { CardSkeleton, ErrorState } from "@/components/shared/QueryState";
+import { Money } from "@/components/shared/Money";
 
 function GoalRow({ goal, currency }: { goal: FinancialGoal; currency: string }) {
   const pct = Math.min(100, Math.round((goal.current / goal.target) * 100));
@@ -15,9 +17,9 @@ function GoalRow({ goal, currency }: { goal: FinancialGoal; currency: string }) 
     <li className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">{goal.name}</span>
-        <span className="text-base-content/60 tabular-nums">
+        <Money className="text-base-content/60 tabular-nums">
           {goal.current.toLocaleString()} / {goal.target.toLocaleString()} {currencyLabel}
-        </span>
+        </Money>
       </div>
       <div className="bg-base-200 h-2 w-full overflow-hidden rounded-full">
         <div className="bg-primary h-full rounded-full" style={{ width: `${pct}%` }} />
@@ -35,11 +37,13 @@ function GoalRow({ goal, currency }: { goal: FinancialGoal; currency: string }) 
 
 export function GoalsCard({ currency }: { currency: string }) {
   const { t } = useTranslation();
-  const goals = useGoalsStore((s) => s.goals);
+  const { data: goals, isPending, isError, refetch } = useGoals();
   const modalRef = useRef<HTMLDialogElement>(null);
 
+  if (isPending) return <CardSkeleton cards={1} />;
+
   return (
-    <div className="card border-base-300 bg-base-100 border shadow-sm">
+    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
       <div className="card-body gap-4 p-4">
         <div className="flex items-center gap-2">
           <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
@@ -55,7 +59,9 @@ export function GoalsCard({ currency }: { currency: string }) {
             <Pencil data-no-flip className="size-4" />
           </button>
         </div>
-        {goals.length > 0 ? (
+        {isError ? (
+          <ErrorState onRetry={() => refetch()} />
+        ) : goals.length > 0 ? (
           <ul className="flex flex-col gap-4">
             {goals.map((goal) => (
               <GoalRow key={goal.id} goal={goal} currency={currency} />

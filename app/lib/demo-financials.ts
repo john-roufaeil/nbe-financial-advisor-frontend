@@ -55,6 +55,11 @@ const SPENDING_TRIGGERS = [
   "category",
   "categories",
   "where",
+  "مصروف",
+  "مصروفاتي",
+  "ميزانية",
+  "إنفاق",
+  "الفئات",
 ];
 
 export function wantsSpendingBreakdown(text: string): boolean {
@@ -62,61 +67,132 @@ export function wantsSpendingBreakdown(text: string): boolean {
   return SPENDING_TRIGGERS.some((t) => lower.includes(t));
 }
 
-export interface DashboardStat {
-  key: "balance" | "income" | "spending" | "savingsRate";
-  value: number;
-  deltaPct: number;
-  /** Which direction of movement counts as positive for this stat. */
-  goodDirection: "up" | "down";
-}
-
-export interface FinancialGoal {
+export interface ChatTransaction {
   id: string;
-  name: string;
-  current: number;
-  target: number;
+  title: string;
+  category: string;
+  type: "income" | "expense";
+  amount: number;
+  datetime: string;
 }
 
-export interface BudgetCategory {
-  name: string;
-  budget: number;
-  spent: number;
+export interface TransactionsListResult {
+  currency: string;
+  transactions: ChatTransaction[];
 }
 
-/**
- * Fixed (non-random) placeholder numbers — no backend connected yet.
- * Kept deterministic so server and client render identically.
- */
-export function getDashboardStats(): { currency: string; stats: DashboardStat[] } {
-  return {
+const RECENT_TRANSACTION_POOL: Omit<ChatTransaction, "id">[] = [
+  {
+    title: "Carrefour Market",
+    category: "Groceries",
+    type: "expense",
+    amount: 650,
+    datetime: "2026-07-08T18:32:00",
+  },
+  {
+    title: "Salary deposit",
+    category: "Income",
+    type: "income",
+    amount: 42000,
+    datetime: "2026-07-01T09:00:00",
+  },
+  {
+    title: "Uber ride",
+    category: "Transport",
+    type: "expense",
+    amount: 120,
+    datetime: "2026-07-06T13:05:00",
+  },
+  {
+    title: "Netflix subscription",
+    category: "Shopping",
+    type: "expense",
+    amount: 150,
+    datetime: "2026-07-05T00:00:00",
+  },
+  {
+    title: "Cairo Kitchen restaurant",
+    category: "Dining",
+    type: "expense",
+    amount: 380,
+    datetime: "2026-07-04T21:10:00",
+  },
+];
+
+export function buildTransactionsList(): ChatToolCall {
+  const result: TransactionsListResult = {
     currency: "EGP",
-    stats: [
-      { key: "balance", value: 128450, deltaPct: 4.2, goodDirection: "up" },
-      { key: "income", value: 42000, deltaPct: 1.5, goodDirection: "up" },
-      { key: "spending", value: 27860, deltaPct: -6.3, goodDirection: "down" },
-      { key: "savingsRate", value: 34, deltaPct: 2, goodDirection: "up" },
-    ],
+    transactions: RECENT_TRANSACTION_POOL.map((tx) => ({
+      ...tx,
+      id: crypto.randomUUID(),
+    })),
   };
+  return { toolName: "showTransactions", args: { period: "recent" }, result };
 }
 
-export function getFinancialGoals(): FinancialGoal[] {
-  return [
-    { id: "emergency-fund", name: "Emergency Fund", current: 45000, target: 60000 },
-    { id: "new-car", name: "New Car", current: 18000, target: 150000 },
-    { id: "vacation", name: "Vacation", current: 8000, target: 20000 },
-  ];
+const TRANSACTIONS_TRIGGERS = [
+  "recent",
+  "transaction",
+  "transactions",
+  "history",
+  "purchases",
+  "last",
+  "معامل",
+  "معاملات",
+  "الأخيرة",
+  "مشترياتي",
+];
+
+export function wantsTransactions(text: string): boolean {
+  const lower = text.toLowerCase();
+  return TRANSACTIONS_TRIGGERS.some((t) => lower.includes(t));
 }
 
-export function getBudgetPlan(): { currency: string; categories: BudgetCategory[] } {
-  return {
+export interface SavingsSliderResult {
+  currency: string;
+  currentBalance: number;
+  defaultMonthlySavings: number;
+}
+
+export function buildSavingsSlider(): ChatToolCall {
+  const result: SavingsSliderResult = {
     currency: "EGP",
-    categories: [
-      { name: "Groceries", budget: 3000, spent: 2650 },
-      { name: "Dining", budget: 1500, spent: 1800 },
-      { name: "Transport", budget: 1200, spent: 950 },
-      { name: "Utilities", budget: 1000, spent: 980 },
-      { name: "Shopping", budget: 2000, spent: 2400 },
-      { name: "Health", budget: 800, spent: 300 },
-    ],
+    currentBalance: 128450,
+    defaultMonthlySavings: 3000,
   };
+  return { toolName: "showSavingsSlider", args: { horizonMonths: 12 }, result };
+}
+
+const SAVINGS_TRIGGERS = ["save", "saving", "savings", "ادخار", "أوفر", "توفير"];
+
+export function wantsSavingsPlan(text: string): boolean {
+  const lower = text.toLowerCase();
+  return SAVINGS_TRIGGERS.some((t) => lower.includes(t));
+}
+
+const SUGGESTIONS_BY_TOOL: Record<string, string[]> = {
+  showSpendingBreakdown: [
+    "Which category grew the most this month?",
+    "How can I cut down on dining expenses?",
+    "Compare this to last month",
+  ],
+  showTransactions: [
+    "Show only my expenses",
+    "What's my biggest purchase this month?",
+    "Any subscriptions I forgot about?",
+  ],
+  showSavingsSlider: [
+    "What if I save 20% more each month?",
+    "How does this affect my emergency fund?",
+    "Set this as my new savings goal",
+  ],
+  default: [
+    "Show my spending breakdown",
+    "What are my recent transactions?",
+    "Help me plan my savings",
+  ],
+};
+
+export function buildSuggestions(toolName?: string): string[] {
+  return SUGGESTIONS_BY_TOOL[toolName ?? "default"] ?? SUGGESTIONS_BY_TOOL.default;
 }

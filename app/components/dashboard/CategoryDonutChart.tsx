@@ -11,12 +11,17 @@ export function CategoryDonutChart({
   strokeWidth = 18,
   centerLabel,
   centerValue,
+  selectedName,
+  onSelectName,
 }: {
   slices: DonutSlice[];
   size?: number;
   strokeWidth?: number;
   centerLabel?: string;
   centerValue?: string;
+  /** Optional: dims non-selected slices and makes slices clickable/hoverable. */
+  selectedName?: string | null;
+  onSelectName?: (name: string) => void;
 }) {
   const total = slices.reduce((sum, s) => sum + s.value, 0);
   const radius = (size - strokeWidth) / 2;
@@ -47,6 +52,7 @@ export function CategoryDonutChart({
             const dash = Math.max(0, pct * circumference - gapPx);
             const offset = -cumulative * circumference;
             cumulative += pct;
+            const isDimmed = selectedName != null && selectedName !== slice.name;
             return (
               <circle
                 key={slice.name}
@@ -58,6 +64,8 @@ export function CategoryDonutChart({
                 strokeWidth={strokeWidth}
                 strokeDasharray={`${dash} ${circumference - dash}`}
                 strokeDashoffset={offset}
+                onClick={onSelectName ? () => onSelectName(slice.name) : undefined}
+                className={`transition-opacity duration-200 ${onSelectName ? "cursor-pointer" : ""} ${isDimmed ? "opacity-30" : "opacity-100"}`}
               />
             );
           })}

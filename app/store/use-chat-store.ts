@@ -19,6 +19,7 @@ interface ChatMessage {
   createdAt: number;
   toolCall?: ChatToolCall;
   attachments?: ChatAttachment[];
+  suggestions?: string[];
 }
 
 interface ChatThreadRecord {
@@ -31,7 +32,7 @@ function createThread(): ChatThreadRecord {
   return { id: crypto.randomUUID(), title: "New chat", messages: [] };
 }
 
-interface ChatState {
+export interface ChatState {
   threads: Record<string, ChatThreadRecord>;
   order: string[];
   currentThreadId: string;
@@ -65,9 +66,15 @@ export const useChatStore = create<ChatState>((set) => ({
     set((s) => {
       const rest = { ...s.threads };
       delete rest[id];
-      const order = s.order.filter((tid) => tid !== id);
-      const currentThreadId =
-        s.currentThreadId === id ? (order[0] ?? "") : s.currentThreadId;
+      let order = s.order.filter((tid) => tid !== id);
+
+      if (order.length === 0) {
+        const t = createThread();
+        rest[t.id] = t;
+        order = [t.id];
+      }
+
+      const currentThreadId = s.currentThreadId === id ? order[0] : s.currentThreadId;
       return { threads: rest, order, currentThreadId };
     }),
   renameThread: (id, title) =>

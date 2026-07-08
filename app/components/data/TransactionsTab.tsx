@@ -1,12 +1,22 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import { Search, ArrowDownCircle, ArrowUpCircle, Pencil, Trash2 } from "lucide-react";
+import {
+  Search,
+  ArrowDownCircle,
+  ArrowUpCircle,
+  Pencil,
+  Trash2,
+  Receipt,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatDateTime, type Transaction } from "@/lib/demo-transactions";
-import { useTransactionsStore } from "@/store/use-transactions-store";
+import { formatDateTime } from "@/lib/format";
+import type { Transaction } from "@/types/transaction";
+import { useTransactions, useDeleteTransaction } from "@/queries/transactions";
 import { Pagination } from "@/components/data/Pagination";
 import { AddTransactionModal } from "@/components/data/AddTransactionModal";
 import { DateField } from "@/components/shared/DateField";
 import { useConfirmStore } from "@/store/use-confirm-store";
+import { ListSkeleton, ErrorState, EmptyState } from "@/components/shared/QueryState";
+import { Money } from "@/components/shared/Money";
 
 const PAGE_SIZE = 10;
 const FILTERS = ["all", "income", "expense"] as const;
@@ -45,13 +55,14 @@ function TransactionCard({
           {transaction.category} · {formatDateTime(transaction.datetime)}
         </p>
       </div>
-      <span
-        dir="ltr"
+      <Money
         className={`shrink-0 text-sm font-semibold tabular-nums ${isIncome ? "text-success" : "text-base-content"}`}
       >
-        {isIncome ? "+" : "-"}
-        {transaction.amount.toLocaleString()}
-      </span>
+        <span dir="ltr">
+          {isIncome ? "+" : "-"}
+          {transaction.amount.toLocaleString()}
+        </span>
+      </Money>
       <button
         type="button"
         onClick={onEdit}
@@ -80,11 +91,19 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
     const [page, setPage] = useState(1);
-    const transactions = useTransactionsStore((s) => s.transactions);
-    const removeTransaction = useTransactionsStore((s) => s.removeTransaction);
     const confirm = useConfirmStore((s) => s.confirm);
     const modalRef = useRef<HTMLDialogElement>(null);
     const [editing, setEditing] = useState<Transaction | null>(null);
+
+    const { data, isPending, isError, refetch } = useTransactions({
+      type: filter === "all" ? undefined : filter,
+      q: search.trim() || undefined,
+      from: fromDate || undefined,
+      to: toDate || undefined,
+      offset: (page - 1) * PAGE_SIZE,
+      limit: PAGE_SIZE,
+    });
+    const deleteTransaction = useDeleteTransaction();
 
     useImperativeHandle(ref, () => ({
       openAdd: () => {
@@ -98,18 +117,7 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
       modalRef.current?.showModal();
     }
 
-    const filtered = transactions.filter((tr) => {
-      const matchesFilter = filter === "all" || tr.type === filter;
-      const matchesSearch =
-        !search.trim() ||
-        tr.title.toLowerCase().includes(search.toLowerCase()) ||
-        tr.category.toLowerCase().includes(search.toLowerCase());
-      const date = tr.datetime.slice(0, 10);
-      const matchesDate = (!fromDate || date >= fromDate) && (!toDate || date <= toDate);
-      return matchesFilter && matchesSearch && matchesDate;
-    });
-    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-    const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+    const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));
 
     function updateSearch(value: string) {
       setSearch(value);
@@ -169,9 +177,13 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
           </div>
         </div>
 
-        {pageItems.length > 0 ? (
+        {isPending ? (
+          <ListSkeleton />
+        ) : isError ? (
+          <ErrorState onRetry={() => refetch()} />
+        ) : data.items.length > 0 ? (
           <ul className="flex flex-col gap-2">
-            {pageItems.map((tr) => (
+            {data.items.map((tr) => (
               <TransactionCard
                 key={tr.id}
                 transaction={tr}
@@ -180,16 +192,14 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
                   confirm({
                     title: t("confirm.deleteTransactionTitle"),
                     message: t("confirm.deleteMessage"),
-                    onConfirm: () => removeTransaction(tr.id),
+                    onConfirm: () => deleteTransaction.mutate(tr.id),
                   })
                 }
               />
             ))}
           </ul>
         ) : (
-          <p className="text-base-content/50 py-6 text-center text-sm">
-            {t("data.noResults")}
-          </p>
+          <EmptyState icon={Receipt} label={t("data.transactionsEmpty")} />
         )}
 
         <Pagination page={page} totalPages={totalPages} onChange={setPage} />
