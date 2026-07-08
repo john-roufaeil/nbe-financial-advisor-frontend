@@ -1,0 +1,9 @@
+{
+  "confirm": {
+    "deleteTransactionTitle": "Delete this transaction?",
+    "deleteDocumentTitle": "Delete this bank statement?",
+    "deleteGoalTitle": "Delete this goal?",
+    "deleteMessage": "This action cannot be undone.",
+    "delete": "Delete"
+  }
+}

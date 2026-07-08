@@ -1,0 +1,37 @@
+{
+  "dashboard": {
+    "placeholder": "Placeholder — dashboard widgets go here.",
+    "subtitle": "A snapshot of your finances this month.",
+    "askAdvisor": "Ask the advisor",
+    "addItem": "Add new item",
+    "hideBalances": "Hide balances",
+    "showBalances": "Show balances",
+    "dataSource": {
+      "mock": "Mock data",
+      "backend": "Live data"
+    },
+    "stats": {
+      "balance": "Total Balance",
+      "income": "Monthly Income",
+      "spending": "Monthly Spending",
+      "savingsRate": "Savings Rate",
+      "vsLastMonth": "vs last month"
+    },
+    "goals": {
+      "title": "Goal Progress",
+      "remaining": "{{amount}} {{currency}} to go",
+      "empty": "No goals yet — add one to start tracking.",
+      "editTitle": "Edit goals",
+      "name": "Name",
+      "current": "Saved",
+      "target": "Target",
+      "newNamePlaceholder": "e.g. Home renovation",
+      "add": "Add goal"
+    },
+    "budget": {
+      "title": "Budget Plan Split",
+      "over": "Over budget",
+      "spent": "spent"
+    }
+  }
+}

@@ -1,0 +1,37 @@
+{
+  "dashboard": {
+    "placeholder": "عناصر لوحة التحكم ستكون هنا.",
+    "subtitle": "لمحة عن أموالك هذا الشهر.",
+    "askAdvisor": "اسأل المستشار",
+    "addItem": "إضافة عنصر جديد",
+    "hideBalances": "إخفاء الأرصدة",
+    "showBalances": "إظهار الأرصدة",
+    "dataSource": {
+      "mock": "بيانات تجريبية",
+      "backend": "بيانات مباشرة"
+    },
+    "stats": {
+      "balance": "الرصيد الإجمالي",
+      "income": "الدخل الشهري",
+      "spending": "المصروفات الشهرية",
+      "savingsRate": "معدل الادخار",
+      "vsLastMonth": "مقارنة بالشهر الماضي"
+    },
+    "goals": {
+      "title": "تقدم الأهداف",
+      "remaining": "متبقي {{amount}} {{currency}}",
+      "empty": "لا توجد أهداف بعد — أضف هدفًا للبدء.",
+      "editTitle": "تعديل الأهداف",
+      "name": "الاسم",
+      "current": "المدخر",
+      "target": "الهدف",
+      "newNamePlaceholder": "مثال: تجديد المنزل",
+      "add": "إضافة هدف"
+    },
+    "budget": {
+      "title": "توزيع خطة الميزانية",
+      "over": "تجاوز الميزانية",
+      "spent": "منفق"
+    }
+  }
+}

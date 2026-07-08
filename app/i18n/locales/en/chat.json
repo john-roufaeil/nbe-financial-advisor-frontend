@@ -1,0 +1,39 @@
+{
+  "chat": {
+    "placeholder": "Ask me anything about your finances...",
+    "newChat": "New chat",
+    "recent": "Recent",
+    "attach": "Attach file",
+    "send": "Send message",
+    "stop": "Stop",
+    "nav": {
+      "top": "Scroll to top",
+      "bottom": "Scroll to latest",
+      "questions": "Jump to a question",
+      "moreQuestions": "+{{count}} earlier questions"
+    },
+    "empty": {
+      "title": "How can I help with your finances?",
+      "subtitle": "Ask about your spending, savings, or budget. Answers are placeholders until the backend is connected."
+    },
+    "suggestions": {
+      "spending": "Show my spending breakdown this month",
+      "save": "How much can I save this month?",
+      "transactions": "What are my recent transactions?"
+    },
+    "tools": {
+      "spending": {
+        "title": "Spending breakdown",
+        "total": "Total",
+        "loading": "Analyzing your spending...",
+        "pieTab": "Pie chart",
+        "barTab": "Bar chart"
+      },
+      "savings": {
+        "title": "Savings projection",
+        "projected": "Projected balance in {{months}} months",
+        "monthly": "Monthly savings"
+      }
+    }
+  }
+}

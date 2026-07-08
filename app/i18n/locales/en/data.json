@@ -1,0 +1,98 @@
+{
+  "data": {
+    "transactions": "Transactions",
+    "documents": "Bank Statements",
+    "search": "Search...",
+    "noResults": "No results found.",
+    "transactionsEmpty": "No transactions yet. Add one manually, or upload a bank statement and we'll pull them out for you.",
+    "documentsEmpty": "No bank statements yet. Upload one and we'll extract the transactions automatically.",
+    "loading": "Loading...",
+    "loadError": "Sorry, something went wrong. Please try again.",
+    "retry": "Retry",
+    "replan": "Ask advisor to re-plan",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "filters": {
+      "all": "All",
+      "income": "Income",
+      "expense": "Expense",
+      "pdf": "PDF",
+      "image": "Image",
+      "doc": "Doc"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page {{page}} of {{totalPages}}"
+    },
+    "addTransaction": {
+      "title": "Add Transaction",
+      "editTitle": "Edit Transaction",
+      "add": "Add Transaction",
+      "name": "Name",
+      "category": "Category",
+      "amount": "Amount",
+      "date": "Date"
+    },
+    "addDocument": {
+      "title": "Add Bank Statement",
+      "add": "Add Bank Statement",
+      "dropzone": "Drag & drop files here, or click to choose",
+      "accepted": "Images, PDF, or Word bank statements",
+      "rejected": "Skipped unsupported file(s): {{names}}"
+    },
+    "documentStatus": {
+      "uploading": "Uploading...",
+      "processing": "Processing...",
+      "pendingApproval": "Pending approval",
+      "processed": "Processed",
+      "failed": "Failed"
+    },
+    "documentDetail": {
+      "title": "Bank Statement",
+      "uploading": "Uploading bank statement...",
+      "processing": "Analyzing bank statement...",
+      "failedTitle": "Processing failed",
+      "documentFailedGeneric": "We couldn't process this file. It may be unreadable or in an unsupported format.",
+      "retry": "Retry",
+      "reviewTitle": "Review extracted transactions",
+      "reviewSubtitle": "Edit anything that looks off, then approve to add these to your transactions.",
+      "approve": "Approve & add to transactions",
+      "approved": "Added to your transactions",
+      "noTransactions": "No transactions found in this bank statement."
+    },
+    "sections": {
+      "profile": {
+        "title": "Profile",
+        "fields": {
+          "fullName": "Full name",
+          "dob": "Date of birth",
+          "nationalId": "National ID"
+        }
+      },
+      "contact": {
+        "title": "Contact",
+        "fields": {
+          "email": "Email",
+          "phone": "Phone"
+        }
+      },
+      "address": {
+        "title": "Address",
+        "fields": {
+          "country": "Country",
+          "city": "City",
+          "addressLine": "Street address"
+        }
+      },
+      "financial": {
+        "title": "Financial Profile",
+        "fields": {
+          "employmentStatus": "Employment status",
+          "monthlyIncome": "Monthly income",
+          "riskTolerance": "Risk tolerance"
+        }
+      }
+    }
+  }
+}

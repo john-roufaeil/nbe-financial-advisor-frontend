@@ -1,0 +1,15 @@
+{
+  "toast": {
+    "transactionCreated": "Transaction added",
+    "transactionUpdated": "Transaction updated",
+    "transactionDeleted": "Transaction deleted",
+    "documentUploaded": "Bank statement uploaded",
+    "documentDeleted": "Bank statement deleted",
+    "documentApproved": "Transactions added from statement",
+    "documentRetried": "Retrying...",
+    "goalCreated": "Goal added",
+    "goalUpdated": "Goal updated",
+    "goalDeleted": "Goal deleted",
+    "genericError": "Something went wrong. Please try again."
+  }
+}

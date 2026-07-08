@@ -1,0 +1,13 @@
+{
+  "actions": {
+    "submit": "إرسال",
+    "cancel": "إلغاء",
+    "continue": "متابعة",
+    "back": "رجوع",
+    "upload": "رفع",
+    "delete": "حذف {{name}}",
+    "done": "تم",
+    "close": "إغلاق",
+    "edit": "تعديل"
+  }
+}

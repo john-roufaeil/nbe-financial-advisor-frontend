@@ -1,0 +1,17 @@
+{
+  "currency": {
+    "EGP": "EGP",
+    "USD": "USD",
+    "EUR": "EUR"
+  },
+  "units": {
+    "b": "B",
+    "kb": "KB",
+    "mb": "MB"
+  },
+  "banks": {
+    "NBE": "National Bank of Egypt",
+    "CIB": "Commercial International Bank",
+    "BM": "Banque Misr"
+  }
+}
