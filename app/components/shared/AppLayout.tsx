@@ -66,7 +66,7 @@ export default function AppLayout() {
               <img src="/logo.webp" alt={t("app.name")} className="mx-auto h-9 w-auto" />
             </div>
 
-            <nav className="flex flex-col gap-1 p-3">
+            <nav className="flex flex-col gap-2 p-3">
               {navItems.map(({ to, label, icon: Icon }) => (
                 <NavLink
                   key={to}
