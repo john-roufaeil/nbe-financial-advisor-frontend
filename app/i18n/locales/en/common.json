@@ -160,7 +160,7 @@
   },
   "data": {
     "transactions": "Transactions",
-    "documents": "Documents",
+    "documents": "Bank Statements",
     "search": "Search...",
     "noResults": "No results found.",
     "replan": "Ask advisor to re-plan",
@@ -189,10 +189,12 @@
       "date": "Date"
     },
     "addDocument": {
-      "title": "Add Document",
-      "add": "Add Document",
+      "title": "Add Bank Statement",
+      "add": "Add Bank Statement",
+      "bank": "Bank",
+      "bankUnknown": "Unknown bank",
       "dropzone": "Drag & drop files here, or click to choose",
-      "accepted": "Images, PDF, or Word documents",
+      "accepted": "Images, PDF, or Word bank statements",
       "rejected": "Skipped unsupported file(s): {{names}}"
     },
     "documentStatus": {
@@ -203,9 +205,9 @@
       "failed": "Failed"
     },
     "documentDetail": {
-      "title": "Document",
-      "uploading": "Uploading document...",
-      "processing": "Analyzing document...",
+      "title": "Bank Statement",
+      "uploading": "Uploading bank statement...",
+      "processing": "Analyzing bank statement...",
       "failedTitle": "Processing failed",
       "documentFailedGeneric": "We couldn't process this file. It may be unreadable or in an unsupported format.",
       "retry": "Retry",
@@ -213,7 +215,7 @@
       "reviewSubtitle": "Edit anything that looks off, then approve to add these to your transactions.",
       "approve": "Approve & add to transactions",
       "approved": "Added to your transactions",
-      "noTransactions": "No transactions found in this document."
+      "noTransactions": "No transactions found in this bank statement."
     },
     "sections": {
       "profile": {
