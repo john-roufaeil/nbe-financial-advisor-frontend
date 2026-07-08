@@ -1,13 +1,24 @@
-import { useMemo, useState } from "react";
-import { Search, FileText, Image as ImageIcon, File, Trash2 } from "lucide-react";
+import { useRef, useState } from "react";
+import {
+  Search,
+  FileText,
+  Image as ImageIcon,
+  File,
+  Trash2,
+  Loader2,
+  TriangleAlert,
+  CircleCheck,
+  Hourglass,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import {
-  getDocuments,
   formatDate,
   type DocumentRecord,
   type DocumentType,
 } from "@/lib/demo-transactions";
+import { useDocumentsStore } from "@/store/use-documents-store";
 import { Pagination } from "@/components/data/Pagination";
+import { DocumentDetailModal } from "@/components/data/DocumentDetailModal";
 
 const PAGE_SIZE = 10;
 const FILTERS = ["all", "pdf", "image", "doc"] as const;
@@ -23,11 +34,49 @@ function formatSize(kb: number) {
   return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
 }
 
-function DocumentCard({ doc }: { doc: DocumentRecord }) {
+function StatusBadge({ doc }: { doc: DocumentRecord }) {
   const { t } = useTranslation();
+  if (doc.status === "uploading" || doc.status === "processing") {
+    return (
+      <span className="text-base-content/50 flex items-center gap-1 text-xs">
+        <Loader2 className="size-3 animate-spin" />
+        {t(`data.documentStatus.${doc.status}`)}
+      </span>
+    );
+  }
+  if (doc.status === "failed") {
+    return (
+      <span className="text-error flex items-center gap-1 text-xs">
+        <TriangleAlert className="size-3" />
+        {t("data.documentStatus.failed")}
+      </span>
+    );
+  }
+  if (!doc.approved) {
+    return (
+      <span className="text-warning flex items-center gap-1 text-xs">
+        <Hourglass className="size-3" />
+        {t("data.documentStatus.pendingApproval")}
+      </span>
+    );
+  }
+  return (
+    <span className="text-success flex items-center gap-1 text-xs">
+      <CircleCheck data-no-flip className="size-3" />
+      {t("data.documentStatus.processed")}
+    </span>
+  );
+}
+
+function DocumentCard({ doc, onOpen }: { doc: DocumentRecord; onOpen: () => void }) {
+  const { t } = useTranslation();
+  const removeDocument = useDocumentsStore((s) => s.removeDocument);
   const Icon = TYPE_ICONS[doc.type];
   return (
-    <li className="border-base-300 bg-base-100 flex items-center gap-3 rounded-lg border p-3">
+    <li
+      onClick={onOpen}
+      className="border-base-300 bg-base-100 hover:border-primary flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors"
+    >
       <span className="bg-info/10 text-info grid size-9 shrink-0 place-items-center rounded-lg">
         <Icon className="size-4.5" />
       </span>
@@ -37,8 +86,13 @@ function DocumentCard({ doc }: { doc: DocumentRecord }) {
           {formatDate(doc.uploadDate)} · {formatSize(doc.sizeKb)}
         </p>
       </div>
+      <StatusBadge doc={doc} />
       <button
         type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          removeDocument(doc.id);
+        }}
         className="btn btn-ghost btn-sm btn-square text-error shrink-0"
         aria-label={t("actions.delete", { name: doc.name })}
       >
@@ -55,7 +109,14 @@ export function DocumentsTab() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [page, setPage] = useState(1);
-  const documents = useMemo(() => getDocuments(), []);
+  const documents = useDocumentsStore((s) => s.documents);
+  const detailModalRef = useRef<HTMLDialogElement>(null);
+  const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  function openDetail(id: string) {
+    setSelectedId(id);
+    detailModalRef.current?.showModal();
+  }
 
   const filtered = documents.filter((doc) => {
     const matchesFilter = filter === "all" || doc.type === filter;
@@ -88,36 +149,38 @@ export function DocumentsTab() {
   return (
     <div className="flex flex-col gap-4">
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="input input-bordered input-sm flex min-w-0 flex-1 items-center gap-2">
+        <label className="input input-bordered flex w-full flex-1 items-center gap-2 px-3 py-2">
           <Search className="text-base-content/40 size-4 shrink-0" />
           <input
             type="text"
             value={search}
             onChange={(e) => updateSearch(e.target.value)}
             placeholder={t("data.search")}
-            className="min-w-0 grow"
+            className="w-full min-w-0 grow"
           />
         </label>
-        <div className="flex min-w-0 flex-wrap items-center gap-3 sm:shrink-0 sm:flex-nowrap">
-          <label className="text-base-content/50 flex shrink-0 items-center gap-1.5 text-xs">
-            {t("data.dateFrom")}
-            <input
-              type="date"
-              value={fromDate}
-              onChange={(e) => updateFromDate(e.target.value)}
-              className="input input-bordered input-sm"
-            />
-          </label>
-          <label className="text-base-content/50 flex shrink-0 items-center gap-1.5 text-xs">
-            {t("data.dateTo")}
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => updateToDate(e.target.value)}
-              className="input input-bordered input-sm"
-            />
-          </label>
-          <div className="join border-base-300 shrink-0 rounded-lg border">
+        <div className="flex min-w-0 flex-col gap-3 sm:shrink-0 sm:flex-row sm:flex-nowrap sm:items-center">
+          <div className="flex min-w-0 items-center gap-3">
+            <label className="text-base-content/50 flex shrink-0 items-center gap-1.5 text-xs">
+              {t("data.dateFrom")}
+              <input
+                type="date"
+                value={fromDate}
+                onChange={(e) => updateFromDate(e.target.value)}
+                className="input input-bordered input-sm"
+              />
+            </label>
+            <label className="text-base-content/50 flex shrink-0 items-center gap-1.5 text-xs">
+              {t("data.dateTo")}
+              <input
+                type="date"
+                value={toDate}
+                onChange={(e) => updateToDate(e.target.value)}
+                className="input input-bordered input-sm"
+              />
+            </label>
+          </div>
+          <div className="join border-base-300 w-fit shrink-0 rounded-lg border">
             {FILTERS.map((f) => (
               <button
                 key={f}
@@ -135,7 +198,7 @@ export function DocumentsTab() {
       {pageItems.length > 0 ? (
         <ul className="flex flex-col gap-2">
           {pageItems.map((doc) => (
-            <DocumentCard key={doc.id} doc={doc} />
+            <DocumentCard key={doc.id} doc={doc} onOpen={() => openDetail(doc.id)} />
           ))}
         </ul>
       ) : (
@@ -145,6 +208,8 @@ export function DocumentsTab() {
       )}
 
       <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+
+      <DocumentDetailModal ref={detailModalRef} documentId={selectedId} />
     </div>
   );
 }

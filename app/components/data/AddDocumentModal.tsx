@@ -1,0 +1,172 @@
+import { forwardRef, useState, type Ref } from "react";
+import { useTranslation } from "react-i18next";
+import {
+  Upload,
+  X,
+  FileText,
+  Image as ImageIcon,
+  File as FileIcon,
+  TriangleAlert,
+} from "lucide-react";
+import {
+  DOCUMENT_UPLOAD_ACCEPT,
+  inferDocumentType,
+  type DocumentType,
+} from "@/lib/demo-transactions";
+import { useDocumentsStore } from "@/store/use-documents-store";
+
+const TYPE_ICONS: Record<DocumentType, typeof FileText> = {
+  pdf: FileText,
+  image: ImageIcon,
+  doc: FileIcon,
+};
+
+function closeDialog(ref: Ref<HTMLDialogElement>) {
+  if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
+}
+
+interface StagedFile {
+  file: File;
+  type: DocumentType;
+}
+
+export const AddDocumentModal = forwardRef<HTMLDialogElement>(
+  function AddDocumentModal(_props, ref) {
+    const { t } = useTranslation();
+    const addDocuments = useDocumentsStore((s) => s.addDocuments);
+    const [staged, setStaged] = useState<StagedFile[]>([]);
+    const [rejected, setRejected] = useState<string[]>([]);
+    const [isDragging, setIsDragging] = useState(false);
+
+    function handleFiles(fileList: FileList | null) {
+      if (!fileList) return;
+      const nextStaged: StagedFile[] = [];
+      const nextRejected: string[] = [];
+      for (const file of Array.from(fileList)) {
+        const type = inferDocumentType(file);
+        if (type) nextStaged.push({ file, type });
+        else nextRejected.push(file.name);
+      }
+      setStaged((s) => [...s, ...nextStaged]);
+      setRejected(nextRejected);
+    }
+
+    function removeStaged(index: number) {
+      setStaged((s) => s.filter((_, i) => i !== index));
+    }
+
+    function reset() {
+      setStaged([]);
+      setRejected([]);
+    }
+
+    function handleUpload() {
+      if (staged.length === 0) return;
+      const uploadDate = new Date().toISOString().slice(0, 10);
+      const documents = staged.map(({ file, type }) => ({
+        name: file.name,
+        type,
+        uploadDate,
+        sizeKb: Math.max(1, Math.round(file.size / 1024)),
+      }));
+      addDocuments(documents);
+      reset();
+      closeDialog(ref);
+    }
+
+    return (
+      <dialog ref={ref} className="modal">
+        <div className="modal-box flex flex-col gap-4">
+          <h3 className="text-lg font-semibold">{t("data.addDocument.title")}</h3>
+
+          <label
+            onDragOver={(e) => {
+              e.preventDefault();
+              setIsDragging(true);
+            }}
+            onDragLeave={() => setIsDragging(false)}
+            onDrop={(e) => {
+              e.preventDefault();
+              setIsDragging(false);
+              handleFiles(e.dataTransfer.files);
+            }}
+            className={`hover:border-primary hover:bg-base-200 flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+              isDragging ? "border-primary bg-base-200" : "border-base-300"
+            }`}
+          >
+            <Upload className="text-base-content/40 size-6" />
+            <span className="text-sm font-medium">{t("data.addDocument.dropzone")}</span>
+            <span className="text-base-content/50 text-xs">
+              {t("data.addDocument.accepted")}
+            </span>
+            <input
+              type="file"
+              multiple
+              accept={DOCUMENT_UPLOAD_ACCEPT}
+              onChange={(e) => handleFiles(e.target.files)}
+              className="hidden"
+            />
+          </label>
+
+          {rejected.length > 0 && (
+            <p className="text-warning flex items-center gap-1.5 text-xs">
+              <TriangleAlert className="size-3.5 shrink-0" />
+              {t("data.addDocument.rejected", { names: rejected.join(", ") })}
+            </p>
+          )}
+
+          {staged.length > 0 && (
+            <ul className="flex flex-col gap-2">
+              {staged.map(({ file, type }, i) => {
+                const Icon = TYPE_ICONS[type];
+                return (
+                  <li
+                    key={`${file.name}-${i}`}
+                    className="border-base-300 bg-base-100 flex items-center gap-3 rounded-lg border p-2.5"
+                  >
+                    <span className="bg-info/10 text-info grid size-8 shrink-0 place-items-center rounded-lg">
+                      <Icon className="size-4" />
+                    </span>
+                    <span className="min-w-0 flex-1 truncate text-sm">{file.name}</span>
+                    <button
+                      type="button"
+                      onClick={() => removeStaged(i)}
+                      className="btn btn-ghost btn-xs btn-square shrink-0"
+                      aria-label={t("actions.delete", { name: file.name })}
+                    >
+                      <X className="size-3.5" />
+                    </button>
+                  </li>
+                );
+              })}
+            </ul>
+          )}
+
+          <div className="modal-action">
+            <button
+              type="button"
+              onClick={() => {
+                reset();
+                closeDialog(ref);
+              }}
+              className="btn btn-ghost"
+            >
+              {t("actions.cancel")}
+            </button>
+            <button
+              type="button"
+              disabled={staged.length === 0}
+              onClick={handleUpload}
+              className="btn btn-primary"
+            >
+              {t("actions.upload")}
+            </button>
+          </div>
+        </div>
+        <form method="dialog" className="modal-backdrop">
+          <button className="cursor-default">{t("actions.close")}</button>
+        </form>
+      </dialog>
+    );
+  },
+);

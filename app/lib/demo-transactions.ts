@@ -9,13 +9,38 @@ export interface Transaction {
 
 export type DocumentType = "pdf" | "image" | "doc";
 
+export type DocumentStatus = "uploading" | "processing" | "failed" | "processed";
+
+export interface ExtractedTransaction {
+  id: string;
+  datetime: string;
+  title: string;
+  category: string;
+  type: "income" | "expense";
+  amount: number;
+}
+
 export interface DocumentRecord {
   id: string;
   name: string;
   type: DocumentType;
   uploadDate: string;
   sizeKb: number;
+  status: DocumentStatus;
+  errorMessage?: string;
+  extractedTransactions?: ExtractedTransaction[];
+  approved?: boolean;
 }
+
+export const TRANSACTION_CATEGORIES = [
+  "Groceries",
+  "Dining",
+  "Transport",
+  "Utilities",
+  "Shopping",
+  "Health",
+  "Income",
+] as const;
 
 /** Fixed (non-random) placeholder data — no backend connected yet. Kept deterministic for SSR/CSR parity. */
 export function getTransactions(): Transaction[] {
@@ -174,6 +199,24 @@ export function formatDate(iso: string) {
   return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
 }
 
+/** Same accept rules as the chat composer's attachment adapter — images and office/pdf docs only. */
+export const DOCUMENT_UPLOAD_ACCEPT =
+  "image/*,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+
+export function inferDocumentType(file: File): DocumentType | null {
+  if (file.type.startsWith("image/")) return "image";
+  if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) return "pdf";
+  if (
+    file.type === "application/msword" ||
+    file.type ===
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+    /\.docx?$/i.test(file.name)
+  ) {
+    return "doc";
+  }
+  return null;
+}
+
 export function getDocuments(): DocumentRecord[] {
   return [
     {
@@ -182,6 +225,8 @@ export function getDocuments(): DocumentRecord[] {
       type: "pdf",
       uploadDate: "2026-07-02",
       sizeKb: 245,
+      status: "processed",
+      approved: true,
     },
     {
       id: "d2",
@@ -189,6 +234,8 @@ export function getDocuments(): DocumentRecord[] {
       type: "image",
       uploadDate: "2026-05-10",
       sizeKb: 1320,
+      status: "processed",
+      approved: true,
     },
     {
       id: "d3",
@@ -196,6 +243,8 @@ export function getDocuments(): DocumentRecord[] {
       type: "doc",
       uploadDate: "2026-04-22",
       sizeKb: 88,
+      status: "processed",
+      approved: true,
     },
     {
       id: "d4",
@@ -203,6 +252,8 @@ export function getDocuments(): DocumentRecord[] {
       type: "pdf",
       uploadDate: "2026-06-02",
       sizeKb: 231,
+      status: "processed",
+      approved: true,
     },
     {
       id: "d5",
@@ -210,6 +261,8 @@ export function getDocuments(): DocumentRecord[] {
       type: "pdf",
       uploadDate: "2026-06-27",
       sizeKb: 96,
+      status: "processed",
+      approved: true,
     },
     {
       id: "d6",
@@ -217,6 +270,8 @@ export function getDocuments(): DocumentRecord[] {
       type: "image",
       uploadDate: "2026-03-15",
       sizeKb: 980,
+      status: "processed",
+      approved: true,
     },
     {
       id: "d7",
@@ -224,6 +279,8 @@ export function getDocuments(): DocumentRecord[] {
       type: "doc",
       uploadDate: "2026-02-01",
       sizeKb: 156,
+      status: "processed",
+      approved: true,
     },
     {
       id: "d8",
@@ -231,6 +288,8 @@ export function getDocuments(): DocumentRecord[] {
       type: "pdf",
       uploadDate: "2026-05-03",
       sizeKb: 228,
+      status: "processed",
+      approved: true,
     },
   ];
 }
