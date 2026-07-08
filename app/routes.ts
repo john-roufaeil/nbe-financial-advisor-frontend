@@ -10,7 +10,9 @@ export default [
     layout("routes/app-layout.tsx", [
       route(":lang/dashboard", "routes/dashboard.tsx"),
       route(":lang/chat", "routes/chat.tsx"),
-      route(":lang/data", "routes/data.tsx"),
+      route(":lang/transactions", "routes/transactions.tsx"),
+      route(":lang/documents", "routes/documents.tsx"),
+      route(":lang/profile", "routes/profile.tsx"),
     ]),
     route(":lang/*", "routes/not-found.tsx"),
   ]),
