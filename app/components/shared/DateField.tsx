@@ -1,0 +1,43 @@
+import { useTranslation } from "react-i18next";
+
+/** dd/mm/yyyy for LTR; reversed (yyyy/mm/dd) for RTL so it still reads start-to-end naturally. */
+function formatDisplay(iso: string, rtl: boolean) {
+  const [y, m, d] = iso.split("-");
+  return rtl ? `${y}/${m}/${d}` : `${d}/${m}/${y}`;
+}
+
+export function DateField({
+  value,
+  onChange,
+  label,
+}: {
+  value: string;
+  onChange: (value: string) => void;
+  label: string;
+}) {
+  const { i18n } = useTranslation();
+  const rtl = i18n.dir() === "rtl";
+  const placeholder = rtl ? "yyyy/mm/dd" : "dd/mm/yyyy";
+
+  return (
+    <label className="text-base-content/50 flex shrink-0 items-center gap-1.5 text-xs">
+      {label}
+      <span className="relative inline-block shrink-0">
+        <input
+          type="date"
+          value={value}
+          onChange={(e) => onChange(e.target.value)}
+          style={rtl ? { transform: "scaleX(-1)" } : undefined}
+          className="input input-bordered input-sm text-transparent caret-transparent"
+        />
+        <span className="text-base-content pointer-events-none absolute inset-0 flex items-center ps-3 pe-7 text-sm">
+          {value ? (
+            formatDisplay(value, rtl)
+          ) : (
+            <span className="text-base-content/40">{placeholder}</span>
+          )}
+        </span>
+      </span>
+    </label>
+  );
+}

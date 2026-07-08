@@ -2,11 +2,13 @@ import { forwardRef, useState } from "react";
 import { Plus, Trash2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useGoalsStore } from "@/store/use-goals-store";
+import { useConfirmStore } from "@/store/use-confirm-store";
 
 export const GoalsEditModal = forwardRef<HTMLDialogElement>(
   function GoalsEditModal(_props, ref) {
     const { t } = useTranslation();
     const { goals, updateGoal, removeGoal, addGoal } = useGoalsStore();
+    const confirm = useConfirmStore((s) => s.confirm);
     const [newName, setNewName] = useState("");
     const [newTarget, setNewTarget] = useState("");
 
@@ -78,7 +80,13 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement>(
                 </label>
                 <button
                   type="button"
-                  onClick={() => removeGoal(goal.id)}
+                  onClick={() =>
+                    confirm({
+                      title: t("confirm.deleteGoalTitle"),
+                      message: t("confirm.deleteMessage"),
+                      onConfirm: () => removeGoal(goal.id),
+                    })
+                  }
                   className="btn btn-ghost btn-sm btn-square text-error"
                   aria-label={t("actions.delete", { name: goal.name })}
                 >

@@ -170,35 +170,23 @@ export function getTransactions(): Transaction[] {
   ];
 }
 
-const MONTHS = [
-  "Jan",
-  "Feb",
-  "Mar",
-  "Apr",
-  "May",
-  "Jun",
-  "Jul",
-  "Aug",
-  "Sep",
-  "Oct",
-  "Nov",
-  "Dec",
-];
-
 /**
- * Manual formatting (no Intl/locale) so server and client render identical
- * strings regardless of each environment's own timezone/locale settings.
+ * Manual dd/mm/yyyy formatting (no Intl/locale) so server and client render
+ * identical strings regardless of each environment's own timezone/locale
+ * settings, and so the format stays consistent regardless of app language.
  */
+export function formatDate(iso: string) {
+  const d = new Date(iso);
+  const day = d.getDate().toString().padStart(2, "0");
+  const month = (d.getMonth() + 1).toString().padStart(2, "0");
+  return `${day}/${month}/${d.getFullYear()}`;
+}
+
 export function formatDateTime(iso: string) {
   const d = new Date(iso);
   const hours = d.getHours().toString().padStart(2, "0");
   const minutes = d.getMinutes().toString().padStart(2, "0");
-  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()} · ${hours}:${minutes}`;
-}
-
-export function formatDate(iso: string) {
-  const d = new Date(iso);
-  return `${MONTHS[d.getMonth()]} ${d.getDate()}, ${d.getFullYear()}`;
+  return `${formatDate(iso)} · ${hours}:${minutes}`;
 }
 
 /** Same accept rules as the chat composer's attachment adapter — images and office/pdf docs only. */
@@ -229,7 +217,7 @@ export function getDocuments(): DocumentRecord[] {
       sizeKb: 245,
       status: "processed",
       approved: true,
-      bankName: "National Bank of Egypt",
+      bankName: "NBE",
     },
     {
       id: "d2",
@@ -257,7 +245,7 @@ export function getDocuments(): DocumentRecord[] {
       sizeKb: 231,
       status: "processed",
       approved: true,
-      bankName: "Commercial International Bank",
+      bankName: "CIB",
     },
     {
       id: "d5",
@@ -294,7 +282,7 @@ export function getDocuments(): DocumentRecord[] {
       sizeKb: 228,
       status: "processed",
       approved: true,
-      bankName: "Bank Misr",
+      bankName: "BM",
     },
   ];
 }

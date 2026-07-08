@@ -10,7 +10,7 @@ import {
   ArrowUpCircle,
 } from "lucide-react";
 import { TRANSACTION_CATEGORIES } from "@/lib/demo-transactions";
-import { getBankLogo } from "@/lib/banks";
+import { getBankLogo, getBankName } from "@/lib/banks";
 import { useDocumentsStore } from "@/store/use-documents-store";
 
 export const DocumentDetailModal = forwardRef<
@@ -42,14 +42,26 @@ export const DocumentDetailModal = forwardRef<
             <div className="flex items-center gap-3 pe-8">
               <img
                 src={getBankLogo(doc.bankName)}
-                alt={doc.bankName ?? t("data.addDocument.bankUnknown")}
+                alt={
+                  doc.bankName
+                    ? t(
+                        `banks.${doc.bankName}`,
+                        getBankName(doc.bankName) ?? doc.bankName,
+                      )
+                    : ""
+                }
                 className="size-9 shrink-0 rounded-full object-cover"
               />
               <div className="min-w-0">
                 <h3 className="truncate text-lg font-semibold">{doc.name}</h3>
-                <p className="text-base-content/50 truncate text-xs">
-                  {doc.bankName ?? ""}
-                </p>
+                {doc.bankName && (
+                  <p className="text-base-content/50 truncate text-xs">
+                    {t(
+                      `banks.${doc.bankName}`,
+                      getBankName(doc.bankName) ?? doc.bankName,
+                    )}
+                  </p>
+                )}
               </div>
             </div>
 

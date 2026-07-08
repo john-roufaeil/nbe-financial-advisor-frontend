@@ -7,6 +7,7 @@ import { ChatThreadList } from "@/components/chat/ChatThreadList";
 import { useAppChatRuntime } from "@/lib/use-chat-runtime";
 import { useDrawerStore } from "@/store/use-drawer-store";
 import { usePersonalDataStore } from "@/store/use-personal-data-store";
+import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 
 export default function AppLayout() {
   const { lang } = useParams<{ lang: string }>();
@@ -130,6 +131,7 @@ export default function AppLayout() {
           </aside>
         </div>
       </div>
+      <ConfirmDialog />
     </AssistantRuntimeProvider>
   );
 }

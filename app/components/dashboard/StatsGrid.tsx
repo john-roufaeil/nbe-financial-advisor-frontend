@@ -16,13 +16,12 @@ const ICONS = {
   savingsRate: PiggyBank,
 } as const;
 
-function formatValue(stat: DashboardStat, currency: string) {
-  if (stat.key === "savingsRate") return `${stat.value}%`;
-  return `${stat.value.toLocaleString()} ${currency}`;
-}
-
 function StatCard({ stat, currency }: { stat: DashboardStat; currency: string }) {
   const { t } = useTranslation();
+  const formattedValue =
+    stat.key === "savingsRate"
+      ? `${stat.value}%`
+      : `${stat.value.toLocaleString()} ${t(`currency.${currency}`, currency)}`;
   const Icon = ICONS[stat.key];
   const isUp = stat.deltaPct >= 0;
   const isGood = isUp ? stat.goodDirection === "up" : stat.goodDirection === "down";
@@ -42,9 +41,7 @@ function StatCard({ stat, currency }: { stat: DashboardStat; currency: string })
             {t(`dashboard.stats.${stat.key}`)}
           </p>
         </div>
-        <p className="text-2xl font-semibold tabular-nums">
-          {formatValue(stat, currency)}
-        </p>
+        <p className="text-2xl font-semibold tabular-nums">{formattedValue}</p>
         <div
           className={`flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
             isGood ? "bg-success/10 text-success" : "bg-error/10 text-error"

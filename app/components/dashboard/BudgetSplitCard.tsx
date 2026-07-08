@@ -23,7 +23,7 @@ function BudgetRow({
         <span className="font-medium">{category.name}</span>
         <span className="text-base-content/60 tabular-nums">
           {category.spent.toLocaleString()} / {category.budget.toLocaleString()}{" "}
-          {currency}
+          {t(`currency.${currency}`, currency)}
         </span>
       </div>
       <div className="bg-base-200 h-2 w-full overflow-hidden rounded-full">
@@ -65,7 +65,7 @@ export function BudgetSplitCard({
           <CategoryDonutChart
             slices={categories.map((c) => ({ name: c.name, value: c.spent }))}
             centerValue={totalSpent.toLocaleString()}
-            centerLabel={`${currency} ${t("dashboard.budget.spent")}`}
+            centerLabel={`${t(`currency.${currency}`, currency)} ${t("dashboard.budget.spent")}`}
           />
           <ul className="flex w-full min-w-0 flex-col gap-4">
             {categories.map((category, i) => (
