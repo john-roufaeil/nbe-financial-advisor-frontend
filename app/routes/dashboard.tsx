@@ -1,9 +1,10 @@
 import { useTranslation } from "react-i18next";
 import { useParams, Link } from "react-router";
-import { MessageCircle } from "lucide-react";
+import { Bot } from "lucide-react";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { GoalsCard } from "@/components/dashboard/GoalsCard";
 import { BudgetSplitCard } from "@/components/dashboard/BudgetSplitCard";
+import { AddItemFab } from "@/components/dashboard/AddItemFab";
 import { getDashboardStats, getBudgetPlan } from "@/lib/demo-financials";
 import { usePageTitle } from "@/lib/use-page-title";
 
@@ -22,7 +23,7 @@ export default function Dashboard() {
           <p className="text-base-content/60 text-sm">{t("dashboard.subtitle")}</p>
         </div>
         <Link to={`/${lang}/chat`} className="btn btn-secondary gap-2 shadow-sm">
-          <MessageCircle className="size-4" />
+          <Bot className="size-4" />
           {t("dashboard.askAdvisor")}
         </Link>
       </div>
@@ -37,6 +38,8 @@ export default function Dashboard() {
           <BudgetSplitCard categories={budget.categories} currency={budget.currency} />
         </div>
       </div>
+
+      <AddItemFab />
     </div>
   );
 }
