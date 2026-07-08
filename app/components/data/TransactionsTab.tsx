@@ -1,0 +1,200 @@
+import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { Search, ArrowDownCircle, ArrowUpCircle, Pencil, Trash2 } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { formatDateTime, type Transaction } from "@/lib/demo-transactions";
+import { useTransactionsStore } from "@/store/use-transactions-store";
+import { Pagination } from "@/components/data/Pagination";
+import { AddTransactionModal } from "@/components/data/AddTransactionModal";
+
+const PAGE_SIZE = 10;
+const FILTERS = ["all", "income", "expense"] as const;
+type Filter = (typeof FILTERS)[number];
+
+export interface TransactionsTabHandle {
+  openAdd: () => void;
+}
+
+function TransactionCard({
+  transaction,
+  onEdit,
+  onDelete,
+}: {
+  transaction: Transaction;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  const { t } = useTranslation();
+  const isIncome = transaction.type === "income";
+  const Icon = isIncome ? ArrowUpCircle : ArrowDownCircle;
+
+  return (
+    <li className="border-base-300 bg-base-100 flex items-center gap-3 rounded-lg border p-3">
+      <span
+        data-no-flip
+        className={`grid size-9 shrink-0 place-items-center rounded-full ${
+          isIncome ? "bg-success/10 text-success" : "bg-error/10 text-error"
+        }`}
+      >
+        <Icon data-no-flip className="size-5" />
+      </span>
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{transaction.title}</p>
+        <p className="text-base-content/50 text-xs">
+          {transaction.category} · {formatDateTime(transaction.datetime)}
+        </p>
+      </div>
+      <span
+        dir="ltr"
+        className={`shrink-0 text-sm font-semibold tabular-nums ${isIncome ? "text-success" : "text-base-content"}`}
+      >
+        {isIncome ? "+" : "-"}
+        {transaction.amount.toLocaleString()}
+      </span>
+      <button
+        type="button"
+        onClick={onEdit}
+        className="btn btn-ghost btn-sm btn-square shrink-0"
+        aria-label={t("actions.edit")}
+      >
+        <Pencil data-no-flip className="size-4" />
+      </button>
+      <button
+        type="button"
+        onClick={onDelete}
+        className="btn btn-ghost btn-sm btn-square text-error shrink-0"
+        aria-label={t("actions.delete", { name: transaction.title })}
+      >
+        <Trash2 className="size-4" />
+      </button>
+    </li>
+  );
+}
+
+export const TransactionsTab = forwardRef<TransactionsTabHandle>(
+  function TransactionsTab(_props, ref) {
+    const { t } = useTranslation();
+    const [search, setSearch] = useState("");
+    const [filter, setFilter] = useState<Filter>("all");
+    const [fromDate, setFromDate] = useState("");
+    const [toDate, setToDate] = useState("");
+    const [page, setPage] = useState(1);
+    const transactions = useTransactionsStore((s) => s.transactions);
+    const removeTransaction = useTransactionsStore((s) => s.removeTransaction);
+    const modalRef = useRef<HTMLDialogElement>(null);
+    const [editing, setEditing] = useState<Transaction | null>(null);
+
+    useImperativeHandle(ref, () => ({
+      openAdd: () => {
+        setEditing(null);
+        modalRef.current?.showModal();
+      },
+    }));
+
+    function openEdit(tr: Transaction) {
+      setEditing(tr);
+      modalRef.current?.showModal();
+    }
+
+    const filtered = transactions.filter((tr) => {
+      const matchesFilter = filter === "all" || tr.type === filter;
+      const matchesSearch =
+        !search.trim() ||
+        tr.title.toLowerCase().includes(search.toLowerCase()) ||
+        tr.category.toLowerCase().includes(search.toLowerCase());
+      const date = tr.datetime.slice(0, 10);
+      const matchesDate = (!fromDate || date >= fromDate) && (!toDate || date <= toDate);
+      return matchesFilter && matchesSearch && matchesDate;
+    });
+    const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
+    const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+    function updateSearch(value: string) {
+      setSearch(value);
+      setPage(1);
+    }
+    function updateFilter(value: Filter) {
+      setFilter(value);
+      setPage(1);
+    }
+    function updateFromDate(value: string) {
+      setFromDate(value);
+      setPage(1);
+    }
+    function updateToDate(value: string) {
+      setToDate(value);
+      setPage(1);
+    }
+
+    return (
+      <div className="flex flex-col gap-4">
+        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
+          <label className="input input-bordered flex w-full min-w-0 flex-1 items-center gap-2 px-3 py-2">
+            <Search className="text-base-content/40 size-4 shrink-0" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => updateSearch(e.target.value)}
+              placeholder={t("data.search")}
+              className="min-w-0 grow"
+            />
+          </label>
+          <div className="flex min-w-0 flex-col gap-3 sm:shrink-0 sm:flex-row sm:flex-nowrap sm:items-center">
+            <div className="flex min-w-0 items-center gap-3">
+              <label className="text-base-content/50 flex shrink-0 items-center gap-1.5 text-xs">
+                {t("data.dateFrom")}
+                <input
+                  type="date"
+                  value={fromDate}
+                  onChange={(e) => updateFromDate(e.target.value)}
+                  className="input input-bordered input-sm"
+                />
+              </label>
+              <label className="text-base-content/50 flex shrink-0 items-center gap-1.5 text-xs">
+                {t("data.dateTo")}
+                <input
+                  type="date"
+                  value={toDate}
+                  onChange={(e) => updateToDate(e.target.value)}
+                  className="input input-bordered input-sm"
+                />
+              </label>
+            </div>
+            <div className="join border-base-300 w-fit shrink-0 rounded-lg border">
+              {FILTERS.map((f) => (
+                <button
+                  key={f}
+                  type="button"
+                  onClick={() => updateFilter(f)}
+                  className={`btn btn-sm join-item cursor-pointer ${filter === f ? "btn-accent" : "btn-ghost"}`}
+                >
+                  {t(`data.filters.${f}`)}
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+
+        {pageItems.length > 0 ? (
+          <ul className="flex flex-col gap-2">
+            {pageItems.map((tr) => (
+              <TransactionCard
+                key={tr.id}
+                transaction={tr}
+                onEdit={() => openEdit(tr)}
+                onDelete={() => removeTransaction(tr.id)}
+              />
+            ))}
+          </ul>
+        ) : (
+          <p className="text-base-content/50 py-6 text-center text-sm">
+            {t("data.noResults")}
+          </p>
+        )}
+
+        <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+
+        <AddTransactionModal ref={modalRef} editing={editing} />
+      </div>
+    );
+  },
+);

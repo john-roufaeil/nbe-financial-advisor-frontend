@@ -1,8 +1,259 @@
 {
   "app": {
-    "name": "التطبيق المصرفي"
+    "name": "المستشار المالي ",
+    "bank": " | البنك الأهلي المصري"
   },
   "nav": {
-    "dashboard": "لوحة التحكم"
+    "dashboard": "لوحة التحكم",
+    "chat": "المستشار",
+    "profile": "الملف الشخصي",
+    "viewProfile": "عرض الملف الشخصي",
+    "menu": "فتح القائمة"
+  },
+  "actions": {
+    "submit": "إرسال",
+    "cancel": "إلغاء",
+    "continue": "متابعة",
+    "back": "رجوع",
+    "upload": "رفع",
+    "delete": "حذف {{name}}",
+    "done": "تم",
+    "close": "إغلاق",
+    "edit": "تعديل"
+  },
+  "status": {
+    "processing": "قيد المعالجة",
+    "parsed": "تمت المعالجة",
+    "error": "خطأ"
+  },
+  "splash": {
+    "welcome": "أهلاً بك في مستشارك المالي الشخصي",
+    "tagline": "فلوسك، أسهل من أي وقت فات",
+    "getStarted": "ابدأ الآن",
+    "continue": "متابعة من حيث توقفت",
+    "login": "تسجيل الدخول"
+  },
+  "consent": {
+    "title": "قبل أن نتابع",
+    "body": "يرجى مراجعة الشروط والموافقة عليها للمتابعة في إعداد ملفك الشخصي.",
+    "checkbox": "أوافق على الشروط وسياسة الخصوصية"
+  },
+  "onboarding": {
+    "personalInfo": {
+      "title": "المعلومات الشخصية",
+      "subtitle": "أخبرنا قليلاً عن نفسك.",
+      "fullName": "الاسم الكامل",
+      "email": "البريد الإلكتروني",
+      "phone": "الهاتف"
+    },
+    "employment": {
+      "title": "الوضع الوظيفي",
+      "subtitle": "ساعدنا في فهم وضعك المالي.",
+      "status": "الحالة الوظيفية",
+      "statusPlaceholder": "اختر واحدًا",
+      "options": {
+        "employed": "موظف",
+        "selfEmployed": "أعمال حرة",
+        "student": "طالب",
+        "unemployed": "غير موظف",
+        "retired": "متقاعد"
+      },
+      "monthlyIncome": "الدخل الشهري"
+    },
+    "financialGoals": {
+      "title": "الأهداف المالية",
+      "subtitle": "اختر كل ما ينطبق.",
+      "options": {
+        "emergencyFund": "بناء صندوق للطوارئ",
+        "buyHome": "شراء منزل",
+        "retireEarly": "التقاعد المبكر",
+        "payDebt": "سداد الديون",
+        "growInvestments": "تنمية الاستثمارات"
+      }
+    },
+    "riskTolerance": {
+      "title": "تحمل المخاطر",
+      "subtitle": "هذا يساعدنا على تخصيص التوصيات.",
+      "options": {
+        "conservative": {
+          "title": "متحفظ",
+          "description": "الحفاظ على رأس المال، مخاطرة أقل."
+        },
+        "moderate": {
+          "title": "متوسط",
+          "description": "توازن بين النمو والأمان."
+        },
+        "aggressive": {
+          "title": "جريء",
+          "description": "أقصى نمو، مخاطرة أعلى."
+        }
+      }
+    },
+    "finish": "إنهاء",
+    "login": "لديك حساب بالفعل؟ سجّل الدخول"
+  },
+  "signIn": {
+    "title": "تسجيل الدخول",
+    "email": "البريد الإلكتروني",
+    "password": "كلمة المرور",
+    "submit": "تسجيل الدخول",
+    "getStarted": "جديد هنا؟ ابدأ الآن"
+  },
+  "dashboard": {
+    "placeholder": "عناصر لوحة التحكم ستكون هنا.",
+    "subtitle": "لمحة عن أموالك هذا الشهر.",
+    "askAdvisor": "اسأل المستشار",
+    "addItem": "إضافة عنصر جديد",
+    "stats": {
+      "balance": "الرصيد الإجمالي",
+      "income": "الدخل الشهري",
+      "spending": "المصروفات الشهرية",
+      "savingsRate": "معدل الادخار",
+      "vsLastMonth": "مقارنة بالشهر الماضي"
+    },
+    "goals": {
+      "title": "تقدم الأهداف",
+      "remaining": "متبقي {{amount}} {{currency}}",
+      "empty": "لا توجد أهداف بعد — أضف هدفًا للبدء.",
+      "editTitle": "تعديل الأهداف",
+      "name": "الاسم",
+      "current": "المدخر",
+      "target": "الهدف",
+      "newNamePlaceholder": "مثال: تجديد المنزل",
+      "add": "إضافة هدف"
+    },
+    "budget": {
+      "title": "توزيع خطة الميزانية",
+      "over": "تجاوز الميزانية",
+      "spent": "منفق"
+    }
+  },
+  "chat": {
+    "placeholder": "اسألني عن أي شيء يتعلق بأموالك...",
+    "newChat": "محادثة جديدة",
+    "recent": "الأحدث",
+    "attach": "إرفاق ملف",
+    "send": "إرسال الرسالة",
+    "stop": "إيقاف",
+    "nav": {
+      "top": "الانتقال إلى الأعلى",
+      "bottom": "الانتقال إلى الأحدث",
+      "questions": "الانتقال إلى سؤال",
+      "moreQuestions": "+{{count}} سؤال سابق"
+    },
+    "empty": {
+      "title": "كيف يمكنني مساعدتك في أمورك المالية؟",
+      "subtitle": "اسأل عن مصروفاتك أو مدخراتك أو ميزانيتك. الإجابات مؤقتة حتى يتم ربط الخادم."
+    },
+    "suggestions": {
+      "spending": "اعرض تفاصيل مصروفاتي هذا الشهر",
+      "save": "كم يمكنني أن أوفّر هذا الشهر؟",
+      "budget": "ساعدني في وضع ميزانية شهرية"
+    },
+    "tools": {
+      "spending": {
+        "title": "تفاصيل المصروفات",
+        "total": "الإجمالي",
+        "loading": "جاري تحليل مصروفاتك..."
+      }
+    }
+  },
+  "data": {
+    "transactions": "المعاملات",
+    "documents": "المستندات",
+    "search": "بحث...",
+    "noResults": "لا توجد نتائج.",
+    "replan": "اطلب من المستشار إعادة التخطيط",
+    "dateFrom": "من",
+    "dateTo": "إلى",
+    "filters": {
+      "all": "الكل",
+      "income": "دخل",
+      "expense": "مصروف",
+      "pdf": "PDF",
+      "image": "صورة",
+      "doc": "مستند"
+    },
+    "pagination": {
+      "prev": "السابق",
+      "next": "التالي",
+      "page": "صفحة {{page}} من {{totalPages}}"
+    },
+    "addTransaction": {
+      "title": "إضافة معاملة",
+      "editTitle": "تعديل المعاملة",
+      "add": "إضافة معاملة",
+      "name": "الاسم",
+      "category": "الفئة",
+      "amount": "المبلغ",
+      "date": "التاريخ"
+    },
+    "addDocument": {
+      "title": "إضافة مستند",
+      "add": "إضافة مستند",
+      "dropzone": "اسحب وأفلت الملفات هنا، أو اضغط للاختيار",
+      "accepted": "صور أو ملفات PDF أو Word",
+      "rejected": "تم تجاهل ملفات غير مدعومة: {{names}}"
+    },
+    "documentStatus": {
+      "uploading": "جارٍ الرفع...",
+      "processing": "جارٍ المعالجة...",
+      "pendingApproval": "بانتظار الموافقة",
+      "processed": "تمت المعالجة",
+      "failed": "فشل"
+    },
+    "documentDetail": {
+      "title": "المستند",
+      "uploading": "جارٍ رفع المستند...",
+      "processing": "جارٍ تحليل المستند...",
+      "failedTitle": "فشلت المعالجة",
+      "documentFailedGeneric": "تعذرت معالجة هذا الملف. قد يكون غير قابل للقراءة أو بصيغة غير مدعومة.",
+      "retry": "إعادة المحاولة",
+      "reviewTitle": "مراجعة المعاملات المستخرجة",
+      "reviewSubtitle": "عدّل أي شيء غير دقيق، ثم وافق لإضافتها إلى معاملاتك.",
+      "approve": "الموافقة والإضافة إلى المعاملات",
+      "approved": "تمت الإضافة إلى معاملاتك",
+      "noTransactions": "لم يتم العثور على معاملات في هذا المستند."
+    },
+    "sections": {
+      "profile": {
+        "title": "الملف الشخصي",
+        "fields": {
+          "fullName": "الاسم الكامل",
+          "dob": "تاريخ الميلاد",
+          "nationalId": "الرقم القومي"
+        }
+      },
+      "contact": {
+        "title": "التواصل",
+        "fields": {
+          "email": "البريد الإلكتروني",
+          "phone": "الهاتف"
+        }
+      },
+      "address": {
+        "title": "العنوان",
+        "fields": {
+          "country": "الدولة",
+          "city": "المدينة",
+          "addressLine": "عنوان الشارع"
+        }
+      },
+      "financial": {
+        "title": "الملف المالي",
+        "fields": {
+          "employmentStatus": "الحالة الوظيفية",
+          "monthlyIncome": "الدخل الشهري",
+          "riskTolerance": "تحمل المخاطر"
+        }
+      }
+    }
+  },
+  "settings": {
+    "signOut": "تسجيل الخروج"
+  },
+  "notFound": {
+    "message": "هذه الصفحة غير موجودة.",
+    "backHome": "العودة للرئيسية"
   }
 }

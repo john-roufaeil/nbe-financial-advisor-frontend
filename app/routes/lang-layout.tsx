@@ -8,6 +8,8 @@ import {
   type SupportedLanguage,
 } from "@/i18n";
 
+export const LANGUAGE_STORAGE_KEY = "nbe_lang";
+
 export default function LangLayout() {
   const { lang } = useParams<{ lang: string }>();
   const { i18n } = useTranslation();
@@ -20,9 +22,9 @@ export default function LangLayout() {
       ? "rtl"
       : "ltr";
     if (i18n.language !== lang) void i18n.changeLanguage(lang);
+    localStorage.setItem(LANGUAGE_STORAGE_KEY, lang as string);
   }, [lang, isValid, i18n]);
 
   if (!isValid) return <Navigate to={`/${DEFAULT_LANGUAGE}`} replace />;
-
   return <Outlet />;
 }
