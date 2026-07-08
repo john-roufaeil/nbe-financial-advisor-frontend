@@ -6,6 +6,7 @@ import {
   type ExtractedTransaction,
 } from "@/lib/demo-transactions";
 import { useTransactionsStore } from "@/store/use-transactions-store";
+import { BANK_CODES } from "@/lib/banks";
 
 const SAMPLE_POOL: Omit<ExtractedTransaction, "id" | "datetime">[] = [
   { title: "Grocery purchase", category: "Groceries", type: "expense", amount: 340 },
@@ -68,6 +69,9 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => {
                     ...d,
                     status: "processed",
                     errorMessage: undefined,
+                    bankName:
+                      d.bankName ??
+                      BANK_CODES[Math.floor(Math.random() * BANK_CODES.length)],
                     extractedTransactions: generateExtractedTransactions(d.uploadDate),
                   }
                 : {

@@ -13,7 +13,6 @@ import {
   inferDocumentType,
   type DocumentType,
 } from "@/lib/demo-transactions";
-import { BANKS } from "@/lib/banks";
 import { useDocumentsStore } from "@/store/use-documents-store";
 
 const TYPE_ICONS: Record<DocumentType, typeof FileText> = {
@@ -38,7 +37,6 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
     const [staged, setStaged] = useState<StagedFile[]>([]);
     const [rejected, setRejected] = useState<string[]>([]);
     const [isDragging, setIsDragging] = useState(false);
-    const [bankName, setBankName] = useState("");
 
     function handleFiles(fileList: FileList | null) {
       if (!fileList) return;
@@ -60,7 +58,6 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
     function reset() {
       setStaged([]);
       setRejected([]);
-      setBankName("");
     }
 
     function handleUpload() {
@@ -71,7 +68,6 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
         type,
         uploadDate,
         sizeKb: Math.max(1, Math.round(file.size / 1024)),
-        bankName: bankName || undefined,
       }));
       addDocuments(documents);
       reset();
@@ -93,22 +89,6 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
             <X data-no-flip className="size-4" />
           </button>
           <h3 className="text-lg font-semibold">{t("data.addDocument.title")}</h3>
-
-          <label className="flex flex-col gap-1">
-            <span className="label-text text-xs">{t("data.addDocument.bank")}</span>
-            <select
-              value={bankName}
-              onChange={(e) => setBankName(e.target.value)}
-              className="select select-bordered select-sm w-full"
-            >
-              <option value="">{t("data.addDocument.bankUnknown")}</option>
-              {BANKS.map((b) => (
-                <option key={b} value={b}>
-                  {b}
-                </option>
-              ))}
-            </select>
-          </label>
 
           <label
             onDragOver={(e) => {
