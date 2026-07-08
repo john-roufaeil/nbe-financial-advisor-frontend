@@ -1,21 +1,15 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Search,
-  FileText,
-  Image as ImageIcon,
-  File,
   Trash2,
   Loader2,
   TriangleAlert,
   CircleCheck,
-  Hourglass,
+  ClockCheck,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import {
-  formatDate,
-  type DocumentRecord,
-  type DocumentType,
-} from "@/lib/demo-transactions";
+import { formatDate, type DocumentRecord } from "@/lib/demo-transactions";
+import { getBankLogo } from "@/lib/banks";
 import { useDocumentsStore } from "@/store/use-documents-store";
 import { Pagination } from "@/components/data/Pagination";
 import { DocumentDetailModal } from "@/components/data/DocumentDetailModal";
@@ -24,18 +18,42 @@ const PAGE_SIZE = 10;
 const FILTERS = ["all", "pdf", "image", "doc"] as const;
 type Filter = (typeof FILTERS)[number];
 
-const TYPE_ICONS: Record<DocumentType, typeof FileText> = {
-  pdf: FileText,
-  image: ImageIcon,
-  doc: File,
-};
-
 function formatSize(kb: number) {
   return kb >= 1024 ? `${(kb / 1024).toFixed(1)} MB` : `${kb} KB`;
 }
 
+const PROCESSED_BADGE_DURATION_MS = 5000;
+const PROCESSED_BADGE_FADE_MS = 400;
+
 function StatusBadge({ doc }: { doc: DocumentRecord }) {
   const { t } = useTranslation();
+  const [showProcessed, setShowProcessed] = useState(false);
+  const [fading, setFading] = useState(false);
+
+  useEffect(() => {
+    if (!doc.approved || !doc.approvedAt) {
+      setShowProcessed(false);
+      return;
+    }
+    const elapsed = Date.now() - doc.approvedAt;
+    const remaining = PROCESSED_BADGE_DURATION_MS - elapsed;
+    if (remaining <= 0) {
+      setShowProcessed(false);
+      return;
+    }
+    setShowProcessed(true);
+    setFading(false);
+    const fadeTimer = setTimeout(
+      () => setFading(true),
+      Math.max(remaining - PROCESSED_BADGE_FADE_MS, 0),
+    );
+    const hideTimer = setTimeout(() => setShowProcessed(false), remaining);
+    return () => {
+      clearTimeout(fadeTimer);
+      clearTimeout(hideTimer);
+    };
+  }, [doc.approved, doc.approvedAt]);
+
   if (doc.status === "uploading" || doc.status === "processing") {
     return (
       <span className="text-base-content/50 flex items-center gap-1 text-xs">
@@ -55,13 +73,17 @@ function StatusBadge({ doc }: { doc: DocumentRecord }) {
   if (!doc.approved) {
     return (
       <span className="text-warning flex items-center gap-1 text-xs">
-        <Hourglass className="size-3" />
+        <ClockCheck className="size-3" />
         {t("data.documentStatus.pendingApproval")}
       </span>
     );
   }
+  if (!showProcessed) return null;
   return (
-    <span className="text-success flex items-center gap-1 text-xs">
+    <span
+      style={{ transitionDuration: `${PROCESSED_BADGE_FADE_MS}ms` }}
+      className={`text-success flex items-center gap-1 text-xs transition-opacity ${fading ? "opacity-0" : "opacity-100"}`}
+    >
       <CircleCheck data-no-flip className="size-3" />
       {t("data.documentStatus.processed")}
     </span>
@@ -71,15 +93,16 @@ function StatusBadge({ doc }: { doc: DocumentRecord }) {
 function DocumentCard({ doc, onOpen }: { doc: DocumentRecord; onOpen: () => void }) {
   const { t } = useTranslation();
   const removeDocument = useDocumentsStore((s) => s.removeDocument);
-  const Icon = TYPE_ICONS[doc.type];
   return (
     <li
       onClick={onOpen}
       className="border-base-300 bg-base-100 hover:border-primary flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors"
     >
-      <span className="bg-info/10 text-info grid size-9 shrink-0 place-items-center rounded-lg">
-        <Icon className="size-4.5" />
-      </span>
+      <img
+        src={getBankLogo(doc.bankName)}
+        alt={doc.bankName ?? t("data.addDocument.bankUnknown")}
+        className="size-9 shrink-0 rounded-full object-cover"
+      />
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{doc.name}</p>
         <p className="text-base-content/50 text-xs">

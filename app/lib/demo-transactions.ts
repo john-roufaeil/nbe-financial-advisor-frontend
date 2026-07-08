@@ -30,6 +30,8 @@ export interface DocumentRecord {
   errorMessage?: string;
   extractedTransactions?: ExtractedTransaction[];
   approved?: boolean;
+  approvedAt?: number;
+  bankName?: string;
 }
 
 export const TRANSACTION_CATEGORIES = [
@@ -227,6 +229,7 @@ export function getDocuments(): DocumentRecord[] {
       sizeKb: 245,
       status: "processed",
       approved: true,
+      bankName: "National Bank of Egypt",
     },
     {
       id: "d2",
@@ -254,6 +257,7 @@ export function getDocuments(): DocumentRecord[] {
       sizeKb: 231,
       status: "processed",
       approved: true,
+      bankName: "Commercial International Bank",
     },
     {
       id: "d5",
@@ -290,6 +294,7 @@ export function getDocuments(): DocumentRecord[] {
       sizeKb: 228,
       status: "processed",
       approved: true,
+      bankName: "Bank Misr",
     },
   ];
 }

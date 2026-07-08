@@ -10,6 +10,7 @@ import {
   ArrowUpCircle,
 } from "lucide-react";
 import { TRANSACTION_CATEGORIES } from "@/lib/demo-transactions";
+import { getBankLogo } from "@/lib/banks";
 import { useDocumentsStore } from "@/store/use-documents-store";
 
 export const DocumentDetailModal = forwardRef<
@@ -38,7 +39,19 @@ export const DocumentDetailModal = forwardRef<
 
         {doc && (
           <>
-            <h3 className="truncate text-lg font-semibold">{doc.name}</h3>
+            <div className="flex items-center gap-3 pe-8">
+              <img
+                src={getBankLogo(doc.bankName)}
+                alt={doc.bankName ?? t("data.addDocument.bankUnknown")}
+                className="size-9 shrink-0 rounded-full object-cover"
+              />
+              <div className="min-w-0">
+                <h3 className="truncate text-lg font-semibold">{doc.name}</h3>
+                <p className="text-base-content/50 truncate text-xs">
+                  {doc.bankName ?? ""}
+                </p>
+              </div>
+            </div>
 
             {(doc.status === "uploading" || doc.status === "processing") && (
               <div className="flex flex-col items-center gap-3 py-8">
@@ -90,97 +103,128 @@ export const DocumentDetailModal = forwardRef<
                 )}
 
                 {doc.extractedTransactions && doc.extractedTransactions.length > 0 ? (
-                  <ul className="flex flex-col gap-2">
-                    {doc.extractedTransactions.map((tx) => (
-                      <li
-                        key={tx.id}
-                        className="border-base-300 bg-base-100 flex flex-col gap-2 rounded-lg border p-2.5"
-                      >
-                        {doc.approved ? (
-                          <div className="flex items-center gap-3">
-                            <span className="min-w-0 flex-1 truncate text-sm">
-                              {tx.title}
-                            </span>
-                            <span className="text-base-content/50 text-xs">
-                              {tx.category}
-                            </span>
-                            <span
-                              dir="ltr"
-                              className={`shrink-0 text-sm font-semibold tabular-nums ${tx.type === "income" ? "text-success" : "text-base-content"}`}
-                            >
-                              {tx.type === "income" ? "+" : "-"}
-                              {tx.amount.toLocaleString()}
-                            </span>
-                          </div>
-                        ) : (
-                          <div className="flex flex-col gap-2">
-                            <input
-                              type="text"
-                              value={tx.title}
-                              onChange={(e) =>
-                                updateExtractedTransaction(doc.id, tx.id, {
-                                  title: e.target.value,
-                                })
-                              }
-                              className="input input-bordered input-sm w-full font-medium"
-                            />
-                            <div className="flex flex-wrap items-center gap-2">
-                              <select
-                                value={tx.category}
-                                onChange={(e) =>
-                                  updateExtractedTransaction(doc.id, tx.id, {
-                                    category: e.target.value,
-                                  })
-                                }
-                                className="select select-bordered select-xs flex-1"
+                  <ul className="flex flex-col gap-3">
+                    {doc.extractedTransactions.map((tx) => {
+                      const isIncome = tx.type === "income";
+                      const TypeIcon = isIncome ? ArrowUpCircle : ArrowDownCircle;
+                      return (
+                        <li
+                          key={tx.id}
+                          className="border-base-300 bg-base-100 rounded-xl border p-3 shadow-sm"
+                        >
+                          {doc.approved ? (
+                            <div className="flex items-center gap-3">
+                              <span
+                                data-no-flip
+                                className={`grid size-9 shrink-0 place-items-center rounded-full ${isIncome ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}
                               >
-                                {TRANSACTION_CATEGORIES.map((c) => (
-                                  <option key={c} value={c}>
-                                    {c}
-                                  </option>
-                                ))}
-                              </select>
-                              <div className="join border-base-300 shrink-0 rounded-lg border">
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    updateExtractedTransaction(doc.id, tx.id, {
-                                      type: "expense",
-                                    })
-                                  }
-                                  className={`btn btn-xs join-item cursor-pointer ${tx.type === "expense" ? "btn-error" : "btn-ghost"}`}
-                                >
-                                  {t("data.filters.expense")}
-                                </button>
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    updateExtractedTransaction(doc.id, tx.id, {
-                                      type: "income",
-                                    })
-                                  }
-                                  className={`btn btn-xs join-item cursor-pointer ${tx.type === "income" ? "btn-success" : "btn-ghost"}`}
-                                >
-                                  {t("data.filters.income")}
-                                </button>
+                                <TypeIcon data-no-flip className="size-5" />
+                              </span>
+                              <div className="min-w-0 flex-1">
+                                <p className="truncate text-sm font-medium">{tx.title}</p>
+                                <p className="text-base-content/50 text-xs">
+                                  {tx.category}
+                                </p>
                               </div>
-                              <input
-                                type="number"
-                                min={0}
-                                step="0.01"
-                                value={tx.amount}
-                                onChange={(e) =>
-                                  updateExtractedTransaction(doc.id, tx.id, {
-                                    amount: Number(e.target.value),
-                                  })
-                                }
-                                className="input input-bordered input-xs w-24 shrink-0"
-                              />
+                              <span
+                                dir="ltr"
+                                className={`shrink-0 text-sm font-semibold tabular-nums ${isIncome ? "text-success" : "text-base-content"}`}
+                              >
+                                {isIncome ? "+" : "-"}
+                                {tx.amount.toLocaleString()}
+                              </span>
                             </div>
-                          </div>
-                        )}
-                      </li>
-                    ))}
+                          ) : (
+                            <div className="flex flex-col gap-3">
+                              <div className="flex items-center gap-2">
+                                <span
+                                  data-no-flip
+                                  className={`grid size-8 shrink-0 place-items-center rounded-full ${isIncome ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}
+                                >
+                                  <TypeIcon data-no-flip className="size-4" />
+                                </span>
+                                <input
+                                  type="text"
+                                  value={tx.title}
+                                  onChange={(e) =>
+                                    updateExtractedTransaction(doc.id, tx.id, {
+                                      title: e.target.value,
+                                    })
+                                  }
+                                  className="input input-bordered input-sm w-full flex-1 font-medium"
+                                />
+                              </div>
+
+                              <div className="border-base-200 flex flex-wrap items-center gap-x-4 gap-y-2 border-t ps-10 pt-3">
+                                <label className="flex items-center gap-1.5">
+                                  <span className="text-base-content/50 text-xs">
+                                    {t("data.addTransaction.category")}
+                                  </span>
+                                  <select
+                                    value={tx.category}
+                                    onChange={(e) =>
+                                      updateExtractedTransaction(doc.id, tx.id, {
+                                        category: e.target.value,
+                                      })
+                                    }
+                                    className="select select-bordered select-xs"
+                                  >
+                                    {TRANSACTION_CATEGORIES.map((c) => (
+                                      <option key={c} value={c}>
+                                        {c}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </label>
+
+                                <div className="join border-base-300 rounded-lg border">
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      updateExtractedTransaction(doc.id, tx.id, {
+                                        type: "expense",
+                                      })
+                                    }
+                                    className={`btn btn-xs join-item cursor-pointer ${tx.type === "expense" ? "btn-error" : "btn-ghost"}`}
+                                  >
+                                    {t("data.filters.expense")}
+                                  </button>
+                                  <button
+                                    type="button"
+                                    onClick={() =>
+                                      updateExtractedTransaction(doc.id, tx.id, {
+                                        type: "income",
+                                      })
+                                    }
+                                    className={`btn btn-xs join-item cursor-pointer ${tx.type === "income" ? "btn-success" : "btn-ghost"}`}
+                                  >
+                                    {t("data.filters.income")}
+                                  </button>
+                                </div>
+
+                                <label className="ms-auto flex items-center gap-1.5">
+                                  <span className="text-base-content/50 text-xs">
+                                    {t("data.addTransaction.amount")}
+                                  </span>
+                                  <input
+                                    type="number"
+                                    min={0}
+                                    step="0.01"
+                                    value={tx.amount}
+                                    onChange={(e) =>
+                                      updateExtractedTransaction(doc.id, tx.id, {
+                                        amount: Number(e.target.value),
+                                      })
+                                    }
+                                    className="input input-bordered input-xs w-24"
+                                  />
+                                </label>
+                              </div>
+                            </div>
+                          )}
+                        </li>
+                      );
+                    })}
                   </ul>
                 ) : (
                   <p className="text-base-content/50 py-4 text-center text-sm">
