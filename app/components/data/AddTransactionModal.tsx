@@ -1,5 +1,6 @@
 import { forwardRef, useEffect, useState, type Ref } from "react";
 import { useTranslation } from "react-i18next";
+import { X } from "lucide-react";
 import { TRANSACTION_CATEGORIES, type Transaction } from "@/lib/demo-transactions";
 import { useTransactionsStore } from "@/store/use-transactions-store";
 
@@ -71,7 +72,18 @@ export const AddTransactionModal = forwardRef<
 
   return (
     <dialog ref={ref} className="modal">
-      <div className="modal-box flex flex-col gap-4">
+      <div className="modal-box relative flex flex-col gap-4">
+        <button
+          type="button"
+          onClick={() => {
+            reset();
+            closeDialog(ref);
+          }}
+          className="btn btn-ghost btn-sm btn-circle absolute end-2 top-2"
+          aria-label={t("actions.close")}
+        >
+          <X data-no-flip className="size-4" />
+        </button>
         <h3 className="text-lg font-semibold">
           {editing ? t("data.addTransaction.editTitle") : t("data.addTransaction.title")}
         </h3>

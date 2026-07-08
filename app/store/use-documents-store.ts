@@ -31,6 +31,7 @@ interface NewDocumentInput {
   type: DocumentType;
   uploadDate: string;
   sizeKb: number;
+  bankName?: string;
 }
 
 interface DocumentsState {
@@ -130,7 +131,7 @@ export const useDocumentsStore = create<DocumentsState>((set, get) => {
       }
       set((s) => ({
         documents: s.documents.map((d) =>
-          d.id === docId ? { ...d, approved: true } : d,
+          d.id === docId ? { ...d, approved: true, approvedAt: Date.now() } : d,
         ),
       }));
     },

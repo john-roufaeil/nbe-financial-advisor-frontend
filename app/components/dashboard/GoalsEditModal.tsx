@@ -1,5 +1,5 @@
 import { forwardRef, useState } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useGoalsStore } from "@/store/use-goals-store";
 
@@ -20,7 +20,15 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement>(
 
     return (
       <dialog ref={ref} className="modal">
-        <div className="modal-box flex flex-col gap-4">
+        <div className="modal-box relative flex flex-col gap-4">
+          <form method="dialog">
+            <button
+              className="btn btn-ghost btn-sm btn-circle absolute end-2 top-2"
+              aria-label={t("actions.close")}
+            >
+              <X data-no-flip className="size-4" />
+            </button>
+          </form>
           <h3 className="text-lg font-semibold">{t("dashboard.goals.editTitle")}</h3>
 
           <ul className="flex flex-col gap-3">
