@@ -1,11 +1,18 @@
-import { Wallet, TrendingUp, Receipt, PiggyBank, ArrowUp, ArrowDown } from "lucide-react";
+import {
+  Wallet,
+  TrendingUp,
+  ArrowLeftRight,
+  PiggyBank,
+  ArrowUp,
+  ArrowDown,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { DashboardStat } from "@/lib/demo-financials";
 
 const ICONS = {
   balance: Wallet,
   income: TrendingUp,
-  spending: Receipt,
+  spending: ArrowLeftRight,
   savingsRate: PiggyBank,
 } as const;
 
@@ -26,7 +33,10 @@ function StatCard({ stat, currency }: { stat: DashboardStat; currency: string })
       <div className="card-body gap-3 p-4">
         <div className="flex items-center gap-2">
           <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
-            <Icon className="size-4.5" />
+            <Icon
+              data-no-flip={stat.key === "spending" || undefined}
+              className="size-4.5"
+            />
           </span>
           <p className="text-base-content/60 text-sm">
             {t(`dashboard.stats.${stat.key}`)}

@@ -48,7 +48,7 @@ export function GoalsCard({ currency }: { currency: string }) {
             className="btn btn-ghost btn-sm btn-square"
             aria-label={t("dashboard.goals.editTitle")}
           >
-            <Pencil className="size-4" />
+            <Pencil data-no-flip className="size-4" />
           </button>
         </div>
         {goals.length > 0 ? (

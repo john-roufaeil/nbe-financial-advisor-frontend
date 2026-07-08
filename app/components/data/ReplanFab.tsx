@@ -1,5 +1,5 @@
 import { Link, useParams } from "react-router";
-import { PencilSparkles } from "lucide-react";
+import { Bot } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 export function ReplanFab() {
@@ -8,10 +8,10 @@ export function ReplanFab() {
   return (
     <Link
       to={`/${lang}/chat`}
-      className="btn btn-secondary gap-2 shadow-sm"
+      className="btn btn-sm btn-secondary gap-2 shadow-sm"
       aria-label={t("data.replan")}
     >
-      <PencilSparkles className="size-4" />
+      <Bot className="size-4" />
       <span className="hidden sm:inline">{t("data.replan")}</span>
     </Link>
   );

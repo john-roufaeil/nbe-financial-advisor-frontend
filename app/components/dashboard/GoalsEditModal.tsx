@@ -118,7 +118,7 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement>(
           </div>
         </div>
         <form method="dialog" className="modal-backdrop">
-          <button className="cursor-pointer">{t("actions.close")}</button>
+          <button className="cursor-default">{t("actions.close")}</button>
         </form>
       </dialog>
     );

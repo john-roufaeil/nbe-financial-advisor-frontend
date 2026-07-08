@@ -83,7 +83,7 @@ function SectionCard({ section }: { section: SectionKey }) {
               className="btn btn-ghost btn-sm btn-square"
               aria-label={t("actions.edit")}
             >
-              <Pencil className="size-4" />
+              <Pencil data-no-flip className="size-4" />
             </button>
           )}
         </div>

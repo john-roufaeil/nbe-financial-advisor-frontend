@@ -145,8 +145,17 @@ html[dir="rtl"] body {
   font-family: var(--font-arabic);
 }
 
-html[dir="rtl"] input {
+/* date/time inputs render their internal fields+icon in a fixed LTR layout with
+   built-in spacing; right-aligning them shoves the icon flush against the text. */
+html[dir="rtl"] input:not([type="date"], [type="time"]) {
   text-align: right;
+}
+
+/* Directional icons (arrows, chevrons, etc.) mirror in RTL so they still point
+   the correct reading direction. Pass data-no-flip on an icon to opt it out
+   (e.g. icons with inherent meaning that isn't direction-relative). */
+html[dir="rtl"] svg.lucide:not([data-no-flip]) {
+  transform: scaleX(-1);
 }
 
 .numerals {
