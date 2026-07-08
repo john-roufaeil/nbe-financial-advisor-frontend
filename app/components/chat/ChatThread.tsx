@@ -13,7 +13,6 @@ import {
   X,
   Copy,
   Check,
-  RefreshCw,
   Square,
   Bot,
   ThumbsUp,
@@ -27,8 +26,8 @@ import { useTranslation } from "react-i18next";
 import { chatToolComponents } from "@/components/chat/tools";
 import { QuestionsNav } from "@/components/chat/QuestionsNav";
 
-function formatTime(date: Date) {
-  return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+function formatTime(date: Date, locale: string) {
+  return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
 }
 
 function ComposerAttachment() {
@@ -74,9 +73,6 @@ function AssistantActionBar() {
           <Check className="text-success size-3.5" />
         </MessagePrimitive.If>
       </ActionBarPrimitive.Copy>
-      <ActionBarPrimitive.Reload className="btn btn-ghost btn-xs btn-square">
-        <RefreshCw className="size-3.5" />
-      </ActionBarPrimitive.Reload>
       <ActionBarPrimitive.FeedbackPositive
         className={`btn btn-ghost btn-xs btn-square ${feedback === "positive" ? "text-success" : ""}`}
       >
@@ -96,6 +92,7 @@ function AssistantActionBar() {
 }
 
 function UserMessage() {
+  const { i18n } = useTranslation();
   const id = useMessage((m) => m.id);
   const createdAt = useMessage((m) => m.createdAt);
   return (
@@ -112,7 +109,7 @@ function UserMessage() {
           </div>
         </div>
         <span className="text-base-content/40 mt-1 px-1 text-[11px]">
-          {formatTime(createdAt)}
+          {formatTime(createdAt, i18n.language)}
         </span>
       </div>
     </MessagePrimitive.Root>
@@ -120,6 +117,7 @@ function UserMessage() {
 }
 
 function AssistantMessage() {
+  const { i18n } = useTranslation();
   const id = useMessage((m) => m.id);
   const createdAt = useMessage((m) => m.createdAt);
   const isLast = useMessage((m) => m.isLast);
@@ -136,7 +134,7 @@ function AssistantMessage() {
             />
           </div>
           <span className="text-base-content/40 mt-1 px-1 text-[11px]">
-            {formatTime(createdAt)}
+            {formatTime(createdAt, i18n.language)}
           </span>
           <div
             className={`grid w-full transition-[grid-template-rows] duration-200 ease-out ${

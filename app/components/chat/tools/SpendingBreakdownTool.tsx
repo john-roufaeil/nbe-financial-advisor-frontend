@@ -4,16 +4,16 @@ import { useTranslation } from "react-i18next";
 import type { SpendingBreakdownResult } from "@/lib/demo-financials";
 import { CATEGORY_BAR_COLORS } from "@/lib/category-colors";
 
-function formatAmount(amount: number, currency: string) {
-  return `${amount.toLocaleString()} ${currency}`;
-}
-
 export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
   result,
   status,
 }) => {
   const { t } = useTranslation();
   const data = result as SpendingBreakdownResult | undefined;
+
+  function formatAmount(amount: number, currency: string) {
+    return `${amount.toLocaleString()} ${t(`currency.${currency}`, currency)}`;
+  }
 
   if (!data || status.type === "running") {
     return (

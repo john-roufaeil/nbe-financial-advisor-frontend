@@ -9,13 +9,14 @@ function GoalRow({ goal, currency }: { goal: FinancialGoal; currency: string }) 
   const pct = Math.min(100, Math.round((goal.current / goal.target) * 100));
   const remaining = Math.max(0, goal.target - goal.current);
   const { t } = useTranslation();
+  const currencyLabel = t(`currency.${currency}`, currency);
 
   return (
     <li className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">{goal.name}</span>
         <span className="text-base-content/60 tabular-nums">
-          {goal.current.toLocaleString()} / {goal.target.toLocaleString()} {currency}
+          {goal.current.toLocaleString()} / {goal.target.toLocaleString()} {currencyLabel}
         </span>
       </div>
       <div className="bg-base-200 h-2 w-full overflow-hidden rounded-full">
@@ -23,7 +24,10 @@ function GoalRow({ goal, currency }: { goal: FinancialGoal; currency: string }) 
       </div>
       <p className="text-base-content/50 text-xs">
         {pct}% ·{" "}
-        {t("dashboard.goals.remaining", { amount: remaining.toLocaleString(), currency })}
+        {t("dashboard.goals.remaining", {
+          amount: remaining.toLocaleString(),
+          currency: currencyLabel,
+        })}
       </p>
     </li>
   );
