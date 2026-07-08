@@ -125,7 +125,7 @@
   --color-info: oklch(70% 0.12 220);
   --color-info-content: oklch(20% 0.02 220);
   --color-success: oklch(65% 0.15 145);
-  --color-success-content: oklch(15% 0.02 145);
+  --color-success-content: oklch(95% 0.02 145);
   --color-warning: oklch(80% 0.15 85);
   --color-warning-content: oklch(20% 0.02 85);
   --color-error: oklch(60% 0.18 25);
@@ -175,4 +175,75 @@ html[dir="rtl"] svg.lucide:not([data-no-flip]) {
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+@keyframes toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(8px) scale(0.96);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+.animate-toast-in {
+  animation: toast-in 0.2s ease-out;
+}
+
+@keyframes fade-slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Applied once per mount to page-level content and freshly-loaded cards/charts. */
+.animate-entry {
+  animation: fade-slide-up 0.3s ease-out both;
+}
+
+/* Buttons and daisyUI's own toggle/checkbox controls get a snappy-but-not-instant
+   transition on hover/active/checked state changes instead of an abrupt snap. */
+.btn {
+  transition:
+    background-color 0.2s ease,
+    border-color 0.2s ease,
+    color 0.2s ease,
+    box-shadow 0.2s ease,
+    transform 0.2s ease;
+}
+
+.btn:active {
+  transform: scale(0.97);
+}
+
+.toggle,
+.checkbox {
+  transition: all 0.2s ease;
+}
+
+@keyframes message-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Chat bubbles (user + assistant) ease in as a whole — avatar, text, and timestamp
+   together — instead of the text popping in ahead of everything else around it. */
+.animate-message-in {
+  animation: message-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
