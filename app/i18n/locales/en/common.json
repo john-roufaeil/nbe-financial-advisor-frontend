@@ -3,6 +3,28 @@
     "name": "Financial Advisor",
     "bank": "| National Bank of Egypt"
   },
+  "confirm": {
+    "deleteTransactionTitle": "Delete this transaction?",
+    "deleteDocumentTitle": "Delete this bank statement?",
+    "deleteGoalTitle": "Delete this goal?",
+    "deleteMessage": "This action cannot be undone.",
+    "delete": "Delete"
+  },
+  "currency": {
+    "EGP": "EGP",
+    "USD": "USD",
+    "EUR": "EUR"
+  },
+  "units": {
+    "b": "B",
+    "kb": "KB",
+    "mb": "MB"
+  },
+  "banks": {
+    "NBE": "National Bank of Egypt",
+    "CIB": "Commercial International Bank",
+    "BM": "Banque Misr"
+  },
   "nav": {
     "dashboard": "Dashboard",
     "chat": "Advisor",
@@ -191,8 +213,6 @@
     "addDocument": {
       "title": "Add Bank Statement",
       "add": "Add Bank Statement",
-      "bank": "Bank",
-      "bankUnknown": "Unknown bank",
       "dropzone": "Drag & drop files here, or click to choose",
       "accepted": "Images, PDF, or Word bank statements",
       "rejected": "Skipped unsupported file(s): {{names}}"
