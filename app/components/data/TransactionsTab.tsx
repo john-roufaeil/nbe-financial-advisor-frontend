@@ -5,6 +5,8 @@ import { formatDateTime, type Transaction } from "@/lib/demo-transactions";
 import { useTransactionsStore } from "@/store/use-transactions-store";
 import { Pagination } from "@/components/data/Pagination";
 import { AddTransactionModal } from "@/components/data/AddTransactionModal";
+import { DateField } from "@/components/shared/DateField";
+import { useConfirmStore } from "@/store/use-confirm-store";
 
 const PAGE_SIZE = 10;
 const FILTERS = ["all", "income", "expense"] as const;
@@ -80,6 +82,7 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
     const [page, setPage] = useState(1);
     const transactions = useTransactionsStore((s) => s.transactions);
     const removeTransaction = useTransactionsStore((s) => s.removeTransaction);
+    const confirm = useConfirmStore((s) => s.confirm);
     const modalRef = useRef<HTMLDialogElement>(null);
     const [editing, setEditing] = useState<Transaction | null>(null);
 
@@ -140,24 +143,16 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
           </label>
           <div className="flex min-w-0 flex-col gap-3 sm:shrink-0 sm:flex-row sm:flex-nowrap sm:items-center">
             <div className="flex min-w-0 items-center gap-3">
-              <label className="text-base-content/50 flex shrink-0 items-center gap-1.5 text-xs">
-                {t("data.dateFrom")}
-                <input
-                  type="date"
-                  value={fromDate}
-                  onChange={(e) => updateFromDate(e.target.value)}
-                  className="input input-bordered input-sm"
-                />
-              </label>
-              <label className="text-base-content/50 flex shrink-0 items-center gap-1.5 text-xs">
-                {t("data.dateTo")}
-                <input
-                  type="date"
-                  value={toDate}
-                  onChange={(e) => updateToDate(e.target.value)}
-                  className="input input-bordered input-sm"
-                />
-              </label>
+              <DateField
+                label={t("data.dateFrom")}
+                value={fromDate}
+                onChange={updateFromDate}
+              />
+              <DateField
+                label={t("data.dateTo")}
+                value={toDate}
+                onChange={updateToDate}
+              />
             </div>
             <div className="join border-base-300 w-fit shrink-0 rounded-lg border">
               {FILTERS.map((f) => (
@@ -181,7 +176,13 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
                 key={tr.id}
                 transaction={tr}
                 onEdit={() => openEdit(tr)}
-                onDelete={() => removeTransaction(tr.id)}
+                onDelete={() =>
+                  confirm({
+                    title: t("confirm.deleteTransactionTitle"),
+                    message: t("confirm.deleteMessage"),
+                    onConfirm: () => removeTransaction(tr.id),
+                  })
+                }
               />
             ))}
           </ul>
