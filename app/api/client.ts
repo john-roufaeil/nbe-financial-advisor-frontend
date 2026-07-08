@@ -18,7 +18,20 @@ apiClient.interceptors.request.use((config) => {
 });
 
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    // Every backend response is wrapped in a { data: ... } envelope
+    // (API Design Guidelines §3). Unwrap it once here so each service reads the
+    // inner payload directly (no per-service res.data.data). Responses without
+    // the envelope (or non-object bodies) fall through untouched.
+    // NOTE: for collection endpoints the sibling `pagination` object lives
+    // alongside `data`; unwrapping to `data` drops it. No current service reads
+    // pagination, but a paginated consumer must read it before this unwrap.
+    const body = response.data;
+    if (body && typeof body === "object" && "data" in body) {
+      response.data = (body as { data: unknown }).data;
+    }
+    return response;
+  },
   (error) => {
     if (error.response?.status === 401) {
       useAuthStore.getState().logout();

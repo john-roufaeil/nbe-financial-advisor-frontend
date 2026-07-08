@@ -1,24 +1,46 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
+/**
+ * Field names mirror the backend request bodies (snake_case) so wiring is a
+ * swap, not a rewrite:
+ *   name / email / phone                       -> POST /auth/signup
+ *   employment_status ... dependents_count      -> PATCH /users/me
+ *   goal_* / selected_template_key              -> POST /budget
+ *
+ * NOTE: `password` is deliberately NOT part of this shape. This store is
+ * persisted to localStorage, and the password must never be written to any
+ * client store (bank-adjacent app). It lives only in local component state in
+ * the Account step and is used solely for the one-off signup call.
+ */
 export interface OnboardingData {
-  fullName: string;
+  name: string;
   email: string;
   phone: string;
-  employmentStatus: string;
-  monthlyIncome: string;
-  goals: string[];
-  riskTolerance: string;
+  employment_status: string;
+  monthly_income: string;
+  income_bracket: string;
+  income_steadiness: string;
+  dependents_count: string;
+  goal_name: string;
+  goal_target_amount: string;
+  goal_target_months: string;
+  selected_template_key: string;
 }
 
 const initialData: OnboardingData = {
-  fullName: "",
+  name: "",
   email: "",
   phone: "",
-  employmentStatus: "",
-  monthlyIncome: "",
-  goals: [],
-  riskTolerance: "",
+  employment_status: "",
+  monthly_income: "",
+  income_bracket: "",
+  income_steadiness: "",
+  dependents_count: "",
+  goal_name: "",
+  goal_target_amount: "",
+  goal_target_months: "",
+  selected_template_key: "",
 };
 
 interface OnboardingState {
@@ -32,14 +54,13 @@ interface OnboardingState {
   back: () => void;
   reset: () => void;
   setField: <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => void;
-  toggleGoal: (goal: string) => void;
 }
 
 export const useOnboardingStore = create<OnboardingState>()(
   persist(
     (set) => ({
       step: 0,
-      totalSteps: 4,
+      totalSteps: 5,
       started: false,
       data: initialData,
       begin: () => set({ started: true, step: 0, data: initialData }),
@@ -47,16 +68,9 @@ export const useOnboardingStore = create<OnboardingState>()(
       back: () => set((s) => ({ step: Math.max(s.step - 1, 0) })),
       reset: () => set({ step: 0, started: false, data: initialData }),
       setField: (field, value) => set((s) => ({ data: { ...s.data, [field]: value } })),
-      toggleGoal: (goal) =>
-        set((s) => ({
-          data: {
-            ...s.data,
-            goals: s.data.goals.includes(goal)
-              ? s.data.goals.filter((g) => g !== goal)
-              : [...s.data.goals, goal],
-          },
-        })),
     }),
-    { name: "nbe_onboarding" },
+    // version bumped: the field set changed (4-step -> 5-step), so any stale
+    // persisted `data` is discarded instead of hydrating a mismatched shape.
+    { name: "nbe_onboarding", version: 1 },
   ),
 );
