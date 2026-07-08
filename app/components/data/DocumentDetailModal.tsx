@@ -1,6 +1,14 @@
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
-import { Loader2, TriangleAlert, RotateCcw, CircleCheck } from "lucide-react";
+import {
+  Loader2,
+  TriangleAlert,
+  RotateCcw,
+  CircleCheck,
+  X,
+  ArrowDownCircle,
+  ArrowUpCircle,
+} from "lucide-react";
 import { TRANSACTION_CATEGORIES } from "@/lib/demo-transactions";
 import { useDocumentsStore } from "@/store/use-documents-store";
 
@@ -18,7 +26,16 @@ export const DocumentDetailModal = forwardRef<
 
   return (
     <dialog ref={ref} className="modal">
-      <div className="modal-box flex max-w-xl flex-col gap-4">
+      <div className="modal-box relative flex max-w-xl flex-col gap-4">
+        <form method="dialog">
+          <button
+            className="btn btn-ghost btn-sm btn-circle absolute end-2 top-2"
+            aria-label={t("actions.close")}
+          >
+            <X data-no-flip className="size-4" />
+          </button>
+        </form>
+
         {doc && (
           <>
             <h3 className="truncate text-lg font-semibold">{doc.name}</h3>

@@ -76,7 +76,18 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
 
     return (
       <dialog ref={ref} className="modal">
-        <div className="modal-box flex flex-col gap-4">
+        <div className="modal-box relative flex flex-col gap-4">
+          <button
+            type="button"
+            onClick={() => {
+              reset();
+              closeDialog(ref);
+            }}
+            className="btn btn-ghost btn-sm btn-circle absolute end-2 top-2"
+            aria-label={t("actions.close")}
+          >
+            <X data-no-flip className="size-4" />
+          </button>
           <h3 className="text-lg font-semibold">{t("data.addDocument.title")}</h3>
 
           <label
