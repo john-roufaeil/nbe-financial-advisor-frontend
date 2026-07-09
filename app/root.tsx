@@ -50,11 +50,13 @@ export function HydrateFallback() {
   return null;
 }
 
+import { AccessibilityMenu } from "@/components/shared/AccessibilityMenu";
 import { ToastHost } from "@/components/shared/ToastHost";
 
 export default function App() {
   return (
     <QueryClientProvider client={queryClient}>
+      <AccessibilityMenu />
       <Outlet />
       <ToastHost />
     </QueryClientProvider>

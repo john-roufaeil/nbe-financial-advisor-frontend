@@ -145,6 +145,93 @@ html[dir="rtl"] body {
   font-family: var(--font-arabic);
 }
 
+html[data-a11y-font-scale] {
+  font-size: calc(100% * var(--a11y-font-scale, 1));
+}
+
+.a11y-panel {
+  font-size: 16px;
+}
+
+html.a11y-high-contrast {
+  --color-primary: oklch(0% 0 0);
+  --color-primary-content: oklch(100% 0 0);
+
+  --color-secondary: oklch(0% 0 0);
+  --color-secondary-content: oklch(100% 0 0);
+
+  --color-accent: oklch(0% 0 0);
+  --color-accent-content: oklch(100% 0 0);
+
+  --color-neutral: oklch(0% 0 0);
+  --color-neutral-content: oklch(100% 0 0);
+
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(100% 0 0);
+  --color-base-300: oklch(100% 0 0);
+  --color-base-content: oklch(0% 0 0);
+
+  --color-info: oklch(0% 0 0);
+  --color-info-content: oklch(100% 0 0);
+  --color-success: oklch(0% 0 0);
+  --color-success-content: oklch(100% 0 0);
+  --color-warning: oklch(0% 0 0);
+  --color-warning-content: oklch(100% 0 0);
+  --color-error: oklch(0% 0 0);
+  --color-error-content: oklch(100% 0 0);
+}
+
+html.a11y-high-contrast * {
+  text-shadow: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+html.a11y-high-contrast [class*="from-primary"] {
+  background-color: var(--color-primary) !important;
+}
+
+html.a11y-high-contrast [class*="from-secondary"] {
+  background-color: var(--color-secondary) !important;
+}
+
+html.a11y-high-contrast [class*="from-accent"] {
+  background-color: var(--color-accent) !important;
+}
+
+html.a11y-high-contrast [class*="from-neutral"] {
+  background-color: var(--color-neutral) !important;
+}
+
+html.a11y-high-contrast [class*="text-base-content/"],
+html.a11y-high-contrast [class*="text-primary/"],
+html.a11y-high-contrast [class*="text-secondary/"],
+html.a11y-high-contrast [class*="text-accent/"] {
+  color: var(--color-base-content) !important;
+}
+
+html.a11y-high-contrast :is(.btn, .card, .input, .select, .textarea, .badge, .alert) {
+  border-width: 2px !important;
+  border-color: oklch(0% 0 0) !important;
+}
+
+html.a11y-high-contrast
+  :is(a, button, [role="button"], input, select, textarea):focus-visible {
+  outline: 3px solid oklch(0% 0 0) !important;
+  outline-offset: 2px !important;
+}
+
+html.a11y-high-contrast img {
+  filter: contrast(200%);
+}
+
+@media (forced-colors: active) {
+  img {
+    forced-color-adjust: auto;
+    filter: contrast(200%);
+  }
+}
+
 /* date/time inputs render their internal fields+icon in a fixed LTR layout with
    built-in spacing; right-aligning them shoves the icon flush against the text. */
 html[dir="rtl"] input:not([type="date"], [type="time"]) {
@@ -191,6 +278,38 @@ html[dir="rtl"] svg.lucide:not([data-no-flip]) {
 
 .animate-toast-in {
   animation: toast-in 0.2s ease-out;
+}
+
+@keyframes a11y-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+html[dir="rtl"] .animate-a11y-panel-in {
+  animation-name: a11y-panel-in-rtl;
+}
+
+@keyframes a11y-panel-in-rtl {
+  from {
+    opacity: 0;
+    transform: translateX(8px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.animate-a11y-panel-in {
+  animation: a11y-panel-in 0.15s ease-out;
 }
 
 @keyframes fade-slide-up {
