@@ -7,8 +7,9 @@ import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
  * pure image — logo/branding/feature content belongs in each page's own
  * content column.
  *
- * The hero image is referenced from `/auth-hero.png` (drop the asset into
- * `public/`); a primary-gradient fallback shows through if it's absent.
+ * The hero image is `/auth-hero.png` on desktop (lg+) and `/mobile-auth-hero.png`
+ * below that (drop both assets into `public/`); a primary-gradient fallback
+ * shows through if either is absent.
  */
 export function AuthLayout({
   children,
@@ -20,17 +21,26 @@ export function AuthLayout({
 }) {
   return (
     <div className="bg-base-100 relative flex min-h-screen flex-col lg:flex-row">
-      <div className="absolute inset-e-4 top-4 z-20 w-28">
+      <div className="absolute inset-e-4 top-4 z-20 w-32">
         <LanguageSwitcher />
       </div>
 
       {/* Branded image panel — full-height column on desktop, banner on mobile. */}
       <div className="from-primary to-primary/70 relative h-36 shrink-0 overflow-hidden bg-linear-to-br sm:h-48 lg:h-auto lg:w-1/2">
         <img
+          src="/mobile-auth-hero.png"
+          alt=""
+          aria-hidden="true"
+          className="absolute inset-0 size-full object-cover lg:hidden"
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
+        <img
           src="/auth-hero.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 size-full object-cover"
+          className="absolute inset-0 hidden size-full object-cover lg:block"
           onError={(e) => {
             e.currentTarget.style.display = "none";
           }}
