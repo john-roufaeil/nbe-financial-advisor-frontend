@@ -4,7 +4,7 @@ import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i1
 import { LANGUAGE_STORAGE_KEY } from "@/routes/lang-layout";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
 
-const LABELS: Record<SupportedLanguage, string> = { en: "EN", ar: "AR" };
+const LABELS: Record<SupportedLanguage, string> = { en: "EN", ar: "عر" };
 
 export function LanguageSwitcher({ onSelect }: { onSelect?: () => void }) {
   const { lang } = useParams<{ lang: string }>();
@@ -29,6 +29,7 @@ export function LanguageSwitcher({ onSelect }: { onSelect?: () => void }) {
       value={(lang as SupportedLanguage) ?? SUPPORTED_LANGUAGES[0]}
       options={SUPPORTED_LANGUAGES}
       labels={LABELS}
+      forceLtrOrder
       onChange={switchTo}
       aria-label={t("settings.language")}
     />

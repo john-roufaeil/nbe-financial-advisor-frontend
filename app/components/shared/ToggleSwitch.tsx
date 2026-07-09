@@ -9,6 +9,8 @@ interface ToggleSwitchProps<T extends string> {
   icons?: Record<T, IconComponent>;
   onChange: (next: T) => void;
   "aria-label": string;
+  /** Pins options[0] to the visual left and options[1] to the visual right regardless of page direction. */
+  forceLtrOrder?: boolean;
 }
 
 export function ToggleSwitch<T extends string>({
@@ -18,6 +20,7 @@ export function ToggleSwitch<T extends string>({
   icons,
   onChange,
   "aria-label": ariaLabel,
+  forceLtrOrder,
 }: ToggleSwitchProps<T>) {
   const active = value === options[0] ? 0 : 1;
 
@@ -30,12 +33,16 @@ export function ToggleSwitch<T extends string>({
       type="button"
       onClick={toggle}
       aria-label={ariaLabel}
-      className="border-base-300 bg-base-200 relative flex w-full min-w-0 cursor-pointer items-center rounded-lg border p-1"
+      className={`border-base-300 bg-base-200 relative flex w-full min-w-0 cursor-pointer items-center rounded-lg border p-1 ${
+        forceLtrOrder ? "rtl:flex-row-reverse" : ""
+      }`}
     >
       <span
-        className={`bg-primary absolute inset-y-1 w-[calc(50%-0.25rem)] rounded-md shadow-sm transition-transform duration-200 ease-out ${
+        className={`bg-primary absolute inset-y-1 ${forceLtrOrder ? "left-1" : "start-1"} w-[calc(50%-0.375rem)] rounded-md shadow-sm transition-transform duration-200 ease-out ${
           active === 1
-            ? "translate-x-[calc(100%+0.5rem)] rtl:-translate-x-[calc(100%+0.5rem)]"
+            ? forceLtrOrder
+              ? "translate-x-[calc(100%+0.25rem)]"
+              : "translate-x-[calc(100%+0.25rem)] rtl:-translate-x-[calc(100%+0.25rem)]"
             : ""
         }`}
       />
