@@ -21,8 +21,6 @@ import { CardSkeleton, ErrorState } from "@/components/shared/QueryState";
 
 // ── Derived display sections from the User API shape ─────────────────────────
 
-// Real User fields plus a few display-only keys (address) that aren't on the
-// User type yet — see handoff doc. Writable fields are always real User keys.
 type DisplayKey = keyof UserType | "addressLine" | "city" | "country";
 
 type Section = {
@@ -82,7 +80,6 @@ const SECTIONS: Section[] = [
     icon: MapPin,
     color: "bg-accent/10 text-accent",
     titleKey: "data.sections.address.title",
-    // These fields don't exist on UserType, but we'll add them as read-only mock fields
     fields: [
       {
         key: "addressLine",
@@ -99,10 +96,6 @@ const SECTIONS: Section[] = [
   },
 ];
 
-// Placeholder values shown for the seeded demo user until /users/me returns
-// these fields (address fields aren't on the User type yet — see handoff doc).
-// Keyed by field.key as a plain string so it also covers the address keys that
-// don't exist on UserType.
 const AMINA_MOCK_EMAIL = "amina.elsayed@example.com";
 const AMINA_MOCK_VALUES: Record<string, string> = {
   addressLine: "12 Nile Corniche St, Zamalek",
@@ -126,7 +119,6 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
   function startEdit() {
     const initial: Partial<UserType> = {};
     for (const f of section.fields) {
-      // Writable fields are always real User keys (address is never writable).
       if (f.writable) {
         const key = f.key as keyof UserType;
         initial[key] = user[key] ?? "";
@@ -141,7 +133,7 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
       await updateProfile.mutateAsync(draft);
       setEditing(false);
     } catch {
-      // toast surfaced by mutation's onError
+      /* Error is gracefully surfaced globally via the mutation's onError toast handler */
     }
   }
 
@@ -262,6 +254,26 @@ function BankAccountsCard() {
   const { t } = useTranslation();
   const { data: accounts, isPending, isError } = useAccounts();
 
+  if (isPending) {
+    return (
+      <CardSkeleton
+        icon={CreditCard}
+        className="sm:col-span-2"
+        rows={[{ kind: "progress" }, { kind: "progress" }]}
+      />
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="card border-base-300 bg-base-100 border shadow-sm sm:col-span-2">
+        <div className="card-body p-4">
+          <p className="text-error text-sm">{t("data.sections.accounts.error")}</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="card border-base-300 bg-base-100 border shadow-sm sm:col-span-2">
       <div className="card-body gap-4 p-4">
@@ -274,15 +286,7 @@ function BankAccountsCard() {
           </h2>
         </div>
 
-        {isPending ? (
-          <div className="flex flex-col gap-2">
-            {[1, 2].map((i) => (
-              <div key={i} className="skeleton h-16 w-full rounded-lg" />
-            ))}
-          </div>
-        ) : isError ? (
-          <p className="text-error text-sm">{t("data.sections.accounts.error")}</p>
-        ) : accounts.length > 0 ? (
+        {accounts.length > 0 ? (
           <ul className="flex flex-col gap-2">
             {accounts.map((account) => (
               <AccountRow key={account.id} account={account} />
@@ -305,7 +309,7 @@ export function PersonalDataSections() {
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="animate-entry grid gap-4 sm:grid-cols-2">
         {SECTIONS.map((s) => (
           <CardSkeleton
             key={s.key}
@@ -313,6 +317,12 @@ export function PersonalDataSections() {
             rows={[{ kind: "fieldGrid", fields: s.fields.length }]}
           />
         ))}
+        <div className="sm:col-span-2">
+          <CardSkeleton
+            icon={CreditCard}
+            rows={[{ kind: "progress" }, { kind: "progress" }]}
+          />
+        </div>
       </div>
     );
   }

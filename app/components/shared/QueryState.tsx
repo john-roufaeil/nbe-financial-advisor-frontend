@@ -79,28 +79,26 @@ function SkeletonRowItem({ row }: { row: SkeletonRow }) {
 }
 
 /**
- * A card-shaped pulse placeholder matching the app's standard card chrome
+ * A single card-shaped pulse placeholder matching the app's standard card chrome
  * (icon badge + title + body rows). Pass `rows` to mirror the real card's
  * internal layout (stat tiles, goal/budget progress lists, profile field
  * grids, etc.) so loading state keeps the same width/height as populated
- * state. Defaults to a simple stat-tile shape when no rows are given.
+ * state. Defaults to a wider, clean stat-tile shape when no rows are given.
  */
 export function CardSkeleton({
-  cards = 1,
   icon: Icon,
   rows,
   donut,
   fullHeight,
-  className = "grid gap-4 sm:grid-cols-2 lg:grid-cols-4",
+  className = "",
 }: {
-  cards?: number;
   icon?: ComponentType<{ className?: string }>;
   /** Body rows mirroring the real card's layout. Omit for a plain stat-tile shape. */
   rows?: SkeletonRow[];
   /** Renders a circular placeholder beside the rows — mirrors a donut chart card. */
   donut?: boolean;
   fullHeight?: boolean;
-  /** Wrapper className used when rendering more than one card. */
+  /** Custom alignment utility layout classes applied directly to the card wrapper. */
   className?: string;
 }) {
   const iconBadge = (
@@ -110,15 +108,19 @@ export function CardSkeleton({
   );
 
   function renderBody() {
+    // Stat-tile placeholder layout
     if (!rows) {
       return (
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-3.5">
           <div className="flex items-center gap-2">
             {iconBadge}
-            <div className="bg-base-200 h-3 w-2/3 animate-pulse rounded" />
+            {/* Widened from w-2/3 to w-1/2 to look clean alongside the badge */}
+            <div className="bg-base-200 h-3.5 w-1/2 animate-pulse rounded" />
           </div>
-          <div className="bg-base-200 h-6 w-1/2 animate-pulse rounded" />
-          <div className="bg-base-200 h-4 w-1/3 animate-pulse rounded-full" />
+          {/* Main big metric/text line widened from w-1/2 to w-3/4 */}
+          <div className="bg-base-200 h-6.5 w-3/4 animate-pulse rounded" />
+          {/* Bottom trailing description sub-line widened from w-1/3 to w-2/3 */}
+          <div className="bg-base-200 h-4 w-2/3 animate-pulse rounded" />
         </div>
       );
     }
@@ -129,7 +131,8 @@ export function CardSkeleton({
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           {iconBadge}
-          <div className="bg-base-200 h-4 w-1/3 animate-pulse rounded" />
+          {/* Heading line widened from w-1/3 to w-1/2 */}
+          <div className="bg-base-200 h-4 w-1/2 animate-pulse rounded" />
         </div>
         {donut ? (
           <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
@@ -143,28 +146,15 @@ export function CardSkeleton({
     );
   }
 
-  if (cards <= 1) {
-    return (
-      <div
-        className={`card border-base-300 bg-base-100 border shadow-sm ${fullHeight ? "h-full" : ""}`}
-        aria-hidden="true"
-      >
-        <div className="card-body p-4">{renderBody()}</div>
-      </div>
-    );
-  }
-
   return (
-    <div className={className} aria-hidden="true">
-      {Array.from({ length: cards }, (_, i) => (
-        <div key={i} className="card border-base-300 bg-base-100 border shadow-sm">
-          <div className="card-body p-4">{renderBody()}</div>
-        </div>
-      ))}
+    <div
+      className={`card border-base-300 bg-base-100 border shadow-sm ${fullHeight ? "h-full" : ""} ${className}`}
+      aria-hidden="true"
+    >
+      <div className="card-body p-4">{renderBody()}</div>
     </div>
   );
 }
-
 export function ErrorState({
   message,
   onRetry,

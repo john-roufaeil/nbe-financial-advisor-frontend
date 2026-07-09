@@ -74,7 +74,7 @@ export function AccessibilityMenu() {
           aria-expanded={open}
           aria-haspopup="dialog"
           aria-label={t("settings.accessibility.menuLabel")}
-          className="btn btn-primary btn-square focus-visible:outline-primary/50 rounded-s-none rounded-e-xl shadow-lg focus-visible:outline focus-visible:outline-4 focus-visible:outline-offset-2"
+          className="btn btn-primary btn-square focus-visible:outline-primary/50 rounded-s-none rounded-e-xl shadow-lg focus-visible:outline-4 focus-visible:outline-offset-2"
         >
           <Accessibility data-no-flip className="size-5" />
         </button>
@@ -84,7 +84,7 @@ export function AccessibilityMenu() {
             ref={panelRef}
             role="dialog"
             aria-label={t("settings.accessibility.menuLabel")}
-            className="a11y-panel border-base-300 bg-base-100 animate-a11y-panel-in absolute start-full top-0 ms-2 w-72 rounded-2xl border p-4 shadow-2xl"
+            className="a11y-panel border-base-300 bg-base-100 animate-a11y-panel-in absolute inset-s-full top-0 ms-2 w-72 rounded-2xl border p-4 shadow-2xl"
           >
             <div className="mb-3 flex items-center justify-between gap-2">
               <h2 className="flex items-center gap-2 text-sm font-semibold">

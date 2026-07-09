@@ -1,6 +1,15 @@
 import { useTranslation } from "react-i18next";
 import { useParams, Link } from "react-router";
-import { Bot, LayoutDashboard, Target, PieChart } from "lucide-react";
+import {
+  Bot,
+  LayoutDashboard,
+  Target,
+  PieChart,
+  Wallet,
+  TrendingUp,
+  ArrowLeftRight,
+  PiggyBank,
+} from "lucide-react";
 import { PageBanner } from "@/components/shared/PageBanner";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { GoalsCard } from "@/components/dashboard/GoalsCard";
@@ -14,7 +23,12 @@ import { CardSkeleton, ErrorState } from "@/components/shared/QueryState";
 function DashboardSkeleton() {
   return (
     <div className="animate-entry flex flex-col gap-6">
-      <CardSkeleton cards={4} />
+      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+        <CardSkeleton icon={Wallet} />
+        <CardSkeleton icon={TrendingUp} />
+        <CardSkeleton icon={ArrowLeftRight} />
+        <CardSkeleton icon={PiggyBank} />
+      </div>{" "}
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="lg:col-span-2">
           <CardSkeleton
