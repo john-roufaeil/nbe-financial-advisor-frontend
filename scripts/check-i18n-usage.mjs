@@ -36,6 +36,14 @@ const mergedLocale = Object.assign(
 );
 const validKeys = new Set(flattenKeys(mergedLocale));
 
+// i18next pluralization: t("some.key", { count }) resolves to "some.key_one",
+// "some.key_other", etc. — never a literal "some.key" entry in the locale
+// file. Treat a base key as valid if any of its plural-suffixed forms exist.
+const PLURAL_SUFFIXES = ["zero", "one", "two", "few", "many", "other"];
+function hasPluralForm(key) {
+  return PLURAL_SUFFIXES.some((suffix) => validKeys.has(`${key}_${suffix}`));
+}
+
 const files = walkFiles(appDir, [".tsx", ".ts"]).filter(
   (f) => !f.includes("/i18n/locales/"),
 );
@@ -50,7 +58,7 @@ for (const file of files) {
   const content = fs.readFileSync(file, "utf-8");
   for (const match of content.matchAll(callPattern)) {
     const key = match[1];
-    if (!validKeys.has(key)) {
+    if (!validKeys.has(key) && !hasPluralForm(key)) {
       missing.push({ file: path.relative(process.cwd(), file), key });
     }
   }
