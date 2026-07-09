@@ -3,8 +3,13 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useNavigate, useParams, useLocation, Link } from "react-router";
+import { AuthLayout } from "@/components/shared/AuthLayout";
+import { Button } from "@/components/shared/Button";
+import { PasswordInput } from "@/components/shared/PasswordInput";
 import { useTranslation } from "react-i18next";
+import { ArrowLeft } from "lucide-react";
 import { useAuthStore } from "@/store/use-auth-store";
+import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useLogin } from "@/queries/auth";
 
@@ -20,6 +25,7 @@ export default function SignIn() {
   const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
   usePageTitle(t("signIn.title"));
   const login = useAuthStore((s) => s.login);
+  const begin = useOnboardingStore((s) => s.begin);
   const loginMutation = useLogin();
   const {
     register,
@@ -38,58 +44,51 @@ export default function SignIn() {
   }
 
   return (
-    <div className="bg-base-200 flex min-h-screen items-center justify-center p-6">
-      <div className="absolute inset-e-4 top-4 w-28">
-        <LanguageSwitcher />
-      </div>
-
-      <div className="card bg-base-100 w-full max-w-sm shadow-sm">
-        <div className="card-body gap-3">
-          <img
-            src="/logo.webp"
-            alt={t("app.name")}
-            className="mx-auto mb-8 h-fit w-1/2"
+    <AuthLayout>
+      <div className="flex flex-col gap-4">
+        <img src="/logo.webp" alt={t("app.name")} className="mx-auto h-auto w-1/2" />
+        <Link
+          to={`/${lang}`}
+          className="link text-base-content/60 flex items-center gap-1.5 text-sm"
+        >
+          <ArrowLeft className="size-4" />
+          {t("actions.back")}
+        </Link>
+        <h1 className="text-2xl font-semibold">{t("signIn.title")}</h1>
+        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
+          <input
+            type="email"
+            placeholder={t("signIn.email")}
+            className="input input-bordered w-full"
+            {...register("email")}
           />
-          <h1 className="card-title">{t("signIn.title")}</h1>
-          <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
-            <input
-              type="email"
-              placeholder={t("signIn.email")}
-              className="input input-bordered w-full"
-              {...register("email")}
-            />
-            {errors.email && (
-              <span className="text-error text-sm">{errors.email.message}</span>
-            )}
-            <input
-              type="password"
-              placeholder={t("signIn.password")}
-              className="input input-bordered w-full"
-              {...register("password")}
-            />
-            {errors.password && (
-              <span className="text-error text-sm">{errors.password.message}</span>
-            )}
-            <button
-              type="submit"
-              className="btn btn-primary mt-2"
-              disabled={loginMutation.isPending}
-            >
-              {loginMutation.isPending ? (
-                <span className="loading loading-spinner loading-sm" />
-              ) : (
-                t("signIn.submit")
-              )}
-            </button>
-          </form>
-          <Link
-            to={`/${lang}/consent`}
-            className="btn btn-ghost underline underline-offset-2"
+          {errors.email && (
+            <span className="text-error text-sm">{errors.email.message}</span>
+          )}
+          <PasswordInput
+            placeholder={t("signIn.password")}
+            className="input input-bordered w-full"
+            {...register("password")}
+          />
+          {errors.password && (
+            <span className="text-error text-sm">{errors.password.message}</span>
+          )}
+          <Button
+            type="submit"
+            className="btn btn-primary mt-2"
+            loading={loginMutation.isPending}
           >
-            {t("signIn.getStarted")}
-          </Link>
-        </div>
+            {t("signIn.submit")}
+          </Button>
+        </form>
+        <Link
+          to={`/${lang}/onboarding`}
+          onClick={() => begin()}
+          className="btn btn-ghost underline underline-offset-2"
+        >
+          {t("signIn.getStarted")}
+        </Link>
       </div>
-    </div>
+    </AuthLayout>
   );
 }
