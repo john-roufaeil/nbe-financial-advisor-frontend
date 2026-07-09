@@ -27,9 +27,7 @@ function walkFiles(dir, exts) {
   return results;
 }
 
-const localeFiles = fs
-  .readdirSync(baseLocaleDir)
-  .filter((f) => f.endsWith(".json"));
+const localeFiles = fs.readdirSync(baseLocaleDir).filter((f) => f.endsWith(".json"));
 const mergedLocale = Object.assign(
   {},
   ...localeFiles.map((f) =>
@@ -63,7 +61,9 @@ if (missing.length > 0) {
   for (const { file, key } of missing) {
     console.log(`  ${file} → t("${key}")`);
   }
-  console.log("\nAdd the key to the relevant app/i18n/locales/en/*.json file (and ar/*.json).");
+  console.log(
+    "\nAdd the key to the relevant app/i18n/locales/en/*.json file (and ar/*.json).",
+  );
   process.exit(1);
 }
 
