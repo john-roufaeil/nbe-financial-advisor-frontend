@@ -5,6 +5,7 @@
     "transactionDeleted": "تم حذف المعاملة",
     "documentUploaded": "تم رفع كشف الحساب",
     "documentDeleted": "تم حذف كشف الحساب",
+    "documentsPartiallyUploaded": "تم تخطي بعض الملفات — ربما تم رفعها من قبل.",
     "documentApproved": "تمت إضافة المعاملات من كشف الحساب",
     "documentRetried": "جارٍ إعادة المحاولة...",
     "goalCreated": "تمت إضافة الهدف",

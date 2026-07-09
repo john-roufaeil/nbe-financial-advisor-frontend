@@ -12,14 +12,21 @@ interface RawDashboard {
   metrics?: {
     current_month_inflow?: number;
     current_month_spend?: number;
-    income_stability_score?: number;
+    income_stability_score?: number | null;
   };
   allocations_summary?: RawAllocation[];
+  has_plan?: boolean;
 }
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   const res = await apiClient.get<RawDashboard>("/dashboard");
   const data = res.data;
+
+  // A planless user still gets a 200 with `has_plan: false` and null budget/goal.
+  // Treat an empty allocations list as planless too: a budget whose percentages
+  // don't add up to anything has nothing to render, and showing an empty donut
+  // reads as "you have a plan, it's just all zero".
+  const hasPlan = data.has_plan === true && (data.allocations_summary ?? []).length > 0;
 
   const stats = [
     {
@@ -49,18 +56,21 @@ export async function getDashboardSummary(): Promise<DashboardSummary> {
   ];
 
   const totalBudget = data.metrics?.current_month_inflow || 0;
-  const categories = (data.allocations_summary || []).map((alloc) => {
-    const budgetAmount = (alloc.allocated_percentage / 100) * totalBudget;
-    const spentAmount = (alloc.percentage_used / 100) * budgetAmount;
-    return {
-      name: alloc.category,
-      budget: budgetAmount,
-      spent: spentAmount,
-    };
-  });
+  const categories = hasPlan
+    ? (data.allocations_summary ?? []).map((alloc) => {
+        const budgetAmount = (alloc.allocated_percentage / 100) * totalBudget;
+        const spentAmount = (alloc.percentage_used / 100) * budgetAmount;
+        return {
+          name: alloc.category,
+          budget: budgetAmount,
+          spent: spentAmount,
+        };
+      })
+    : [];
 
   return {
     currency: "EGP",
+    hasPlan,
     stats,
     budget: { categories },
   };

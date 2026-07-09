@@ -62,23 +62,31 @@ export function BudgetSplitCard({
           </span>
           <h2 className="card-title text-base">{t("dashboard.budget.title")}</h2>
         </div>
-        <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
-          <CategoryDonutChart
-            slices={categories.map((c) => ({ name: c.name, value: c.spent }))}
-            centerValue={totalSpent.toLocaleString()}
-            centerLabel={`${t(`currency.${currency}`, currency)} ${t("dashboard.budget.spent")}`}
-          />
-          <ul className="flex w-full min-w-0 flex-col gap-4">
-            {categories.map((category, i) => (
-              <BudgetRow
-                key={category.name}
-                category={category}
-                currency={currency}
-                color={CATEGORY_BAR_COLORS[i % CATEGORY_BAR_COLORS.length]}
-              />
-            ))}
-          </ul>
-        </div>
+        {/* Defensive: a plan with zero allocations would otherwise render an
+            empty donut, which reads as "your budget is all zeroes". */}
+        {categories.length === 0 ? (
+          <p className="text-base-content/50 py-6 text-center text-sm">
+            {t("dashboard.budget.empty")}
+          </p>
+        ) : (
+          <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
+            <CategoryDonutChart
+              slices={categories.map((c) => ({ name: c.name, value: c.spent }))}
+              centerValue={totalSpent.toLocaleString()}
+              centerLabel={`${t(`currency.${currency}`, currency)} ${t("dashboard.budget.spent")}`}
+            />
+            <ul className="flex w-full min-w-0 flex-col gap-4">
+              {categories.map((category, i) => (
+                <BudgetRow
+                  key={category.name}
+                  category={category}
+                  currency={currency}
+                  color={CATEGORY_BAR_COLORS[i % CATEGORY_BAR_COLORS.length]}
+                />
+              ))}
+            </ul>
+          </div>
+        )}
       </div>
     </div>
   );

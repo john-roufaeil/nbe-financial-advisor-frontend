@@ -14,6 +14,12 @@ export interface BudgetCategory {
 
 export interface DashboardSummary {
   currency: string;
+  /**
+   * False when the user has no budget yet. GET /dashboard answers 200 with
+   * `budget: null, goal: null, allocations_summary: []` in that case (not 404),
+   * so without this flag a planless dashboard renders as a plan full of zeroes.
+   */
+  hasPlan: boolean;
   stats: DashboardStat[];
   budget: { categories: BudgetCategory[] };
 }

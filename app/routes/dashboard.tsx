@@ -5,6 +5,7 @@ import { BalanceVisibilityToggle } from "@/components/shared/BalanceVisibilityTo
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { GoalsCard } from "@/components/dashboard/GoalsCard";
 import { BudgetSplitCard } from "@/components/dashboard/BudgetSplitCard";
+import { NoPlanCard } from "@/components/dashboard/NoPlanCard";
 import { AddItemFab } from "@/components/dashboard/AddItemFab";
 import { useDashboard } from "@/queries/dashboard";
 import { useDataSourceStore } from "@/store/use-data-source-store";
@@ -151,17 +152,25 @@ export default function Dashboard() {
             <StatsGrid currency={data.currency} stats={data.stats} />
           </div>
 
-          <div className="grid gap-4 lg:grid-cols-5">
-            <div className="animate-entry lg:col-span-2">
-              <GoalsCard currency={data.currency} />
+          {/* Net worth and cash flow are real without a budget, so the stats
+              stay. Goals and allocations only exist inside a plan. */}
+          {data.hasPlan ? (
+            <div className="grid gap-4 lg:grid-cols-5">
+              <div className="animate-entry lg:col-span-2">
+                <GoalsCard currency={data.currency} />
+              </div>
+              <div className="animate-entry lg:col-span-3">
+                <BudgetSplitCard
+                  categories={data.budget.categories}
+                  currency={data.currency}
+                />
+              </div>
             </div>
-            <div className="animate-entry lg:col-span-3">
-              <BudgetSplitCard
-                categories={data.budget.categories}
-                currency={data.currency}
-              />
+          ) : (
+            <div className="animate-entry">
+              <NoPlanCard />
             </div>
-          </div>
+          )}
         </>
       )}
 

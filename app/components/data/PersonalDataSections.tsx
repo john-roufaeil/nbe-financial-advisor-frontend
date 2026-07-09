@@ -1,8 +1,22 @@
 import { useState } from "react";
-import { Pencil, Check, X, User, Mail, Landmark, Loader2, MapPin } from "lucide-react";
+import {
+  Pencil,
+  Check,
+  X,
+  User,
+  Mail,
+  Landmark,
+  Loader2,
+  MapPin,
+  CreditCard,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useMe, useUpdateProfile } from "@/queries/profile";
+import { useAccounts } from "@/queries/accounts";
+import { getBankCode, getBankLogo } from "@/lib/banks";
+import { Money } from "@/components/shared/Money";
 import type { User as UserType } from "@/types/profile";
+import type { BankAccount } from "@/types/account";
 
 // ── Derived display sections from the User API shape ─────────────────────────
 
@@ -223,6 +237,72 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
   );
 }
 
+// ── Bank accounts ─────────────────────────────────────────────────────────────
+
+function AccountRow({ account }: { account: BankAccount }) {
+  const { t } = useTranslation();
+  const code = getBankCode(account.bank_name);
+  const label = code ? t(`banks.${code}`, account.bank_name) : account.bank_name;
+  const currencyLabel = t(`currency.${account.currency}`, account.currency);
+
+  return (
+    <li className="border-base-300 bg-base-100 flex items-center gap-3 rounded-lg border p-3">
+      <img src={getBankLogo(code)} alt="" className="size-9 shrink-0 rounded-full" />
+      <div className="min-w-0 flex-1">
+        <p className="truncate text-sm font-medium">{label}</p>
+        <p className="text-base-content/50 text-xs">
+          <span dir="ltr">{account.masked_account_number}</span>
+          {account.account_type ? ` · ${account.account_type}` : ""}
+          {account.is_active ? "" : ` · ${t("data.sections.accounts.inactive")}`}
+        </p>
+      </div>
+      <Money className="shrink-0 text-sm font-semibold tabular-nums">
+        {Number(account.current_balance).toLocaleString()} {currencyLabel}
+      </Money>
+    </li>
+  );
+}
+
+function BankAccountsCard() {
+  const { t } = useTranslation();
+  const { data: accounts, isPending, isError } = useAccounts();
+
+  return (
+    <div className="card border-base-300 bg-base-100 border shadow-sm sm:col-span-2">
+      <div className="card-body gap-4 p-4">
+        <div className="flex items-center gap-2">
+          <span className="bg-success/10 text-success grid size-9 shrink-0 place-items-center rounded-lg">
+            <CreditCard className="size-4.5" />
+          </span>
+          <h2 className="card-title flex-1 text-base">
+            {t("data.sections.accounts.title")}
+          </h2>
+        </div>
+
+        {isPending ? (
+          <div className="flex flex-col gap-2">
+            {[1, 2].map((i) => (
+              <div key={i} className="skeleton h-16 w-full rounded-lg" />
+            ))}
+          </div>
+        ) : isError ? (
+          <p className="text-error text-sm">{t("data.sections.accounts.error")}</p>
+        ) : accounts.length > 0 ? (
+          <ul className="flex flex-col gap-2">
+            {accounts.map((account) => (
+              <AccountRow key={account.id} account={account} />
+            ))}
+          </ul>
+        ) : (
+          <p className="text-base-content/50 text-sm">
+            {t("data.sections.accounts.empty")}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ── Skeleton ──────────────────────────────────────────────────────────────────
 
 function SectionSkeleton() {
@@ -270,6 +350,7 @@ export function PersonalDataSections() {
       {SECTIONS.map((s) => (
         <SectionCard key={s.key} section={s} user={user} />
       ))}
+      <BankAccountsCard />
     </div>
   );
 }

@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
-import { useNavigate, useParams, Link } from "react-router";
+import { useNavigate, useParams, useLocation, Link } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/store/use-auth-store";
 import { usePageTitle } from "@/lib/use-page-title";
@@ -14,7 +14,10 @@ type SignInValues = z.infer<typeof signInSchema>;
 export default function SignIn() {
   const { lang } = useParams<{ lang: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const { t } = useTranslation();
+  // Set by RequireAuth when it turned a deep link away.
+  const from = (location.state as { from?: { pathname: string } } | null)?.from?.pathname;
   usePageTitle(t("signIn.title"));
   const login = useAuthStore((s) => s.login);
   const loginMutation = useLogin();
@@ -28,7 +31,7 @@ export default function SignIn() {
     try {
       await loginMutation.mutateAsync(values);
       login();
-      navigate(`/${lang}/dashboard`);
+      navigate(from ?? `/${lang}/dashboard`, { replace: true });
     } catch {
       // loginMutation.onError already surfaced a toast; stay on page.
     }

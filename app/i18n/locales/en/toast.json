@@ -5,6 +5,7 @@
     "transactionDeleted": "Transaction deleted",
     "documentUploaded": "Bank statement uploaded",
     "documentDeleted": "Bank statement deleted",
+    "documentsPartiallyUploaded": "Some files were skipped — they may already have been uploaded.",
     "documentApproved": "Transactions added from statement",
     "documentRetried": "Retrying...",
     "goalCreated": "Goal added",

@@ -6,15 +6,20 @@ import {
   RotateCcw,
   CircleCheck,
   X,
+  Plus,
+  Trash2,
   ArrowDownCircle,
   ArrowUpCircle,
 } from "lucide-react";
 import { TRANSACTION_CATEGORIES } from "@/types/transaction";
 import { getBankLogo, getBankName } from "@/lib/banks";
+import { useConfirmStore } from "@/store/use-confirm-store";
 import {
   useDocument,
   useRetryDocument,
   useUpdateExtractedTransaction,
+  useDeleteExtractedTransaction,
+  useAddExtractedTransaction,
   useApproveDocument,
 } from "@/queries/documents";
 
@@ -26,7 +31,10 @@ export const DocumentDetailModal = forwardRef<
   const { data: doc } = useDocument(documentId);
   const retryDocument = useRetryDocument();
   const updateExtractedTransactionMutation = useUpdateExtractedTransaction();
+  const deleteExtractedTransaction = useDeleteExtractedTransaction();
+  const addExtractedTransaction = useAddExtractedTransaction();
   const approveDocument = useApproveDocument();
+  const confirm = useConfirmStore((s) => s.confirm);
 
   function updateExtractedTransaction(
     docId: string,
@@ -68,7 +76,9 @@ export const DocumentDetailModal = forwardRef<
                 className="size-9 shrink-0 rounded-full object-cover"
               />
               <div className="min-w-0">
-                <h3 className="truncate text-lg font-semibold">{doc.name}</h3>
+                <h3 className="truncate text-lg font-semibold">
+                  {doc.name || t("data.documentFallbackName")}
+                </h3>
                 {doc.bankName && (
                   <p className="text-base-content/50 truncate text-xs">
                     {t(
@@ -139,7 +149,7 @@ export const DocumentDetailModal = forwardRef<
                           key={tx.id}
                           className="border-base-300 bg-base-100 rounded-xl border p-3 shadow-sm"
                         >
-                          {doc.approved ? (
+                          {!doc.canEditTransactions ? (
                             <div className="flex items-center gap-3">
                               <span
                                 data-no-flip
@@ -180,6 +190,24 @@ export const DocumentDetailModal = forwardRef<
                                   }
                                   className="input input-bordered input-sm w-full flex-1 font-medium"
                                 />
+                                <button
+                                  type="button"
+                                  onClick={() =>
+                                    confirm({
+                                      title: t("confirm.deleteTransactionTitle"),
+                                      message: t("confirm.deleteMessage"),
+                                      onConfirm: () =>
+                                        deleteExtractedTransaction.mutate({
+                                          documentId: doc.id,
+                                          transactionId: tx.id,
+                                        }),
+                                    })
+                                  }
+                                  className="btn btn-ghost btn-sm btn-square text-error shrink-0"
+                                  aria-label={t("actions.delete", { name: tx.title })}
+                                >
+                                  <Trash2 className="size-4" />
+                                </button>
                               </div>
 
                               <div className="border-base-200 flex flex-wrap items-center gap-x-4 gap-y-2 border-t ps-10 pt-3">
@@ -257,6 +285,29 @@ export const DocumentDetailModal = forwardRef<
                   <p className="text-base-content/50 py-4 text-center text-sm">
                     {t("data.documentDetail.noTransactions")}
                   </p>
+                )}
+
+                {doc.canAddTransactions && (
+                  <button
+                    type="button"
+                    onClick={() =>
+                      addExtractedTransaction.mutate({
+                        documentId: doc.id,
+                        body: {
+                          datetime: `${doc.uploadDate.slice(0, 10)}T00:00:00`,
+                          title: "",
+                          category: TRANSACTION_CATEGORIES[0],
+                          type: "expense",
+                          amount: 0,
+                        },
+                      })
+                    }
+                    disabled={addExtractedTransaction.isPending}
+                    className="btn btn-ghost btn-sm w-fit gap-2 self-start"
+                  >
+                    <Plus className="size-4" />
+                    {t("data.documentDetail.addTransaction")}
+                  </button>
                 )}
 
                 {!doc.approved &&

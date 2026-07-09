@@ -31,7 +31,15 @@
     "budget": {
       "title": "Budget Plan Split",
       "over": "Over budget",
-      "spent": "spent"
+      "spent": "spent",
+      "empty": "This plan has no categories yet."
+    },
+    "noPlan": {
+      "title": "You don't have a plan yet",
+      "description": "Set a savings goal and split your income across categories. Your dashboard fills in as soon as you do.",
+      "benefitGoal": "Track a savings goal",
+      "benefitBudget": "See where your money goes",
+      "cta": "Build a plan with the advisor"
     }
   }
 }

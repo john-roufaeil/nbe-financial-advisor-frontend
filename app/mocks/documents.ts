@@ -135,7 +135,7 @@ export function getDocuments(filters: DocumentFilters): Promise<DocumentListResp
   const filtered = documents.filter((doc) => {
     const matchesType = !filters.type || doc.type === filters.type;
     const q = filters.q?.trim().toLowerCase();
-    const matchesSearch = !q || doc.name.toLowerCase().includes(q);
+    const matchesSearch = !q || (doc.name ?? "").toLowerCase().includes(q);
     const matchesDate =
       (!filters.from || doc.uploadDate >= filters.from) &&
       (!filters.to || doc.uploadDate <= filters.to);
@@ -149,7 +149,12 @@ export function getDocuments(filters: DocumentFilters): Promise<DocumentListResp
 export function getDocument(id: string): Promise<DocumentRecord> {
   const doc = documents.find((d) => d.id === id);
   if (!doc) return Promise.reject(new Error(`Document ${id} not found`));
-  return delay(doc, 150);
+  // Mock mode keeps the full review flow: rows stay editable and addable until
+  // the user approves, at which point they're committed and become read-only.
+  return delay(
+    { ...doc, canEditTransactions: !doc.approved, canAddTransactions: !doc.approved },
+    150,
+  );
 }
 
 export function uploadDocuments(
@@ -199,6 +204,36 @@ export function updateExtractedTransaction(
     ?.extractedTransactions?.find((tx) => tx.id === transactionId);
   if (!updated) return Promise.reject(new Error("Extracted transaction not found"));
   return delay(updated, 150);
+}
+
+export function deleteExtractedTransaction(
+  documentId: string,
+  transactionId: string,
+): Promise<void> {
+  documents = documents.map((d) =>
+    d.id === documentId
+      ? {
+          ...d,
+          extractedTransactions: d.extractedTransactions?.filter(
+            (tx) => tx.id !== transactionId,
+          ),
+        }
+      : d,
+  );
+  return delay(undefined, 150);
+}
+
+export function addExtractedTransaction(
+  documentId: string,
+  body: Omit<ExtractedTransaction, "id">,
+): Promise<ExtractedTransaction> {
+  const created: ExtractedTransaction = { ...body, id: crypto.randomUUID() };
+  documents = documents.map((d) =>
+    d.id === documentId
+      ? { ...d, extractedTransactions: [...(d.extractedTransactions ?? []), created] }
+      : d,
+  );
+  return delay(created, 150);
 }
 
 export async function approveDocument(

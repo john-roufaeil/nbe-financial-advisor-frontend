@@ -14,6 +14,7 @@ import {
   type DocumentType,
 } from "@/types/document";
 import { useUploadDocuments } from "@/queries/documents";
+import { toastError } from "@/lib/toast";
 
 const TYPE_ICONS: Record<DocumentType, typeof FileText> = {
   pdf: FileText,
@@ -60,7 +61,7 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
       setRejected([]);
     }
 
-    function handleUpload() {
+    async function handleUpload() {
       if (staged.length === 0) return;
       const documents = staged.map(({ file, type }) => ({
         name: file.name,
@@ -68,9 +69,20 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
         sizeKb: Math.max(1, Math.round(file.size / 1024)),
         file,
       }));
-      uploadDocuments.mutate(documents);
-      reset();
-      closeDialog(ref);
+
+      try {
+        // Each file is its own request, so a batch can partially succeed —
+        // a byte-identical re-upload is rejected while its siblings land.
+        const uploaded = await uploadDocuments.mutateAsync(documents);
+        if (uploaded.length < documents.length) {
+          toastError("toast.documentsPartiallyUploaded");
+        }
+        reset();
+        closeDialog(ref);
+      } catch {
+        // Every file failed. The mutation's onError toasted; stay open with the
+        // staged list intact so the user can fix the selection and retry.
+      }
     }
 
     return (
@@ -165,11 +177,15 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
             </button>
             <button
               type="button"
-              disabled={staged.length === 0}
+              disabled={staged.length === 0 || uploadDocuments.isPending}
               onClick={handleUpload}
               className="btn btn-primary"
             >
-              {t("actions.upload")}
+              {uploadDocuments.isPending ? (
+                <span className="loading loading-spinner loading-sm" />
+              ) : (
+                t("actions.upload")
+              )}
             </button>
           </div>
         </div>

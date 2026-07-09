@@ -29,6 +29,13 @@ function formatSize(kb: number, t: (key: string) => string) {
     : `${kb} ${t("units.kb")}`;
 }
 
+/** The real API returns neither filename nor size (see DocumentRecord). */
+function documentSubtitle(doc: DocumentRecord, t: (key: string) => string) {
+  const parts = [formatDate(doc.uploadDate)];
+  if (doc.sizeKb !== undefined) parts.push(formatSize(doc.sizeKb, t));
+  return parts.join(" · ");
+}
+
 const PROCESSED_BADGE_DURATION_MS = 5000;
 const PROCESSED_BADGE_FADE_MS = 400;
 
@@ -116,10 +123,10 @@ function DocumentCard({ doc, onOpen }: { doc: DocumentRecord; onOpen: () => void
         className="size-9 shrink-0 rounded-full object-cover"
       />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{doc.name}</p>
-        <p className="text-base-content/50 text-xs">
-          {formatDate(doc.uploadDate)} · {formatSize(doc.sizeKb, t)}
+        <p className="truncate text-sm font-medium">
+          {doc.name || t("data.documentFallbackName")}
         </p>
+        <p className="text-base-content/50 text-xs">{documentSubtitle(doc, t)}</p>
       </div>
       <StatusBadge doc={doc} />
       <button
@@ -133,7 +140,9 @@ function DocumentCard({ doc, onOpen }: { doc: DocumentRecord; onOpen: () => void
           });
         }}
         className="btn btn-ghost btn-sm btn-square text-error shrink-0"
-        aria-label={t("actions.delete", { name: doc.name })}
+        aria-label={t("actions.delete", {
+          name: doc.name || t("data.documentFallbackName"),
+        })}
       >
         <Trash2 className="size-4" />
       </button>

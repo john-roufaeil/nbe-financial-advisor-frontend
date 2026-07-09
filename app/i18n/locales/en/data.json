@@ -6,6 +6,7 @@
     "noResults": "No results found.",
     "transactionsEmpty": "No transactions yet. Add one manually, or upload a bank statement and we'll pull them out for you.",
     "documentsEmpty": "No bank statements yet. Upload one and we'll extract the transactions automatically.",
+    "documentFallbackName": "Bank statement",
     "loading": "Loading...",
     "loadError": "Sorry, something went wrong. Please try again.",
     "retry": "Retry",
@@ -59,7 +60,8 @@
       "reviewSubtitle": "Edit anything that looks off, then approve to add these to your transactions.",
       "approve": "Approve & add to transactions",
       "approved": "Added to your transactions",
-      "noTransactions": "No transactions found in this bank statement."
+      "noTransactions": "No transactions found in this bank statement.",
+      "addTransaction": "Add a transaction"
     },
     "sections": {
       "profile": {
@@ -95,6 +97,12 @@
           "incomeSteadiness": "Income steadiness",
           "riskTolerance": "Risk tolerance"
         }
+      },
+      "accounts": {
+        "title": "Bank accounts",
+        "empty": "No linked bank accounts yet.",
+        "error": "Couldn't load your bank accounts. Please try again.",
+        "inactive": "Inactive"
       }
     }
   }
