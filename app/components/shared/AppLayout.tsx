@@ -76,7 +76,7 @@ export default function AppLayout() {
           <aside className="border-base-300 bg-base-200 flex h-screen w-72 flex-col border-e">
             <div className="border-base-300 relative flex h-16 shrink-0 items-center border-b px-4">
               <button
-                className="btn btn-square btn-ghost absolute inset-y-0 start-2 my-auto lg:hidden"
+                className="btn btn-square btn-ghost absolute inset-y-0 inset-s-2 my-auto lg:hidden"
                 onClick={close}
                 aria-label={t("nav.menu")}
               >
