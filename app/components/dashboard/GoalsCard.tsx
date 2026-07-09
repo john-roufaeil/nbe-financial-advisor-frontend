@@ -25,11 +25,13 @@ function GoalRow({ goal, currency }: { goal: FinancialGoal; currency: string }) 
         <div className="bg-primary h-full rounded-full" style={{ width: `${pct}%` }} />
       </div>
       <p className="text-base-content/50 text-xs">
-        {pct}% ·{" "}
-        {t("dashboard.goals.remaining", {
-          amount: remaining.toLocaleString(),
-          currency: currencyLabel,
-        })}
+        <span>{pct}% · </span>
+        <Money className="inline">
+          {t("dashboard.goals.remaining", {
+            amount: remaining.toLocaleString(),
+            currency: currencyLabel,
+          })}
+        </Money>
       </p>
     </li>
   );

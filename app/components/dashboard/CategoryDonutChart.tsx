@@ -1,4 +1,5 @@
 import { CATEGORY_COLOR_VARS } from "@/lib/category-colors";
+import { Money } from "@/components/shared/Money";
 
 interface DonutSlice {
   name: string;
@@ -73,7 +74,7 @@ export function CategoryDonutChart({
       {(centerLabel || centerValue) && (
         <div className="absolute inset-0 flex flex-col items-center justify-center text-center">
           {centerValue && (
-            <span className="text-sm font-semibold tabular-nums">{centerValue}</span>
+            <Money className="text-sm font-semibold tabular-nums">{centerValue}</Money>
           )}
           {centerLabel && (
             <span className="text-base-content/50 text-[10px]">{centerLabel}</span>

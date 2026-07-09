@@ -14,6 +14,7 @@ import {
 import { TRANSACTION_CATEGORIES } from "@/types/transaction";
 import { getBankLogo, getBankName } from "@/lib/banks";
 import { useConfirmStore } from "@/store/use-confirm-store";
+import { Money } from "@/components/shared/Money";
 import {
   useDocument,
   useRetryDocument,
@@ -68,9 +69,9 @@ export const DocumentDetailModal = forwardRef<
                 alt={
                   doc.bankName
                     ? t(
-                        `banks.${doc.bankName}`,
-                        getBankName(doc.bankName) ?? doc.bankName,
-                      )
+                      `banks.${doc.bankName}`,
+                      getBankName(doc.bankName) ?? doc.bankName,
+                    )
                     : ""
                 }
                 className="size-9 shrink-0 rounded-full object-cover"
@@ -163,13 +164,14 @@ export const DocumentDetailModal = forwardRef<
                                   {tx.category}
                                 </p>
                               </div>
-                              <span
-                                dir="ltr"
+                              <Money
                                 className={`shrink-0 text-sm font-semibold tabular-nums ${isIncome ? "text-success" : "text-base-content"}`}
                               >
-                                {isIncome ? "+" : "-"}
-                                {tx.amount.toLocaleString()}
-                              </span>
+                                <span dir="ltr">
+                                  {isIncome ? "+" : "-"}
+                                  {tx.amount.toLocaleString()} {t("currency.EGP")}
+                                </span>
+                              </Money>
                             </div>
                           ) : (
                             <div className="flex flex-col gap-3">
