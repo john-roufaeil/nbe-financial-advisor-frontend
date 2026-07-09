@@ -1,5 +1,14 @@
 import { NavLink, Outlet, useParams, useLocation } from "react-router";
-import { LayoutDashboard, Bot, ArrowLeftRight, FileText, Menu, X } from "lucide-react";
+import {
+  LayoutDashboard,
+  Bot,
+  ArrowLeftRight,
+  FileText,
+  Menu,
+  X,
+  Database,
+  Cloud,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
@@ -9,6 +18,30 @@ import { useDrawerStore } from "@/store/use-drawer-store";
 import { useMe } from "@/queries/profile";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { BalanceVisibilityToggle } from "@/components/shared/BalanceVisibilityToggle";
+import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
+import { useDataSourceStore } from "@/store/use-data-source-store";
+
+const DATA_SOURCE_OPTIONS = ["mock", "backend"] as const;
+
+function DataSourceToggle() {
+  const { t } = useTranslation();
+  const source = useDataSourceStore((s) => s.source);
+  const setSource = useDataSourceStore((s) => s.setSource);
+
+  return (
+    <ToggleSwitch
+      value={source}
+      options={DATA_SOURCE_OPTIONS}
+      labels={{
+        mock: t("dashboard.dataSource.mock"),
+        backend: t("dashboard.dataSource.backend"),
+      }}
+      icons={{ mock: Database, backend: Cloud }}
+      onChange={setSource}
+      aria-label={t("dashboard.dataSource.mock")}
+    />
+  );
+}
 
 export default function AppLayout() {
   const { lang } = useParams<{ lang: string }>();
@@ -60,9 +93,8 @@ export default function AppLayout() {
             <img
               src="/logo.webp"
               alt={t("app.name")}
-              className="mx-auto h-8 w-auto px-2"
+              className="mx-auto h-auto w-1/2 px-2"
             />
-            <BalanceVisibilityToggle />
           </header>
 
           <main className="min-h-0 flex-1 overflow-y-auto pt-3">
@@ -82,7 +114,11 @@ export default function AppLayout() {
               >
                 <X className="size-5" />
               </button>
-              <img src="/logo.webp" alt={t("app.name")} className="mx-auto h-9 w-auto" />
+              <img
+                src="/logo.webp"
+                alt={t("app.name")}
+                className="mx-auto h-auto w-1/2"
+              />
             </div>
 
             <nav className="flex flex-col gap-2 p-3">
@@ -110,11 +146,14 @@ export default function AppLayout() {
             )}
 
             <div className="border-base-300 flex shrink-0 flex-col gap-4 border-t p-4">
-              <div className="flex items-center gap-2">
-                <div className="min-w-0 flex-1">
-                  <LanguageSwitcher onSelect={close} />
+              <div className="flex w-full items-center gap-2">
+                <div className="flex w-full flex-col gap-2">
+                  <DataSourceToggle />
+                  <div className="flex min-w-0 flex-1 gap-2">
+                    <LanguageSwitcher onSelect={close} />
+                    <BalanceVisibilityToggle className="btn-square" />
+                  </div>
                 </div>
-                <BalanceVisibilityToggle className="btn-square" />
               </div>
               <NavLink
                 to={`/${lang}/profile`}

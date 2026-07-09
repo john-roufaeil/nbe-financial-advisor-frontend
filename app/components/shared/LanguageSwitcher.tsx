@@ -2,6 +2,7 @@ import { useParams, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 import { LANGUAGE_STORAGE_KEY } from "@/routes/lang-layout";
+import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
 
 const LABELS: Record<SupportedLanguage, string> = { en: "EN", ar: "AR" };
 
@@ -9,7 +10,7 @@ export function LanguageSwitcher({ onSelect }: { onSelect?: () => void }) {
   const { lang } = useParams<{ lang: string }>();
   const location = useLocation();
   const navigate = useNavigate();
-  const { i18n } = useTranslation();
+  const { i18n, t } = useTranslation();
 
   function switchTo(next: SupportedLanguage) {
     onSelect?.();
@@ -24,16 +25,12 @@ export function LanguageSwitcher({ onSelect }: { onSelect?: () => void }) {
   }
 
   return (
-    <div className="join w-full">
-      {SUPPORTED_LANGUAGES.map((code) => (
-        <button
-          key={code}
-          onClick={() => switchTo(code)}
-          className={`btn btn-sm join-item flex-1 cursor-pointer ${code === lang ? "btn-primary" : "btn-outline"}`}
-        >
-          {LABELS[code]}
-        </button>
-      ))}
-    </div>
+    <ToggleSwitch
+      value={(lang as SupportedLanguage) ?? SUPPORTED_LANGUAGES[0]}
+      options={SUPPORTED_LANGUAGES}
+      labels={LABELS}
+      onChange={switchTo}
+      aria-label={t("settings.language")}
+    />
   );
 }
