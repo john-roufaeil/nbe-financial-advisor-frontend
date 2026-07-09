@@ -12,6 +12,7 @@ import {
   ArrowUpCircle,
 } from "lucide-react";
 import { TRANSACTION_CATEGORIES } from "@/types/transaction";
+import { Button } from "@/components/shared/Button";
 import { getBankLogo, getBankName } from "@/lib/banks";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { Money } from "@/components/shared/Money";
@@ -111,14 +112,15 @@ export const DocumentDetailModal = forwardRef<
                     `data.documentDetail.${doc.errorMessage ?? "documentFailedGeneric"}`,
                   )}
                 </p>
-                <button
+                <Button
                   type="button"
                   onClick={() => retryDocument.mutate(doc.id)}
+                  loading={retryDocument.isPending}
                   className="btn btn-primary btn-sm gap-2"
                 >
                   <RotateCcw className="size-4" />
                   {t("data.documentDetail.retry")}
-                </button>
+                </Button>
               </div>
             )}
 
@@ -273,7 +275,10 @@ export const DocumentDetailModal = forwardRef<
                                         amount: Number(e.target.value),
                                       })
                                     }
-                                    className="input input-bordered input-xs w-24"
+                                    className="input input-bordered input-xs min-w-24"
+                                    style={{
+                                      width: `${Math.max(6, String(tx.amount).length + 3.5)}ch`,
+                                    }}
                                   />
                                 </label>
                               </div>
@@ -316,13 +321,14 @@ export const DocumentDetailModal = forwardRef<
                   doc.extractedTransactions &&
                   doc.extractedTransactions.length > 0 && (
                     <div className="modal-action">
-                      <button
+                      <Button
                         type="button"
                         onClick={() => approveDocument.mutate(doc.id)}
+                        loading={approveDocument.isPending}
                         className="btn btn-primary btn-sm"
                       >
                         {t("data.documentDetail.approve")}
-                      </button>
+                      </Button>
                     </div>
                   )}
               </div>

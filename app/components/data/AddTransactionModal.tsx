@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { TRANSACTION_CATEGORIES, type Transaction } from "@/types/transaction";
 import { useCreateTransaction, useUpdateTransaction } from "@/queries/transactions";
+import { Button } from "@/components/shared/Button";
 
 function closeDialog(ref: Ref<HTMLDialogElement>) {
   if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
@@ -132,19 +133,24 @@ export const AddTransactionModal = forwardRef<
           </label>
 
           <div className="flex gap-3">
-            <label className="flex flex-1 flex-col gap-1">
+            <label className="flex flex-col gap-1">
               <span className="label-text text-xs">
                 {t("data.addTransaction.amount")}
               </span>
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="input input-bordered input-sm w-full"
-                required
-              />
+              <label className="input input-bordered input-sm flex w-fit items-center gap-2">
+                <input
+                  type="number"
+                  min={0}
+                  step="0.01"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className="w-24"
+                  required
+                />
+                <span className="text-base-content/50 shrink-0 text-xs">
+                  {t("currency.EGP")}
+                </span>
+              </label>
             </label>
             <label className="flex flex-1 flex-col gap-1">
               <span className="label-text text-xs">{t("data.addTransaction.date")}</span>
@@ -168,9 +174,9 @@ export const AddTransactionModal = forwardRef<
             >
               {t("actions.cancel")}
             </button>
-            <button type="submit" disabled={isSaving} className="btn btn-primary">
+            <Button type="submit" loading={isSaving} className="btn btn-primary">
               {editing ? t("actions.done") : t("data.addTransaction.add")}
-            </button>
+            </Button>
           </div>
         </form>
       </div>

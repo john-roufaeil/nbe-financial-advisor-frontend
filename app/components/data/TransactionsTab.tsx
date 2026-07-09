@@ -1,19 +1,12 @@
 import { forwardRef, useImperativeHandle, useRef, useState } from "react";
-import {
-  Search,
-  ArrowDownCircle,
-  ArrowUpCircle,
-  Pencil,
-  Trash2,
-  Receipt,
-} from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Pencil, Trash2, Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatDateTime } from "@/lib/format";
 import type { Transaction } from "@/types/transaction";
 import { useTransactions, useDeleteTransaction } from "@/queries/transactions";
 import { Pagination } from "@/components/data/Pagination";
 import { AddTransactionModal } from "@/components/data/AddTransactionModal";
-import { DateField } from "@/components/shared/DateField";
+import { DataToolbar } from "@/components/shared/DataToolbar";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { ListSkeleton, ErrorState, EmptyState } from "@/components/shared/QueryState";
 import { Money } from "@/components/shared/Money";
@@ -38,6 +31,7 @@ function TransactionCard({
   const { t } = useTranslation();
   const isIncome = transaction.type === "income";
   const Icon = isIncome ? ArrowUpCircle : ArrowDownCircle;
+  const currencyLabel = t("currency.EGP");
 
   return (
     <li className="border-base-300 bg-base-100 flex items-center gap-3 rounded-lg border p-3">
@@ -60,7 +54,7 @@ function TransactionCard({
       >
         <span dir="ltr">
           {isIncome ? "+" : "-"}
-          {transaction.amount.toLocaleString()}
+          {transaction.amount.toLocaleString()} {currencyLabel}
         </span>
       </Money>
       <button
@@ -138,44 +132,23 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
 
     return (
       <div className="flex flex-col gap-4">
-        <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-          <label className="input input-bordered flex w-full min-w-0 flex-1 items-center gap-2 px-3 py-2">
-            <Search className="text-base-content/40 size-4 shrink-0" />
-            <input
-              type="text"
-              value={search}
-              onChange={(e) => updateSearch(e.target.value)}
-              placeholder={t("data.search")}
-              className="min-w-0 grow"
-            />
-          </label>
-          <div className="flex min-w-0 flex-col gap-3 sm:shrink-0 sm:flex-row sm:flex-nowrap sm:items-center">
-            <div className="flex min-w-0 items-center gap-3">
-              <DateField
-                label={t("data.dateFrom")}
-                value={fromDate}
-                onChange={updateFromDate}
-              />
-              <DateField
-                label={t("data.dateTo")}
-                value={toDate}
-                onChange={updateToDate}
-              />
-            </div>
-            <div className="join border-base-300 w-fit shrink-0 rounded-lg border">
-              {FILTERS.map((f) => (
-                <button
-                  key={f}
-                  type="button"
-                  onClick={() => updateFilter(f)}
-                  className={`btn btn-sm join-item cursor-pointer ${filter === f ? "btn-accent" : "btn-ghost"}`}
-                >
-                  {t(`data.filters.${f}`)}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
+        <DataToolbar
+          search={search}
+          onSearchChange={updateSearch}
+          fromDate={fromDate}
+          onFromDateChange={updateFromDate}
+          toDate={toDate}
+          onToDateChange={updateToDate}
+          filters={FILTERS}
+          filter={filter}
+          onFilterChange={updateFilter}
+          filterLabel={(f) => t(`data.filters.${f}`)}
+          onAdd={() => {
+            setEditing(null);
+            modalRef.current?.showModal();
+          }}
+          addLabel={t("data.addTransaction.add")}
+        />
 
         {isPending ? (
           <ListSkeleton />

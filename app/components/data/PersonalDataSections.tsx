@@ -17,6 +17,7 @@ import { getBankCode, getBankLogo } from "@/lib/banks";
 import { Money } from "@/components/shared/Money";
 import type { User as UserType } from "@/types/profile";
 import type { BankAccount } from "@/types/account";
+import { CardSkeleton, ErrorState } from "@/components/shared/QueryState";
 
 // ── Derived display sections from the User API shape ─────────────────────────
 
@@ -70,11 +71,6 @@ const SECTIONS: Section[] = [
         writable: true,
       },
       {
-        key: "income_bracket",
-        labelKey: "data.sections.financial.fields.incomeBracket",
-        writable: true,
-      },
-      {
         key: "income_steadiness",
         labelKey: "data.sections.financial.fields.incomeSteadiness",
         writable: true,
@@ -114,7 +110,6 @@ const AMINA_MOCK_VALUES: Record<string, string> = {
   country: "Egypt",
   employment_status: "Employed",
   monthly_income: "42000.00",
-  income_bracket: "High",
   income_steadiness: "Fixed",
 };
 
@@ -303,46 +298,27 @@ function BankAccountsCard() {
   );
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
-
-function SectionSkeleton() {
-  return (
-    <div className="card border-base-300 bg-base-100 border shadow-sm">
-      <div className="card-body gap-4 p-4">
-        <div className="flex items-center gap-2">
-          <div className="skeleton size-9 rounded-lg" />
-          <div className="skeleton h-4 flex-1 rounded" />
-        </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {[1, 2].map((i) => (
-            <div key={i} className="flex flex-col gap-1">
-              <div className="skeleton h-3 w-20 rounded" />
-              <div className="skeleton h-4 w-full rounded" />
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
 // ── Public export ─────────────────────────────────────────────────────────────
 
 export function PersonalDataSections() {
-  const { data: user, isLoading, isError } = useMe();
+  const { data: user, isLoading, isError, refetch } = useMe();
 
   if (isLoading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2">
         {SECTIONS.map((s) => (
-          <SectionSkeleton key={s.key} />
+          <CardSkeleton
+            key={s.key}
+            icon={s.icon}
+            rows={[{ kind: "fieldGrid", fields: s.fields.length }]}
+          />
         ))}
       </div>
     );
   }
 
   if (isError || !user) {
-    return <p className="text-error text-sm">Failed to load profile. Please refresh.</p>;
+    return <ErrorState onRetry={() => refetch()} />;
   }
 
   return (

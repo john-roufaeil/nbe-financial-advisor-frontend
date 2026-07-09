@@ -15,6 +15,7 @@ import {
 } from "@/types/document";
 import { useUploadDocuments } from "@/queries/documents";
 import { toastError } from "@/lib/toast";
+import { Button } from "@/components/shared/Button";
 
 const TYPE_ICONS: Record<DocumentType, typeof FileText> = {
   pdf: FileText,
@@ -112,9 +113,8 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
               setIsDragging(false);
               handleFiles(e.dataTransfer.files);
             }}
-            className={`hover:border-primary hover:bg-base-200 flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
-              isDragging ? "border-primary bg-base-200" : "border-base-300"
-            }`}
+            className={`hover:border-primary hover:bg-base-200 flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors ${isDragging ? "border-primary bg-base-200" : "border-base-300"
+              }`}
           >
             <Upload className="text-base-content/40 size-6" />
             <span className="text-sm font-medium">{t("data.addDocument.dropzone")}</span>
@@ -175,18 +175,15 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
             >
               {t("actions.cancel")}
             </button>
-            <button
+            <Button
               type="button"
               disabled={staged.length === 0 || uploadDocuments.isPending}
+              loading={uploadDocuments.isPending}
               onClick={handleUpload}
               className="btn btn-primary"
             >
-              {uploadDocuments.isPending ? (
-                <span className="loading loading-spinner loading-sm" />
-              ) : (
-                t("actions.upload")
-              )}
-            </button>
+              {t("actions.upload")}
+            </Button>
           </div>
         </div>
         <form method="dialog" className="modal-backdrop">

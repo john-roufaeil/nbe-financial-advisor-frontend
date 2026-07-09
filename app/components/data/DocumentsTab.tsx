@@ -1,6 +1,5 @@
 import { useEffect, useRef, useState } from "react";
 import {
-  Search,
   Trash2,
   Loader2,
   TriangleAlert,
@@ -15,7 +14,7 @@ import { getBankLogo, getBankName } from "@/lib/banks";
 import { useDocuments, useDeleteDocument } from "@/queries/documents";
 import { Pagination } from "@/components/data/Pagination";
 import { DocumentDetailModal } from "@/components/data/DocumentDetailModal";
-import { DateField } from "@/components/shared/DateField";
+import { DataToolbar } from "@/components/shared/DataToolbar";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { ListSkeleton, ErrorState, EmptyState } from "@/components/shared/QueryState";
 
@@ -150,7 +149,7 @@ function DocumentCard({ doc, onOpen }: { doc: DocumentRecord; onOpen: () => void
   );
 }
 
-export function DocumentsTab() {
+export function DocumentsTab({ onAdd }: { onAdd: () => void }) {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -195,40 +194,20 @@ export function DocumentsTab() {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="input input-bordered flex w-full flex-1 items-center gap-2 px-3 py-2">
-          <Search className="text-base-content/40 size-4 shrink-0" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => updateSearch(e.target.value)}
-            placeholder={t("data.search")}
-            className="w-full min-w-0 grow"
-          />
-        </label>
-        <div className="flex min-w-0 flex-col gap-3 sm:shrink-0 sm:flex-row sm:flex-nowrap sm:items-center">
-          <div className="flex min-w-0 items-center gap-3">
-            <DateField
-              label={t("data.dateFrom")}
-              value={fromDate}
-              onChange={updateFromDate}
-            />
-            <DateField label={t("data.dateTo")} value={toDate} onChange={updateToDate} />
-          </div>
-          <div className="join border-base-300 w-fit shrink-0 rounded-lg border">
-            {FILTERS.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => updateFilter(f)}
-                className={`btn btn-sm join-item cursor-pointer ${filter === f ? "btn-accent" : "btn-ghost"}`}
-              >
-                {t(`data.filters.${f}`)}
-              </button>
-            ))}
-          </div>
-        </div>
-      </div>
+      <DataToolbar
+        search={search}
+        onSearchChange={updateSearch}
+        fromDate={fromDate}
+        onFromDateChange={updateFromDate}
+        toDate={toDate}
+        onToDateChange={updateToDate}
+        filters={FILTERS}
+        filter={filter}
+        onFilterChange={updateFilter}
+        filterLabel={(f) => t(`data.filters.${f}`)}
+        onAdd={onAdd}
+        addLabel={t("data.addDocument.add")}
+      />
 
       {isPending ? (
         <ListSkeleton />
