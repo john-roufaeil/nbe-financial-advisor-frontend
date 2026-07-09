@@ -65,7 +65,7 @@ export function AccessibilityMenu() {
   }, [open]);
 
   return (
-    <div className="a11y-panel fixed inset-y-0 inset-s-0 z-60 flex items-center">
+    <div className="a11y-panel fixed top-1/2 z-60 h-fit -translate-y-1/2">
       <div className="relative">
         <button
           ref={triggerRef}
