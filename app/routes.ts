@@ -4,7 +4,6 @@ export default [
   index("routes/root-redirect.tsx"),
   layout("routes/lang-layout.tsx", [
     route(":lang", "routes/splash.tsx"),
-    route(":lang/consent", "routes/consent.tsx"),
     route(":lang/onboarding", "routes/onboarding.tsx"),
     route(":lang/sign-in", "routes/sign-in.tsx"),
     // Everything inside the app shell requires a session. Splash, consent,
