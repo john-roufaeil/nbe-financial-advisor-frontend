@@ -366,3 +366,14 @@ html[dir="rtl"] .animate-a11y-panel-in {
 .animate-message-in {
   animation: message-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
+
+/* Strip away layout-breaking native input spin buttons cross-browser */
+.no-spin-buttons::-webkit-outer-spin-button,
+.no-spin-buttons::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spin-buttons[type="number"] {
+  -moz-appearance: textfield;
+}

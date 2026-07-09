@@ -25,10 +25,13 @@ export function SliderField({
     return Math.min(max, Math.max(min, v));
   }
 
+  // Calculate dynamic character width based on length + a slight safety margin
+  const inputWidth = `${Math.max(3, String(value).length + 1)}ch`;
+
   return (
     <div className="flex flex-col gap-1.5">
       <span className="label-text text-xs">{label}</span>
-      <div className="flex items-center gap-3">
+      <div className="flex w-full items-center gap-3">
         <input
           type="range"
           min={min}
@@ -36,9 +39,10 @@ export function SliderField({
           step={step}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
-          className="range range-primary range-sm flex-1 cursor-grab active:cursor-grabbing"
+          className="range range-primary range-sm w-full flex-1 cursor-grab active:cursor-grabbing"
         />
-        <label className="input input-xs input-bordered flex shrink-0 items-center gap-1 ps-2">
+
+        <label className="input input-xs input-bordered flex w-max shrink-0 items-center gap-1 px-2">
           <input
             type="number"
             min={min}
@@ -46,14 +50,16 @@ export function SliderField({
             step={step}
             value={value}
             onChange={(e) => onChange(clamp(Number(e.target.value) || 0))}
-            className="text-primary shrink-0 text-end font-semibold tabular-nums"
-            style={{ width: `${Math.max(4, String(value).length + 2.5)}ch` }}
+            /* Added the 'no-spin-buttons' class here */
+            className="no-spin-buttons text-primary w-auto shrink-0 bg-transparent text-end font-semibold tabular-nums focus:outline-none"
+            style={{ width: inputWidth }}
           />
           {unit && (
             <span className="text-base-content/50 shrink-0 text-[0.65rem]">{unit}</span>
           )}
         </label>
       </div>
+
       {presets && presets.length > 0 && (
         <div className="flex flex-wrap gap-1.5">
           {presets.map((preset) => (
