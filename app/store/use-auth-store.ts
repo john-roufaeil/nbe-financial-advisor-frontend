@@ -67,10 +67,19 @@ export const useAuthStore = create<AuthState>()(
       },
       clearSessionExpired: () => set({ sessionExpired: false }),
     }),
+    // {
+    //   name: "nbe_auth",
+    //   // Persist ONLY the auth flag — never the tokens (see accessToken note).
+    //   partialize: (state) => ({ isAuthenticated: state.isAuthenticated }),
+    // },
     {
       name: "nbe_auth",
-      // Persist ONLY the auth flag — never the tokens (see accessToken note).
-      partialize: (state) => ({ isAuthenticated: state.isAuthenticated }),
+      // WARNING: Exposes tokens to XSS. TEMPORARY
+      partialize: (state) => ({
+        isAuthenticated: state.isAuthenticated,
+        accessToken: state.accessToken,
+        refreshToken: state.refreshToken,
+      }),
     },
   ),
 );
