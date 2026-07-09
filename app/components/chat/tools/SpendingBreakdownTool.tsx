@@ -23,10 +23,6 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
     return `${amount.toLocaleString()} ${t(`currency.${currency}`, currency)}`;
   }
 
-  function formatAmount(amount: number, currency: string) {
-    return `${amount.toLocaleString()} ${t(`currency.${currency}`, currency)}`;
-  }
-
   if (!data || status.type === "running") {
     return (
       <div className="border-base-300 bg-base-100 text-base-content/60 my-2 flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm">
