@@ -18,9 +18,11 @@
       "vsLastMonth": "vs last month"
     },
     "goals": {
+      "goal": "goal",
       "title": "Goal Progress",
       "remaining": "{{amount}} {{currency}} to go",
       "empty": "No goal set yet. Add yours now to start tracking.",
+      "emptyTitle": "No active goal",
       "addYours": "Add your goal",
       "editTitle": "Edit goal",
       "name": "Name",
@@ -28,7 +30,14 @@
       "target": "Target",
       "newNamePlaceholder": "e.g. Home renovation",
       "add": "Add goal",
-      "save": "Save goal"
+      "save": "Save goal",
+      "duration": "Goal duration (months)",
+      "monthsPlaceholder": "Months",
+      "status": {
+        "reached": "Reached",
+        "next": "Next Up",
+        "locked": "Locked"
+      }
     },
     "budget": {
       "title": "Budget Plan Split",

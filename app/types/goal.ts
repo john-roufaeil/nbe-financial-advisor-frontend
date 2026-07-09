@@ -3,4 +3,5 @@ export interface FinancialGoal {
   name: string;
   current: number;
   target: number;
+  duration: number;
 }

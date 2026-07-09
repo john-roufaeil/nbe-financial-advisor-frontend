@@ -1,5 +1,5 @@
 import type { ComponentType } from "react";
-import { TriangleAlert } from "lucide-react";
+import { TriangleAlert, Target, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
 /** A row-shaped pulse placeholder for list content — reduces layout shift and reads as "loading this list" rather than a generic blocking spinner. */
@@ -24,14 +24,11 @@ export function ListSkeleton({ rows = 10 }: { rows?: number }) {
 }
 
 type SkeletonRow =
-  /** A single pulsing text line, e.g. a label or paragraph. */
   | { kind: "text"; width?: string }
-  /** A label + value pulsing pair, stacked — mirrors a form field or stat. */
   | { kind: "field"; labelWidth?: string }
-  /** A label/value line above a pulsing progress bar — mirrors a goal or budget row. */
   | { kind: "progress"; trailingText?: boolean }
-  /** N "field" rows laid out in a responsive 2-column grid — mirrors a section of form fields. */
-  | { kind: "fieldGrid"; fields: number };
+  | { kind: "fieldGrid"; fields: number }
+  | { kind: "timeline"; milestones?: number };
 
 function SkeletonTextRow({ width = "w-2/3" }: { width?: string }) {
   return <div className={`bg-base-200 h-3.5 ${width} animate-pulse rounded`} />;
@@ -59,6 +56,44 @@ function SkeletonProgressRow({ trailingText }: { trailingText?: boolean }) {
   );
 }
 
+// FIXED: Removed duplicated header definitions and added standard logical direction track classes
+export function SkeletonTimelineRow({ milestones = 4 }: { milestones?: number }) {
+  return (
+    <div className="flex flex-col gap-6 py-2">
+      {/* Overview Metric Line Placeholder */}
+      <div className="flex flex-col gap-1">
+        <div className="bg-base-200 h-8 w-24 animate-pulse rounded" />
+        <div className="bg-base-200 h-3.5 w-40 animate-pulse rounded" />
+      </div>
+
+      {/* Vertical Timeline Mock Track */}
+      <div className="relative flex flex-col gap-8">
+        {/* FIXED: Changed to start-[13px] and top-[14px] to avoid layout shift on different locales */}
+        <div className="bg-base-200 absolute start-[13px] top-[14px] bottom-[14px] w-[2px] rounded-full" />
+
+        {Array.from({ length: milestones }, (_, i) => (
+          <div
+            key={i}
+            className="relative grid grid-cols-[auto_1fr_auto] items-center gap-4"
+          >
+            {/* Column 1: Dot Placeholder */}
+            <div className="bg-base-200 border-base-100 z-10 size-7 animate-pulse rounded-full border-4" />
+
+            {/* Column 2: Milestone Text Labels */}
+            <div className="flex flex-col gap-1.5">
+              <div className="bg-base-200 h-3.5 w-12 animate-pulse rounded" />
+              <div className="bg-base-200 h-3 w-16 animate-pulse rounded" />
+            </div>
+
+            {/* Column 3: Status Badge Placeholder */}
+            <div className="bg-base-200 h-5 w-14 animate-pulse rounded-md" />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 function SkeletonRowItem({ row }: { row: SkeletonRow }) {
   switch (row.kind) {
     case "text":
@@ -67,6 +102,8 @@ function SkeletonRowItem({ row }: { row: SkeletonRow }) {
       return <SkeletonFieldRow labelWidth={row.labelWidth} />;
     case "progress":
       return <SkeletonProgressRow trailingText={row.trailingText} />;
+    case "timeline":
+      return <SkeletonTimelineRow milestones={row.milestones} />;
     case "fieldGrid":
       return (
         <div className="grid gap-3 sm:grid-cols-2">
@@ -78,13 +115,6 @@ function SkeletonRowItem({ row }: { row: SkeletonRow }) {
   }
 }
 
-/**
- * A single card-shaped pulse placeholder matching the app's standard card chrome
- * (icon badge + title + body rows). Pass `rows` to mirror the real card's
- * internal layout (stat tiles, goal/budget progress lists, profile field
- * grids, etc.) so loading state keeps the same width/height as populated
- * state. Defaults to a wider, clean stat-tile shape when no rows are given.
- */
 export function CardSkeleton({
   icon: Icon,
   rows,
@@ -93,12 +123,9 @@ export function CardSkeleton({
   className = "",
 }: {
   icon?: ComponentType<{ className?: string }>;
-  /** Body rows mirroring the real card's layout. Omit for a plain stat-tile shape. */
   rows?: SkeletonRow[];
-  /** Renders a circular placeholder beside the rows — mirrors a donut chart card. */
   donut?: boolean;
   fullHeight?: boolean;
-  /** Custom alignment utility layout classes applied directly to the card wrapper. */
   className?: string;
 }) {
   const iconBadge = (
@@ -108,18 +135,14 @@ export function CardSkeleton({
   );
 
   function renderBody() {
-    // Stat-tile placeholder layout
     if (!rows) {
       return (
         <div className="flex flex-col gap-3.5">
           <div className="flex items-center gap-2">
             {iconBadge}
-            {/* Widened from w-2/3 to w-1/2 to look clean alongside the badge */}
             <div className="bg-base-200 h-3.5 w-1/2 animate-pulse rounded" />
           </div>
-          {/* Main big metric/text line widened from w-1/2 to w-3/4 */}
           <div className="bg-base-200 h-6.5 w-3/4 animate-pulse rounded" />
-          {/* Bottom trailing description sub-line widened from w-1/3 to w-2/3 */}
           <div className="bg-base-200 h-4 w-2/3 animate-pulse rounded" />
         </div>
       );
@@ -131,7 +154,7 @@ export function CardSkeleton({
       <div className="flex flex-col gap-4">
         <div className="flex items-center gap-2">
           {iconBadge}
-          {/* Heading line widened from w-1/3 to w-1/2 */}
+          {/* Heading line matches real card title structure perfectly */}
           <div className="bg-base-200 h-4 w-1/2 animate-pulse rounded" />
         </div>
         {donut ? (
@@ -155,6 +178,7 @@ export function CardSkeleton({
     </div>
   );
 }
+
 export function ErrorState({
   message,
   onRetry,
@@ -198,6 +222,39 @@ export function EmptyState({
         </span>
       )}
       <p className="text-base-content/50 text-sm">{label ?? t("data.noResults")}</p>
+    </div>
+  );
+}
+
+export function GoalEmptyState({ onAddClick }: { onAddClick: () => void }) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="border-base-300 bg-base-200/20 flex flex-1 flex-col items-center justify-center gap-4 rounded-xl border border-dashed px-4 py-8 text-center">
+      <span className="bg-primary/10 text-primary/70 grid size-12 place-items-center rounded-full">
+        <Target className="size-5.5" />
+      </span>
+
+      <div className="flex max-w-60 flex-col gap-1">
+        <h3 className="text-base-content text-sm font-semibold">
+          {t("dashboard.goals.emptyTitle", "No active goal")}
+        </h3>
+        <p className="text-base-content/50 text-xs">
+          {t(
+            "dashboard.goals.empty",
+            "Set a financial target to track your progress milestones.",
+          )}
+        </p>
+      </div>
+
+      <button
+        type="button"
+        onClick={onAddClick}
+        className="btn btn-primary btn-sm gap-2 font-medium normal-case shadow-sm"
+      >
+        <Plus className="size-4" />
+        {t("dashboard.goals.addYours", "Create Goal")}
+      </button>
     </div>
   );
 }

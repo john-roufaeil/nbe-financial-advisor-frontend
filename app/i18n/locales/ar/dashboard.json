@@ -18,9 +18,11 @@
       "vsLastMonth": "مقارنة بالشهر الماضي"
     },
     "goals": {
+      "goal": "الهدف",
       "title": "تقدم الأهداف",
       "remaining": "متبقي {{amount}} {{currency}}",
       "empty": "لم يتم تحديد هدف بعد. أضف هدفك الآن لبدء التتبع.",
+      "emptyTitle": "لا يوجد هدف نشط",
       "addYours": "أضف هدفك",
       "editTitle": "تعديل الهدف",
       "name": "الاسم",
@@ -28,7 +30,14 @@
       "target": "الهدف",
       "newNamePlaceholder": "مثال: تجديد المنزل",
       "add": "إضافة هدف",
-      "save": "حفظ الهدف"
+      "save": "حفظ الهدف",
+      "duration": "مدة (أشهر)",
+      "monthsPlaceholder": "أشهر",
+      "status": {
+        "reached": "تم التحقيق",
+        "next": "القادم",
+        "locked": "مقفل"
+      }
     },
     "budget": {
       "title": "توزيع خطة الميزانية",

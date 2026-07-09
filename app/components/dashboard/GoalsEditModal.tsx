@@ -6,12 +6,16 @@ import { useCreateGoal, useUpdateGoal, useDeleteGoal } from "@/queries/goals";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { Button } from "@/components/shared/Button";
 
-type Draft = { name: string; current: string; target: string };
+type Draft = { name: string; target: string; duration: string };
 
-const EMPTY_DRAFT: Draft = { name: "", current: "", target: "" };
+const EMPTY_DRAFT: Draft = { name: "", target: "", duration: "" };
 
 function toDraft(goal: FinancialGoal): Draft {
-  return { name: goal.name, current: String(goal.current), target: String(goal.target) };
+  return {
+    name: goal.name,
+    target: String(goal.target),
+    duration: String(goal.duration || ""),
+  };
 }
 
 export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGoal }>(
@@ -31,18 +35,35 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
       setDraft((d) => ({ ...d, [field]: value }));
     }
 
+    // Programmatically dismisses the native dialog container reference elements safely
+    function closeModal() {
+      if (ref && "current" in ref && ref.current) {
+        ref.current.close();
+      }
+    }
+
     function handleSave() {
       const target = Number(draft.target);
-      if (!draft.name.trim() || !target || target <= 0) return;
+      const duration = Number(draft.duration);
+
+      if (!draft.name.trim() || !target || target <= 0 || !duration || duration <= 0)
+        return;
+
       const patch = {
         name: draft.name.trim(),
-        current: Number(draft.current) || 0,
         target,
+        duration,
+        current: goal?.current ?? 0,
       };
+
+      const options = {
+        onSuccess: () => closeModal(), // Closes the modal immediately when mutation finishes successfully
+      };
+
       if (goal) {
-        updateGoal.mutate({ id: goal.id, patch });
+        updateGoal.mutate({ id: goal.id, patch }, options);
       } else {
-        createGoal.mutate(patch);
+        createGoal.mutate(patch, options);
       }
     }
 
@@ -50,18 +71,21 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
 
     return (
       <dialog ref={ref} className="modal">
-        <div className="modal-box relative flex flex-col gap-4">
+        <div className="modal-box relative flex max-h-[90vh] w-full max-w-md flex-col gap-4 overflow-y-auto">
           <form method="dialog">
+            {/* FIXED: Changed to absolute end-2 to position the X on the left side during RTL rendering */}
             <button
-              className="btn btn-ghost btn-sm btn-circle absolute end-2 top-2"
+              className="btn btn-ghost btn-sm btn-circle absolute inset-e-2 top-2"
               aria-label={t("actions.close")}
             >
               <X data-no-flip className="size-4" />
             </button>
           </form>
-          <h3 className="text-lg font-semibold">{t("dashboard.goals.editTitle")}</h3>
+          <h3 className="text-lg font-semibold">
+            {goal ? t("dashboard.goals.editTitle") : t("dashboard.goals.addYours")}
+          </h3>
 
-          <div className="flex flex-col gap-3">
+          <div className="flex flex-col gap-4">
             <label className="flex flex-col gap-1">
               <span className="label-text text-xs">{t("dashboard.goals.name")}</span>
               <input
@@ -72,31 +96,37 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
                 className="input input-bordered w-full"
               />
             </label>
-            <div className="flex gap-3">
-              <label className="flex flex-col gap-1">
-                <span className="label-text text-xs">{t("dashboard.goals.current")}</span>
-                <input
-                  type="number"
-                  min={0}
-                  value={draft.current}
-                  onChange={(e) => setDraftField("current", e.target.value)}
-                  className="input input-bordered w-fit"
-                />
-              </label>
-              <label className="flex flex-col gap-1">
+
+            <div className="grid w-full grid-cols-2 gap-3">
+              <label className="flex min-w-0 flex-col gap-1">
                 <span className="label-text text-xs">{t("dashboard.goals.target")}</span>
                 <input
                   type="number"
-                  min={0}
+                  min={1}
                   value={draft.target}
                   onChange={(e) => setDraftField("target", e.target.value)}
-                  className="input input-bordered w-fit"
+                  placeholder="0"
+                  className="input input-bordered w-full"
+                />
+              </label>
+
+              <label className="flex min-w-0 flex-col gap-1">
+                <span className="label-text text-xs">
+                  {t("dashboard.goals.duration")}
+                </span>
+                <input
+                  type="number"
+                  min={1}
+                  value={draft.duration}
+                  onChange={(e) => setDraftField("duration", e.target.value)}
+                  placeholder={t("dashboard.goals.monthsPlaceholder", "Months")}
+                  className="input input-bordered w-full"
                 />
               </label>
             </div>
           </div>
 
-          <div className="modal-action items-center justify-between">
+          <div className="modal-action mt-2 flex-wrap items-center justify-between gap-4">
             {goal ? (
               <button
                 type="button"
@@ -104,21 +134,24 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
                   confirm({
                     title: t("confirm.deleteGoalTitle"),
                     message: t("confirm.deleteMessage"),
-                    onConfirm: () => deleteGoal.mutate(goal.id),
+                    onConfirm: () => {
+                      deleteGoal.mutate(goal.id, { onSuccess: () => closeModal() });
+                    },
                   })
                 }
-                className="btn btn-ghost btn-sm text-error gap-2"
+                className="btn btn-ghost btn-sm text-error inset-s-0 gap-2"
               >
                 <Trash2 className="size-4" />
-                {t("actions.delete", { name: goal.name })}
+                {t("actions.delete", { name: t("dashboard.goals.goal") })}
               </button>
             ) : (
               <span />
             )}
-            <div className="flex gap-2">
-              <form method="dialog">
-                <button className="btn btn-ghost btn-sm">{t("actions.cancel")}</button>
-              </form>
+
+            {/* FIXED: Uses flex-row-reverse paired with margin-inline layout logic. 
+                This displays Cancel before Save in English (left to right), 
+                and correctly scales to display Cancel before Save in Arabic (right to left). */}
+            <div className="ms-auto flex flex-row-reverse items-center gap-2">
               <Button
                 type="button"
                 onClick={handleSave}
@@ -127,6 +160,9 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
               >
                 {t("dashboard.goals.save")}
               </Button>
+              <form method="dialog">
+                <button className="btn btn-ghost btn-sm">{t("actions.cancel")}</button>
+              </form>
             </div>
           </div>
         </div>

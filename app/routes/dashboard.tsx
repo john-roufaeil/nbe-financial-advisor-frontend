@@ -3,7 +3,6 @@ import { useParams, Link } from "react-router";
 import {
   Bot,
   LayoutDashboard,
-  Target,
   PieChart,
   Wallet,
   TrendingUp,
@@ -12,7 +11,7 @@ import {
 } from "lucide-react";
 import { PageBanner } from "@/components/shared/PageBanner";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
-import { GoalsCard } from "@/components/dashboard/GoalsCard";
+import { GoalCard, GoalCardSkeleton } from "@/components/dashboard/GoalCard";
 import { BudgetSplitCard } from "@/components/dashboard/BudgetSplitCard";
 import { NoPlanCard } from "@/components/dashboard/NoPlanCard";
 import { AddItemFab } from "@/components/dashboard/AddItemFab";
@@ -31,15 +30,7 @@ function DashboardSkeleton() {
       </div>{" "}
       <div className="grid gap-4 lg:grid-cols-5">
         <div className="lg:col-span-2">
-          <CardSkeleton
-            icon={Target}
-            fullHeight
-            rows={[
-              { kind: "progress", trailingText: true },
-              { kind: "progress", trailingText: true },
-              { kind: "progress", trailingText: true },
-            ]}
-          />
+          <GoalCardSkeleton />
         </div>
         <div className="lg:col-span-3">
           <CardSkeleton
@@ -94,7 +85,7 @@ export default function Dashboard() {
           {data.hasPlan ? (
             <div className="grid gap-4 lg:grid-cols-5">
               <div className="animate-entry lg:col-span-2">
-                <GoalsCard currency={data.currency} />
+                <GoalCard currency={data.currency} />
               </div>
               <div className="animate-entry lg:col-span-3">
                 <BudgetSplitCard
