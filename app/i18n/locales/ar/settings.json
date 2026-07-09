@@ -1,5 +1,16 @@
 {
   "settings": {
-    "signOut": "تسجيل الخروج"
+    "signOut": "تسجيل الخروج",
+    "language": "اللغة",
+    "accessibility": {
+      "menuLabel": "خيارات إمكانية الوصول",
+      "title": "إمكانية الوصول",
+      "close": "إغلاق",
+      "fontSize": "حجم الخط",
+      "increaseFontSize": "تكبير حجم الخط",
+      "decreaseFontSize": "تصغير حجم الخط",
+      "resetFontSize": "إعادة التعيين للوضع الافتراضي",
+      "highContrast": "تباين عالٍ"
+    }
   }
 }

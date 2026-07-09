@@ -1,5 +1,16 @@
 {
   "settings": {
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "language": "Language",
+    "accessibility": {
+      "menuLabel": "Accessibility options",
+      "title": "Accessibility",
+      "close": "Close",
+      "fontSize": "Font size",
+      "increaseFontSize": "Increase font size",
+      "decreaseFontSize": "Decrease font size",
+      "resetFontSize": "Reset to default",
+      "highContrast": "High contrast"
+    }
   }
 }

@@ -3,11 +3,15 @@
     "submit": "إرسال",
     "cancel": "إلغاء",
     "continue": "متابعة",
+    "skip": "تخطي",
     "back": "رجوع",
     "upload": "رفع",
     "delete": "حذف {{name}}",
     "done": "تم",
     "close": "إغلاق",
-    "edit": "تعديل"
+    "edit": "تعديل",
+    "clear": "مسح",
+    "showPassword": "إظهار كلمة المرور",
+    "hidePassword": "إخفاء كلمة المرور"
   }
 }

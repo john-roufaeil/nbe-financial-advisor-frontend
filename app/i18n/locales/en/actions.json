@@ -3,11 +3,15 @@
     "submit": "Submit",
     "cancel": "Cancel",
     "continue": "Continue",
+    "skip": "Skip",
     "back": "Back",
     "upload": "Upload",
     "delete": "Delete {{name}}",
     "done": "Done",
     "close": "Close",
-    "edit": "Edit"
+    "edit": "Edit",
+    "clear": "Clear",
+    "showPassword": "Show password",
+    "hidePassword": "Hide password"
   }
 }

@@ -1,7 +1,9 @@
 {
   "data": {
     "transactions": "Transactions",
+    "transactionsSubtitle": "Track your income and expenses",
     "documents": "Bank Statements",
+    "documentsSubtitle": "Upload statements to auto-extract transactions",
     "search": "Search...",
     "noResults": "No results found.",
     "transactionsEmpty": "No transactions yet. Add one manually, or upload a bank statement and we'll pull them out for you.",
@@ -93,7 +95,6 @@
         "fields": {
           "employmentStatus": "Employment status",
           "monthlyIncome": "Monthly income",
-          "incomeBracket": "Income bracket",
           "incomeSteadiness": "Income steadiness",
           "riskTolerance": "Risk tolerance"
         }
