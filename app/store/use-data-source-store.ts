@@ -12,9 +12,9 @@ interface DataSourceState {
 export const useDataSourceStore = create<DataSourceState>()(
   persist(
     (set) => ({
-      source: "mock",
+      source: "backend",
       setSource: (source) => set({ source }),
     }),
-    { name: "nbe_data_source" },
+    { name: "nbe_data_source", version: 1 },
   ),
 );

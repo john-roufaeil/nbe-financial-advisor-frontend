@@ -66,6 +66,7 @@
         "title": "Profile",
         "fields": {
           "fullName": "Full name",
+          "id": "User ID",
           "dob": "Date of birth",
           "nationalId": "National ID"
         }
@@ -90,6 +91,8 @@
         "fields": {
           "employmentStatus": "Employment status",
           "monthlyIncome": "Monthly income",
+          "incomeBracket": "Income bracket",
+          "incomeSteadiness": "Income steadiness",
           "riskTolerance": "Risk tolerance"
         }
       }

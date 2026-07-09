@@ -3,7 +3,7 @@ import * as goalsApi from "@/api/goals";
 import * as goalsMock from "@/mocks/goals";
 import type { FinancialGoal } from "@/types/goal";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
-import { toastSuccess, toastError } from "@/lib/toast";
+import { toastSuccess, toastApiError } from "@/lib/toast";
 
 function impl(source: DataSource) {
   return source === "mock" ? goalsMock : goalsApi;
@@ -30,7 +30,7 @@ export function useCreateGoal() {
       queryClient.invalidateQueries({ queryKey: ["goals"] });
       toastSuccess("toast.goalCreated");
     },
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }
 
@@ -44,7 +44,7 @@ export function useUpdateGoal() {
       queryClient.invalidateQueries({ queryKey: ["goals"] });
       toastSuccess("toast.goalUpdated");
     },
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }
 
@@ -57,6 +57,6 @@ export function useDeleteGoal() {
       queryClient.invalidateQueries({ queryKey: ["goals"] });
       toastSuccess("toast.goalDeleted");
     },
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }

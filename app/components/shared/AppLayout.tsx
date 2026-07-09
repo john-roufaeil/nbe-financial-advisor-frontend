@@ -6,9 +6,8 @@ import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { ChatThreadList } from "@/components/chat/ChatThreadList";
 import { useAppChatRuntime } from "@/lib/use-chat-runtime";
 import { useDrawerStore } from "@/store/use-drawer-store";
-import { usePersonalDataStore } from "@/store/use-personal-data-store";
+import { useMe } from "@/queries/profile";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
-import { ToastHost } from "@/components/shared/ToastHost";
 import { BalanceVisibilityToggle } from "@/components/shared/BalanceVisibilityToggle";
 
 export default function AppLayout() {
@@ -17,8 +16,9 @@ export default function AppLayout() {
   const { t } = useTranslation();
   const { isOpen, toggle, close } = useDrawerStore();
   const runtime = useAppChatRuntime();
-  const fullName = usePersonalDataStore((s) => s.profile.fullName);
-  const initial = fullName.trim().charAt(0).toUpperCase();
+  const { data: user } = useMe();
+  const fullName = user?.name || "Profile";
+  const initial = user?.name ? user.name.trim().charAt(0).toUpperCase() : "?";
 
   const navItems = [
     { to: `/${lang}/dashboard`, label: t("nav.dashboard"), icon: LayoutDashboard },
@@ -140,7 +140,6 @@ export default function AppLayout() {
         </div>
       </div>
       <ConfirmDialog />
-      <ToastHost />
     </AssistantRuntimeProvider>
   );
 }
