@@ -52,6 +52,7 @@ export function HydrateFallback() {
 
 import { AccessibilityMenu } from "@/components/shared/AccessibilityMenu";
 import { ToastHost } from "@/components/shared/ToastHost";
+import { SessionExpiredModal } from "@/components/shared/SessionExpiredModal";
 
 export default function App() {
   return (
@@ -59,6 +60,7 @@ export default function App() {
       <AccessibilityMenu />
       <Outlet />
       <ToastHost />
+      <SessionExpiredModal />
     </QueryClientProvider>
   );
 }
