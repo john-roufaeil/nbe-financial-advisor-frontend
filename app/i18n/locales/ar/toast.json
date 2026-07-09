@@ -10,6 +10,7 @@
     "goalCreated": "تمت إضافة الهدف",
     "goalUpdated": "تم تحديث الهدف",
     "goalDeleted": "تم حذف الهدف",
-    "genericError": "حدث خطأ ما. يرجى المحاولة مرة أخرى."
+    "genericError": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "budgetCreated": "تم وضع الخطة"
   }
 }
