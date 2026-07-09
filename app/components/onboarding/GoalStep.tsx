@@ -1,5 +1,17 @@
 import { useTranslation } from "react-i18next";
+import { X } from "lucide-react";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
+import { SliderField } from "@/components/onboarding/SliderField";
+
+// Quick-fill suggestions for the free-text goal name — clicking one just
+// fills the input; the user can still type their own name.
+const NAME_SUGGESTIONS = [
+  "emergencyFund",
+  "travel",
+  "newCar",
+  "homeDownpayment",
+  "homeRenovation",
+] as const;
 
 /**
  * Maps to the `goal` object of POST /budget:
@@ -14,37 +26,64 @@ export function GoalStep() {
   const setField = useOnboardingStore((s) => s.setField);
 
   return (
-    <div className="flex flex-col gap-3">
-      <label className="flex flex-col gap-1">
+    <div className="flex flex-col gap-4">
+      <label className="flex flex-col gap-1.5">
         <span className="label-text text-xs">{t("onboarding.goal.name")}</span>
-        <input
-          type="text"
-          value={data.goal_name}
-          onChange={(e) => setField("goal_name", e.target.value)}
-          placeholder={t("onboarding.goal.namePlaceholder")}
-          className="input input-bordered input-sm w-full"
-        />
+        <label className="input input-bordered flex w-full items-center gap-2">
+          <input
+            type="text"
+            value={data.goal_name}
+            onChange={(e) => setField("goal_name", e.target.value)}
+            placeholder={t("onboarding.goal.namePlaceholder")}
+            className="min-w-0 grow"
+          />
+          {data.goal_name && (
+            <button
+              type="button"
+              onClick={() => setField("goal_name", "")}
+              aria-label={t("actions.clear")}
+              className="btn btn-ghost btn-xs btn-square shrink-0"
+            >
+              <X className="size-3.5" />
+            </button>
+          )}
+        </label>
+        <div className="flex flex-wrap gap-1.5">
+          {NAME_SUGGESTIONS.map((key) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() =>
+                setField("goal_name", t(`onboarding.goal.suggestions.${key}`))
+              }
+              className="btn btn-outline btn-xs cursor-pointer select-none"
+            >
+              {t(`onboarding.goal.suggestions.${key}`)}
+            </button>
+          ))}
+        </div>
       </label>
-      <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">{t("onboarding.goal.targetAmount")}</span>
-        <input
-          type="number"
-          min={0}
-          value={data.goal_target_amount}
-          onChange={(e) => setField("goal_target_amount", e.target.value)}
-          className="input input-bordered input-sm w-full"
-        />
-      </label>
-      <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">{t("onboarding.goal.targetMonths")}</span>
-        <input
-          type="number"
-          min={1}
-          value={data.goal_target_months}
-          onChange={(e) => setField("goal_target_months", e.target.value)}
-          className="input input-bordered input-sm w-full"
-        />
-      </label>
+      <SliderField
+        label={t("onboarding.goal.targetAmount")}
+        value={Number(data.goal_target_amount) || 0}
+        onChange={(v) => setField("goal_target_amount", String(v))}
+        min={0}
+        max={1_000_000}
+        step={1_000}
+        unit={t("currency.EGP")}
+        presets={[10_000, 25_000, 50_000, 100_000, 250_000].map((amount) => ({
+          value: amount,
+          label: amount.toLocaleString(),
+        }))}
+      />
+      <SliderField
+        label={t("onboarding.goal.targetMonths")}
+        value={Number(data.goal_target_months) || 1}
+        onChange={(v) => setField("goal_target_months", String(v))}
+        min={1}
+        max={60}
+        step={1}
+      />
     </div>
   );
 }

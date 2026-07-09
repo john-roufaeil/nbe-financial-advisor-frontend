@@ -19,7 +19,6 @@ export interface OnboardingData {
   phone: string;
   employment_status: string;
   monthly_income: string;
-  income_bracket: string;
   income_steadiness: string;
   dependents_count: string;
   goal_name: string;
@@ -28,13 +27,12 @@ export interface OnboardingData {
   selected_template_key: string;
 }
 
-const initialData: OnboardingData = {
+export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   name: "",
   email: "",
   phone: "",
   employment_status: "",
   monthly_income: "",
-  income_bracket: "",
   income_steadiness: "",
   dependents_count: "",
   goal_name: "",
@@ -52,6 +50,7 @@ interface OnboardingState {
   begin: () => void;
   next: () => void;
   back: () => void;
+  goToStep: (step: number) => void;
   reset: () => void;
   setField: <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => void;
 }
@@ -62,15 +61,17 @@ export const useOnboardingStore = create<OnboardingState>()(
       step: 0,
       totalSteps: 5,
       started: false,
-      data: initialData,
-      begin: () => set({ started: true, step: 0, data: initialData }),
+      data: INITIAL_ONBOARDING_DATA,
+      begin: () => set({ started: true, step: 0, data: INITIAL_ONBOARDING_DATA }),
       next: () => set((s) => ({ step: Math.min(s.step + 1, s.totalSteps - 1) })),
       back: () => set((s) => ({ step: Math.max(s.step - 1, 0) })),
-      reset: () => set({ step: 0, started: false, data: initialData }),
+      goToStep: (step) =>
+        set((s) => ({ step: Math.max(0, Math.min(step, s.totalSteps - 1)) })),
+      reset: () => set({ step: 0, started: false, data: INITIAL_ONBOARDING_DATA }),
       setField: (field, value) => set((s) => ({ data: { ...s.data, [field]: value } })),
     }),
-    // version bumped: the field set changed (4-step -> 5-step), so any stale
-    // persisted `data` is discarded instead of hydrating a mismatched shape.
-    { name: "nbe_onboarding", version: 1 },
+    // version bumped: the field set changed (income_bracket removed), so any
+    // stale persisted `data` is discarded instead of hydrating a mismatched shape.
+    { name: "nbe_onboarding", version: 2 },
   ),
 );

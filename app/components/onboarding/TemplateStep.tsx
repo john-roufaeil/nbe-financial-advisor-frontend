@@ -2,21 +2,22 @@ import { useTranslation } from "react-i18next";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { OptionCard } from "@/components/onboarding/OptionCard";
 import { useStarterTemplates } from "@/queries/budget";
+import { CardSkeleton, ErrorState } from "@/components/shared/QueryState";
 
 export function TemplateStep() {
   const { t } = useTranslation();
   const selected = useOnboardingStore((s) => s.data.selected_template_key);
   const setField = useOnboardingStore((s) => s.setField);
   // GET /budget/starter-templates via the data-source-aware query hook.
-  const { data: templates, isPending, isError } = useStarterTemplates();
+  const { data: templates, isPending, isError, refetch } = useStarterTemplates();
 
   if (isPending) {
-    return (
-      <p className="text-base-content/50 text-sm">{t("onboarding.template.loading")}</p>
-    );
+    return <CardSkeleton cards={3} />;
   }
   if (isError || !templates) {
-    return <p className="text-error text-sm">{t("onboarding.template.error")}</p>;
+    return (
+      <ErrorState message={t("onboarding.template.error")} onRetry={() => refetch()} />
+    );
   }
 
   return (
