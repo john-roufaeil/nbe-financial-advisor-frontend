@@ -72,7 +72,7 @@ function AssistantActionBar() {
           <Copy className="size-3.5" />
         </MessagePrimitive.If>
         <MessagePrimitive.If copied>
-          <Check className="text-success size-3.5" />
+          <Check data-no-flip className="text-success size-3.5" />
         </MessagePrimitive.If>
       </ActionBarPrimitive.Copy>
       <ActionBarPrimitive.FeedbackPositive

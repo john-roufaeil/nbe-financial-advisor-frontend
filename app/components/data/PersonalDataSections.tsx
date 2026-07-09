@@ -173,7 +173,7 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
                 {updateProfile.isPending ? (
                   <Loader2 className="size-4 animate-spin" />
                 ) : (
-                  <Check className="size-4" />
+                  <Check data-no-flip className="size-4" />
                 )}
               </button>
             </div>

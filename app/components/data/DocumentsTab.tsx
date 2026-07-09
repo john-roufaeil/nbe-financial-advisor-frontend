@@ -86,7 +86,7 @@ function StatusBadge({ doc }: { doc: DocumentRecord }) {
   if (!doc.approved) {
     return (
       <span className="text-warning flex items-center gap-1 text-xs">
-        <ClockCheck className="size-3" />
+        <ClockCheck data-no-flip className="size-3" />
         {t("data.documentStatus.pendingApproval")}
       </span>
     );

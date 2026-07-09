@@ -25,7 +25,7 @@ export function OptionCard({
           selected ? "border-primary bg-primary text-primary-content" : "border-base-300"
         }`}
       >
-        {selected && <Check className="size-3" />}
+        {selected && <Check data-no-flip className="size-3" />}
       </span>
       <span className="flex flex-col gap-0.5">
         <span className="text-sm font-medium">{title}</span>
