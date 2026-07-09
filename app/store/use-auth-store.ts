@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { useDataSourceStore } from "./use-data-source-store";
 
 interface AuthTokens {
   accessToken: string;
@@ -31,8 +32,10 @@ export const useAuthStore = create<AuthState>()(
       setTokens: (tokens) =>
         set({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken }),
       login: () => set({ isAuthenticated: true }),
-      logout: () =>
-        set({ isAuthenticated: false, accessToken: null, refreshToken: null }),
+      logout: () => {
+        useDataSourceStore.getState().setSource("backend");
+        set({ isAuthenticated: false, accessToken: null, refreshToken: null });
+      },
     }),
     {
       name: "nbe_auth",

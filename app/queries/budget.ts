@@ -1,9 +1,9 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as budgetApi from "@/api/budget";
 import * as budgetMock from "@/mocks/budget";
 import type { CreateBudgetBody } from "@/types/budget";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
-import { toastError } from "@/lib/toast";
+import { toastSuccess, toastApiError } from "@/lib/toast";
 
 function impl(source: DataSource) {
   return source === "mock" ? budgetMock : budgetApi;
@@ -23,10 +23,15 @@ export function useStarterTemplates() {
 }
 
 export function useCreateBudget() {
+  const queryClient = useQueryClient();
   const source = useDataSourceStore((s) => s.source);
   return useMutation({
     mutationFn: (body: CreateBudgetBody) => impl(source).createBudget(body),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["budget"] });
+      toastSuccess("toast.budgetCreated");
+    },
     // Failure surfaces (no fake success); the caller stays on the step.
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }

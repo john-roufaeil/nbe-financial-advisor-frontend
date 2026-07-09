@@ -4,7 +4,7 @@ import * as documentsMock from "@/mocks/documents";
 import type { DocumentFilters } from "@/api/documents";
 import type { DocumentType, ExtractedTransaction } from "@/types/document";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
-import { toastSuccess, toastError } from "@/lib/toast";
+import { toastSuccess, toastApiError } from "@/lib/toast";
 
 function impl(source: DataSource) {
   return source === "mock" ? documentsMock : documentsApi;
@@ -24,7 +24,7 @@ export function useDocuments(filters: DocumentFilters) {
     queryKey: documentKeys.list(filters, source),
     queryFn: () => impl(source).getDocuments(filters),
     refetchInterval: (query) => {
-      const hasInFlight = query.state.data?.items.some(
+      const hasInFlight = query.state.data?.items?.some(
         (d) => d.status === "uploading" || d.status === "processing",
       );
       return hasInFlight ? 1000 : false;
@@ -59,7 +59,7 @@ export function useUploadDocuments() {
       queryClient.invalidateQueries({ queryKey: documentKeys.all });
       toastSuccess("toast.documentUploaded");
     },
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }
 
@@ -72,7 +72,7 @@ export function useRetryDocument() {
       queryClient.invalidateQueries({ queryKey: documentKeys.all });
       toastSuccess("toast.documentRetried");
     },
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }
 
@@ -90,7 +90,7 @@ export function useUpdateExtractedTransaction() {
       patch: Partial<Omit<ExtractedTransaction, "id">>;
     }) => impl(source).updateExtractedTransaction(documentId, transactionId, patch),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all }),
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }
 
@@ -104,7 +104,7 @@ export function useApproveDocument() {
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
       toastSuccess("toast.documentApproved");
     },
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }
 
@@ -117,6 +117,6 @@ export function useDeleteDocument() {
       queryClient.invalidateQueries({ queryKey: documentKeys.all });
       toastSuccess("toast.documentDeleted");
     },
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }

@@ -4,7 +4,7 @@ import * as transactionsMock from "@/mocks/transactions";
 import type { TransactionFilters } from "@/api/transactions";
 import type { Transaction } from "@/types/transaction";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
-import { toastSuccess, toastError } from "@/lib/toast";
+import { toastSuccess, toastApiError } from "@/lib/toast";
 
 function impl(source: DataSource) {
   return source === "mock" ? transactionsMock : transactionsApi;
@@ -33,7 +33,7 @@ export function useCreateTransaction() {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
       toastSuccess("toast.transactionCreated");
     },
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }
 
@@ -52,7 +52,7 @@ export function useUpdateTransaction() {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
       toastSuccess("toast.transactionUpdated");
     },
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }
 
@@ -65,6 +65,6 @@ export function useDeleteTransaction() {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
       toastSuccess("toast.transactionDeleted");
     },
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }

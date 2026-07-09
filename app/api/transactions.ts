@@ -19,9 +19,15 @@ export interface TransactionListResponse {
 export async function getTransactions(
   filters: TransactionFilters,
 ): Promise<TransactionListResponse> {
-  const res = await apiClient.get<TransactionListResponse>("/transactions", {
+  const res = await apiClient.get<
+    TransactionListResponse | { results: Transaction[]; count: number }
+  >("/transactions", {
     params: filters,
   });
+  // Map DRF LimitOffsetPagination response to the frontend's expected shape
+  if ("results" in res.data) {
+    return { items: res.data.results, total: res.data.count };
+  }
   return res.data;
 }
 

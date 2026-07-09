@@ -22,9 +22,15 @@ export interface DocumentListResponse {
 export async function getDocuments(
   filters: DocumentFilters,
 ): Promise<DocumentListResponse> {
-  const res = await apiClient.get<DocumentListResponse>("/statements", {
+  const res = await apiClient.get<
+    DocumentListResponse | { results: DocumentRecord[]; count: number }
+  >("/statements", {
     params: filters,
   });
+  // Map DRF LimitOffsetPagination response to the frontend's expected shape
+  if ("results" in res.data) {
+    return { items: res.data.results, total: res.data.count };
+  }
   return res.data;
 }
 

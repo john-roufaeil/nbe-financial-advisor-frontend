@@ -66,6 +66,7 @@
         "title": "الملف الشخصي",
         "fields": {
           "fullName": "الاسم الكامل",
+          "id": "معرف المستخدم",
           "dob": "تاريخ الميلاد",
           "nationalId": "الرقم القومي"
         }
@@ -90,6 +91,8 @@
         "fields": {
           "employmentStatus": "الحالة الوظيفية",
           "monthlyIncome": "الدخل الشهري",
+          "incomeBracket": "شريحة الدخل",
+          "incomeSteadiness": "استقرار الدخل",
           "riskTolerance": "تحمل المخاطر"
         }
       }

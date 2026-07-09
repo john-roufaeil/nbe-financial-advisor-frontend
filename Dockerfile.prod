@@ -2,6 +2,11 @@
 FROM node:22-slim AS build
 WORKDIR /app
 ENV HUSKY=0
+# VITE_API_BASE_URL is injected at build time so the compiled SPA knows where
+# to send API calls. In production the deploy nginx proxies /api/ → backend:8000/
+# so the correct value is /api. In dev the Vite dev server reads .env.local.
+ARG VITE_API_BASE_URL=/api
+ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 RUN corepack enable
 COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN pnpm install --no-frozen-lockfile

@@ -3,7 +3,7 @@ import * as profileApi from "@/api/profile";
 import * as profileMock from "@/mocks/profile";
 import type { UpdateProfileBody } from "@/types/profile";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
-import { toastError } from "@/lib/toast";
+import { toastApiError } from "@/lib/toast";
 
 function impl(source: DataSource) {
   return source === "mock" ? profileMock : profileApi;
@@ -28,6 +28,6 @@ export function useUpdateProfile() {
     mutationFn: (body: UpdateProfileBody) => impl(source).updateProfile(body),
     onSuccess: () => queryClient.invalidateQueries({ queryKey: ["profile"] }),
     // Failure surfaces (no fake success); the caller stays on the step.
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }

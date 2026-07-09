@@ -6,6 +6,7 @@ import { useNavigate, useParams, Link } from "react-router";
 import { useTranslation } from "react-i18next";
 import { useAuthStore } from "@/store/use-auth-store";
 import { usePageTitle } from "@/lib/use-page-title";
+import { useLogin } from "@/queries/auth";
 
 const signInSchema = z.object({ email: z.string().email(), password: z.string().min(6) });
 type SignInValues = z.infer<typeof signInSchema>;
@@ -16,15 +17,21 @@ export default function SignIn() {
   const { t } = useTranslation();
   usePageTitle(t("signIn.title"));
   const login = useAuthStore((s) => s.login);
+  const loginMutation = useLogin();
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<SignInValues>({ resolver: zodResolver(signInSchema) });
 
-  function onSubmit() {
-    login();
-    navigate(`/${lang}/dashboard`);
+  async function onSubmit(values: SignInValues) {
+    try {
+      await loginMutation.mutateAsync(values);
+      login();
+      navigate(`/${lang}/dashboard`);
+    } catch {
+      // loginMutation.onError already surfaced a toast; stay on page.
+    }
   }
 
   return (
@@ -60,8 +67,16 @@ export default function SignIn() {
             {errors.password && (
               <span className="text-error text-sm">{errors.password.message}</span>
             )}
-            <button type="submit" className="btn btn-primary mt-2">
-              {t("signIn.submit")}
+            <button
+              type="submit"
+              className="btn btn-primary mt-2"
+              disabled={loginMutation.isPending}
+            >
+              {loginMutation.isPending ? (
+                <span className="loading loading-spinner loading-sm" />
+              ) : (
+                t("signIn.submit")
+              )}
             </button>
           </form>
           <Link

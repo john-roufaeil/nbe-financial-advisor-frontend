@@ -4,7 +4,7 @@ import * as authMock from "@/mocks/auth";
 import type { SignupBody, LoginBody } from "@/types/auth";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { useAuthStore } from "@/store/use-auth-store";
-import { toastError } from "@/lib/toast";
+import { toastApiError } from "@/lib/toast";
 
 function impl(source: DataSource) {
   return source === "mock" ? authMock : authApi;
@@ -23,7 +23,7 @@ export function useSignup() {
         refreshToken: tokens.refresh_token,
       }),
     // Failure surfaces (no fake success); the caller stays on the step.
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }
 
@@ -37,6 +37,6 @@ export function useLogin() {
         accessToken: tokens.access_token,
         refreshToken: tokens.refresh_token,
       }),
-    onError: () => toastError(),
+    onError: (error) => toastApiError(error),
   });
 }

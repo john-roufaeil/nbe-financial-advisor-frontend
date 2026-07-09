@@ -10,6 +10,16 @@ export const apiClient = axios.create({
 });
 
 apiClient.interceptors.request.use((config) => {
+  // Automatically append trailing slashes to meet Django's strict URL requirements
+  // without needing to hardcode slashes in every API client call.
+  if (config.url && !config.url.endsWith("/")) {
+    if (config.url.includes("?")) {
+      config.url = config.url.replace("?", "/?");
+    } else {
+      config.url += "/";
+    }
+  }
+
   const { accessToken } = useAuthStore.getState();
   if (accessToken) {
     config.headers.Authorization = `Bearer ${accessToken}`;
