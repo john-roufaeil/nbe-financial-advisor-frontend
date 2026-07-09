@@ -1,6 +1,7 @@
 {
   "currency": {
     "EGP": "EGP",
+    "EGP_full": "Egyptian pounds",
     "USD": "USD",
     "EUR": "EUR"
   },
