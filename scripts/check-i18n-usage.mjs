@@ -2,7 +2,7 @@ import fs from "node:fs";
 import path from "node:path";
 
 const appDir = path.resolve("app");
-const baseLocalePath = path.resolve("app/i18n/locales/en/common.json");
+const baseLocaleDir = path.resolve("app/i18n/locales/en");
 
 function flattenKeys(obj, prefix = "") {
   return Object.entries(obj).flatMap(([key, value]) => {
@@ -27,9 +27,14 @@ function walkFiles(dir, exts) {
   return results;
 }
 
-const validKeys = new Set(
-  flattenKeys(JSON.parse(fs.readFileSync(baseLocalePath, "utf-8"))),
+const localeFiles = fs.readdirSync(baseLocaleDir).filter((f) => f.endsWith(".json"));
+const mergedLocale = Object.assign(
+  {},
+  ...localeFiles.map((f) =>
+    JSON.parse(fs.readFileSync(path.join(baseLocaleDir, f), "utf-8")),
+  ),
 );
+const validKeys = new Set(flattenKeys(mergedLocale));
 
 const files = walkFiles(appDir, [".tsx", ".ts"]).filter(
   (f) => !f.includes("/i18n/locales/"),
@@ -56,7 +61,9 @@ if (missing.length > 0) {
   for (const { file, key } of missing) {
     console.log(`  ${file} → t("${key}")`);
   }
-  console.log("\nAdd the key to app/i18n/locales/en/common.json (and ar/common.json).");
+  console.log(
+    "\nAdd the key to the relevant app/i18n/locales/en/*.json file (and ar/*.json).",
+  );
   process.exit(1);
 }
 

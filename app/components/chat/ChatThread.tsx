@@ -25,6 +25,8 @@ import {
 import { useTranslation } from "react-i18next";
 import { chatToolComponents } from "@/components/chat/tools";
 import { QuestionsNav } from "@/components/chat/QuestionsNav";
+import { useChatStore } from "@/store/use-chat-store";
+import { useSendChatMessage } from "@/lib/use-chat-runtime";
 
 function formatTime(date: Date, locale: string) {
   return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
@@ -97,7 +99,7 @@ function UserMessage() {
   const createdAt = useMessage((m) => m.createdAt);
   return (
     <MessagePrimitive.Root id={`msg-${id}`} className="flex justify-end">
-      <div className="flex max-w-[80%] min-w-0 flex-col items-end">
+      <div className="animate-message-in flex max-w-[80%] min-w-0 flex-col items-end">
         <div className="bg-primary text-primary-content min-w-0 overflow-hidden rounded-2xl rounded-ee-sm px-4 py-2.5">
           <div className="flex flex-wrap gap-1.5 pb-2 empty:hidden">
             <MessagePrimitive.Attachments>
@@ -122,29 +124,31 @@ function AssistantMessage() {
   const createdAt = useMessage((m) => m.createdAt);
   const isLast = useMessage((m) => m.isLast);
   return (
-    <MessagePrimitive.Root id={`msg-${id}`} className="group flex items-start gap-2.5">
+    <MessagePrimitive.Root id={`msg-${id}`} className="group">
       <MessagePrimitive.If hasContent>
-        <span className="bg-primary/10 text-primary grid size-8 shrink-0 place-items-center rounded-full">
-          <Bot className="size-4.5" />
-        </span>
-        <div className="flex max-w-[80%] min-w-0 flex-col items-start">
-          <div className="w-full min-w-0 overflow-hidden leading-relaxed [overflow-wrap:anywhere] whitespace-pre-wrap">
-            <MessagePrimitive.Parts
-              components={{ tools: { by_name: chatToolComponents } }}
-            />
-          </div>
-          <span className="text-base-content/40 mt-1 px-1 text-[11px]">
-            {formatTime(createdAt, i18n.language)}
+        <div className="animate-message-in flex w-full items-start gap-2.5">
+          <span className="bg-primary/10 text-primary grid size-8 shrink-0 place-items-center rounded-full">
+            <Bot className="size-4.5" />
           </span>
-          <div
-            className={`grid w-full transition-[grid-template-rows] duration-200 ease-out ${
-              isLast
-                ? "grid-rows-[1fr]"
-                : "grid-rows-[0fr] group-focus-within:grid-rows-[1fr] group-hover:grid-rows-[1fr]"
-            }`}
-          >
-            <div className="overflow-hidden">
-              <AssistantActionBar />
+          <div className="flex max-w-[80%] min-w-0 flex-col items-start">
+            <div className="w-full min-w-0 overflow-hidden leading-relaxed [overflow-wrap:anywhere] whitespace-pre-wrap">
+              <MessagePrimitive.Parts
+                components={{ tools: { by_name: chatToolComponents } }}
+              />
+            </div>
+            <span className="text-base-content/40 mt-1 px-1 text-[11px]">
+              {formatTime(createdAt, i18n.language)}
+            </span>
+            <div
+              className={`grid w-full transition-[grid-template-rows] duration-200 ease-out ${
+                isLast
+                  ? "grid-rows-[1fr]"
+                  : "grid-rows-[0fr] group-focus-within:grid-rows-[1fr] group-hover:grid-rows-[1fr]"
+              }`}
+            >
+              <div className="overflow-hidden">
+                <AssistantActionBar />
+              </div>
             </div>
           </div>
         </div>
@@ -156,7 +160,7 @@ function AssistantMessage() {
 const SUGGESTIONS = [
   "chat.suggestions.spending",
   "chat.suggestions.save",
-  "chat.suggestions.budget",
+  "chat.suggestions.transactions",
 ] as const;
 
 function EmptyState() {
@@ -184,6 +188,36 @@ function EmptyState() {
         </div>
       </div>
     </ThreadPrimitive.Empty>
+  );
+}
+
+function SuggestedQuestions() {
+  const send = useSendChatMessage();
+  const isRunning = useChatStore((s) => s.isRunning);
+  const lastMessage = useChatStore((s) => {
+    const messages = s.threads[s.currentThreadId]?.messages ?? [];
+    return messages[messages.length - 1];
+  });
+
+  if (isRunning || !lastMessage || lastMessage.role !== "assistant") {
+    return null;
+  }
+  const suggestions = lastMessage.suggestions;
+  if (!suggestions?.length) return null;
+
+  return (
+    <div className="animate-entry flex flex-wrap gap-2 ps-10.5">
+      {suggestions.map((question) => (
+        <button
+          key={question}
+          type="button"
+          onClick={() => send(question)}
+          className="border-base-300 bg-base-100 hover:border-primary hover:bg-base-200 cursor-pointer rounded-full border px-3 py-1.5 text-xs transition-colors"
+        >
+          {question}
+        </button>
+      ))}
+    </div>
   );
 }
 
@@ -227,6 +261,7 @@ export function ChatThread() {
                 </div>
               </div>
             </ThreadPrimitive.If>
+            <SuggestedQuestions />
           </div>
         </ThreadPrimitive.Viewport>
 

@@ -12,8 +12,8 @@ import {
   DOCUMENT_UPLOAD_ACCEPT,
   inferDocumentType,
   type DocumentType,
-} from "@/lib/demo-transactions";
-import { useDocumentsStore } from "@/store/use-documents-store";
+} from "@/types/document";
+import { useUploadDocuments } from "@/queries/documents";
 
 const TYPE_ICONS: Record<DocumentType, typeof FileText> = {
   pdf: FileText,
@@ -33,7 +33,7 @@ interface StagedFile {
 export const AddDocumentModal = forwardRef<HTMLDialogElement>(
   function AddDocumentModal(_props, ref) {
     const { t } = useTranslation();
-    const addDocuments = useDocumentsStore((s) => s.addDocuments);
+    const uploadDocuments = useUploadDocuments();
     const [staged, setStaged] = useState<StagedFile[]>([]);
     const [rejected, setRejected] = useState<string[]>([]);
     const [isDragging, setIsDragging] = useState(false);
@@ -62,14 +62,13 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
 
     function handleUpload() {
       if (staged.length === 0) return;
-      const uploadDate = new Date().toISOString().slice(0, 10);
       const documents = staged.map(({ file, type }) => ({
         name: file.name,
         type,
-        uploadDate,
         sizeKb: Math.max(1, Math.round(file.size / 1024)),
+        file,
       }));
-      addDocuments(documents);
+      uploadDocuments.mutate(documents);
       reset();
       closeDialog(ref);
     }

@@ -1,8 +1,9 @@
 import { PieChart, TriangleAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { BudgetCategory } from "@/lib/demo-financials";
+import type { BudgetCategory } from "@/types/dashboard";
 import { CATEGORY_BAR_COLORS } from "@/lib/category-colors";
 import { CategoryDonutChart } from "@/components/dashboard/CategoryDonutChart";
+import { Money } from "@/components/shared/Money";
 
 function BudgetRow({
   category,
@@ -21,10 +22,10 @@ function BudgetRow({
     <li className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">{category.name}</span>
-        <span className="text-base-content/60 tabular-nums">
+        <Money className="text-base-content/60 tabular-nums">
           {category.spent.toLocaleString()} / {category.budget.toLocaleString()}{" "}
           {t(`currency.${currency}`, currency)}
-        </span>
+        </Money>
       </div>
       <div className="bg-base-200 h-2 w-full overflow-hidden rounded-full">
         <div

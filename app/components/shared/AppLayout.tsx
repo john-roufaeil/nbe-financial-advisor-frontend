@@ -8,6 +8,8 @@ import { useAppChatRuntime } from "@/lib/use-chat-runtime";
 import { useDrawerStore } from "@/store/use-drawer-store";
 import { usePersonalDataStore } from "@/store/use-personal-data-store";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
+import { ToastHost } from "@/components/shared/ToastHost";
+import { BalanceVisibilityToggle } from "@/components/shared/BalanceVisibilityToggle";
 
 export default function AppLayout() {
   const { lang } = useParams<{ lang: string }>();
@@ -60,6 +62,7 @@ export default function AppLayout() {
               alt={t("app.name")}
               className="mx-auto h-8 w-auto px-2"
             />
+            <BalanceVisibilityToggle />
           </header>
 
           <main className="min-h-0 flex-1 overflow-y-auto pt-3">
@@ -107,7 +110,12 @@ export default function AppLayout() {
             )}
 
             <div className="border-base-300 flex shrink-0 flex-col gap-4 border-t p-4">
-              <LanguageSwitcher onSelect={close} />
+              <div className="flex items-center gap-2">
+                <div className="min-w-0 flex-1">
+                  <LanguageSwitcher onSelect={close} />
+                </div>
+                <BalanceVisibilityToggle className="btn-square" />
+              </div>
               <NavLink
                 to={`/${lang}/profile`}
                 onClick={close}
@@ -132,6 +140,7 @@ export default function AppLayout() {
         </div>
       </div>
       <ConfirmDialog />
+      <ToastHost />
     </AssistantRuntimeProvider>
   );
 }

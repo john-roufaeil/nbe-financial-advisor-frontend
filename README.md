@@ -49,7 +49,7 @@ app/
 
 ## Stores (Zustand)
 
-UI-only state (sidebar, active tab, onboarding step) — never server data, that's TanStack Query. One small store per concern, e.g. `app/store/use-ui-store.ts`. No provider needed.
+UI-only state (sidebar, active tab, onboarding step) — never server data, that's TanStack Query. One small store per concern, e.g. `app/store/use-drawer-store.ts`. No provider needed.
 
 ## Architecture audit
 
@@ -64,7 +64,7 @@ Everything currently runs on fixed demo data (`lib/demo-*.ts`, `store/use-*-stor
 
 - `@tanstack/react-query` + `lib/query-client.ts` — provider is mounted in `root.tsx`, no `useQuery`/`useMutation` calls yet.
 - `.env.example`'s `VITE_API_BASE_URL` — declared, not read anywhere.
-- `schemas/example.schema.ts`, `store/use-ui-store.ts` — documented reference templates, not dead code (see Stores/Add-a-page above).
+- `schemas/example.schema.ts` — a documented reference template, not dead code (see Stores/Add-a-page above).
 - `store/use-*-store.ts` (auth, chat, goals, onboarding, personal-data) — hold demo state now; built so swapping seed data/actions for real API calls shouldn't require touching the components that consume them.
 
 **Missing for backend integration:**

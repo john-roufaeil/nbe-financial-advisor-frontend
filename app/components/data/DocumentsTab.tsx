@@ -6,15 +6,18 @@ import {
   TriangleAlert,
   CircleCheck,
   ClockCheck,
+  FileText,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatDate, type DocumentRecord } from "@/lib/demo-transactions";
+import type { DocumentRecord } from "@/types/document";
+import { formatDate } from "@/lib/format";
 import { getBankLogo, getBankName } from "@/lib/banks";
-import { useDocumentsStore } from "@/store/use-documents-store";
+import { useDocuments, useDeleteDocument } from "@/queries/documents";
 import { Pagination } from "@/components/data/Pagination";
 import { DocumentDetailModal } from "@/components/data/DocumentDetailModal";
 import { DateField } from "@/components/shared/DateField";
 import { useConfirmStore } from "@/store/use-confirm-store";
+import { ListSkeleton, ErrorState, EmptyState } from "@/components/shared/QueryState";
 
 const PAGE_SIZE = 10;
 const FILTERS = ["all", "pdf", "image", "doc"] as const;
@@ -61,7 +64,7 @@ function StatusBadge({ doc }: { doc: DocumentRecord }) {
   if (doc.status === "uploading" || doc.status === "processing") {
     return (
       <span className="text-base-content/50 flex items-center gap-1 text-xs">
-        <Loader2 className="size-3 animate-spin" />
+        <Loader2 data-no-flip className="size-3 animate-spin" />
         {t(`data.documentStatus.${doc.status}`)}
       </span>
     );
@@ -96,7 +99,7 @@ function StatusBadge({ doc }: { doc: DocumentRecord }) {
 
 function DocumentCard({ doc, onOpen }: { doc: DocumentRecord; onOpen: () => void }) {
   const { t } = useTranslation();
-  const removeDocument = useDocumentsStore((s) => s.removeDocument);
+  const deleteDocument = useDeleteDocument();
   const confirm = useConfirmStore((s) => s.confirm);
   return (
     <li
@@ -126,7 +129,7 @@ function DocumentCard({ doc, onOpen }: { doc: DocumentRecord; onOpen: () => void
           confirm({
             title: t("confirm.deleteDocumentTitle"),
             message: t("confirm.deleteMessage"),
-            onConfirm: () => removeDocument(doc.id),
+            onConfirm: () => deleteDocument.mutate(doc.id),
           });
         }}
         className="btn btn-ghost btn-sm btn-square text-error shrink-0"
@@ -145,25 +148,24 @@ export function DocumentsTab() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [page, setPage] = useState(1);
-  const documents = useDocumentsStore((s) => s.documents);
   const detailModalRef = useRef<HTMLDialogElement>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+
+  const { data, isPending, isError, refetch } = useDocuments({
+    type: filter === "all" ? undefined : filter,
+    q: search.trim() || undefined,
+    from: fromDate || undefined,
+    to: toDate || undefined,
+    offset: (page - 1) * PAGE_SIZE,
+    limit: PAGE_SIZE,
+  });
 
   function openDetail(id: string) {
     setSelectedId(id);
     detailModalRef.current?.showModal();
   }
 
-  const filtered = documents.filter((doc) => {
-    const matchesFilter = filter === "all" || doc.type === filter;
-    const matchesSearch =
-      !search.trim() || doc.name.toLowerCase().includes(search.toLowerCase());
-    const matchesDate =
-      (!fromDate || doc.uploadDate >= fromDate) && (!toDate || doc.uploadDate <= toDate);
-    return matchesFilter && matchesSearch && matchesDate;
-  });
-  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE));
-  const pageItems = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));
 
   function updateSearch(value: string) {
     setSearch(value);
@@ -219,16 +221,18 @@ export function DocumentsTab() {
         </div>
       </div>
 
-      {pageItems.length > 0 ? (
+      {isPending ? (
+        <ListSkeleton />
+      ) : isError ? (
+        <ErrorState onRetry={() => refetch()} />
+      ) : data.items.length > 0 ? (
         <ul className="flex flex-col gap-2">
-          {pageItems.map((doc) => (
+          {data.items.map((doc) => (
             <DocumentCard key={doc.id} doc={doc} onOpen={() => openDetail(doc.id)} />
           ))}
         </ul>
       ) : (
-        <p className="text-base-content/50 py-6 text-center text-sm">
-          {t("data.noResults")}
-        </p>
+        <EmptyState icon={FileText} label={t("data.documentsEmpty")} />
       )}
 
       <Pagination page={page} totalPages={totalPages} onChange={setPage} />

@@ -9,21 +9,36 @@ import {
   ArrowDownCircle,
   ArrowUpCircle,
 } from "lucide-react";
-import { TRANSACTION_CATEGORIES } from "@/lib/demo-transactions";
+import { TRANSACTION_CATEGORIES } from "@/types/transaction";
 import { getBankLogo, getBankName } from "@/lib/banks";
-import { useDocumentsStore } from "@/store/use-documents-store";
+import {
+  useDocument,
+  useRetryDocument,
+  useUpdateExtractedTransaction,
+  useApproveDocument,
+} from "@/queries/documents";
 
 export const DocumentDetailModal = forwardRef<
   HTMLDialogElement,
   { documentId: string | null }
 >(function DocumentDetailModal({ documentId }, ref) {
   const { t } = useTranslation();
-  const doc = useDocumentsStore((s) => s.documents.find((d) => d.id === documentId));
-  const retryDocument = useDocumentsStore((s) => s.retryDocument);
-  const updateExtractedTransaction = useDocumentsStore(
-    (s) => s.updateExtractedTransaction,
-  );
-  const approveDocument = useDocumentsStore((s) => s.approveDocument);
+  const { data: doc } = useDocument(documentId);
+  const retryDocument = useRetryDocument();
+  const updateExtractedTransactionMutation = useUpdateExtractedTransaction();
+  const approveDocument = useApproveDocument();
+
+  function updateExtractedTransaction(
+    docId: string,
+    txId: string,
+    patch: Parameters<typeof updateExtractedTransactionMutation.mutate>[0]["patch"],
+  ) {
+    updateExtractedTransactionMutation.mutate({
+      documentId: docId,
+      transactionId: txId,
+      patch,
+    });
+  }
 
   return (
     <dialog ref={ref} className="modal">
@@ -67,7 +82,7 @@ export const DocumentDetailModal = forwardRef<
 
             {(doc.status === "uploading" || doc.status === "processing") && (
               <div className="flex flex-col items-center gap-3 py-8">
-                <Loader2 className="text-primary size-8 animate-spin" />
+                <Loader2 data-no-flip className="text-primary size-8 animate-spin" />
                 <p className="text-base-content/60 text-sm">
                   {doc.status === "uploading"
                     ? t("data.documentDetail.uploading")
@@ -87,7 +102,7 @@ export const DocumentDetailModal = forwardRef<
                 </p>
                 <button
                   type="button"
-                  onClick={() => retryDocument(doc.id)}
+                  onClick={() => retryDocument.mutate(doc.id)}
                   className="btn btn-primary btn-sm gap-2"
                 >
                   <RotateCcw className="size-4" />
@@ -250,7 +265,7 @@ export const DocumentDetailModal = forwardRef<
                     <div className="modal-action">
                       <button
                         type="button"
-                        onClick={() => approveDocument(doc.id)}
+                        onClick={() => approveDocument.mutate(doc.id)}
                         className="btn btn-primary btn-sm"
                       >
                         {t("data.documentDetail.approve")}

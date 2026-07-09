@@ -4,9 +4,80 @@ import {
   type ThreadMessageLike,
   type ExternalStoreThreadListAdapter,
 } from "@assistant-ui/react";
-import { useChatStore } from "@/store/use-chat-store";
+import { useChatStore, type ChatState } from "@/store/use-chat-store";
 import { chatAttachmentsAdapter } from "@/lib/attachments";
-import { buildSpendingBreakdown, wantsSpendingBreakdown } from "@/lib/demo-financials";
+import {
+  buildSpendingBreakdown,
+  buildTransactionsList,
+  buildSavingsSlider,
+  buildSuggestions,
+  wantsSpendingBreakdown,
+  wantsTransactions,
+  wantsSavingsPlan,
+} from "@/lib/demo-financials";
+
+function pickResponse(text: string): {
+  text: string;
+  toolCall?: ReturnType<typeof buildSpendingBreakdown>;
+} {
+  if (wantsSavingsPlan(text)) {
+    return {
+      text: "Here's a quick savings projection — drag the slider to see how different monthly amounts add up over the year.",
+      toolCall: buildSavingsSlider(),
+    };
+  }
+  if (wantsTransactions(text)) {
+    return {
+      text: "Here are your most recent transactions. This is placeholder data — no backend is connected yet.",
+      toolCall: buildTransactionsList(),
+    };
+  }
+  if (wantsSpendingBreakdown(text)) {
+    return {
+      text: "Here's how your spending breaks down across categories. This is placeholder data — no backend is connected yet.",
+      toolCall: buildSpendingBreakdown(),
+    };
+  }
+  return {
+    text: `Placeholder response. You said: "${text}". No backend connected yet. Try asking about your spending, recent transactions, or savings plan to see a live tool card.`,
+  };
+}
+
+type ChatStore = ChatState;
+
+/** Shared by the composer's onNew and by suggestion-chip clicks — both just append a user message and a reply. */
+async function sendMessage(
+  store: ChatStore,
+  text: string,
+  attachments?: { id: string; type: "image" | "document"; name: string }[],
+) {
+  const threadId = store.currentThreadId;
+  store.appendMessage(threadId, {
+    id: crypto.randomUUID(),
+    role: "user",
+    text,
+    ...(attachments?.length ? { attachments } : {}),
+  });
+  store.setRunning(true);
+  // Loading dots show for this whole wait; the reply only appears once fully ready, fading in.
+  await new Promise((r) => setTimeout(r, 900));
+
+  const { text: replyText, toolCall } = pickResponse(text);
+  store.appendMessage(threadId, {
+    id: crypto.randomUUID(),
+    role: "assistant",
+    text: replyText,
+    ...(toolCall ? { toolCall } : {}),
+    suggestions: buildSuggestions(toolCall?.toolName),
+  });
+  store.setRunning(false);
+}
+
+/** For suggestion chips / suggested-question buttons that send a canned prompt without going through the composer. */
+export function useSendChatMessage() {
+  const store = useChatStore();
+  return (text: string) => sendMessage(store, text);
+}
 
 export function useAppChatRuntime() {
   const store = useChatStore();
@@ -17,34 +88,10 @@ export function useAppChatRuntime() {
     if (message.content[0]?.type !== "text")
       throw new Error("Only text messages are supported for now");
     const text = message.content[0].text;
-    const threadId = store.currentThreadId;
     const attachments = message.attachments
       ?.filter((a) => a.type === "image" || a.type === "document")
       .map((a) => ({ id: a.id, type: a.type as "image" | "document", name: a.name }));
-    store.appendMessage(threadId, {
-      id: crypto.randomUUID(),
-      role: "user",
-      text,
-      ...(attachments?.length ? { attachments } : {}),
-    });
-    store.setRunning(true);
-    await new Promise((r) => setTimeout(r, 600));
-
-    if (wantsSpendingBreakdown(text)) {
-      store.appendMessage(threadId, {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        text: "Here's how your spending breaks down across categories. This is placeholder data — no backend is connected yet.",
-        toolCall: buildSpendingBreakdown(),
-      });
-    } else {
-      store.appendMessage(threadId, {
-        id: crypto.randomUUID(),
-        role: "assistant",
-        text: `Placeholder response. You said: "${text}". No backend connected yet. Try asking about your spending or budget to see a live tool card.`,
-      });
-    }
-    store.setRunning(false);
+    await sendMessage(store, text, attachments);
   };
 
   const threadListAdapter: ExternalStoreThreadListAdapter = {

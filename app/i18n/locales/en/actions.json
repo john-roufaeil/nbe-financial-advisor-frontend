@@ -1,0 +1,13 @@
+{
+  "actions": {
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "continue": "Continue",
+    "back": "Back",
+    "upload": "Upload",
+    "delete": "Delete {{name}}",
+    "done": "Done",
+    "close": "Close",
+    "edit": "Edit"
+  }
+}

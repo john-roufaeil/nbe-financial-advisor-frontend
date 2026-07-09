@@ -7,7 +7,8 @@ import {
   ArrowDown,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { DashboardStat } from "@/lib/demo-financials";
+import type { DashboardStat } from "@/types/dashboard";
+import { Money } from "@/components/shared/Money";
 
 const ICONS = {
   balance: Wallet,
@@ -41,7 +42,9 @@ function StatCard({ stat, currency }: { stat: DashboardStat; currency: string })
             {t(`dashboard.stats.${stat.key}`)}
           </p>
         </div>
-        <p className="text-2xl font-semibold tabular-nums">{formattedValue}</p>
+        <p className="text-2xl font-semibold tabular-nums">
+          {stat.key === "savingsRate" ? formattedValue : <Money>{formattedValue}</Money>}
+        </p>
         <div
           className={`flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
             isGood ? "bg-success/10 text-success" : "bg-error/10 text-error"

@@ -1,0 +1,9 @@
+{
+  "nav": {
+    "dashboard": "Dashboard",
+    "chat": "Advisor",
+    "profile": "Profile",
+    "viewProfile": "View profile",
+    "menu": "Open menu"
+  }
+}
