@@ -1,5 +1,6 @@
-import { PieChart, TriangleAlert } from "lucide-react";
+import { PieChart, TriangleAlert, Bot } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Link, useParams } from "react-router";
 import type { BudgetCategory } from "@/types/dashboard";
 import { CATEGORY_BAR_COLORS } from "@/lib/category-colors";
 import { CategoryDonutChart } from "@/components/dashboard/CategoryDonutChart";
@@ -51,6 +52,7 @@ export function BudgetSplitCard({
   categories: BudgetCategory[];
 }) {
   const { t } = useTranslation();
+  const { lang } = useParams<{ lang: string }>();
   const totalSpent = categories.reduce((sum, c) => sum + c.spent, 0);
 
   return (

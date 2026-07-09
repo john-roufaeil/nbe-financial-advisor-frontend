@@ -1,5 +1,5 @@
 import { useRef } from "react";
-import { Target, Pencil } from "lucide-react";
+import { Target, Pencil, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { FinancialGoal } from "@/types/goal";
 import { useGoals } from "@/queries/goals";
@@ -41,39 +41,56 @@ export function GoalsCard({ currency }: { currency: string }) {
   const { t } = useTranslation();
   const { data: goals, isPending, isError, refetch } = useGoals();
   const modalRef = useRef<HTMLDialogElement>(null);
+  const goal = goals?.[0];
 
-  if (isPending) return <CardSkeleton cards={1} />;
+  if (isPending) {
+    return (
+      <CardSkeleton
+        icon={Target}
+        fullHeight
+        rows={[{ kind: "progress", trailingText: true }]}
+      />
+    );
+  }
 
   return (
-    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
+    <div className="card border-base-300 bg-base-100 animate-entry h-full border shadow-sm">
       <div className="card-body gap-4 p-4">
         <div className="flex items-center gap-2">
           <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
             <Target className="size-4.5" />
           </span>
           <h2 className="card-title flex-1 text-base">{t("dashboard.goals.title")}</h2>
-          <button
-            type="button"
-            onClick={() => modalRef.current?.showModal()}
-            className="btn btn-ghost btn-sm btn-square"
-            aria-label={t("dashboard.goals.editTitle")}
-          >
-            <Pencil data-no-flip className="size-4" />
-          </button>
+          {goal && (
+            <button
+              type="button"
+              onClick={() => modalRef.current?.showModal()}
+              className="btn btn-ghost btn-sm btn-square"
+              aria-label={t("dashboard.goals.editTitle")}
+            >
+              <Pencil data-no-flip className="size-4" />
+            </button>
+          )}
         </div>
         {isError ? (
           <ErrorState onRetry={() => refetch()} />
-        ) : goals.length > 0 ? (
-          <ul className="flex flex-col gap-4">
-            {goals.map((goal) => (
-              <GoalRow key={goal.id} goal={goal} currency={currency} />
-            ))}
-          </ul>
+        ) : goal ? (
+          <GoalRow goal={goal} currency={currency} />
         ) : (
-          <p className="text-base-content/50 text-sm">{t("dashboard.goals.empty")}</p>
+          <div className="flex flex-1 flex-col items-center justify-center gap-3 text-center">
+            <p className="text-base-content/50 text-sm">{t("dashboard.goals.empty")}</p>
+            <button
+              type="button"
+              onClick={() => modalRef.current?.showModal()}
+              className="btn btn-primary btn-sm gap-2"
+            >
+              <Plus className="size-4" />
+              {t("dashboard.goals.addYours")}
+            </button>
+          </div>
         )}
       </div>
-      <GoalsEditModal ref={modalRef} />
+      <GoalsEditModal ref={modalRef} goal={goal} />
     </div>
   );
 }
