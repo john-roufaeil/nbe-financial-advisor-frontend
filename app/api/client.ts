@@ -1,4 +1,4 @@
-import axios from "axios";
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/store/use-auth-store";
 
 /**
@@ -27,6 +27,39 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
+// Requests that must never trigger a refresh-on-401 loop (refresh itself, and
+// login/signup where a 401 just means "bad credentials").
+const AUTH_ENDPOINTS = ["/auth/refresh", "/auth/login", "/auth/signup", "/auth/logout"];
+
+function isAuthEndpoint(url?: string) {
+  return !!url && AUTH_ENDPOINTS.some((path) => url.includes(path));
+}
+
+// Single in-flight refresh shared by every request that races into a 401, so a
+// burst of parallel calls doesn't fire multiple refresh requests.
+let refreshPromise: Promise<string> | null = null;
+
+class NoRefreshTokenError extends Error {}
+
+async function refreshAccessToken(): Promise<string> {
+  const { refreshToken } = useAuthStore.getState();
+  if (!refreshToken) {
+    // Nothing to refresh — e.g. a reload wiped the in-memory tokens. This isn't
+    // a session expiring, it's a session that was never re-established.
+    throw new NoRefreshTokenError();
+  }
+  const res = await apiClient.post<{ access_token: string; refresh_token: string }>(
+    "/auth/refresh",
+    { refresh_token: refreshToken },
+  );
+  const tokens = res.data;
+  useAuthStore.getState().setTokens({
+    accessToken: tokens.access_token,
+    refreshToken: tokens.refresh_token,
+  });
+  return tokens.access_token;
+}
+
 apiClient.interceptors.response.use(
   (response) => {
     // Every backend response is wrapped in a { data: ... } envelope
@@ -42,10 +75,38 @@ apiClient.interceptors.response.use(
     }
     return response;
   },
-  (error) => {
-    if (error.response?.status === 401) {
-      useAuthStore.getState().logout();
+  async (error: AxiosError) => {
+    const originalRequest = error.config as
+      (InternalAxiosRequestConfig & { _retried?: boolean }) | undefined;
+
+    if (
+      error.response?.status !== 401 ||
+      !originalRequest ||
+      originalRequest._retried ||
+      isAuthEndpoint(originalRequest.url)
+    ) {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    originalRequest._retried = true;
+
+    try {
+      refreshPromise ??= refreshAccessToken().finally(() => {
+        refreshPromise = null;
+      });
+      const accessToken = await refreshPromise;
+      originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+      return apiClient(originalRequest);
+    } catch (refreshError) {
+      if (refreshError instanceof NoRefreshTokenError) {
+        // No session to lose in the first place — reset silently, no modal.
+        useAuthStore.getState().clearStaleAuth();
+      } else {
+        // A real refresh attempt failed: the session was live and is now gone.
+        // Flag it so a global "session expired" modal can prompt a re-login.
+        useAuthStore.getState().expireSession();
+      }
+      return Promise.reject(error);
+    }
   },
 );

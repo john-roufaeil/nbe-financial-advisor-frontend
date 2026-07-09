@@ -1,5 +1,5 @@
 import { apiClient } from "@/api/client";
-import type { AuthTokens, SignupBody, LoginBody } from "@/types/auth";
+import type { AuthTokens, SignupBody, LoginBody, RefreshBody } from "@/types/auth";
 
 // res.data is already the unwrapped payload (client.ts strips the { data } envelope).
 export async function signup(body: SignupBody): Promise<AuthTokens> {
@@ -10,4 +10,13 @@ export async function signup(body: SignupBody): Promise<AuthTokens> {
 export async function login(body: LoginBody): Promise<AuthTokens> {
   const res = await apiClient.post<AuthTokens>("/auth/login", body);
   return res.data;
+}
+
+export async function refresh(body: RefreshBody): Promise<AuthTokens> {
+  const res = await apiClient.post<AuthTokens>("/auth/refresh", body);
+  return res.data;
+}
+
+export async function logout(): Promise<void> {
+  await apiClient.post("/auth/logout");
 }
