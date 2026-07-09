@@ -146,7 +146,7 @@ export default function Onboarding() {
           <div
             key={step}
             style={{ "--step-enter-x": `${enterX}px` } as React.CSSProperties}
-            className="flex animate-[step-enter_300ms_ease-out] flex-col gap-4"
+            className="flex animate-[step-enter_300ms_ease-out_both] flex-col gap-4"
           >
             <div>
               <h1 className="card-title">{t(`onboarding.${stepKey}.title`)}</h1>
