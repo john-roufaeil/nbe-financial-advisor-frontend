@@ -16,6 +16,7 @@ import {
 import { useUploadDocuments } from "@/queries/documents";
 import { toastError } from "@/lib/toast";
 import { Button } from "@/components/shared/Button";
+import { BaseModal } from "@/components/shared/BaseModal";
 
 const TYPE_ICONS: Record<DocumentType, typeof FileText> = {
   pdf: FileText,
@@ -87,21 +88,35 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
     }
 
     return (
-      <dialog ref={ref} className="modal">
-        <div className="modal-box relative flex flex-col gap-4">
-          <button
-            type="button"
-            onClick={() => {
-              reset();
-              closeDialog(ref);
-            }}
-            className="btn btn-ghost btn-sm btn-circle absolute end-2 top-2"
-            aria-label={t("actions.close")}
-          >
-            <X data-no-flip className="size-4" />
-          </button>
-          <h3 className="text-lg font-semibold">{t("data.addDocument.title")}</h3>
-
+      <BaseModal
+        ref={ref}
+        onClose={reset}
+        title={t("data.addDocument.title")}
+        actions={
+          <>
+            <Button
+              type="button"
+              disabled={staged.length === 0 || uploadDocuments.isPending}
+              loading={uploadDocuments.isPending}
+              onClick={handleUpload}
+              className="btn btn-primary"
+            >
+              {t("actions.upload")}
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                reset();
+                closeDialog(ref);
+              }}
+              className="btn btn-ghost"
+            >
+              {t("actions.cancel")}
+            </button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
           <label
             onDragOver={(e) => {
               e.preventDefault();
@@ -164,33 +179,8 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
               })}
             </ul>
           )}
-
-          <div className="modal-action">
-            <button
-              type="button"
-              onClick={() => {
-                reset();
-                closeDialog(ref);
-              }}
-              className="btn btn-ghost"
-            >
-              {t("actions.cancel")}
-            </button>
-            <Button
-              type="button"
-              disabled={staged.length === 0 || uploadDocuments.isPending}
-              loading={uploadDocuments.isPending}
-              onClick={handleUpload}
-              className="btn btn-primary"
-            >
-              {t("actions.upload")}
-            </Button>
-          </div>
         </div>
-        <form method="dialog" className="modal-backdrop">
-          <button className="cursor-default">{t("actions.close")}</button>
-        </form>
-      </dialog>
+      </BaseModal>
     );
   },
 );

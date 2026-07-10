@@ -6,7 +6,6 @@ import {
   RotateCcw,
   Upload,
   CircleCheck,
-  X,
   Plus,
   Trash2,
   ArrowDownCircle,
@@ -15,7 +14,8 @@ import {
 import { TRANSACTION_CATEGORIES } from "@/types/transaction";
 import { DOCUMENT_UPLOAD_ACCEPT, inferDocumentType } from "@/types/document";
 import { Button } from "@/components/shared/Button";
-import { BankBadge } from "@/components/shared/BankBadge";
+import { useBankInfo } from "@/lib/banks";
+import { BaseModal } from "@/components/shared/BaseModal";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { toastError } from "@/lib/toast";
 import { Money } from "@/components/shared/Money";
@@ -45,6 +45,7 @@ export const DocumentDetailModal = forwardRef<
   const approveDocument = useApproveDocument();
   const confirm = useConfirmStore((s) => s.confirm);
   const reuploadInputRef = useRef<HTMLInputElement>(null);
+  const { label: bankLabel, logo: bankLogo } = useBankInfo(doc?.bankName);
 
   // Recovery for a failed *upload*: pick the file again, upload it fresh, then
   // drop the stale failed record. Processing failures use retry instead.
@@ -83,26 +84,50 @@ export const DocumentDetailModal = forwardRef<
     });
   }
 
-  return (
-    <dialog ref={ref} className="modal">
-      <div className="modal-box relative flex flex-col gap-4">
-        <form method="dialog">
-          <button
-            className="btn btn-ghost btn-sm btn-circle absolute end-2 top-2"
-            aria-label={t("actions.close")}
-          >
-            <X data-no-flip className="size-4" />
-          </button>
-        </form>
+  const showApprove =
+    doc?.status === "processed" &&
+    !doc.approved &&
+    doc.extractedTransactions &&
+    doc.extractedTransactions.length > 0;
 
+  return (
+    <BaseModal
+      ref={ref}
+      icon={
+        doc && (
+          <img
+            src={bankLogo}
+            alt=""
+            className="size-9 shrink-0 rounded-full object-cover"
+          />
+        )
+      }
+      title={
+        doc && (
+          <span className="flex min-w-0 flex-col">
+            <span className="truncate">{bankLabel}</span>
+            <span className="text-base-content/50 truncate text-xs font-normal">
+              {doc.name || t("data.documentFallbackName")}
+            </span>
+          </span>
+        )
+      }
+      actions={
+        showApprove ? (
+          <Button
+            type="button"
+            onClick={() => approveDocument.mutate(doc.id)}
+            loading={approveDocument.isPending}
+            className="btn btn-primary btn-sm"
+          >
+            {t("data.documentDetail.approve")}
+          </Button>
+        ) : undefined
+      }
+    >
+      <div className="flex flex-col gap-4">
         {doc && (
           <>
-            <BankBadge
-              bank={doc.bankName}
-              className="pe-8"
-              subtitle={doc.name || t("data.documentFallbackName")}
-            />
-
             {(doc.status === "uploading" || doc.status === "processing") && (
               <div className="flex flex-col items-center gap-3 py-8">
                 <Loader2 data-no-flip className="text-primary size-8 animate-spin" />
@@ -357,29 +382,11 @@ export const DocumentDetailModal = forwardRef<
                     {t("data.documentDetail.addTransaction")}
                   </button>
                 )}
-
-                {!doc.approved &&
-                  doc.extractedTransactions &&
-                  doc.extractedTransactions.length > 0 && (
-                    <div className="modal-action">
-                      <Button
-                        type="button"
-                        onClick={() => approveDocument.mutate(doc.id)}
-                        loading={approveDocument.isPending}
-                        className="btn btn-primary btn-sm"
-                      >
-                        {t("data.documentDetail.approve")}
-                      </Button>
-                    </div>
-                  )}
               </div>
             )}
           </>
         )}
       </div>
-      <form method="dialog" className="modal-backdrop">
-        <button className="cursor-default">{t("actions.close")}</button>
-      </form>
-    </dialog>
+    </BaseModal>
   );
 });

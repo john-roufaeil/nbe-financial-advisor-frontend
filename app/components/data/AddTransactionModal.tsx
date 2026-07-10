@@ -1,9 +1,9 @@
 import { forwardRef, useEffect, useState, type Ref } from "react";
 import { useTranslation } from "react-i18next";
-import { X } from "lucide-react";
 import { TRANSACTION_CATEGORIES, type Transaction } from "@/types/transaction";
 import { useCreateTransaction, useUpdateTransaction } from "@/queries/transactions";
 import { Button } from "@/components/shared/Button";
+import { BaseModal } from "@/components/shared/BaseModal";
 
 function closeDialog(ref: Ref<HTMLDialogElement>) {
   if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
@@ -69,120 +69,112 @@ export const AddTransactionModal = forwardRef<
   const isSaving = createTransaction.isPending || updateTransaction.isPending;
 
   return (
-    <dialog ref={ref} className="modal">
-      <div className="modal-box relative flex flex-col gap-4">
-        <button
-          type="button"
-          onClick={() => {
-            reset();
-            closeDialog(ref);
-          }}
-          className="btn btn-ghost btn-sm btn-circle absolute end-2 top-2"
-          aria-label={t("actions.close")}
-        >
-          <X data-no-flip className="size-4" />
-        </button>
-        <h3 className="text-lg font-semibold">
-          {editing ? t("data.addTransaction.editTitle") : t("data.addTransaction.title")}
-        </h3>
+    <BaseModal
+      ref={ref}
+      onClose={reset}
+      title={
+        editing ? t("data.addTransaction.editTitle") : t("data.addTransaction.title")
+      }
+      actions={
+        <>
+          <Button
+            type="submit"
+            form="add-transaction-form"
+            loading={isSaving}
+            className="btn btn-primary"
+          >
+            {editing ? t("actions.done") : t("data.addTransaction.add")}
+          </Button>
+          <button
+            type="button"
+            onClick={() => {
+              reset();
+              closeDialog(ref);
+            }}
+            className="btn btn-ghost"
+          >
+            {t("actions.cancel")}
+          </button>
+        </>
+      }
+    >
+      <form
+        id="add-transaction-form"
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-3"
+      >
+        <label className="flex flex-col gap-1">
+          <span className="label-text text-xs">{t("data.addTransaction.name")}</span>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => setTitle(e.target.value)}
+            className="input input-bordered input-sm w-full"
+            required
+          />
+        </label>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <div className="join border-base-300 w-fit rounded-lg border">
+          <button
+            type="button"
+            onClick={() => setType("expense")}
+            className={`btn btn-sm join-item cursor-pointer ${type === "expense" ? "btn-error" : "btn-ghost"}`}
+          >
+            {t("data.filters.expense")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setType("income")}
+            className={`btn btn-sm join-item cursor-pointer ${type === "income" ? "btn-success" : "btn-ghost"}`}
+          >
+            {t("data.filters.income")}
+          </button>
+        </div>
+
+        <label className="flex flex-col gap-1">
+          <span className="label-text text-xs">{t("data.addTransaction.category")}</span>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="select select-bordered select-sm w-full"
+          >
+            {TRANSACTION_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {c}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="flex gap-3">
           <label className="flex flex-col gap-1">
-            <span className="label-text text-xs">{t("data.addTransaction.name")}</span>
+            <span className="label-text text-xs">{t("data.addTransaction.amount")}</span>
+            <label className="input input-bordered input-sm flex w-fit items-center gap-2">
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={amount}
+                onChange={(e) => setAmount(e.target.value)}
+                className="w-24"
+                required
+              />
+              <span className="text-base-content/50 shrink-0 text-xs">
+                {t("currency.EGP")}
+              </span>
+            </label>
+          </label>
+          <label className="flex flex-1 flex-col gap-1">
+            <span className="label-text text-xs">{t("data.addTransaction.date")}</span>
             <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
+              type="date"
+              value={date}
+              onChange={(e) => setDate(e.target.value)}
               className="input input-bordered input-sm w-full"
-              required
             />
           </label>
-
-          <div className="join border-base-300 w-fit rounded-lg border">
-            <button
-              type="button"
-              onClick={() => setType("expense")}
-              className={`btn btn-sm join-item cursor-pointer ${type === "expense" ? "btn-error" : "btn-ghost"}`}
-            >
-              {t("data.filters.expense")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setType("income")}
-              className={`btn btn-sm join-item cursor-pointer ${type === "income" ? "btn-success" : "btn-ghost"}`}
-            >
-              {t("data.filters.income")}
-            </button>
-          </div>
-
-          <label className="flex flex-col gap-1">
-            <span className="label-text text-xs">
-              {t("data.addTransaction.category")}
-            </span>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="select select-bordered select-sm w-full"
-            >
-              {TRANSACTION_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="flex gap-3">
-            <label className="flex flex-col gap-1">
-              <span className="label-text text-xs">
-                {t("data.addTransaction.amount")}
-              </span>
-              <label className="input input-bordered input-sm flex w-fit items-center gap-2">
-                <input
-                  type="number"
-                  min={0}
-                  step="0.01"
-                  value={amount}
-                  onChange={(e) => setAmount(e.target.value)}
-                  className="w-24"
-                  required
-                />
-                <span className="text-base-content/50 shrink-0 text-xs">
-                  {t("currency.EGP")}
-                </span>
-              </label>
-            </label>
-            <label className="flex flex-1 flex-col gap-1">
-              <span className="label-text text-xs">{t("data.addTransaction.date")}</span>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="input input-bordered input-sm w-full"
-              />
-            </label>
-          </div>
-
-          <div className="modal-action">
-            <button
-              type="button"
-              onClick={() => {
-                reset();
-                closeDialog(ref);
-              }}
-              className="btn btn-ghost"
-            >
-              {t("actions.cancel")}
-            </button>
-            <Button type="submit" loading={isSaving} className="btn btn-primary">
-              {editing ? t("actions.done") : t("data.addTransaction.add")}
-            </Button>
-          </div>
-        </form>
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button className="cursor-default">{t("actions.close")}</button>
+        </div>
       </form>
-    </dialog>
+    </BaseModal>
   );
 });

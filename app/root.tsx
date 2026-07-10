@@ -53,8 +53,10 @@ export function HydrateFallback() {
 import { AccessibilityMenu } from "@/components/shared/AccessibilityMenu";
 import { ToastHost } from "@/components/shared/ToastHost";
 import { SessionExpiredModal } from "@/components/shared/SessionExpiredModal";
+import { useStackedModals } from "@/lib/use-stacked-modals";
 
 export default function App() {
+  useStackedModals();
   return (
     <QueryClientProvider client={queryClient}>
       <AccessibilityMenu />
