@@ -12,7 +12,7 @@
     "loading": "Loading...",
     "loadError": "Sorry, something went wrong. Please try again.",
     "retry": "Retry",
-    "replan": "Ask advisor to re-plan",
+    "replan": "Chat with advisor",
     "dateFrom": "From",
     "dateTo": "To",
     "filters": {
