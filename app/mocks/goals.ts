@@ -2,9 +2,13 @@ import { delay } from "@/mocks/shared";
 import type { FinancialGoal } from "@/types/goal";
 
 let goals: FinancialGoal[] = [
-  { id: "emergency-fund", name: "Emergency Fund", current: 45000, target: 60000 },
-  { id: "new-car", name: "New Car", current: 18000, target: 150000 },
-  { id: "vacation", name: "Vacation", current: 8000, target: 20000 },
+  {
+    id: "emergency-fund",
+    name: "Emergency Fund",
+    current: 45000,
+    target: 60000,
+    duration: 12,
+  },
 ];
 
 export function getGoals(): Promise<FinancialGoal[]> {
