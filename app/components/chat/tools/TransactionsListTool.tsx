@@ -75,9 +75,9 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
               >
                 <span dir="ltr">
                   {isIncome ? "+" : "-"}
-                  {tx.amount.toLocaleString()}{" "}
-                  {t(`currency.${data.currency}`, data.currency)}
-                </span>
+                  {tx.amount.toLocaleString()}
+                </span>{" "}
+                {t(`currency.${data.currency}`, data.currency)}
               </Money>
             </li>
           );

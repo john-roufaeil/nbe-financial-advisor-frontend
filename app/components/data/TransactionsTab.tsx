@@ -54,8 +54,9 @@ function TransactionCard({
       >
         <span dir="ltr">
           {isIncome ? "+" : "-"}
-          {transaction.amount.toLocaleString()} {currencyLabel}
-        </span>
+          {transaction.amount.toLocaleString()}
+        </span>{" "}
+        {currencyLabel}
       </Money>
       <button
         type="button"

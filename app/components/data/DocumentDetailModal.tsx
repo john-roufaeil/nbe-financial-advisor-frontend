@@ -70,9 +70,9 @@ export const DocumentDetailModal = forwardRef<
                 alt={
                   doc.bankName
                     ? t(
-                      `banks.${doc.bankName}`,
-                      getBankName(doc.bankName) ?? doc.bankName,
-                    )
+                        `banks.${doc.bankName}`,
+                        getBankName(doc.bankName) ?? doc.bankName,
+                      )
                     : ""
                 }
                 className="size-9 shrink-0 rounded-full object-cover"
@@ -171,8 +171,9 @@ export const DocumentDetailModal = forwardRef<
                               >
                                 <span dir="ltr">
                                   {isIncome ? "+" : "-"}
-                                  {tx.amount.toLocaleString()} {t("currency.EGP")}
-                                </span>
+                                  {tx.amount.toLocaleString()}
+                                </span>{" "}
+                                {t("currency.EGP")}
                               </Money>
                             </div>
                           ) : (
