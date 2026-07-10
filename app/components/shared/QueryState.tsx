@@ -221,7 +221,9 @@ export function EmptyState({
           <Icon className="size-5" />
         </span>
       )}
-      <p className="text-base-content/50 text-sm">{label ?? t("data.noResults")}</p>
+      <p className="text-base-content/50 w-full text-sm text-balance sm:w-1/2">
+        {label ?? t("data.noResults")}
+      </p>
     </div>
   );
 }
