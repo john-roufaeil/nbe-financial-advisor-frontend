@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import * as documentsApi from "@/api/documents";
 import * as documentsMock from "@/mocks/documents";
 import type { DocumentFilters } from "@/api/documents";
@@ -23,6 +28,7 @@ export function useDocuments(filters: DocumentFilters) {
   return useQuery({
     queryKey: documentKeys.list(filters, source),
     queryFn: () => impl(source).getDocuments(filters),
+    placeholderData: keepPreviousData,
     refetchInterval: (query) => {
       const hasInFlight = query.state.data?.items?.some(
         (d) => d.status === "uploading" || d.status === "processing",

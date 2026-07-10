@@ -5,7 +5,7 @@ import { useTranslation } from "react-i18next";
 /** A row-shaped pulse placeholder for list content — reduces layout shift and reads as "loading this list" rather than a generic blocking spinner. */
 export function ListSkeleton({ rows = 10 }: { rows?: number }) {
   return (
-    <ul className="flex flex-col gap-2" aria-hidden="true">
+    <ul className="animate-entry flex flex-col gap-2" aria-hidden="true">
       {Array.from({ length: rows }, (_, i) => (
         <li
           key={i}
@@ -17,6 +17,38 @@ export function ListSkeleton({ rows = 10 }: { rows?: number }) {
             <div className="bg-base-200 h-3 w-3/5 animate-pulse rounded" />
           </div>
           <div className="bg-base-200 h-4 w-14 shrink-0 animate-pulse rounded" />
+        </li>
+      ))}
+    </ul>
+  );
+}
+
+/** Two-row card placeholders matching the grid view of the data tables. */
+export function CardGridSkeleton({ cards = 6 }: { cards?: number }) {
+  return (
+    <ul
+      className="animate-entry grid gap-2 sm:grid-cols-2 xl:grid-cols-3"
+      aria-hidden="true"
+    >
+      {Array.from({ length: cards }, (_, i) => (
+        <li
+          key={i}
+          className="border-base-300 bg-base-100 flex flex-col gap-3 rounded-lg border p-3"
+        >
+          <div className="flex items-center gap-3">
+            <div className="bg-base-200 size-9 shrink-0 animate-pulse rounded-full" />
+            <div className="flex min-w-0 flex-1 flex-col gap-2">
+              <div className="bg-base-200 h-3.5 w-2/5 animate-pulse rounded" />
+              <div className="bg-base-200 h-3 w-3/5 animate-pulse rounded" />
+            </div>
+          </div>
+          <div className="border-base-200 flex items-center justify-between border-t pt-2">
+            <div className="bg-base-200 h-4 w-16 animate-pulse rounded" />
+            <div className="flex gap-1">
+              <div className="bg-base-200 size-7 animate-pulse rounded" />
+              <div className="bg-base-200 size-7 animate-pulse rounded" />
+            </div>
+          </div>
         </li>
       ))}
     </ul>
@@ -209,13 +241,17 @@ export function ErrorState({
 export function EmptyState({
   label,
   icon: Icon,
+  className = "",
 }: {
   label?: string;
   icon?: typeof TriangleAlert;
+  className?: string;
 }) {
   const { t } = useTranslation();
   return (
-    <div className="border-base-300 flex flex-col items-center gap-2 rounded-xl border border-dashed py-14 text-center">
+    <div
+      className={`border-base-300 flex flex-col items-center gap-2 rounded-xl border border-dashed py-14 text-center ${className}`}
+    >
       {Icon && (
         <span className="bg-base-200 text-base-content/40 grid size-11 place-items-center rounded-full">
           <Icon className="size-5" />

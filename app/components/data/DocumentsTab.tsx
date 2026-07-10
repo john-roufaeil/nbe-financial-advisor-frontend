@@ -24,7 +24,8 @@ import {
   EmptyState,
 } from "@/components/shared/QueryState";
 import { useViewModeStore, type ViewMode } from "@/store/use-view-mode-store";
-import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
+import { usePageSizeStore } from "@/store/use-page-size-store";
+import { useLoadAnimation } from "@/lib/use-load-animation";
 
 /** List = single column of rows; grid = responsive cards. */
 const VIEW_CONTAINER = {
@@ -165,9 +166,18 @@ function DocumentCard({
       bank={doc.bankName}
       className="flex-1"
       subtitle={
-        <>
-          {doc.name || t("data.documentFallbackName")} · {documentSubtitle(doc, t)}
-        </>
+        isGrid ? (
+          <>
+            <span className="block truncate">
+              {doc.name || t("data.documentFallbackName")}
+            </span>
+            <span className="block truncate">{formatDate(doc.uploadDate)}</span>
+          </>
+        ) : (
+          <>
+            {doc.name || t("data.documentFallbackName")} · {documentSubtitle(doc, t)}
+          </>
+        )
       }
     />
   );
@@ -228,7 +238,8 @@ export function DocumentsTab() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [page, setPage] = useState(1);
-  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
+  const pageSize = usePageSizeStore((s) => s.pageSize);
+  const setPageSize = usePageSizeStore((s) => s.setPageSize);
   const detailModalRef = useRef<HTMLDialogElement>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const viewMode = useViewModeStore((s) => s.mode);
@@ -241,6 +252,7 @@ export function DocumentsTab() {
     offset: (page - 1) * pageSize,
     limit: pageSize,
   });
+  const loadAnimation = useLoadAnimation(isPending);
 
   function openDetail(id: string) {
     setSelectedId(id);
@@ -272,21 +284,31 @@ export function DocumentsTab() {
   }
 
   return (
-    <div className="mb-20 flex flex-col gap-4">
-      <DataToolbar
-        search={search}
-        onSearchChange={updateSearch}
-        fromDate={fromDate}
-        onFromDateChange={updateFromDate}
-        toDate={toDate}
-        onToDateChange={updateToDate}
-        filters={FILTERS}
-        filter={filter}
-        onFilterChange={updateFilter}
-        filterLabel={(f) => t(`data.filters.${f}`)}
-        pageSize={pageSize}
-        onPageSizeChange={updatePageSize}
-      />
+    <div className="flex flex-1 flex-col gap-4">
+      <div className="border-base-300 bg-base-100 animate-entry overflow-hidden rounded-2xl border shadow-sm">
+        <DataToolbar
+          search={search}
+          onSearchChange={updateSearch}
+          fromDate={fromDate}
+          onFromDateChange={updateFromDate}
+          toDate={toDate}
+          onToDateChange={updateToDate}
+          filters={FILTERS}
+          filter={filter}
+          onFilterChange={updateFilter}
+          filterLabel={(f) => t(`data.filters.${f}`)}
+        />
+        <Pagination
+          attached
+          page={page}
+          totalPages={totalPages}
+          total={data?.total ?? 0}
+          pageSize={pageSize}
+          onPageChange={setPage}
+          onPageSizeChange={updatePageSize}
+          totalLabelKey="data.pagination.totalDocuments"
+        />
+      </div>
 
       {isPending ? (
         viewMode === "grid" ? (
@@ -297,7 +319,7 @@ export function DocumentsTab() {
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
       ) : data.items.length > 0 ? (
-        <ul className={`animate-fade-in ${VIEW_CONTAINER[viewMode]}`}>
+        <ul className={`${loadAnimation} ${VIEW_CONTAINER[viewMode]}`}>
           {data.items.map((doc) => (
             <DocumentCard
               key={doc.id}
@@ -308,7 +330,11 @@ export function DocumentsTab() {
           ))}
         </ul>
       ) : (
-        <EmptyState icon={FileText} label={t("data.documentsEmpty")} />
+        <EmptyState
+          icon={FileText}
+          label={t("data.documentsEmpty")}
+          className={loadAnimation}
+        />
       )}
 
       <Pagination
@@ -316,8 +342,9 @@ export function DocumentsTab() {
         totalPages={totalPages}
         total={data?.total ?? 0}
         pageSize={pageSize}
-        onChange={setPage}
+        onPageChange={setPage}
         onPageSizeChange={updatePageSize}
+        totalLabelKey="data.pagination.totalDocuments"
       />
 
       <DocumentDetailModal ref={detailModalRef} documentId={selectedId} />

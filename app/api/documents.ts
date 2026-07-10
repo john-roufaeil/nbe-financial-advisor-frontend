@@ -95,6 +95,9 @@ function toDocument(raw: RawStatement, bankName?: string): DocumentRecord {
     accountId: raw.account_id ?? undefined,
     uploadDate: raw.upload_date,
     status,
+    // A stored failed statement got uploaded fine (upload errors surface as HTTP
+    // failures at POST time), so recovery is a processing retry, not a re-upload.
+    failedStage: status === "failed" ? "processing" : undefined,
     approved: status === "processed",
     // Extracted rows are real ledger transactions, so PATCH/DELETE /transactions
     // edits them. Adding one is impossible: TransactionWriteSerializer has no

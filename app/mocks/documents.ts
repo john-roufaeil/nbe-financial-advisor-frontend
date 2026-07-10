@@ -107,6 +107,23 @@ let documents: DocumentRecord[] = [
 
 function runProcessing(id: string) {
   setTimeout(() => {
+    // The upload itself can fail before processing ever starts — the file never
+    // lands, so recovery means picking the file again, not a retry.
+    const uploaded = Math.random() > 0.1;
+    if (!uploaded) {
+      documents = documents.map((d) =>
+        d.id === id
+          ? {
+              ...d,
+              status: "failed",
+              failedStage: "upload",
+              errorMessage: "uploadFailedGeneric",
+            }
+          : d,
+      );
+      return;
+    }
+
     documents = documents.map((d) => (d.id === id ? { ...d, status: "processing" } : d));
 
     setTimeout(() => {
@@ -120,11 +137,17 @@ function runProcessing(id: string) {
                 ...d,
                 status: "processed",
                 errorMessage: undefined,
+                failedStage: undefined,
                 bankName:
                   d.bankName ?? BANK_CODES[Math.floor(Math.random() * BANK_CODES.length)],
                 extractedTransactions: generateExtractedTransactions(d.uploadDate),
               }
-            : { ...d, status: "failed", errorMessage: "documentFailedGeneric" }
+            : {
+                ...d,
+                status: "failed",
+                failedStage: "processing",
+                errorMessage: "documentFailedGeneric",
+              }
           : d,
       );
     }, 1600);
@@ -176,7 +199,9 @@ export function uploadDocuments(
 
 export function retryDocument(id: string): Promise<DocumentRecord> {
   documents = documents.map((d) =>
-    d.id === id ? { ...d, status: "uploading", errorMessage: undefined } : d,
+    d.id === id
+      ? { ...d, status: "uploading", errorMessage: undefined, failedStage: undefined }
+      : d,
   );
   runProcessing(id);
   const doc = documents.find((d) => d.id === id);

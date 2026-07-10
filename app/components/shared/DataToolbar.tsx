@@ -1,6 +1,7 @@
-import { Search, X } from "lucide-react";
+import { Search, X, List, LayoutGrid } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DateField } from "@/components/shared/DateField";
+import { useViewModeStore, type ViewMode } from "@/store/use-view-mode-store";
 
 interface DataToolbarProps<F extends string> {
   search: string;
@@ -28,9 +29,16 @@ export function DataToolbar<F extends string>({
   filterLabel,
 }: DataToolbarProps<F>) {
   const { t } = useTranslation();
+  const viewMode = useViewModeStore((s) => s.mode);
+  const setViewMode = useViewModeStore((s) => s.setMode);
+
+  const viewOptions: { mode: ViewMode; icon: typeof List; label: string }[] = [
+    { mode: "list", icon: List, label: t("data.view.list") },
+    { mode: "grid", icon: LayoutGrid, label: t("data.view.grid") },
+  ];
 
   return (
-    <div className="bg-base-100 border-base-300 animate-entry flex flex-col gap-3 rounded-2xl border p-3 shadow-sm sm:p-4">
+    <div className="flex flex-col gap-3 p-3 sm:p-4">
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
         <label className="input input-bordered flex w-full min-w-0 flex-1 items-center gap-2 px-3 py-2">
           <Search className="text-base-content/40 size-4 shrink-0" />
@@ -72,6 +80,26 @@ export function DataToolbar<F extends string>({
               {filterLabel(f)}
             </button>
           ))}
+        </div>
+
+        <div className="ms-auto flex items-center gap-2">
+          <div className="join border-base-300 w-fit shrink-0 rounded-lg border">
+            {viewOptions.map(({ mode, icon: Icon, label }) => (
+              <button
+                key={mode}
+                type="button"
+                onClick={() => setViewMode(mode)}
+                aria-label={label}
+                aria-pressed={viewMode === mode}
+                title={label}
+                className={`btn btn-sm join-item btn-square cursor-pointer ${
+                  viewMode === mode ? "btn-accent" : "btn-ghost"
+                }`}
+              >
+                <Icon data-no-flip className="size-4" />
+              </button>
+            ))}
+          </div>
         </div>
       </div>
     </div>

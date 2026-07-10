@@ -8,6 +8,8 @@
     "noResults": "لا توجد نتائج.",
     "transactionsEmpty": "لا توجد معاملات بعد. أضف واحدة يدويًا، أو ارفع كشف حساب وسنستخرجها لك تلقائيًا.",
     "documentsEmpty": "لا توجد كشوف حساب بعد. ارفع واحدًا وسنستخرج المعاملات منه تلقائيًا.",
+    "transactionsEmptyShort": "لا توجد معاملات",
+    "documentsEmptyShort": "لا توجد كشوف حساب",
     "documentFallbackName": "كشف حساب بنكي",
     "loading": "جارٍ التحميل...",
     "loadError": "نأسف، حدث خطأ ما. يرجى المحاولة مرة أخرى.",
@@ -26,7 +28,13 @@
     "pagination": {
       "prev": "السابق",
       "next": "التالي",
-      "page": "صفحة {{page}} من {{totalPages}}"
+      "page": "صفحة {{page}} من {{totalPages}}",
+      "goToPage": "الانتقال إلى صفحة {{page}}",
+      "totalTransactions_one": "معاملة واحدة",
+      "totalTransactions_other": "{{count}} معاملة",
+      "totalDocuments_one": "كشف حساب واحد",
+      "totalDocuments_other": "{{count}} كشف حساب",
+      "perPage": "{{count}} / صفحة"
     },
     "addTransaction": {
       "title": "إضافة معاملة",
@@ -58,6 +66,9 @@
       "failedTitle": "فشلت المعالجة",
       "documentFailedGeneric": "تعذرت معالجة هذا الملف. قد يكون غير قابل للقراءة أو بصيغة غير مدعومة.",
       "retry": "إعادة المحاولة",
+      "uploadFailedTitle": "فشل الرفع",
+      "uploadFailedGeneric": "تعذر رفع هذا الملف. تحقق من اتصالك وأعد المحاولة برفع الملف.",
+      "uploadAgain": "إعادة الرفع",
       "reviewTitle": "مراجعة المعاملات المستخرجة",
       "reviewSubtitle": "عدّل أي شيء غير دقيق، ثم وافق لإضافتها إلى معاملاتك.",
       "approve": "الموافقة والإضافة إلى المعاملات",
@@ -105,6 +116,10 @@
         "error": "تعذّر تحميل حساباتك البنكية. حاول مرة أخرى.",
         "inactive": "غير نشط"
       }
+    },
+    "view": {
+      "list": "عرض قائمة",
+      "grid": "عرض شبكة"
     }
   }
 }

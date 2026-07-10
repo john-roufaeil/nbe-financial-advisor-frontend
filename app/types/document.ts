@@ -24,6 +24,12 @@ export interface DocumentRecord {
   uploadDate: string;
   status: DocumentStatus;
   errorMessage?: string;
+  /**
+   * When `status` is "failed", which phase failed: an "upload" failure means the
+   * file never landed (prompt a fresh re-upload), while "processing" means the
+   * file uploaded but extraction failed (a plain retry can re-run it).
+   */
+  failedStage?: "upload" | "processing";
   extractedTransactions?: ExtractedTransaction[];
   approved?: boolean;
   approvedAt?: number;

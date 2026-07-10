@@ -26,7 +26,7 @@ export default function Documents() {
   }, []);
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4 md:p-6">
+    <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col gap-4 p-4 md:p-6">
       <PageBanner
         title={t("data.documents")}
         subtitle={t("data.documentsSubtitle")}

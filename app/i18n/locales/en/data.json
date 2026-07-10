@@ -8,6 +8,8 @@
     "noResults": "No results found.",
     "transactionsEmpty": "No transactions yet. Add one manually, or upload a bank statement and we'll pull them out for you.",
     "documentsEmpty": "No bank statements yet. Upload one and we'll extract the transactions automatically.",
+    "transactionsEmptyShort": "No transactions",
+    "documentsEmptyShort": "No bank statements",
     "documentFallbackName": "Bank statement",
     "loading": "Loading...",
     "loadError": "Sorry, something went wrong. Please try again.",
@@ -26,7 +28,13 @@
     "pagination": {
       "prev": "Previous",
       "next": "Next",
-      "page": "Page {{page}} of {{totalPages}}"
+      "page": "Page {{page}} of {{totalPages}}",
+      "goToPage": "Go to page {{page}}",
+      "totalTransactions_one": "{{count}} transaction",
+      "totalTransactions_other": "{{count}} transactions",
+      "totalDocuments_one": "{{count}} bank statement",
+      "totalDocuments_other": "{{count}} bank statements",
+      "perPage": "{{count}} / page"
     },
     "addTransaction": {
       "title": "Add Transaction",
@@ -58,6 +66,9 @@
       "failedTitle": "Processing failed",
       "documentFailedGeneric": "We couldn't process this file. It may be unreadable or in an unsupported format.",
       "retry": "Retry",
+      "uploadFailedTitle": "Upload failed",
+      "uploadFailedGeneric": "We couldn't upload this file. Check your connection and try again with the file.",
+      "uploadAgain": "Upload again",
       "reviewTitle": "Review extracted transactions",
       "reviewSubtitle": "Edit anything that looks off, then approve to add these to your transactions.",
       "approve": "Approve & add to transactions",
@@ -105,6 +116,10 @@
         "error": "Couldn't load your bank accounts. Please try again.",
         "inactive": "Inactive"
       }
+    },
+    "view": {
+      "list": "List view",
+      "grid": "Grid view"
     }
   }
 }

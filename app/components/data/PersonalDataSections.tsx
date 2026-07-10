@@ -155,7 +155,7 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
   }
 
   return (
-    <div className="card border-base-300 bg-base-100 border shadow-sm">
+    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
       <div className="card-body gap-4 p-4">
         <div className="flex items-center gap-2">
           <span
@@ -306,7 +306,7 @@ function BankAccountsCard() {
   }
 
   return (
-    <div className="card border-base-300 bg-base-100 animate-fade-in border shadow-sm sm:col-span-2">
+    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm sm:col-span-2">
       <div className="card-body gap-4 p-4">
         <div className="flex items-center gap-2">
           <span className="bg-success/10 text-success grid size-9 shrink-0 place-items-center rounded-lg">
