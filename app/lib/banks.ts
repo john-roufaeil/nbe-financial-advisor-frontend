@@ -1,3 +1,5 @@
+import { useTranslation } from "react-i18next";
+
 /** Backend returns a short bank code (e.g. "NBE"); map it to its full commercial name and logo. */
 export const BANK_NAMES: Record<string, string> = {
   NBE: "National Bank of Egypt",
@@ -127,4 +129,12 @@ export function getBankCode(bank?: string): string | undefined {
 export function getBankLogo(bankCode?: string): string {
   if (!bankCode || !(bankCode in BANK_NAMES)) return UNKNOWN_BANK_LOGO;
   return `/banks/${encodeURIComponent(bankCode)}.png`;
+}
+
+/** Resolves a bank's logo and localized display name from either a code or full name. */
+export function useBankInfo(bank?: string) {
+  const { t } = useTranslation();
+  const code = getBankCode(bank);
+  const label = code ? t(`banks.${code}`, getBankName(code) ?? code) : bank;
+  return { code, label, logo: getBankLogo(code) };
 }

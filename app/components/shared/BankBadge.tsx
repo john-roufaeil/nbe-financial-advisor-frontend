@@ -1,13 +1,4 @@
-import { useTranslation } from "react-i18next";
-import { getBankCode, getBankLogo, getBankName } from "@/lib/banks";
-
-/** Resolves a bank's logo and localized display name from either a code or full name. */
-function useBankInfo(bank?: string) {
-  const { t } = useTranslation();
-  const code = getBankCode(bank);
-  const label = code ? t(`banks.${code}`, getBankName(code) ?? code) : bank;
-  return { code, label, logo: getBankLogo(code) };
-}
+import { useBankInfo } from "@/lib/banks";
 
 /** Bank logo + name, used anywhere a bank account, statement, or transaction needs to identify its bank. */
 export function BankBadge({
