@@ -119,7 +119,7 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
 
 export function GoalCardSkeleton() {
   return (
-    <div className="card border-base-300 bg-base-100 h-full border shadow-sm">
+    <div className="card border-base-300 bg-base-100 animate-entry h-full border shadow-sm">
       <div className="card-body gap-4 p-4">
         <div className="flex items-center gap-2">
           <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">

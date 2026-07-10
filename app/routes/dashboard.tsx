@@ -8,9 +8,11 @@ import {
   TrendingUp,
   ArrowLeftRight,
   PiggyBank,
+  FileText,
 } from "lucide-react";
 import { PageBanner } from "@/components/shared/PageBanner";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
+import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { GoalCard, GoalCardSkeleton } from "@/components/dashboard/GoalCard";
 import { BudgetSplitCard } from "@/components/dashboard/BudgetSplitCard";
 import { NoPlanCard } from "@/components/dashboard/NoPlanCard";
@@ -21,24 +23,28 @@ import { CardSkeleton, ErrorState } from "@/components/shared/QueryState";
 
 function DashboardSkeleton() {
   return (
-    <div className="animate-entry flex flex-col gap-6">
+    <div className="animate-entry flex flex-col gap-4">
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <CardSkeleton icon={Wallet} />
         <CardSkeleton icon={TrendingUp} />
         <CardSkeleton icon={ArrowLeftRight} />
         <CardSkeleton icon={PiggyBank} />
-      </div>{" "}
-      <div className="grid gap-4 lg:grid-cols-5">
-        <div className="lg:col-span-2">
+      </div>
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-12">
+        <div className="xl:col-span-3">
           <GoalCardSkeleton />
         </div>
-        <div className="lg:col-span-3">
+        <div className="xl:col-span-6">
           <CardSkeleton
             icon={PieChart}
             fullHeight
             donut
-            rows={Array.from({ length: 5 }, () => ({ kind: "progress" as const }))}
+            rows={Array.from({ length: 4 }, () => ({ kind: "progress" as const }))}
           />
+        </div>
+        <div className="flex flex-col gap-4 md:col-span-2 xl:col-span-3">
+          <CardSkeleton icon={ArrowLeftRight} />
+          <CardSkeleton icon={FileText} />
         </div>
       </div>
     </div>
@@ -52,7 +58,7 @@ export default function Dashboard() {
   const { data, isPending, isError, refetch } = useDashboard();
 
   return (
-    <div className="mx-auto mb-26 flex w-full max-w-5xl flex-col gap-6 p-4 md:p-6 lg:mb-0">
+    <div className="mx-auto mb-16 flex w-full max-w-7xl flex-col gap-4 p-4 md:p-6 xl:mb-0">
       <PageBanner
         title={t("nav.dashboard")}
         subtitle={t("dashboard.subtitle")}
@@ -75,31 +81,38 @@ export default function Dashboard() {
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
       ) : (
-        <>
-          <div className="animate-entry">
-            <StatsGrid currency={data.currency} stats={data.stats} />
-          </div>
+        <div className="flex flex-col gap-4">
+          <StatsGrid currency={data.currency} stats={data.stats} />
 
           {/* Net worth and cash flow are real without a budget, so the stats
-              stay. Goals and allocations only exist inside a plan. */}
+              stay. Goals, allocations and recent activity all share a single
+              row so the whole dashboard fits without scrolling on laptops. */}
           {data.hasPlan ? (
-            <div className="grid gap-4 lg:grid-cols-5">
-              <div className="animate-entry lg:col-span-2">
+            <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-12">
+              <div className="xl:col-span-3">
                 <GoalCard currency={data.currency} />
               </div>
-              <div className="animate-entry lg:col-span-3">
+              <div className="xl:col-span-6">
                 <BudgetSplitCard
                   categories={data.budget.categories}
                   currency={data.currency}
                 />
               </div>
+              <div className="md:col-span-2 xl:col-span-3 xl:self-start">
+                <RecentActivityCard />
+              </div>
             </div>
           ) : (
-            <div className="animate-entry">
-              <NoPlanCard />
+            <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-12">
+              <div className="xl:col-span-8">
+                <NoPlanCard />
+              </div>
+              <div className="xl:col-span-4 xl:self-start">
+                <RecentActivityCard />
+              </div>
             </div>
           )}
-        </>
+        </div>
       )}
 
       <AddItemFab />

@@ -12,8 +12,8 @@ export function NoPlanCard() {
   const { lang } = useParams<{ lang: string }>();
 
   return (
-    <div className="card border-base-300 bg-base-100 border border-dashed shadow-sm">
-      <div className="card-body items-center gap-5 p-8 text-center sm:p-12">
+    <div className="card border-base-300 bg-base-100 animate-entry h-full border border-dashed shadow-sm">
+      <div className="card-body items-center justify-center gap-5 p-8 text-center sm:p-12">
         <div className="relative grid place-items-center">
           <span
             aria-hidden="true"

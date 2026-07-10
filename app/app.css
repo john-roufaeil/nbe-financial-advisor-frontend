@@ -324,9 +324,25 @@ html[dir="rtl"] .animate-a11y-panel-in {
   }
 }
 
-/* Applied once per mount to page-level content and freshly-loaded cards/charts. */
+/* Applied once per mount to static page content and loading skeletons — fades in
+   while sliding up a touch. */
 .animate-entry {
   animation: fade-slide-up 0.3s ease-out both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* For dynamic data swapping in over its skeleton: fade only, no movement, so the
+   content settles in place instead of re-sliding after the skeleton already did. */
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out both;
 }
 
 /* Buttons and daisyUI's own toggle/checkbox controls get a snappy-but-not-instant
@@ -342,6 +358,56 @@ html[dir="rtl"] .animate-a11y-panel-in {
 
 .btn:active {
   transform: scale(0.97);
+}
+
+/* Any icon inside a button gets a small lift + pop on hover so icon buttons feel
+   responsive. Uses the standalone `scale`/`translate` properties (not `transform`)
+   so it composes with the RTL mirror flip above, which owns `transform`. */
+.btn svg {
+  transition:
+    scale 0.2s ease,
+    translate 0.2s ease;
+}
+
+.btn:hover svg {
+  scale: 1.15;
+  translate: 0 -1px;
+}
+
+.btn:active svg {
+  scale: 1;
+  translate: 0;
+}
+
+/* Delete buttons' bin icon shakes on hover as an extra "careful, destructive"
+   cue. Uses the standalone `rotate` property so it layers on top of the
+   lift/pop above (which owns `scale`/`translate`) and the RTL mirror flip
+   (which owns `transform`) without any of the three clobbering another. */
+@keyframes icon-shake {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+
+  20% {
+    rotate: -12deg;
+  }
+
+  40% {
+    rotate: 10deg;
+  }
+
+  60% {
+    rotate: -8deg;
+  }
+
+  80% {
+    rotate: 6deg;
+  }
+}
+
+.btn:hover svg.lucide-trash-2 {
+  animation: icon-shake 0.4s ease;
 }
 
 .toggle,
@@ -376,4 +442,33 @@ html[dir="rtl"] .animate-a11y-panel-in {
 
 .no-spin-buttons[type="number"] {
   -moz-appearance: textfield;
+}
+
+/* One consistent size for every modal: a shared max width, and a height capped at
+   three-quarters of the viewport (its own overflow-y auto keeps taller content
+   scrollable inside the box). */
+.modal-box {
+  max-width: var(--max-width-modal);
+  max-height: 75vh;
+}
+
+/* When a newer modal stacks on top, tuck the older one(s) back a touch for depth.
+   daisyUI animates .modal-box via the `scale` property, so this transitions for
+   free. The `modal-stacked-below` class is toggled by useStackedModals(). */
+.modal.modal-stacked-below .modal-box {
+  scale: 0.95;
+}
+
+/* Honour the OS "reduce motion" setting: collapse entry/toast/message animations
+   and looping skeleton pulses to a near-instant, single frame so nothing moves,
+   fades, or throbs for motion-sensitive users. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }

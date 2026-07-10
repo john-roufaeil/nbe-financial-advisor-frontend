@@ -7,7 +7,7 @@ export function AddItemFab() {
   const { t } = useTranslation();
 
   return (
-    <div className="dropdown dropdown-top dropdown-end fixed inset-e-10 bottom-10 z-20 h-12 w-12 cursor-pointer">
+    <div className="dropdown dropdown-top dropdown-end fixed inset-e-6 bottom-6 z-20 h-12 w-12 cursor-pointer">
       <div
         tabIndex={0}
         role="button"
