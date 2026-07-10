@@ -93,7 +93,7 @@ export default function AppLayout() {
             <img
               src="/logo.webp"
               alt={t("app.name")}
-              className="mx-auto h-auto w-1/2 px-2"
+              className="mx-auto h-auto w-1/2 px-2 sm:w-1/3"
             />
           </header>
 

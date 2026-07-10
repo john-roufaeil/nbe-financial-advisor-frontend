@@ -41,7 +41,7 @@ export default function Splash() {
               <span className="text-primary grid size-10 shrink-0 place-items-center rounded-lg">
                 <Icon className="size-6 lg:size-8" />
               </span>
-              <p className="text-sm font-medium text-balance">
+              <p className="w-2/3 text-sm font-medium text-balance">
                 {t(`authPanel.features.${key}.title`)}
               </p>
             </li>

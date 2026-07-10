@@ -52,7 +52,7 @@ export default function Dashboard() {
   const { data, isPending, isError, refetch } = useDashboard();
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-6 p-4 md:p-6">
+    <div className="mx-auto mb-26 flex w-full max-w-5xl flex-col gap-6 p-4 md:p-6 lg:mb-0">
       <PageBanner
         title={t("nav.dashboard")}
         subtitle={t("dashboard.subtitle")}

@@ -1,7 +1,6 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { useNavigate, useParams, useLocation, Link } from "react-router";
 import { AuthLayout } from "@/components/shared/AuthLayout";
 import { Button } from "@/components/shared/Button";
@@ -49,7 +48,7 @@ export default function SignIn() {
         <img src="/logo.webp" alt={t("app.name")} className="mx-auto h-auto w-1/2" />
         <Link
           to={`/${lang}`}
-          className="link text-base-content/60 flex items-center gap-1.5 text-sm"
+          className="btn btn-ghost text-base-content/60 flex w-fit items-center gap-1.5 text-sm"
         >
           <ArrowLeft className="size-4" />
           {t("actions.back")}
