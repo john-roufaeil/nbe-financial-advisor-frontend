@@ -113,8 +113,9 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
               setIsDragging(false);
               handleFiles(e.dataTransfer.files);
             }}
-            className={`hover:border-primary hover:bg-base-200 flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors ${isDragging ? "border-primary bg-base-200" : "border-base-300"
-              }`}
+            className={`hover:border-primary hover:bg-base-200 flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+              isDragging ? "border-primary bg-base-200" : "border-base-300"
+            }`}
           >
             <Upload className="text-base-content/40 size-6" />
             <span className="text-sm font-medium">{t("data.addDocument.dropzone")}</span>
