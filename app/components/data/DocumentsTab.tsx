@@ -149,7 +149,7 @@ function DocumentCard({ doc, onOpen }: { doc: DocumentRecord; onOpen: () => void
   );
 }
 
-export function DocumentsTab({ onAdd }: { onAdd: () => void }) {
+export function DocumentsTab() {
   const { t } = useTranslation();
   const [search, setSearch] = useState("");
   const [filter, setFilter] = useState<Filter>("all");
@@ -205,8 +205,6 @@ export function DocumentsTab({ onAdd }: { onAdd: () => void }) {
         filter={filter}
         onFilterChange={updateFilter}
         filterLabel={(f) => t(`data.filters.${f}`)}
-        onAdd={onAdd}
-        addLabel={t("data.addDocument.add")}
       />
 
       {isPending ? (

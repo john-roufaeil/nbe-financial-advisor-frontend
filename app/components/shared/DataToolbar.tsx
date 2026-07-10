@@ -1,4 +1,4 @@
-import { Plus, Search, X } from "lucide-react";
+import { Search, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DateField } from "@/components/shared/DateField";
 
@@ -13,8 +13,6 @@ interface DataToolbarProps<F extends string> {
   filter: F;
   onFilterChange: (value: F) => void;
   filterLabel: (filter: F) => string;
-  onAdd: () => void;
-  addLabel: string;
 }
 
 export function DataToolbar<F extends string>({
@@ -28,8 +26,6 @@ export function DataToolbar<F extends string>({
   filter,
   onFilterChange,
   filterLabel,
-  onAdd,
-  addLabel,
 }: DataToolbarProps<F>) {
   const { t } = useTranslation();
 
@@ -56,48 +52,27 @@ export function DataToolbar<F extends string>({
             </button>
           )}
         </label>
-        <button
-          type="button"
-          onClick={onAdd}
-          aria-label={addLabel}
-          title={addLabel}
-          className="btn btn-primary btn-sm shrink-0 gap-2 sm:hidden"
-        >
-          <Plus className="size-4" />
-        </button>
       </div>
 
-      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between">
-        <div className="flex min-w-0 flex-wrap items-center gap-3">
-          <DateField
-            label={t("data.dateFrom")}
-            value={fromDate}
-            onChange={onFromDateChange}
-          />
-          <DateField label={t("data.dateTo")} value={toDate} onChange={onToDateChange} />
-          <div className="join border-base-300 w-fit shrink-0 rounded-lg border">
-            {filters.map((f) => (
-              <button
-                key={f}
-                type="button"
-                onClick={() => onFilterChange(f)}
-                className={`btn btn-sm join-item cursor-pointer ${filter === f ? "btn-accent" : "btn-ghost"}`}
-              >
-                {filterLabel(f)}
-              </button>
-            ))}
-          </div>
+      <div className="flex min-w-0 flex-wrap items-center gap-3">
+        <DateField
+          label={t("data.dateFrom")}
+          value={fromDate}
+          onChange={onFromDateChange}
+        />
+        <DateField label={t("data.dateTo")} value={toDate} onChange={onToDateChange} />
+        <div className="join border-base-300 w-fit shrink-0 rounded-lg border">
+          {filters.map((f) => (
+            <button
+              key={f}
+              type="button"
+              onClick={() => onFilterChange(f)}
+              className={`btn btn-sm join-item cursor-pointer ${filter === f ? "btn-accent" : "btn-ghost"}`}
+            >
+              {filterLabel(f)}
+            </button>
+          ))}
         </div>
-
-        <button
-          type="button"
-          onClick={onAdd}
-          aria-label={addLabel}
-          title={addLabel}
-          className="btn btn-primary btn-sm hidden shrink-0 sm:inline-flex"
-        >
-          <Plus className="size-4" />
-        </button>
       </div>
     </div>
   );

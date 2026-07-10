@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { ArrowLeftRight } from "lucide-react";
+import { ArrowLeftRight, Plus } from "lucide-react";
 import {
   TransactionsTab,
   type TransactionsTabHandle,
@@ -33,7 +33,19 @@ export default function Transactions() {
         title={t("data.transactions")}
         subtitle={t("data.transactionsSubtitle")}
         icon={ArrowLeftRight}
-        actions={<ReplanFab />}
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => tabRef.current?.openAdd()}
+              className="btn btn-sm text-primary bg-primary-content hover:bg-primary-content/90 gap-2 border-none shadow-sm"
+            >
+              <Plus className="size-4" />
+              <span>{t("data.addTransaction.add")}</span>
+            </button>
+            <ReplanFab />
+          </>
+        }
       />
 
       <TransactionsTab ref={tabRef} />

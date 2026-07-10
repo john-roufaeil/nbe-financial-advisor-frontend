@@ -143,11 +143,6 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
           filter={filter}
           onFilterChange={updateFilter}
           filterLabel={(f) => t(`data.filters.${f}`)}
-          onAdd={() => {
-            setEditing(null);
-            modalRef.current?.showModal();
-          }}
-          addLabel={t("data.addTransaction.add")}
         />
 
         {isPending ? (

@@ -1,7 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useSearchParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { FileText } from "lucide-react";
+import { FileText, Plus } from "lucide-react";
 import { DocumentsTab } from "@/components/data/DocumentsTab";
 import { AddDocumentModal } from "@/components/data/AddDocumentModal";
 import { ReplanFab } from "@/components/data/ReplanFab";
@@ -31,10 +31,22 @@ export default function Documents() {
         title={t("data.documents")}
         subtitle={t("data.documentsSubtitle")}
         icon={FileText}
-        actions={<ReplanFab />}
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => modalRef.current?.showModal()}
+              className="btn btn-sm text-primary bg-primary-content hover:bg-primary-content/90 gap-2 border-none shadow-sm"
+            >
+              <Plus className="size-4" />
+              <span>{t("data.addDocument.add")}</span>
+            </button>
+            <ReplanFab />
+          </>
+        }
       />
 
-      <DocumentsTab onAdd={() => modalRef.current?.showModal()} />
+      <DocumentsTab />
       <AddDocumentModal ref={modalRef} />
     </div>
   );
