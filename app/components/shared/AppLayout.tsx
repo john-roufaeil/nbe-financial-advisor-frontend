@@ -1,4 +1,4 @@
-import { NavLink, Outlet, useParams, useLocation } from "react-router";
+import { NavLink, Outlet, useParams, useLocation, Link } from "react-router";
 import {
   LayoutDashboard,
   Bot,
@@ -90,11 +90,14 @@ export default function AppLayout() {
             >
               <Menu className="size-5" />
             </button>
-            <img
-              src="/logo.webp"
-              alt={t("app.name")}
-              className="mx-auto h-auto w-1/2 px-2 sm:w-1/3"
-            />
+            <Link
+              to={`/${lang}/dashboard`}
+              onClick={close}
+              className="mx-auto w-1/2 px-2 sm:w-1/3"
+              aria-label={t("nav.dashboard")}
+            >
+              <img src="/logo.webp" alt={t("app.name")} className="h-auto w-full" />
+            </Link>
           </header>
 
           <main className="min-h-0 flex-1 overflow-y-auto pt-3">
@@ -114,11 +117,14 @@ export default function AppLayout() {
               >
                 <X className="size-5" />
               </button>
-              <img
-                src="/logo.webp"
-                alt={t("app.name")}
-                className="mx-auto h-auto w-1/2"
-              />
+              <Link
+                to={`/${lang}/dashboard`}
+                onClick={close}
+                className="mx-auto w-1/2"
+                aria-label={t("nav.dashboard")}
+              >
+                <img src="/logo.webp" alt={t("app.name")} className="h-auto w-full" />
+              </Link>
             </div>
 
             <nav className="flex flex-col gap-2 p-3">

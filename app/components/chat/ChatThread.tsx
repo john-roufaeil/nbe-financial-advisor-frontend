@@ -167,7 +167,7 @@ function EmptyState() {
   const { t } = useTranslation();
   return (
     <ThreadPrimitive.Empty>
-      <div className="mx-auto flex h-full w-full max-w-2xl flex-col items-center justify-center px-4 text-center">
+      <div className="animate-entry mx-auto flex h-full w-full max-w-2xl flex-col items-center justify-center px-4 text-center">
         <span className="bg-primary/10 text-primary grid size-14 place-items-center rounded-2xl">
           <Bot className="size-7" />
         </span>
@@ -267,7 +267,7 @@ export function ChatThread() {
 
         <QuestionsNav viewportRef={viewportRef} />
 
-        <div className="absolute end-3 bottom-3 z-10 flex flex-col gap-2">
+        <div className="absolute inset-e-6 bottom-3 z-10 flex flex-col gap-2">
           <button
             type="button"
             disabled={atTop}
@@ -292,7 +292,7 @@ export function ChatThread() {
         </div>
       </div>
 
-      <div className="bg-base-100">
+      <div className="bg-base-100 animate-entry">
         <ComposerPrimitive.AttachmentDropzone className="data-[dragging]:border-primary mx-auto w-full max-w-3xl rounded-2xl data-[dragging]:border-2 data-[dragging]:border-dashed">
           <ComposerPrimitive.Root className="flex flex-col gap-2 p-4">
             <div className="flex flex-wrap gap-2 empty:hidden">
