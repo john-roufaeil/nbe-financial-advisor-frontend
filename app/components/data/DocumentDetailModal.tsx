@@ -1,9 +1,10 @@
-import { forwardRef } from "react";
+import { forwardRef, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Loader2,
   TriangleAlert,
   RotateCcw,
+  Upload,
   CircleCheck,
   X,
   Plus,
@@ -12,13 +13,17 @@ import {
   ArrowUpCircle,
 } from "lucide-react";
 import { TRANSACTION_CATEGORIES } from "@/types/transaction";
+import { DOCUMENT_UPLOAD_ACCEPT, inferDocumentType } from "@/types/document";
 import { Button } from "@/components/shared/Button";
-import { getBankLogo, getBankName } from "@/lib/banks";
+import { BankBadge } from "@/components/shared/BankBadge";
 import { useConfirmStore } from "@/store/use-confirm-store";
+import { toastError } from "@/lib/toast";
 import { Money } from "@/components/shared/Money";
 import {
   useDocument,
   useRetryDocument,
+  useUploadDocuments,
+  useDeleteDocument,
   useUpdateExtractedTransaction,
   useDeleteExtractedTransaction,
   useAddExtractedTransaction,
@@ -32,11 +37,39 @@ export const DocumentDetailModal = forwardRef<
   const { t } = useTranslation();
   const { data: doc } = useDocument(documentId);
   const retryDocument = useRetryDocument();
+  const uploadDocuments = useUploadDocuments();
+  const deleteDocument = useDeleteDocument();
   const updateExtractedTransactionMutation = useUpdateExtractedTransaction();
   const deleteExtractedTransaction = useDeleteExtractedTransaction();
   const addExtractedTransaction = useAddExtractedTransaction();
   const approveDocument = useApproveDocument();
   const confirm = useConfirmStore((s) => s.confirm);
+  const reuploadInputRef = useRef<HTMLInputElement>(null);
+
+  // Recovery for a failed *upload*: pick the file again, upload it fresh, then
+  // drop the stale failed record. Processing failures use retry instead.
+  async function handleReupload(oldId: string, file: File | undefined) {
+    if (!file) return;
+    const type = inferDocumentType(file);
+    if (!type) {
+      toastError("toast.genericError");
+      return;
+    }
+    try {
+      await uploadDocuments.mutateAsync([
+        {
+          name: file.name,
+          type,
+          sizeKb: Math.max(1, Math.round(file.size / 1024)),
+          file,
+        },
+      ]);
+      deleteDocument.mutate(oldId);
+      reuploadInputRef.current?.closest("dialog")?.close();
+    } catch {
+      // uploadDocuments' onError already surfaced a toast; keep the modal open.
+    }
+  }
 
   function updateExtractedTransaction(
     docId: string,
@@ -52,7 +85,7 @@ export const DocumentDetailModal = forwardRef<
 
   return (
     <dialog ref={ref} className="modal">
-      <div className="modal-box relative flex max-w-xl flex-col gap-4">
+      <div className="modal-box relative flex flex-col gap-4">
         <form method="dialog">
           <button
             className="btn btn-ghost btn-sm btn-circle absolute end-2 top-2"
@@ -64,33 +97,11 @@ export const DocumentDetailModal = forwardRef<
 
         {doc && (
           <>
-            <div className="flex items-center gap-3 pe-8">
-              <img
-                src={getBankLogo(doc.bankName)}
-                alt={
-                  doc.bankName
-                    ? t(
-                        `banks.${doc.bankName}`,
-                        getBankName(doc.bankName) ?? doc.bankName,
-                      )
-                    : ""
-                }
-                className="size-9 shrink-0 rounded-full object-cover"
-              />
-              <div className="min-w-0">
-                <h3 className="truncate text-lg font-semibold">
-                  {doc.name || t("data.documentFallbackName")}
-                </h3>
-                {doc.bankName && (
-                  <p className="text-base-content/50 truncate text-xs">
-                    {t(
-                      `banks.${doc.bankName}`,
-                      getBankName(doc.bankName) ?? doc.bankName,
-                    )}
-                  </p>
-                )}
-              </div>
-            </div>
+            <BankBadge
+              bank={doc.bankName}
+              className="pe-8"
+              subtitle={doc.name || t("data.documentFallbackName")}
+            />
 
             {(doc.status === "uploading" || doc.status === "processing") && (
               <div className="flex flex-col items-center gap-3 py-8">
@@ -103,26 +114,55 @@ export const DocumentDetailModal = forwardRef<
               </div>
             )}
 
-            {doc.status === "failed" && (
-              <div className="flex flex-col items-center gap-3 py-8 text-center">
-                <TriangleAlert className="text-error size-8" />
-                <p className="font-medium">{t("data.documentDetail.failedTitle")}</p>
-                <p className="text-base-content/60 text-sm">
-                  {t(
-                    `data.documentDetail.${doc.errorMessage ?? "documentFailedGeneric"}`,
-                  )}
-                </p>
-                <Button
-                  type="button"
-                  onClick={() => retryDocument.mutate(doc.id)}
-                  loading={retryDocument.isPending}
-                  className="btn btn-primary btn-sm gap-2"
-                >
-                  <RotateCcw className="size-4" />
-                  {t("data.documentDetail.retry")}
-                </Button>
-              </div>
-            )}
+            {doc.status === "failed" &&
+              (doc.failedStage === "upload" ? (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <TriangleAlert className="text-error size-8" />
+                  <p className="font-medium">
+                    {t("data.documentDetail.uploadFailedTitle")}
+                  </p>
+                  <p className="text-base-content/60 mx-auto w-2/3 text-sm text-balance">
+                    {t(
+                      `data.documentDetail.${doc.errorMessage ?? "uploadFailedGeneric"}`,
+                    )}
+                  </p>
+                  <input
+                    ref={reuploadInputRef}
+                    type="file"
+                    accept={DOCUMENT_UPLOAD_ACCEPT}
+                    className="hidden"
+                    onChange={(e) => handleReupload(doc.id, e.target.files?.[0])}
+                  />
+                  <Button
+                    type="button"
+                    onClick={() => reuploadInputRef.current?.click()}
+                    loading={uploadDocuments.isPending || deleteDocument.isPending}
+                    className="btn btn-primary btn-sm gap-2"
+                  >
+                    <Upload className="size-4" />
+                    {t("data.documentDetail.uploadAgain")}
+                  </Button>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center gap-3 py-8 text-center">
+                  <TriangleAlert className="text-error size-8" />
+                  <p className="font-medium">{t("data.documentDetail.failedTitle")}</p>
+                  <p className="text-base-content/60 mx-auto w-2/3 text-sm text-balance">
+                    {t(
+                      `data.documentDetail.${doc.errorMessage ?? "documentFailedGeneric"}`,
+                    )}
+                  </p>
+                  <Button
+                    type="button"
+                    onClick={() => retryDocument.mutate(doc.id)}
+                    loading={retryDocument.isPending}
+                    className="btn btn-primary btn-sm gap-2"
+                  >
+                    <RotateCcw className="size-4" />
+                    {t("data.documentDetail.retry")}
+                  </Button>
+                </div>
+              ))}
 
             {doc.status === "processed" && (
               <div className="flex flex-col gap-3">

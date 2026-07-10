@@ -13,7 +13,7 @@ import {
 import { useTranslation } from "react-i18next";
 import { useMe, useUpdateProfile } from "@/queries/profile";
 import { useAccounts } from "@/queries/accounts";
-import { getBankCode, getBankLogo } from "@/lib/banks";
+import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
 import type { User as UserType } from "@/types/profile";
 import type { BankAccount } from "@/types/account";
@@ -28,7 +28,13 @@ type Section = {
   icon: typeof User;
   color: string;
   titleKey: string;
-  fields: { key: DisplayKey; labelKey: string; writable: boolean }[];
+  fields: {
+    key: DisplayKey;
+    labelKey: string;
+    writable: boolean;
+    currency?: boolean;
+    ltr?: boolean;
+  }[];
 };
 
 const SECTIONS: Section[] = [
@@ -49,7 +55,12 @@ const SECTIONS: Section[] = [
     titleKey: "data.sections.contact.title",
     fields: [
       { key: "email", labelKey: "data.sections.contact.fields.email", writable: false },
-      { key: "phone", labelKey: "data.sections.contact.fields.phone", writable: true },
+      {
+        key: "phone",
+        labelKey: "data.sections.contact.fields.phone",
+        writable: true,
+        ltr: true,
+      },
     ],
   },
   {
@@ -67,6 +78,7 @@ const SECTIONS: Section[] = [
         key: "monthly_income",
         labelKey: "data.sections.financial.fields.monthlyIncome",
         writable: true,
+        currency: true,
       },
       {
         key: "income_steadiness",
@@ -205,16 +217,35 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
                   className="input input-sm input-bordered w-full"
                 />
               ) : (
-                <span className="text-sm font-medium">
-                  {user[field.key as keyof UserType] ||
+                (() => {
+                  const value =
+                    user[field.key as keyof UserType] ||
                     (user.email === AMINA_MOCK_EMAIL
                       ? AMINA_MOCK_VALUES[field.key]
-                      : undefined) || (
-                      <span className="text-base-content/30 italic">
+                      : undefined);
+                  if (!value) {
+                    return (
+                      <span className="text-base-content/30 text-sm font-medium italic">
                         {t("onboarding.review.empty")}
                       </span>
-                    )}
-                </span>
+                    );
+                  }
+                  if (field.currency) {
+                    return (
+                      <Money className="text-sm font-medium">
+                        {value} {t("currency.EGP")}
+                      </Money>
+                    );
+                  }
+                  if (field.ltr) {
+                    return (
+                      <span className="text-sm font-medium">
+                        <bdi dir="ltr">{String(value).replace(/\s+/g, "")}</bdi>
+                      </span>
+                    );
+                  }
+                  return <span className="text-sm font-medium">{value}</span>;
+                })()
               )}
             </label>
           ))}
@@ -228,21 +259,21 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
 
 function AccountRow({ account }: { account: BankAccount }) {
   const { t } = useTranslation();
-  const code = getBankCode(account.bank_name);
-  const label = code ? t(`banks.${code}`, account.bank_name) : account.bank_name;
   const currencyLabel = t(`currency.${account.currency}`, account.currency);
 
   return (
     <li className="border-base-300 bg-base-100 flex items-center gap-3 rounded-lg border p-3">
-      <img src={getBankLogo(code)} alt="" className="size-9 shrink-0 rounded-full" />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{label}</p>
-        <p className="text-base-content/50 text-xs">
-          <span dir="ltr">{account.masked_account_number}</span>
-          {account.account_type ? ` · ${account.account_type}` : ""}
-          {account.is_active ? "" : ` · ${t("data.sections.accounts.inactive")}`}
-        </p>
-      </div>
+      <BankBadge
+        bank={account.bank_name}
+        className="flex-1"
+        subtitle={
+          <>
+            <span dir="ltr">{account.masked_account_number}</span>
+            {account.account_type ? ` · ${account.account_type}` : ""}
+            {account.is_active ? "" : ` · ${t("data.sections.accounts.inactive")}`}
+          </>
+        }
+      />
       <Money className="shrink-0 text-sm font-semibold tabular-nums">
         {Number(account.current_balance).toLocaleString()} {currencyLabel}
       </Money>
@@ -258,7 +289,7 @@ function BankAccountsCard() {
     return (
       <CardSkeleton
         icon={CreditCard}
-        className="sm:col-span-2"
+        className="animate-entry sm:col-span-2"
         rows={[{ kind: "progress" }, { kind: "progress" }]}
       />
     );
@@ -275,7 +306,7 @@ function BankAccountsCard() {
   }
 
   return (
-    <div className="card border-base-300 bg-base-100 border shadow-sm sm:col-span-2">
+    <div className="card border-base-300 bg-base-100 animate-fade-in border shadow-sm sm:col-span-2">
       <div className="card-body gap-4 p-4">
         <div className="flex items-center gap-2">
           <span className="bg-success/10 text-success grid size-9 shrink-0 place-items-center rounded-lg">

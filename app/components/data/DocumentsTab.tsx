@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import type { ComponentType, CSSProperties } from "react";
 import {
   Trash2,
   Loader2,
@@ -10,15 +11,27 @@ import {
 import { useTranslation } from "react-i18next";
 import type { DocumentRecord } from "@/types/document";
 import { formatDate } from "@/lib/format";
-import { getBankLogo, getBankName } from "@/lib/banks";
+import { BankBadge } from "@/components/shared/BankBadge";
 import { useDocuments, useDeleteDocument } from "@/queries/documents";
 import { Pagination } from "@/components/data/Pagination";
 import { DocumentDetailModal } from "@/components/data/DocumentDetailModal";
 import { DataToolbar } from "@/components/shared/DataToolbar";
 import { useConfirmStore } from "@/store/use-confirm-store";
-import { ListSkeleton, ErrorState, EmptyState } from "@/components/shared/QueryState";
+import {
+  ListSkeleton,
+  CardGridSkeleton,
+  ErrorState,
+  EmptyState,
+} from "@/components/shared/QueryState";
+import { useViewModeStore, type ViewMode } from "@/store/use-view-mode-store";
+import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
 
-const PAGE_SIZE = 10;
+/** List = single column of rows; grid = responsive cards. */
+const VIEW_CONTAINER = {
+  list: "flex flex-col gap-2",
+  grid: "grid gap-2 sm:grid-cols-2 xl:grid-cols-3",
+} as const;
+
 const FILTERS = ["all", "pdf", "image", "doc"] as const;
 type Filter = (typeof FILTERS)[number];
 
@@ -37,6 +50,32 @@ function documentSubtitle(doc: DocumentRecord, t: (key: string) => string) {
 
 const PROCESSED_BADGE_DURATION_MS = 5000;
 const PROCESSED_BADGE_FADE_MS = 400;
+
+function StatusPill({
+  tone,
+  icon: Icon,
+  spin,
+  label,
+  style,
+  className = "",
+}: {
+  tone: string;
+  icon: ComponentType<{ className?: string; "data-no-flip"?: boolean }>;
+  spin?: boolean;
+  label: string;
+  style?: CSSProperties;
+  className?: string;
+}) {
+  return (
+    <span
+      style={style}
+      className={`inline-flex shrink-0 items-center gap-1.5 rounded-full px-2.5 py-1 text-xs font-medium ${tone} ${className}`}
+    >
+      <Icon data-no-flip className={`size-3.5 ${spin ? "animate-spin" : ""}`} />
+      {label}
+    </span>
+  );
+}
 
 function StatusBadge({ doc }: { doc: DocumentRecord }) {
   const { t } = useTranslation();
@@ -69,82 +108,115 @@ function StatusBadge({ doc }: { doc: DocumentRecord }) {
 
   if (doc.status === "uploading" || doc.status === "processing") {
     return (
-      <span className="text-base-content/50 flex items-center gap-1 text-xs">
-        <Loader2 data-no-flip className="size-3 animate-spin" />
-        {t(`data.documentStatus.${doc.status}`)}
-      </span>
+      <StatusPill
+        tone="bg-info/10 text-info"
+        icon={Loader2}
+        spin
+        label={t(`data.documentStatus.${doc.status}`)}
+      />
     );
   }
   if (doc.status === "failed") {
     return (
-      <span className="text-error flex items-center gap-1 text-xs">
-        <TriangleAlert className="size-3" />
-        {t("data.documentStatus.failed")}
-      </span>
+      <StatusPill
+        tone="bg-error/10 text-error"
+        icon={TriangleAlert}
+        label={t("data.documentStatus.failed")}
+      />
     );
   }
   if (!doc.approved) {
     return (
-      <span className="text-warning flex items-center gap-1 text-xs">
-        <ClockCheck data-no-flip className="size-3" />
-        {t("data.documentStatus.pendingApproval")}
-      </span>
+      <StatusPill
+        tone="bg-warning/10 text-warning"
+        icon={ClockCheck}
+        label={t("data.documentStatus.pendingApproval")}
+      />
     );
   }
   if (!showProcessed) return null;
   return (
-    <span
+    <StatusPill
+      tone="bg-success/10 text-success"
+      icon={CircleCheck}
+      label={t("data.documentStatus.processed")}
       style={{ transitionDuration: `${PROCESSED_BADGE_FADE_MS}ms` }}
-      className={`text-success flex items-center gap-1 text-xs transition-opacity ${fading ? "opacity-0" : "opacity-100"}`}
-    >
-      <CircleCheck data-no-flip className="size-3" />
-      {t("data.documentStatus.processed")}
-    </span>
+      className={`transition-opacity ${fading ? "opacity-0" : "opacity-100"}`}
+    />
   );
 }
 
-function DocumentCard({ doc, onOpen }: { doc: DocumentRecord; onOpen: () => void }) {
+function DocumentCard({
+  doc,
+  view,
+  onOpen,
+}: {
+  doc: DocumentRecord;
+  view: ViewMode;
+  onOpen: () => void;
+}) {
   const { t } = useTranslation();
   const deleteDocument = useDeleteDocument();
   const confirm = useConfirmStore((s) => s.confirm);
+  const isGrid = view === "grid";
+
+  const logoAndText = (
+    <BankBadge
+      bank={doc.bankName}
+      className="flex-1"
+      subtitle={
+        <>
+          {doc.name || t("data.documentFallbackName")} · {documentSubtitle(doc, t)}
+        </>
+      }
+    />
+  );
+
+  const status = <StatusBadge doc={doc} />;
+
+  const deleteButton = (
+    <button
+      type="button"
+      onClick={(e) => {
+        e.stopPropagation();
+        confirm({
+          title: t("confirm.deleteDocumentTitle"),
+          message: t("confirm.deleteMessage"),
+          onConfirm: () => deleteDocument.mutate(doc.id),
+        });
+      }}
+      className="btn btn-ghost btn-sm btn-square text-error shrink-0"
+      aria-label={t("actions.delete", {
+        name: doc.name || t("data.documentFallbackName"),
+      })}
+    >
+      <Trash2 className="size-4" />
+    </button>
+  );
+
+  if (isGrid) {
+    return (
+      <li
+        onClick={onOpen}
+        className="border-base-300 bg-base-100 hover:border-primary flex cursor-pointer flex-col gap-3 rounded-lg border p-3 transition-colors"
+      >
+        {logoAndText}
+        <div className="border-base-200 flex items-center gap-2 border-t pt-2">
+          {status}
+          <div className="ms-auto">{deleteButton}</div>
+        </div>
+      </li>
+    );
+  }
+
   return (
     <li
       onClick={onOpen}
       className="border-base-300 bg-base-100 hover:border-primary flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors"
     >
-      <img
-        src={getBankLogo(doc.bankName)}
-        alt={
-          doc.bankName
-            ? t(`banks.${doc.bankName}`, getBankName(doc.bankName) ?? doc.bankName)
-            : ""
-        }
-        className="size-9 shrink-0 rounded-full object-cover"
-      />
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">
-          {doc.name || t("data.documentFallbackName")}
-        </p>
-        <p className="text-base-content/50 text-xs">{documentSubtitle(doc, t)}</p>
-      </div>
-      <StatusBadge doc={doc} />
-      <button
-        type="button"
-        onClick={(e) => {
-          e.stopPropagation();
-          confirm({
-            title: t("confirm.deleteDocumentTitle"),
-            message: t("confirm.deleteMessage"),
-            onConfirm: () => deleteDocument.mutate(doc.id),
-          });
-        }}
-        className="btn btn-ghost btn-sm btn-square text-error shrink-0"
-        aria-label={t("actions.delete", {
-          name: doc.name || t("data.documentFallbackName"),
-        })}
-      >
-        <Trash2 className="size-4" />
-      </button>
+      {logoAndText}
+      {status}
+      {deleteButton}
     </li>
   );
 }
@@ -156,16 +228,18 @@ export function DocumentsTab() {
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
   const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(DEFAULT_PAGE_SIZE);
   const detailModalRef = useRef<HTMLDialogElement>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  const viewMode = useViewModeStore((s) => s.mode);
 
   const { data, isPending, isError, refetch } = useDocuments({
     type: filter === "all" ? undefined : filter,
     q: search.trim() || undefined,
     from: fromDate || undefined,
     to: toDate || undefined,
-    offset: (page - 1) * PAGE_SIZE,
-    limit: PAGE_SIZE,
+    offset: (page - 1) * pageSize,
+    limit: pageSize,
   });
 
   function openDetail(id: string) {
@@ -173,7 +247,12 @@ export function DocumentsTab() {
     detailModalRef.current?.showModal();
   }
 
-  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / PAGE_SIZE));
+  const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / pageSize));
+
+  function updatePageSize(size: number) {
+    setPageSize(size);
+    setPage(1);
+  }
 
   function updateSearch(value: string) {
     setSearch(value);
@@ -193,7 +272,7 @@ export function DocumentsTab() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="mb-20 flex flex-col gap-4">
       <DataToolbar
         search={search}
         onSearchChange={updateSearch}
@@ -205,23 +284,41 @@ export function DocumentsTab() {
         filter={filter}
         onFilterChange={updateFilter}
         filterLabel={(f) => t(`data.filters.${f}`)}
+        pageSize={pageSize}
+        onPageSizeChange={updatePageSize}
       />
 
       {isPending ? (
-        <ListSkeleton />
+        viewMode === "grid" ? (
+          <CardGridSkeleton />
+        ) : (
+          <ListSkeleton />
+        )
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
       ) : data.items.length > 0 ? (
-        <ul className="flex flex-col gap-2">
+        <ul className={`animate-fade-in ${VIEW_CONTAINER[viewMode]}`}>
           {data.items.map((doc) => (
-            <DocumentCard key={doc.id} doc={doc} onOpen={() => openDetail(doc.id)} />
+            <DocumentCard
+              key={doc.id}
+              doc={doc}
+              view={viewMode}
+              onOpen={() => openDetail(doc.id)}
+            />
           ))}
         </ul>
       ) : (
         <EmptyState icon={FileText} label={t("data.documentsEmpty")} />
       )}
 
-      <Pagination page={page} totalPages={totalPages} onChange={setPage} />
+      <Pagination
+        page={page}
+        totalPages={totalPages}
+        total={data?.total ?? 0}
+        pageSize={pageSize}
+        onChange={setPage}
+        onPageSizeChange={updatePageSize}
+      />
 
       <DocumentDetailModal ref={detailModalRef} documentId={selectedId} />
     </div>
