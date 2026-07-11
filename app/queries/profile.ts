@@ -26,7 +26,11 @@ export function useUpdateProfile() {
   const source = useDataSourceStore((s) => s.source);
   return useMutation({
     mutationFn: (body: UpdateProfileBody) => impl(source).updateProfile(body),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ["profile"] }),
+    // PATCH /users/me already echoes back the full updated user, so write it
+    // straight into the cache instead of invalidating and firing a redundant
+    // GET /users/me for data we already have.
+    onSuccess: (updatedUser) =>
+      queryClient.setQueryData(profileKeys.me(source), updatedUser),
     // Failure surfaces (no fake success); the caller stays on the step.
     onError: (error) => toastApiError(error),
   });

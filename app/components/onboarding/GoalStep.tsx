@@ -2,6 +2,8 @@ import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { SliderField } from "@/components/onboarding/SliderField";
+import type { STEP_FIELDS } from "@/lib/onboarding-fields";
+import { isFieldUnset, isStepDirty } from "@/lib/onboarding-fields";
 
 // Quick-fill suggestions for the free-text goal name — clicking one just
 // fills the input; the user can still type their own name.
@@ -25,16 +27,34 @@ export function GoalStep() {
   const data = useOnboardingStore((s) => s.data);
   const setField = useOnboardingStore((s) => s.setField);
 
+  // Once the user has started this step, every remaining unfilled field is
+  // flagged — the step is "all or nothing" (see onboarding.tsx's Continue
+  // gating), so a partial fill needs to show exactly what's still missing.
+  const dirty = isStepDirty("goal", data);
+  const missing = (field: (typeof STEP_FIELDS)["goal"][number]) =>
+    dirty && isFieldUnset(field, data[field]);
+  const nameMissing = missing("goal_name");
+
   return (
     <div className="flex flex-col gap-4">
       <label className="flex flex-col gap-1.5">
-        <span className="label-text text-xs">{t("onboarding.goal.name")}</span>
+        <span className="label-text inline-flex items-center gap-1.5 text-xs">
+          {t("onboarding.goal.name")}
+          {nameMissing && (
+            <span
+              className="bg-error inline-block size-1.5 shrink-0 rounded-full"
+              role="img"
+              aria-label={t("onboarding.errors.missing")}
+            />
+          )}
+        </span>
         <label className="input input-bordered flex w-full items-center gap-2">
           <input
             type="text"
             value={data.goal_name}
             onChange={(e) => setField("goal_name", e.target.value)}
             placeholder={t("onboarding.goal.namePlaceholder")}
+            maxLength={20}
             className="min-w-0 grow"
           />
           {data.goal_name && (
@@ -75,6 +95,7 @@ export function GoalStep() {
           value: amount,
           label: amount.toLocaleString(),
         }))}
+        error={missing("goal_target_amount") ? t("onboarding.errors.missing") : undefined}
       />
       <SliderField
         label={t("onboarding.goal.targetMonths")}
@@ -83,6 +104,7 @@ export function GoalStep() {
         min={1}
         max={60}
         step={1}
+        error={missing("goal_target_months") ? t("onboarding.errors.missing") : undefined}
       />
     </div>
   );

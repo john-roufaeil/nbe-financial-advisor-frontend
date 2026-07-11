@@ -6,9 +6,9 @@ import {
   useOnboardingStore,
   INITIAL_ONBOARDING_DATA,
 } from "@/store/use-onboarding-store";
-import { useAuthStore } from "@/store/use-auth-store";
 import { AuthLayout } from "@/components/shared/AuthLayout";
 import { Button } from "@/components/shared/Button";
+import { Tooltip } from "@/components/shared/Tooltip";
 import { AccountStep } from "@/components/onboarding/AccountStep";
 import { IncomeStep } from "@/components/onboarding/IncomeStep";
 import { GoalStep } from "@/components/onboarding/GoalStep";
@@ -18,42 +18,19 @@ import { useSignup } from "@/queries/auth";
 import { useUpdateProfile } from "@/queries/profile";
 import { useStarterTemplates, useCreateBudget } from "@/queries/budget";
 import { usePageTitle } from "@/lib/use-page-title";
+import { isEmailTakenError } from "@/lib/toast";
+import {
+  STEP_FIELDS,
+  isStepDirty,
+  isStepComplete,
+  type OptionalStepKey,
+} from "@/lib/onboarding-fields";
 
 const STEP_KEYS = ["account", "income", "goal", "template", "review"] as const;
 
-// Which onboarding-store fields belong to each step — used to detect whether
-// the user has changed anything on an (optional) step, so its button can flip
-// from an outlined "Skip" to a primary "Continue".
-const STEP_FIELDS = {
-  income: [
-    "employment_status",
-    "monthly_income",
-    "income_steadiness",
-    "dependents_count",
-  ],
-  goal: ["goal_name", "goal_target_amount", "goal_target_months"],
-  template: ["selected_template_key"],
-} as const;
-
-// Slider-backed fields report their minimum as an unset/untouched value —
-// sitting at the floor (e.g. dragging monthly income down to 0) reads the
-// same as never having touched the field, so the step stays skippable.
-const SLIDER_MIN_VALUES: Partial<Record<keyof typeof INITIAL_ONBOARDING_DATA, number>> = {
-  monthly_income: 0,
-  dependents_count: 0,
-  goal_target_amount: 0,
-  goal_target_months: 1,
-};
-
-function isFieldUnset(field: keyof typeof INITIAL_ONBOARDING_DATA, value: string) {
-  if (value === INITIAL_ONBOARDING_DATA[field]) return true;
-  const min = SLIDER_MIN_VALUES[field];
-  return min !== undefined && Number(value) === min;
-}
-
 export default function Onboarding() {
-  const { step, totalSteps, next, back, goToStep, reset, data } = useOnboardingStore();
-  const login = useAuthStore((s) => s.login);
+  const { step, totalSteps, next, back, goToStep, reset, data, setField } =
+    useOnboardingStore();
   const navigate = useNavigate();
   const { lang } = useParams<{ lang: string }>();
   const { t } = useTranslation();
@@ -68,6 +45,16 @@ export default function Onboarding() {
   // Consent acknowledgement, merged into the account step. Kept in local state
   // (not persisted) — a per-session acknowledgement gating signup.
   const [agreed, setAgreed] = useState(false);
+
+  // Live zod-validity of the account step's fields (name/email/password/phone),
+  // reported up by AccountStep. Consent isn't part of that schema, so it's
+  // ANDed in separately below.
+  const [accountFieldsValid, setAccountFieldsValid] = useState(false);
+
+  // Set when signup fails because the email is already registered — surfaced
+  // as a field error on the account step, cleared as soon as the user edits
+  // the email again.
+  const [emailTaken, setEmailTaken] = useState(false);
 
   // Guards against double-submit while a step's async call is in flight. A ref
   // (not state) so it doesn't change how anything renders.
@@ -96,24 +83,24 @@ export default function Onboarding() {
   const isRtl = typeof document !== "undefined" && document.documentElement.dir === "rtl";
   const enterX = 16 * direction * (isRtl ? -1 : 1);
 
-  // Only the account step is required (name, email, password, consent).
-  // Every later step is optional — its button reads "Skip" until the user
-  // touches one of that step's fields, at which point it becomes "Continue".
-  const isAccountValid =
-    data.name.trim().length > 0 &&
-    data.email.trim().length > 0 &&
-    password.length >= 8 &&
-    agreed;
+  // Only the account step is hard-required (name, email, password, consent,
+  // and no unresolved "email already registered" conflict — the user must
+  // change the email before continuing). Every later step is "all or
+  // nothing": Skip always works, but Continue only enables once every field
+  // on that step is filled in, so a half-filled step can never be submitted.
+  const isAccountValid = accountFieldsValid && agreed && !emailTaken;
 
-  const stepIsDirty =
-    stepKey === "account" || stepKey === "review"
-      ? false
-      : STEP_FIELDS[stepKey].some((field) => !isFieldUnset(field, data[field]));
+  const optionalStepKey: OptionalStepKey | null =
+    stepKey === "income" || stepKey === "goal" || stepKey === "template" ? stepKey : null;
+  const stepIsComplete =
+    optionalStepKey !== null && isStepComplete(optionalStepKey, data);
 
-  // Step 0 always gates on validity. Later (optional) steps are always
-  // continuable — dirty ones submit as "Continue", clean ones as "Skip".
-  const canContinue = stepKey === "account" ? isAccountValid : true;
-  const isSkip = stepKey !== "account" && stepKey !== "review" && !stepIsDirty;
+  const canContinue =
+    stepKey === "account"
+      ? isAccountValid
+      : optionalStepKey !== null
+        ? stepIsComplete
+        : true;
 
   // Can only jump to a step ahead of the current one if the account step
   // (the one hard gate) has already been satisfied.
@@ -124,6 +111,17 @@ export default function Onboarding() {
   function handleStepClick(target: number) {
     if (isSubmitting || target === step || isStepLocked(target)) return;
     goToStep(target);
+  }
+
+  // "Skip" always works on an optional step, even mid-fill — it resets that
+  // step's fields back to their defaults first, so the final submit's
+  // dirty-check sees a genuinely untouched step rather than a partial one.
+  function handleSkip() {
+    if (isSubmitting || optionalStepKey === null) return;
+    for (const field of STEP_FIELDS[optionalStepKey]) {
+      setField(field, INITIAL_ONBOARDING_DATA[field]);
+    }
+    next();
   }
 
   async function handlePrimary() {
@@ -151,10 +149,7 @@ export default function Onboarding() {
         completedRef.current.signup = true;
       }
 
-      const incomeDirty = STEP_FIELDS.income.some(
-        (field) => !isFieldUnset(field, data[field]),
-      );
-      if (incomeDirty && !completedRef.current.profile) {
+      if (isStepDirty("income", data) && !completedRef.current.profile) {
         await updateProfile.mutateAsync({
           employment_status: data.employment_status,
           monthly_income: data.monthly_income,
@@ -188,12 +183,17 @@ export default function Onboarding() {
       setPassword("");
       setAgreed(false);
       completedRef.current = { signup: false, profile: false };
-      login();
-      navigate(`/${lang}/dashboard`);
-    } catch {
+      navigate(`/${lang}/sign-in`);
+    } catch (error) {
       // Writes (signup, profile, budget) must NOT fake success. The mutation's
       // onError already surfaced a toast; stay on the current step, don't advance.
       // completedRef retains whichever calls already succeeded so a retry resumes.
+      // A signup-specific "email already registered" failure additionally sends
+      // the user back to the account step to fix the email.
+      if (!completedRef.current.signup && isEmailTakenError(error)) {
+        setEmailTaken(true);
+        goToStep(0);
+      }
     } finally {
       submittingRef.current = false;
     }
@@ -202,7 +202,11 @@ export default function Onboarding() {
   return (
     <AuthLayout align="start">
       <div className="flex flex-col gap-5">
-        <img src="/logo.webp" alt={t("app.name")} className="mx-auto h-auto w-1/2" />
+        <img
+          src="/logo.webp"
+          alt={t("app.name")}
+          className="mx-auto h-auto w-1/2 max-w-50"
+        />
 
         <div className="card border-base-300 bg-base-100 border shadow-sm">
           <div className="card-body gap-5 p-5 sm:p-6">
@@ -257,6 +261,9 @@ export default function Onboarding() {
                   onPasswordChange={setPassword}
                   agreed={agreed}
                   onAgreedChange={setAgreed}
+                  onValidityChange={setAccountFieldsValid}
+                  emailTaken={emailTaken}
+                  onEmailChange={() => setEmailTaken(false)}
                 />
               ) : stepKey === "income" ? (
                 <IncomeStep />
@@ -278,31 +285,45 @@ export default function Onboarding() {
                 <ArrowLeft className="size-4" />
                 {t("actions.back")}
               </button>
-              <span className={!canContinue ? "cursor-not-allowed" : undefined}>
-                <Button
-                  className={`btn gap-1.5 ${isSkip ? "btn-outline btn-primary" : "btn-primary"}`}
-                  disabled={!canContinue}
-                  loading={isSubmitting}
-                  onClick={handlePrimary}
+              <div className="flex items-center gap-2">
+                {optionalStepKey !== null && optionalStepKey !== "template" && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost gap-1.5"
+                    disabled={isSubmitting}
+                    onClick={handleSkip}
+                  >
+                    {t("actions.skip")}
+                    <ChevronsRight className="size-4" />
+                  </button>
+                )}
+                <Tooltip
+                  content={
+                    !canContinue && optionalStepKey !== null
+                      ? t("onboarding.errors.fillAllRequired")
+                      : ""
+                  }
                 >
-                  {isLast ? (
-                    <>
-                      {t("onboarding.finish")}
-                      <Check data-no-flip className="size-4" />
-                    </>
-                  ) : isSkip ? (
-                    <>
-                      {t("actions.skip")}
-                      <ChevronsRight className="size-4" />
-                    </>
-                  ) : (
-                    <>
-                      {t("actions.continue")}
-                      <ArrowRight className="size-4" />
-                    </>
-                  )}
-                </Button>
-              </span>
+                  <Button
+                    className="btn btn-primary gap-1.5"
+                    disabled={!canContinue}
+                    loading={isSubmitting}
+                    onClick={handlePrimary}
+                  >
+                    {isLast ? (
+                      <>
+                        {t("onboarding.finish")}
+                        <Check data-no-flip className="size-4" />
+                      </>
+                    ) : (
+                      <>
+                        {t("actions.continue")}
+                        <ArrowRight className="size-4" />
+                      </>
+                    )}
+                  </Button>
+                </Tooltip>
+              </div>
             </div>
           </div>
         </div>
