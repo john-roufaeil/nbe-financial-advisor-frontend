@@ -62,11 +62,24 @@ function ToastItem({ toast }: { toast: Toast }) {
 
 export function ToastHost() {
   const toasts = useToastStore((s) => s.toasts);
+  const hostRef = useRef<HTMLDivElement>(null);
 
-  if (toasts.length === 0) return null;
+  // Modals are native <dialog> elements, which the browser renders in the
+  // top layer — no z-index can beat that. Promoting this host into the top
+  // layer too (via the popover API) and re-showing it on every new toast
+  // keeps it above whatever dialog/backdrop is currently open.
+  useEffect(() => {
+    const el = hostRef.current;
+    if (!el) return;
+    if (toasts.length > 0) {
+      if (!el.matches(":popover-open")) el.showPopover();
+    } else if (el.matches(":popover-open")) {
+      el.hidePopover();
+    }
+  }, [toasts.length]);
 
   return (
-    <div className="toast toast-end toast-bottom z-50">
+    <div ref={hostRef} popover="manual" className="toast toast-end toast-bottom z-50 m-0">
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} />
       ))}
