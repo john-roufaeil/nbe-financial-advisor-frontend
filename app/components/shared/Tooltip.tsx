@@ -63,7 +63,7 @@ export function Tooltip({
         if (!triggerRef.current.matches(":focus-visible")) {
           return;
         }
-      } catch (err) {
+      } catch {
         // Fallback for very old browsers
       }
     }
