@@ -38,12 +38,12 @@ export function ToggleSwitch<T extends string>({
       type="button"
       onClick={toggle}
       aria-label={ariaLabel}
-      className={`border-base-300 bg-base-200 relative flex w-full min-w-0 cursor-pointer items-center rounded-lg border p-1 ${
+      className={`border-base-300 bg-base-200 focus-visible:outline-primary/50 relative flex w-full min-w-0 cursor-pointer items-center rounded-md border p-1 focus-visible:outline-2 focus-visible:outline-offset-2 ${
         forceLtrOrder ? "rtl:flex-row-reverse" : ""
       }`}
     >
       <span
-        className={`bg-primary absolute inset-y-1 ${forceLtrOrder ? "left-1" : "start-1"} w-[calc(50%-0.375rem)] rounded-md shadow-sm transition-transform duration-200 ease-out ${
+        className={`bg-primary absolute inset-y-1 ${forceLtrOrder ? "left-1" : "start-1"} w-[calc(50%-0.375rem)] rounded-lg shadow-sm transition-transform duration-200 ease-out ${
           active === 1
             ? forceLtrOrder
               ? "translate-x-[calc(100%+0.25rem)]"

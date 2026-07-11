@@ -11,7 +11,7 @@ interface PageBannerProps {
 
 export function PageBanner({ title, subtitle, icon: Icon, actions }: PageBannerProps) {
   return (
-    <div className="animate-entry from-primary to-primary/80 text-primary-content relative overflow-hidden rounded-2xl bg-linear-to-br p-5 shadow-sm">
+    <div className="animate-entry from-primary to-primary/80 text-primary-content relative overflow-hidden rounded-xl bg-linear-to-br p-5 shadow-sm">
       <Icon data-no-flip className="absolute -inset-e-4 -bottom-4 size-28 opacity-10" />
       <div className="relative flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <div>

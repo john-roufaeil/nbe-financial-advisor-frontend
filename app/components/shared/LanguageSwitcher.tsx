@@ -5,7 +5,13 @@ import { LANGUAGE_STORAGE_KEY } from "@/routes/lang-layout";
 import { LinkToggle } from "@/components/shared/LinkToggle";
 import { useToastStore } from "@/store/use-toast-store";
 
-export function LanguageSwitcher({ onSelect }: { onSelect?: () => void }) {
+export function LanguageSwitcher({
+  onSelect,
+  variant,
+}: {
+  onSelect?: () => void;
+  variant?: "link" | "btn-ghost";
+}) {
   const { lang } = useParams<{ lang: string }>();
   const location = useLocation();
   const navigate = useNavigate();
@@ -37,6 +43,7 @@ export function LanguageSwitcher({ onSelect }: { onSelect?: () => void }) {
       labels={labels}
       onChange={switchTo}
       aria-label={t("settings.language")}
+      variant={variant}
     />
   );
 }

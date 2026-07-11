@@ -91,26 +91,26 @@ export default function Dashboard() {
               reads the same as no plan at all, so it gets the same empty
               state prompting a chat with the advisor. */}
           {data.hasPlan && data.budget.categories.some((c) => c.budget > 0) ? (
-            <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-12">
-              <div className="xl:col-span-3">
+            <div className="grid items-stretch gap-4 md:grid-cols-3 xl:grid-cols-12">
+              <div className="md:col-span-1 xl:col-span-3">
                 <GoalCard currency={data.currency} />
               </div>
-              <div className="xl:col-span-6">
+              <div className="md:col-span-2 xl:col-span-6">
                 <BudgetSplitCard
                   categories={data.budget.categories}
                   currency={data.currency}
                 />
               </div>
-              <div className="md:col-span-2 xl:col-span-3 xl:self-start">
+              <div className="md:col-span-3 xl:col-span-3 xl:self-start">
                 <RecentActivityCard />
               </div>
             </div>
           ) : (
-            <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-12">
-              <div className="xl:col-span-9">
+            <div className="grid items-stretch gap-4 md:grid-cols-3 xl:grid-cols-12">
+              <div className="md:col-span-2 xl:col-span-9">
                 <NoPlanCard />
               </div>
-              <div className="xl:col-span-3 xl:self-start">
+              <div className="md:col-span-1 xl:col-span-3 xl:self-start">
                 <RecentActivityCard stacked />
               </div>
             </div>

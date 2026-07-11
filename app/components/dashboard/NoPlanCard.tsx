@@ -19,7 +19,7 @@ export function NoPlanCard() {
             aria-hidden="true"
             className="bg-primary/5 absolute size-24 rounded-full blur-xl"
           />
-          <span className="bg-primary/10 text-primary relative grid size-16 place-items-center rounded-2xl">
+          <span className="bg-primary/10 text-primary relative grid size-16 place-items-center rounded-lg">
             <ClipboardList className="size-8" />
           </span>
         </div>
