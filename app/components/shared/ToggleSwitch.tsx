@@ -1,4 +1,5 @@
 import type { ComponentType } from "react";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 type IconComponent = ComponentType<{ className?: string }>;
 
@@ -11,6 +12,9 @@ interface ToggleSwitchProps<T extends string> {
   "aria-label": string;
   /** Pins options[0] to the visual left and options[1] to the visual right regardless of page direction. */
   forceLtrOrder?: boolean;
+  /** When false, each option shows only its icon (requires `icons`) and its
+   * label becomes a hover/focus tooltip instead of visible text. */
+  showLabels?: boolean;
 }
 
 export function ToggleSwitch<T extends string>({
@@ -21,6 +25,7 @@ export function ToggleSwitch<T extends string>({
   onChange,
   "aria-label": ariaLabel,
   forceLtrOrder,
+  showLabels = true,
 }: ToggleSwitchProps<T>) {
   const active = value === options[0] ? 0 : 1;
 
@@ -49,16 +54,29 @@ export function ToggleSwitch<T extends string>({
       {options.map((opt) => {
         const Icon: IconComponent | undefined = icons?.[opt];
         const isActive = opt === value;
-        return (
+        const content = (
           <span
-            key={opt}
             className={`relative z-10 flex min-w-0 flex-1 items-center justify-center gap-1.5 px-2 py-1.5 text-sm leading-tight font-medium wrap-break-word transition-colors ${
               isActive ? "text-primary-content" : "text-base-content/50"
             }`}
           >
             {Icon && <Icon className="size-3.5 shrink-0" />}
-            <span className="min-w-0 text-center">{labels[opt]}</span>
+            {showLabels ? (
+              <span className="min-w-0 text-center">{labels[opt]}</span>
+            ) : (
+              <span className="sr-only">{labels[opt]}</span>
+            )}
           </span>
+        );
+
+        return showLabels ? (
+          <span key={opt} className="flex min-w-0 flex-1">
+            {content}
+          </span>
+        ) : (
+          <Tooltip key={opt} content={labels[opt]} className="min-w-0 flex-1">
+            {content}
+          </Tooltip>
         );
       })}
     </button>

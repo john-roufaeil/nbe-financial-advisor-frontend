@@ -19,6 +19,7 @@ import { useMe } from "@/queries/profile";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { BalanceVisibilityToggle } from "@/components/shared/BalanceVisibilityToggle";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
+import { Tooltip } from "@/components/shared/Tooltip";
 import { useDataSourceStore } from "@/store/use-data-source-store";
 
 const DATA_SOURCE_OPTIONS = ["mock", "backend"] as const;
@@ -83,21 +84,33 @@ export default function AppLayout() {
         {/* Main content surface — base-100 */}
         <div className="drawer-content bg-base-100 flex h-screen min-w-0 flex-col">
           <header className="navbar border-base-300 bg-base-200 min-h-14 shrink-0 border-b px-2 lg:hidden">
-            <button
-              className="btn btn-square btn-ghost"
-              onClick={toggle}
-              aria-label={t("nav.menu")}
+            <Tooltip content={t("nav.menu")} position="bottom">
+              <button
+                className="btn btn-square btn-ghost"
+                onClick={toggle}
+                aria-label={t("nav.menu")}
+              >
+                <Menu className="size-5" />
+              </button>
+            </Tooltip>
+            <Tooltip
+              content={t("nav.dashboard")}
+              position="bottom"
+              className="mx-auto w-1/2 sm:w-1/3"
             >
-              <Menu className="size-5" />
-            </button>
-            <Link
-              to={`/${lang}/dashboard`}
-              onClick={close}
-              className="mx-auto w-1/2 px-2 sm:w-1/3"
-              aria-label={t("nav.dashboard")}
-            >
-              <img src="/logo.webp" alt={t("app.name")} className="h-auto w-full" />
-            </Link>
+              <Link
+                to={`/${lang}/dashboard`}
+                onClick={close}
+                className="w-full px-2"
+                aria-label={t("nav.dashboard")}
+              >
+                <img
+                  src="/logo.webp"
+                  alt={t("app.name")}
+                  className="h-auto w-full max-w-40"
+                />
+              </Link>
+            </Tooltip>
           </header>
 
           <main className="min-h-0 flex-1 overflow-y-auto pt-3">
@@ -110,21 +123,37 @@ export default function AppLayout() {
           <label htmlFor="app-drawer" className="drawer-overlay" onClick={close} />
           <aside className="border-base-300 bg-base-200 flex h-screen w-72 flex-col border-e">
             <div className="border-base-300 relative flex h-16 shrink-0 items-center border-b px-4">
-              <button
-                className="btn btn-square btn-ghost absolute inset-y-0 inset-s-2 my-auto lg:hidden"
-                onClick={close}
-                aria-label={t("nav.menu")}
+              <Tooltip
+                content={t("nav.menu")}
+                position="end"
+                className="absolute inset-y-0 inset-s-2 my-auto lg:hidden"
               >
-                <X className="size-5" />
-              </button>
-              <Link
-                to={`/${lang}/dashboard`}
-                onClick={close}
+                <button
+                  className="btn btn-square btn-ghost"
+                  onClick={close}
+                  aria-label={t("nav.menu")}
+                >
+                  <X className="size-5" />
+                </button>
+              </Tooltip>
+              <Tooltip
+                content={t("nav.dashboard")}
+                position="bottom"
                 className="mx-auto w-1/2"
-                aria-label={t("nav.dashboard")}
               >
-                <img src="/logo.webp" alt={t("app.name")} className="h-auto w-full" />
-              </Link>
+                <Link
+                  to={`/${lang}/dashboard`}
+                  onClick={close}
+                  className="w-full"
+                  aria-label={t("nav.dashboard")}
+                >
+                  <img
+                    src="/logo.webp"
+                    alt={t("app.name")}
+                    className="h-auto w-full max-w-50"
+                  />
+                </Link>
+              </Tooltip>
             </div>
 
             <nav className="flex flex-col gap-2 p-3">

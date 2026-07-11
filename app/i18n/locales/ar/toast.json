@@ -12,6 +12,8 @@
     "goalUpdated": "تم تحديث الهدف",
     "goalDeleted": "تم حذف الهدف",
     "genericError": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
-    "budgetCreated": "تم وضع الخطة"
+    "emailTaken": "هذا البريد الإلكتروني مسجل بالفعل.",
+    "budgetCreated": "تم التسجيل بنجاح",
+    "budgetUpdated": "تم تحديث الخطة"
   }
 }

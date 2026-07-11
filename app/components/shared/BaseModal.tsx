@@ -1,6 +1,7 @@
 import { forwardRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 interface BaseModalProps {
   /** Modal heading. Optional so content-driven modals (e.g. document detail) can render without one, but the close button always shows. */
@@ -44,14 +45,20 @@ export const BaseModal = forwardRef<HTMLDialogElement, BaseModalProps>(function 
             {icon}
             {title && <h3 className="text-lg font-semibold">{title}</h3>}
           </div>
-          <button
-            type="button"
-            onClick={handleClose}
-            className="btn btn-ghost btn-sm btn-circle -me-2 shrink-0"
-            aria-label={t("actions.close")}
+          <Tooltip
+            content={t("actions.close")}
+            position="start"
+            className="-me-2 shrink-0"
           >
-            <X data-no-flip className="size-4" />
-          </button>
+            <button
+              type="button"
+              onClick={handleClose}
+              className="btn btn-ghost btn-sm btn-circle"
+              aria-label={t("actions.close")}
+            >
+              <X data-no-flip className="size-4" />
+            </button>
+          </Tooltip>
         </div>
         <div className="flex-1 overflow-y-auto px-6 pb-6">{children}</div>
         {actions && (

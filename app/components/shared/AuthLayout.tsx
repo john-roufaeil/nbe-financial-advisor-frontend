@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 
 /**
@@ -19,6 +20,8 @@ export function AuthLayout({
   /** Vertical alignment of the content column within its panel. */
   align?: "center" | "start";
 }) {
+  const { t } = useTranslation();
+
   return (
     <div className="bg-base-100 relative flex min-h-screen flex-col lg:flex-row">
       <div className="absolute inset-e-4 top-4 z-20 w-32">
@@ -45,6 +48,18 @@ export function AuthLayout({
             e.currentTarget.style.display = "none";
           }}
         />
+
+        {/* Shade behind the welcome copy so it stays legible over any hero image. */}
+        <div className="from-base-content/80 absolute inset-0 bg-linear-to-t via-transparent to-transparent" />
+
+        <div className="absolute inset-s-0 bottom-0 p-4 text-start sm:p-6 lg:p-10">
+          <h1 className="text-base-100 text-lg font-semibold tracking-tight sm:text-2xl lg:text-3xl">
+            {t("authPanel.title")}
+          </h1>
+          <p className="text-base-100/80 mt-1 text-xs sm:text-sm lg:text-base">
+            {t("authPanel.subtitle")}
+          </p>
+        </div>
       </div>
 
       {/* Content panel. Scrolls if content exceeds the viewport. */}

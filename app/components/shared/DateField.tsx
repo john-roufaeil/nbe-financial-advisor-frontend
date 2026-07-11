@@ -10,10 +10,14 @@ export function DateField({
   value,
   onChange,
   label,
+  min,
+  max,
 }: {
   value: string;
   onChange: (value: string) => void;
   label: string;
+  min?: string;
+  max?: string;
 }) {
   const { i18n } = useTranslation();
   const rtl = i18n.dir() === "rtl";
@@ -27,6 +31,8 @@ export function DateField({
           type="date"
           value={value}
           onChange={(e) => onChange(e.target.value)}
+          min={min}
+          max={max}
           style={rtl ? { transform: "scaleX(-1)" } : undefined}
           className="input input-bordered input-sm text-transparent caret-transparent"
         />

@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Accessibility, Minus, Plus, RotateCcw, Contrast, X } from "lucide-react";
+import { Tooltip } from "@/components/shared/Tooltip";
 import {
   useAccessibilityStore,
   ACCESSIBILITY_LIMITS,
@@ -67,17 +68,19 @@ export function AccessibilityMenu() {
   return (
     <div className="a11y-panel fixed top-1/2 z-60 h-fit -translate-y-1/2">
       <div className="relative">
-        <button
-          ref={triggerRef}
-          type="button"
-          onClick={() => setOpen((v) => !v)}
-          aria-expanded={open}
-          aria-haspopup="dialog"
-          aria-label={t("settings.accessibility.menuLabel")}
-          className="btn btn-primary btn-square focus-visible:outline-primary/50 rounded-s-none rounded-e-xl shadow-lg focus-visible:outline-4 focus-visible:outline-offset-2"
-        >
-          <Accessibility data-no-flip className="size-5" />
-        </button>
+        <Tooltip content={t("settings.accessibility.menuLabel")} position="end">
+          <button
+            ref={triggerRef}
+            type="button"
+            onClick={() => setOpen((v) => !v)}
+            aria-expanded={open}
+            aria-haspopup="dialog"
+            aria-label={t("settings.accessibility.menuLabel")}
+            className="btn btn-primary btn-square focus-visible:outline-primary/50 rounded-s-none rounded-e-xl shadow-lg focus-visible:outline-4 focus-visible:outline-offset-2"
+          >
+            <Accessibility data-no-flip className="size-5" />
+          </button>
+        </Tooltip>
 
         {open && (
           <div
@@ -91,17 +94,19 @@ export function AccessibilityMenu() {
                 <Accessibility data-no-flip className="text-primary size-4" />
                 {t("settings.accessibility.title")}
               </h2>
-              <button
-                type="button"
-                onClick={() => {
-                  setOpen(false);
-                  triggerRef.current?.focus();
-                }}
-                aria-label={t("settings.accessibility.close")}
-                className="btn btn-ghost btn-xs btn-square"
-              >
-                <X data-no-flip className="size-4" />
-              </button>
+              <Tooltip content={t("settings.accessibility.close")}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    triggerRef.current?.focus();
+                  }}
+                  aria-label={t("settings.accessibility.close")}
+                  className="btn btn-ghost btn-xs btn-square"
+                >
+                  <X data-no-flip className="size-4" />
+                </button>
+              </Tooltip>
             </div>
 
             <div className="border-base-300 bg-base-200/50 rounded-xl border p-3">
@@ -114,15 +119,17 @@ export function AccessibilityMenu() {
                 </span>
               </div>
               <div className="flex items-center gap-2">
-                <button
-                  type="button"
-                  onClick={decreaseFontSize}
-                  disabled={fontScale <= MIN_SCALE}
-                  aria-label={t("settings.accessibility.decreaseFontSize")}
-                  className="btn btn-outline btn-square btn-sm"
-                >
-                  <Minus data-no-flip className="size-4" />
-                </button>
+                <Tooltip content={t("settings.accessibility.decreaseFontSize")}>
+                  <button
+                    type="button"
+                    onClick={decreaseFontSize}
+                    disabled={fontScale <= MIN_SCALE}
+                    aria-label={t("settings.accessibility.decreaseFontSize")}
+                    className="btn btn-outline btn-square btn-sm"
+                  >
+                    <Minus data-no-flip className="size-4" />
+                  </button>
+                </Tooltip>
                 <input
                   type="range"
                   min={MIN_SCALE}
@@ -135,15 +142,17 @@ export function AccessibilityMenu() {
                   aria-label={t("settings.accessibility.fontSize")}
                   className="range range-primary range-sm flex-1 cursor-grab active:cursor-grabbing"
                 />
-                <button
-                  type="button"
-                  onClick={increaseFontSize}
-                  disabled={fontScale >= MAX_SCALE}
-                  aria-label={t("settings.accessibility.increaseFontSize")}
-                  className="btn btn-outline btn-square btn-sm"
-                >
-                  <Plus data-no-flip className="size-4" />
-                </button>
+                <Tooltip content={t("settings.accessibility.increaseFontSize")}>
+                  <button
+                    type="button"
+                    onClick={increaseFontSize}
+                    disabled={fontScale >= MAX_SCALE}
+                    aria-label={t("settings.accessibility.increaseFontSize")}
+                    className="btn btn-outline btn-square btn-sm"
+                  >
+                    <Plus data-no-flip className="size-4" />
+                  </button>
+                </Tooltip>
               </div>
               <button
                 type="button"

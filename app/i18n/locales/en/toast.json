@@ -12,6 +12,8 @@
     "goalUpdated": "Goal updated",
     "goalDeleted": "Goal deleted",
     "genericError": "Something went wrong. Please try again.",
-    "budgetCreated": "Plan Set"
+    "emailTaken": "This email is already registered.",
+    "budgetCreated": "Registration successful",
+    "budgetUpdated": "Plan updated"
   }
 }

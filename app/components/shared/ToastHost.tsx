@@ -1,5 +1,6 @@
 import { useEffect, useRef } from "react";
 import { CheckCircle2, XCircle, Info, X } from "lucide-react";
+import { Tooltip } from "@/components/shared/Tooltip";
 import {
   useToastStore,
   TOAST_DURATION_MS,
@@ -45,14 +46,16 @@ function ToastItem({ toast }: { toast: Toast }) {
     >
       <Icon data-no-flip className="size-5 shrink-0" />
       <span className="text-sm">{toast.message}</span>
-      <button
-        type="button"
-        onClick={() => dismiss(toast.id)}
-        className="btn btn-ghost btn-xs btn-square"
-        aria-label="Dismiss"
-      >
-        <X data-no-flip className="size-3.5" />
-      </button>
+      <Tooltip content="Dismiss">
+        <button
+          type="button"
+          onClick={() => dismiss(toast.id)}
+          className="btn btn-ghost btn-xs btn-square"
+          aria-label="Dismiss"
+        >
+          <X data-no-flip className="size-3.5" />
+        </button>
+      </Tooltip>
     </div>
   );
 }
