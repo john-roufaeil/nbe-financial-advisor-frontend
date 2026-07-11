@@ -345,19 +345,61 @@ html[dir="rtl"] .animate-a11y-panel-in {
   animation: fade-in 0.25s ease-out both;
 }
 
+/* Native <select> elements default to an arrow cursor in most browsers even
+   though they're clickable dropdowns — force the hand cursor so they read as
+   interactive like every other control. */
+.select {
+  cursor: pointer;
+}
+
 /* Buttons and daisyUI's own toggle/checkbox controls get a snappy-but-not-instant
    transition on hover/active/checked state changes instead of an abrupt snap. */
 .btn {
+  position: relative;
+  overflow: hidden;
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
     color 0.2s ease,
     box-shadow 0.2s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    filter 0.15s ease;
 }
 
-.btn:active {
-  transform: scale(0.97);
+.btn:disabled,
+.btn[disabled] {
+  cursor: not-allowed;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.25);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+  filter: brightness(0.92);
+}
+
+/* Expanding fill spawned at the click point by useButtonRipple(), an app-wide
+   "this registered" cue. `currentColor` keeps it readable against any button
+   variant (light ripple on filled buttons, dark ripple on ghost/outline ones)
+   without hardcoding per-variant colors. */
+.btn-ripple {
+  position: absolute;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0.25;
+  scale: 0;
+  pointer-events: none;
+  animation: btn-ripple 0.5s ease-out;
+}
+
+@keyframes btn-ripple {
+  to {
+    scale: 1;
+    opacity: 0;
+  }
 }
 
 /* Any icon inside a button gets a small lift + pop on hover so icon buttons feel
@@ -457,6 +499,45 @@ html[dir="rtl"] .animate-a11y-panel-in {
    free. The `modal-stacked-below` class is toggled by useStackedModals(). */
 .modal.modal-stacked-below .modal-box {
   scale: 0.95;
+}
+
+/* react-phone-number-input's own style.css lays out the flag/select/input, but
+   looks like a plain HTML control next to daisyUI's `.input.input-bordered`
+   fields. AccountStep puts those two classes on the `.PhoneInput` wrapper
+   itself, so these compound selectors (2-3 classes) out-specificity the
+   library's plain single-class rules regardless of stylesheet import order,
+   making it read as just another bordered input. */
+.PhoneInput.input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.PhoneInput.input .PhoneInputCountry {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.PhoneInput.input .PhoneInputCountryIcon {
+  width: 1.25rem;
+  box-shadow: none;
+}
+
+.PhoneInput.input .PhoneInputCountrySelectArrow {
+  opacity: 0.5;
+}
+
+.PhoneInput.input .PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: inherit;
+  color: inherit;
 }
 
 /* Honour the OS "reduce motion" setting: collapse entry/toast/message animations
