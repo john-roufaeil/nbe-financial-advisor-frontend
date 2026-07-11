@@ -27,14 +27,44 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
     const deleteGoal = useDeleteGoal();
     const confirm = useConfirmStore((s) => s.confirm);
     const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
+    const [errors, setErrors] = useState<Partial<Draft>>({});
 
     useEffect(() => {
       setDraft(goal ? toDraft(goal) : EMPTY_DRAFT);
+      setErrors({});
     }, [goal]);
 
     function setDraftField(field: keyof Draft, value: string) {
       setDraft((d) => ({ ...d, [field]: value }));
+      setErrors((e) => ({ ...e, [field]: fieldError(field, value) }));
     }
+
+    function fieldError(field: keyof Draft, value: string): string | undefined {
+      if (field === "name") {
+        if (!value.trim()) return undefined;
+        if (value.trim().length > 20) return t("dashboard.goals.errors.nameTooLong");
+        return undefined;
+      }
+      if (value === "") return undefined;
+      const num = Number(value);
+      if (!Number.isFinite(num) || num <= 0) {
+        return field === "target"
+          ? t("dashboard.goals.errors.targetInvalid")
+          : t("dashboard.goals.errors.durationInvalid");
+      }
+      return undefined;
+    }
+
+    const targetNum = Number(draft.target);
+    const durationNum = Number(draft.duration);
+    const isValid =
+      draft.name.trim().length > 0 &&
+      draft.target !== "" &&
+      Number.isFinite(targetNum) &&
+      targetNum > 0 &&
+      draft.duration !== "" &&
+      Number.isFinite(durationNum) &&
+      durationNum > 0;
 
     // Programmatically dismisses the native dialog container reference elements safely
     function closeModal() {
@@ -43,17 +73,25 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
       }
     }
 
-    function handleSave() {
-      const target = Number(draft.target);
-      const duration = Number(draft.duration);
-
-      if (!draft.name.trim() || !target || target <= 0 || !duration || duration <= 0)
-        return;
+    function handleSave(e: React.FormEvent) {
+      e.preventDefault();
+      const nextErrors: Partial<Draft> = {};
+      if (!draft.name.trim()) nextErrors.name = t("dashboard.goals.errors.nameRequired");
+      else if (draft.name.trim().length > 20)
+        nextErrors.name = t("dashboard.goals.errors.nameTooLong");
+      if (!draft.target || !(targetNum > 0)) {
+        nextErrors.target = t("dashboard.goals.errors.targetInvalid");
+      }
+      if (!draft.duration || !(durationNum > 0)) {
+        nextErrors.duration = t("dashboard.goals.errors.durationInvalid");
+      }
+      setErrors(nextErrors);
+      if (Object.keys(nextErrors).length > 0) return;
 
       const patch = {
         name: draft.name.trim(),
-        target,
-        duration,
+        target: targetNum,
+        duration: durationNum,
         current: goal?.current ?? 0,
       };
 
@@ -97,9 +135,10 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
         actions={
           <>
             <Button
-              type="button"
-              onClick={handleSave}
+              type="submit"
+              form="goal-form"
               loading={isPending}
+              disabled={!isValid}
               className="btn btn-primary btn-sm"
             >
               {t("dashboard.goals.save")}
@@ -110,7 +149,7 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
           </>
         }
       >
-        <div className="flex flex-col gap-4">
+        <form id="goal-form" onSubmit={handleSave} className="flex flex-col gap-4">
           <label className="flex flex-col gap-1">
             <span className="label-text text-xs">{t("dashboard.goals.name")}</span>
             <input
@@ -118,8 +157,10 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
               value={draft.name}
               onChange={(e) => setDraftField("name", e.target.value)}
               placeholder={t("dashboard.goals.newNamePlaceholder")}
-              className="input input-bordered w-full"
+              maxLength={20}
+              className={`input input-bordered w-full ${errors.name ? "input-error" : ""}`}
             />
+            {errors.name && <span className="text-error text-xs">{errors.name}</span>}
           </label>
 
           <div className="grid w-full grid-cols-2 gap-3">
@@ -131,8 +172,11 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
                 value={draft.target}
                 onChange={(e) => setDraftField("target", e.target.value)}
                 placeholder="0"
-                className="input input-bordered w-full"
+                className={`input input-bordered w-full ${errors.target ? "input-error" : ""}`}
               />
+              {errors.target && (
+                <span className="text-error text-xs">{errors.target}</span>
+              )}
             </label>
 
             <label className="flex min-w-0 flex-col gap-1">
@@ -143,11 +187,14 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
                 value={draft.duration}
                 onChange={(e) => setDraftField("duration", e.target.value)}
                 placeholder={t("dashboard.goals.monthsPlaceholder", "Months")}
-                className="input input-bordered w-full"
+                className={`input input-bordered w-full ${errors.duration ? "input-error" : ""}`}
               />
+              {errors.duration && (
+                <span className="text-error text-xs">{errors.duration}</span>
+              )}
             </label>
           </div>
-        </div>
+        </form>
       </BaseModal>
     );
   },

@@ -52,7 +52,7 @@ function SummaryCard({
             <h3 className="text-base-content text-sm font-semibold">{title}</h3>
             {count > 0 && <p className="text-base-content/50 text-xs">{countLabel}</p>}
           </div>
-          <ChevronRight className="text-base-content/30 group-hover:text-primary size-4 shrink-0 transition-[color,translate] group-hover:translate-x-0.5" />
+          <ChevronRight className="text-base-content/30 group-hover:text-primary size-4 shrink-0 transition-[color,translate] ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
         </div>
         {count > 0 ? (
           <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
@@ -153,10 +153,12 @@ function DocumentsSummary() {
  * layout the two cards sit flush at the top and leave the rest of the column
  * clear for the floating add button instead of stretching to match it.
  */
-export function RecentActivityCard() {
+export function RecentActivityCard({ stacked = false }: { stacked?: boolean }) {
   return (
     <div className="@container">
-      <div className="grid grid-cols-1 gap-4 @sm:grid-cols-2 @sm:grid-rows-1">
+      <div
+        className={`grid grid-cols-1 gap-4 ${stacked ? "" : "@sm:grid-cols-2 @sm:grid-rows-1"}`}
+      >
         <TransactionsSummary />
         <DocumentsSummary />
       </div>

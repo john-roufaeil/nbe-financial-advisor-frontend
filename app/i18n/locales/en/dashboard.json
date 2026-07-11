@@ -20,6 +20,7 @@
     "goals": {
       "goal": "goal",
       "title": "Goal Progress",
+      "titleShort": "Your Goal",
       "remaining": "{{amount}} {{currency}} to go",
       "empty": "No goal set yet. Add yours now to start tracking.",
       "emptyTitle": "No active goal",
@@ -33,17 +34,40 @@
       "save": "Save goal",
       "duration": "Goal duration (months)",
       "monthsPlaceholder": "Months",
+      "onTrack": "On track",
+      "behindSchedule": "Behind schedule",
+      "projectedCompletion": "Projected to finish {{date}}",
+      "errors": {
+        "nameRequired": "Enter a name for this goal.",
+        "nameTooLong": "Name must be 20 characters or fewer.",
+        "targetInvalid": "Enter a target greater than 0.",
+        "durationInvalid": "Enter a duration greater than 0."
+      },
       "status": {
         "reached": "Reached",
         "next": "Next Up",
         "locked": "Locked"
-      }
+      },
+      "onTrack": "On track",
+      "offTrack": "Off track",
+      "projectedCompletion": "Projected completion: {{date}}"
     },
     "budget": {
       "title": "Budget Plan Split",
       "over": "Over budget",
-      "spent": "spent",
-      "empty": "This plan has no categories yet."
+      "allocated": "allocated",
+      "empty": "This plan has no categories yet.",
+      "editAllocations": "Edit allocations",
+      "allocationsNeedMore": "You need to allocate {{amount}}% more to continue",
+      "allocationsOverAllocated": "Over-allocated by {{amount}}%",
+      "errors": {
+        "percentageRange": "Must be between 0 and 100 inclusive."
+      },
+      "categoryNames": {
+        "needs": "Needs",
+        "wants": "Wants",
+        "savings": "Savings"
+      }
     },
     "noPlan": {
       "title": "You don't have a plan yet",

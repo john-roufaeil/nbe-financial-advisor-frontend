@@ -35,7 +35,17 @@ export interface CreateBudgetBody {
 
 export interface Budget {
   id: string;
+  name?: string;
   selected_template_key: string;
   goal: BudgetGoal;
   allocations: Allocation[];
+}
+
+/** PATCH /budget body — any subset of fields may be sent; unset fields are left unchanged. */
+export interface UpdateBudgetBody {
+  name?: string;
+  goal?: BudgetGoal;
+  /** Percentages, must sum to 100 when provided (backend rejects with 422 otherwise). */
+  allocations?: AllocationInput[];
+  changed_via: "dashboard";
 }

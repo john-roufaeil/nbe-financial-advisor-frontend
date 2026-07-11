@@ -4,4 +4,7 @@ export interface FinancialGoal {
   current: number;
   target: number;
   duration: number;
+  percentageComplete?: number;
+  projectedCompletionDate?: string;
+  onTrack?: boolean;
 }

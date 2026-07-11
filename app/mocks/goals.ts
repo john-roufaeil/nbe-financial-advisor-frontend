@@ -8,6 +8,9 @@ let goals: FinancialGoal[] = [
     current: 45000,
     target: 60000,
     duration: 12,
+    percentageComplete: 75,
+    projectedCompletionDate: "2026-12-01",
+    onTrack: true,
   },
 ];
 

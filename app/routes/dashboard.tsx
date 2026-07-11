@@ -86,8 +86,11 @@ export default function Dashboard() {
 
           {/* Net worth and cash flow are real without a budget, so the stats
               stay. Goals, allocations and recent activity all share a single
-              row so the whole dashboard fits without scrolling on laptops. */}
-          {data.hasPlan ? (
+              row so the whole dashboard fits without scrolling on laptops.
+              A plan whose allocations are all zero (e.g. reset by the user)
+              reads the same as no plan at all, so it gets the same empty
+              state prompting a chat with the advisor. */}
+          {data.hasPlan && data.budget.categories.some((c) => c.budget > 0) ? (
             <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-12">
               <div className="xl:col-span-3">
                 <GoalCard currency={data.currency} />
@@ -104,11 +107,11 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="grid items-stretch gap-4 md:grid-cols-2 xl:grid-cols-12">
-              <div className="xl:col-span-8">
+              <div className="xl:col-span-9">
                 <NoPlanCard />
               </div>
-              <div className="xl:col-span-4 xl:self-start">
-                <RecentActivityCard />
+              <div className="xl:col-span-3 xl:self-start">
+                <RecentActivityCard stacked />
               </div>
             </div>
           )}

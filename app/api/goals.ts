@@ -1,27 +1,27 @@
 import { apiClient } from "@/api/client";
 import type { FinancialGoal } from "@/types/goal";
 
-interface RawGoalDashboard {
+interface RawSavingsProgress {
   goal?: {
     name?: string;
     target_amount?: string | number;
-    target_months?: number; // Backend property name
-    percentage_complete?: number;
+    months_remaining?: number;
   };
+  saved_so_far?: string | number;
+  percentage_complete?: number;
+  projected_completion_date?: string;
+  on_track?: boolean;
 }
 
 export async function getGoals(): Promise<FinancialGoal[]> {
-  const res = await apiClient.get<RawGoalDashboard>("/dashboard");
+  const res = await apiClient.get<RawSavingsProgress>("/budget/savings-progress");
   const data = res.data;
 
   // Make sure the inner goal object exists with a valid name
   if (data.goal && data.goal.name) {
     const target = parseFloat(String(data.goal.target_amount ?? "")) || 0;
-    const duration = Number(data.goal.target_months) || 12; // Fallback default if empty
-
-    // Derived from your previous component math: current = target * (percentage / 100)
-    const percentage = data.goal.percentage_complete || 0;
-    const current = Math.round(target * (percentage / 100));
+    const duration = Number(data.goal.months_remaining) || 0;
+    const current = parseFloat(String(data.saved_so_far ?? "")) || 0;
 
     return [
       {
@@ -29,7 +29,9 @@ export async function getGoals(): Promise<FinancialGoal[]> {
         name: data.goal.name,
         target: target,
         duration: duration,
-        current: current, // Keeps your UI milestones from breaking!
+        current: current,
+        percentageComplete: data.percentage_complete,
+        onTrack: data.on_track,
       },
     ];
   }
@@ -39,14 +41,14 @@ export async function getGoals(): Promise<FinancialGoal[]> {
 export async function createGoal(
   body: Omit<FinancialGoal, "id">,
 ): Promise<FinancialGoal> {
-  const patchData = {
+  await apiClient.patch("/budget", {
     goal: {
       name: body.name,
       target_amount: body.target,
-      target_months: body.duration, // Sent cleanly to backend mapping
+      target_months: body.duration,
     },
-  };
-  await apiClient.patch("/dashboard/goal/", patchData);
+    changed_via: "dashboard",
+  });
   return { ...body, id: "primary-goal" };
 }
 
@@ -54,46 +56,25 @@ export async function updateGoal(
   id: string,
   patch: Omit<FinancialGoal, "id">,
 ): Promise<FinancialGoal> {
-  // Fetch existing goal parameters so we can preserve untouched fields
-  const currentGoals = await getGoals();
-  const existingGoal = currentGoals[0] || {
-    name: "",
-    current: 0,
-    target: 0,
-    duration: 12,
-  };
-
-  const updatedName = patch.name ?? existingGoal.name;
-  const updatedTarget = patch.target ?? existingGoal.target;
-  const updatedDuration = patch.duration ?? existingGoal.duration;
-
-  const patchData = {
+  await apiClient.patch("/budget", {
     goal: {
-      name: updatedName,
-      target_amount: updatedTarget,
-      target_months: updatedDuration,
+      name: patch.name,
+      target_amount: patch.target,
+      target_months: patch.duration,
     },
-  };
+    changed_via: "dashboard",
+  });
 
-  await apiClient.patch("/dashboard/goal/", patchData);
-
-  return {
-    id: "primary-goal",
-    name: updatedName,
-    target: updatedTarget,
-    duration: updatedDuration,
-    current: existingGoal.current, // Maintain the computed progress local state value
-  };
+  return { id, ...patch };
 }
 
 export async function deleteGoal(_id: string): Promise<void> {
-  // Clearing out single global fields on the mock payload
-  const patchData = {
+  await apiClient.patch("/budget", {
     goal: {
       name: "",
       target_amount: 0,
-      target_months: 12,
+      target_months: 0,
     },
-  };
-  await apiClient.patch("/dashboard/goal/", patchData);
+    changed_via: "dashboard",
+  });
 }

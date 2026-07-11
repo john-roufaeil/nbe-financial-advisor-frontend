@@ -1,8 +1,17 @@
 import { useRef } from "react";
-import { Target, Pencil, CheckCircle2, Circle } from "lucide-react";
+import {
+  Target,
+  Pencil,
+  CheckCircle2,
+  Circle,
+  TrendingUp,
+  TriangleAlert,
+  Calendar,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { FinancialGoal } from "@/types/goal";
 import { useGoals } from "@/queries/goals";
+import { formatDate } from "@/lib/format";
 import { GoalsEditModal } from "@/components/dashboard/GoalsEditModal";
 import {
   ErrorState,
@@ -10,6 +19,7 @@ import {
   SkeletonTimelineRow,
 } from "@/components/shared/QueryState";
 import { Money } from "@/components/shared/Money";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: string }) {
   const { t } = useTranslation();
@@ -32,12 +42,30 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
   return (
     <div className="flex flex-col gap-6 py-2">
       <div className="flex flex-col gap-1">
-        <span className="text-base-content text-2xl font-bold tracking-tight">
-          {currentPct}%{" "}
-          <span className="text-base-content/50 text-xs font-medium tracking-wider uppercase">
-            {t("dashboard.goals.current")}
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <span className="text-base-content text-2xl font-bold tracking-tight">
+            {currentPct}%{" "}
+            <span className="text-base-content/50 text-xs font-medium tracking-wider uppercase">
+              {t("dashboard.goals.current")}
+            </span>
           </span>
-        </span>
+          {goal.onTrack !== undefined && (
+            <span
+              className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+                goal.onTrack ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
+              }`}
+            >
+              {goal.onTrack ? (
+                <TrendingUp data-no-flip className="size-3" />
+              ) : (
+                <TriangleAlert data-no-flip className="size-3" />
+              )}
+              {goal.onTrack
+                ? t("dashboard.goals.onTrack")
+                : t("dashboard.goals.behindSchedule")}
+            </span>
+          )}
+        </div>
         <p className="text-base-content/60 text-xs">
           <Money className="text-base-content inline font-semibold">
             {goal.current.toLocaleString()}
@@ -45,9 +73,17 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
           / <Money className="inline">{goal.target.toLocaleString()}</Money>{" "}
           {currencyLabel}
         </p>
+        {goal.projectedCompletionDate && (
+          <div className="bg-base-200/60 text-base-content/60 mt-0.5 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium">
+            <Calendar data-no-flip className="size-3" />
+            {t("dashboard.goals.projectedCompletion", {
+              date: formatDate(goal.projectedCompletionDate),
+            })}
+          </div>
+        )}
       </div>
 
-      <div className="relative flex flex-col gap-8">
+      <div className="relative flex flex-col gap-4">
         <div className="bg-base-200 absolute start-[13px] top-[14px] bottom-[14px] w-[2px] overflow-hidden rounded-full">
           <div
             className="bg-primary w-full origin-top rounded-full transition-[height] duration-500 ease-out"
@@ -88,7 +124,8 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
                 <span className="text-base-content/40 truncate text-[11px]">
                   <Money className="inline">
                     {Math.round(goal.target * (milestone.pct / 100)).toLocaleString()}
-                  </Money>
+                  </Money>{" "}
+                  {currencyLabel}
                 </span>
               </div>
 
@@ -157,18 +194,22 @@ export function GoalCard({ currency }: { currency: string }) {
           </span>
           <div className="flex min-w-0 flex-1 flex-col">
             <h2 className="card-title line-clamp-1 text-base leading-tight">
-              {goal ? goal.name : t("dashboard.goals.title")}
+              {goal && goal.name && goal.name !== "Not provided"
+                ? goal.name
+                : t("dashboard.goals.titleShort")}
             </h2>
           </div>
           {goal && (
-            <button
-              type="button"
-              onClick={() => modalRef.current?.showModal()}
-              className="btn btn-ghost btn-sm btn-square"
-              aria-label={t("dashboard.goals.editTitle")}
-            >
-              <Pencil data-no-flip className="size-4" />
-            </button>
+            <Tooltip content={t("dashboard.goals.editTitle")}>
+              <button
+                type="button"
+                onClick={() => modalRef.current?.showModal()}
+                className="btn btn-ghost btn-sm btn-square"
+                aria-label={t("dashboard.goals.editTitle")}
+              >
+                <Pencil data-no-flip className="size-4" />
+              </button>
+            </Tooltip>
           )}
         </div>
 
