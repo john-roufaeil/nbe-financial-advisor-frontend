@@ -1,6 +1,7 @@
 {
   "notFound": {
     "message": "This page doesn't exist.",
+    "goBack": "Go Back",
     "backHome": "Back to Home"
   }
 }
