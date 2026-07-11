@@ -12,9 +12,6 @@ import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useLogin } from "@/queries/auth";
 
-const signInSchema = z.object({ email: z.string().email(), password: z.string().min(6) });
-type SignInValues = z.infer<typeof signInSchema>;
-
 export default function SignIn() {
   const { lang } = useParams<{ lang: string }>();
   const navigate = useNavigate();
@@ -26,6 +23,13 @@ export default function SignIn() {
   const login = useAuthStore((s) => s.login);
   const begin = useOnboardingStore((s) => s.begin);
   const loginMutation = useLogin();
+
+  const signInSchema = z.object({
+    email: z.string().email({ message: t("signIn.errors.emailInvalid") }),
+    password: z.string().min(1, t("signIn.errors.passwordRequired")),
+  });
+  type SignInValues = z.infer<typeof signInSchema>;
+
   const {
     register,
     handleSubmit,

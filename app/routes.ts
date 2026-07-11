@@ -3,12 +3,16 @@ import { type RouteConfig, index, layout, route } from "@react-router/dev/routes
 export default [
   index("routes/root-redirect.tsx"),
   layout("routes/lang-layout.tsx", [
-    route(":lang", "routes/splash.tsx"),
-    route(":lang/onboarding", "routes/onboarding.tsx"),
-    route(":lang/sign-in", "routes/sign-in.tsx"),
-    // Everything inside the app shell requires a session. Splash, consent,
-    // onboarding and sign-in stay public (onboarding especially — signup does
-    // not flip isAuthenticated, so a guard here would bounce mid-flow).
+    // Splash, onboarding, and sign-in are public but guest-only: an already
+    // authenticated user is redirected straight to the dashboard. Onboarding
+    // is safe here too — signup stores tokens without flipping
+    // isAuthenticated, so a half-onboarded user never trips this guard.
+    layout("routes/require-guest.tsx", [
+      route(":lang", "routes/splash.tsx"),
+      route(":lang/onboarding", "routes/onboarding.tsx"),
+      route(":lang/sign-in", "routes/sign-in.tsx"),
+    ]),
+    // Everything inside the app shell requires a session.
     layout("routes/require-auth.tsx", [
       layout("routes/app-layout.tsx", [
         route(":lang/dashboard", "routes/dashboard.tsx"),
