@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import {
   Search,
@@ -14,6 +14,8 @@ import { DateField } from "@/components/shared/DateField";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
 import { useViewModeStore } from "@/store/use-view-mode-store";
+import { useDismissablePanel } from "@/lib/use-dismissable-panel";
+import { Z_POPOVER } from "@/lib/z-index";
 
 /** Matches the filters panel's `w-72` class. */
 const PANEL_WIDTH = 288;
@@ -79,55 +81,29 @@ export function DataToolbar<F extends string>({
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    if (!filtersOpen) return;
+  const updateCoords = useCallback(() => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const rtl = document.documentElement.dir === "rtl";
+    // Anchor to the trigger's inline-end edge so the panel opens toward the
+    // reading-end direction in both LTR and RTL, instead of always growing
+    // rightward and running off-screen when the trigger sits near the right
+    // edge in RTL layouts.
+    let left = rtl ? rect.right - PANEL_WIDTH : rect.left;
+    left = Math.max(8, Math.min(left, window.innerWidth - PANEL_WIDTH - 8));
+    setPanelCoords({ top: rect.bottom + 8, left });
+  }, []);
 
-    function updateCoords() {
-      const rect = triggerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const rtl = document.documentElement.dir === "rtl";
-      // Anchor to the trigger's inline-end edge so the panel opens toward the
-      // reading-end direction in both LTR and RTL, instead of always growing
-      // rightward and running off-screen when the trigger sits near the right
-      // edge in RTL layouts.
-      let left = rtl ? rect.right - PANEL_WIDTH : rect.left;
-      left = Math.max(8, Math.min(left, window.innerWidth - PANEL_WIDTH - 8));
-      setPanelCoords({ top: rect.bottom + 8, left });
-    }
-
-    updateCoords();
-
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setFiltersOpen(false);
-        triggerRef.current?.focus();
-      }
-    }
-
-    function onClickOutside(e: MouseEvent) {
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(e.target as Node) &&
-        !triggerRef.current?.contains(e.target as Node)
-      ) {
-        setFiltersOpen(false);
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("mousedown", onClickOutside);
-    window.addEventListener("resize", updateCoords);
-    window.addEventListener("scroll", updateCoords, true);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("mousedown", onClickOutside);
-      window.removeEventListener("resize", updateCoords);
-      window.removeEventListener("scroll", updateCoords, true);
-    };
-  }, [filtersOpen]);
+  useDismissablePanel({
+    open: filtersOpen,
+    onClose: () => setFiltersOpen(false),
+    panelRef,
+    triggerRef,
+    reposition: updateCoords,
+  });
 
   return (
-    <div className="bg-base-100 flex flex-col gap-3 rounded-t-2xl p-3 sm:p-4">
+    <div className="bg-base-100 flex flex-col gap-3 rounded-t-xl p-3 sm:p-4">
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
         <label className="input input-bordered flex w-full min-w-0 flex-1 items-center gap-2 px-3 py-2">
           <Search className="text-base-content/40 size-4 shrink-0" />
@@ -144,7 +120,7 @@ export function DataToolbar<F extends string>({
                 type="button"
                 onClick={() => onSearchChange("")}
                 aria-label={t("actions.clear")}
-                className="btn btn-ghost btn-xs btn-square"
+                className="btn btn-ghost btn-sm btn-square relative before:absolute before:-inset-2 before:content-['']"
               >
                 <X className="size-3.5" />
               </button>
@@ -179,7 +155,7 @@ export function DataToolbar<F extends string>({
                 role="dialog"
                 aria-label={t("data.filtersLabel")}
                 style={{ top: panelCoords.top, left: panelCoords.left }}
-                className="border-base-300 bg-base-100 animate-a11y-panel-in fixed z-50 max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-2xl border p-4 shadow-2xl"
+                className={`border-base-300 bg-base-100 animate-a11y-panel-in fixed ${Z_POPOVER} max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-xl border p-4 shadow-2xl`}
               >
                 <div className="flex flex-col gap-3">
                   <div className="join border-base-300 w-full rounded-lg border">

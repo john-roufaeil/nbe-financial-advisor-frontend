@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { Z_DROPDOWN } from "@/lib/z-index";
 
 /**
  * Split-screen shell for the auth/onboarding pages (splash, sign-in, onboarding).
@@ -23,9 +24,9 @@ export function AuthLayout({
   const { t } = useTranslation();
 
   return (
-    <div className="bg-base-100 relative flex min-h-screen flex-col lg:flex-row">
-      <div className="absolute inset-e-4 top-4 z-20">
-        <LanguageSwitcher />
+    <div className="bg-base-100 relative flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
+      <div className={`absolute inset-e-8 top-8 ${Z_DROPDOWN}`}>
+        <LanguageSwitcher variant="btn-ghost" />
       </div>
 
       {/* Branded image panel — full-height column on desktop, banner on mobile. */}
@@ -62,9 +63,10 @@ export function AuthLayout({
         </div>
       </div>
 
-      {/* Content panel. Scrolls if content exceeds the viewport. */}
+      {/* Content panel. On mobile it scrolls with the page; on desktop (lg+) it scrolls
+          independently while the image panel stays fixed. */}
       <div
-        className={`flex flex-1 justify-center overflow-y-auto p-4 lg:p-10 ${
+        className={`flex flex-1 justify-center p-4 lg:h-full lg:overflow-y-auto lg:p-10 ${
           align === "start" ? "items-start" : "items-center"
         }`}
       >
