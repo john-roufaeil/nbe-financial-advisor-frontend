@@ -50,6 +50,10 @@ export interface DocumentRecord {
 export const DOCUMENT_UPLOAD_ACCEPT =
   "image/*,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
+/** Client-side cap for a single statement upload, enforced before it ever reaches the network. */
+export const DOCUMENT_MAX_SIZE_MB = 10;
+export const DOCUMENT_MAX_SIZE_BYTES = DOCUMENT_MAX_SIZE_MB * 1024 * 1024;
+
 export function inferDocumentType(file: File): DocumentType | null {
   if (file.type.startsWith("image/")) return "image";
   if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) return "pdf";
