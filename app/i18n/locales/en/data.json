@@ -163,6 +163,9 @@
         "empty": "No linked bank accounts yet.",
         "error": "Couldn't load your bank accounts. Please try again.",
         "inactive": "Inactive"
+      },
+      "preferences": {
+        "title": "Preferences"
       }
     },
     "view": {

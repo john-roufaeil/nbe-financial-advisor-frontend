@@ -2,6 +2,15 @@
   "settings": {
     "signOut": "تسجيل الخروج",
     "language": "اللغة",
+    "languageNames": {
+      "en": "English",
+      "ar": "العربية"
+    },
+    "timeFormat": {
+      "label": "صيغة الوقت",
+      "12h": "12 ساعة (ص/م)",
+      "24h": "24 ساعة"
+    },
     "accessibility": {
       "menuLabel": "خيارات إمكانية الوصول",
       "title": "إمكانية الوصول",

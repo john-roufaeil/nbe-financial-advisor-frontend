@@ -10,7 +10,8 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { DocumentRecord } from "@/types/document";
-import { formatDate } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
+import type { TimeFormat } from "@/store/use-time-format-store";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { useDocuments, useDeleteDocument } from "@/queries/documents";
 import { Pagination } from "@/components/data/Pagination";
@@ -26,6 +27,7 @@ import {
 } from "@/components/shared/QueryState";
 import { useViewModeStore, type ViewMode } from "@/store/use-view-mode-store";
 import { usePageSizeStore } from "@/store/use-page-size-store";
+import { useTimeFormatStore } from "@/store/use-time-format-store";
 import { useLoadAnimation } from "@/lib/use-load-animation";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 
@@ -38,19 +40,13 @@ const VIEW_CONTAINER = {
 const FILTERS = ["all", "pdf", "image", "doc"] as const;
 type Filter = (typeof FILTERS)[number];
 
-function formatSize(kb: number, t: (key: string) => string) {
-  return kb >= 1024
-    ? `${(kb / 1024).toFixed(1)} ${t("units.mb")}`
-    : `${kb} ${t("units.kb")}`;
-}
-
-/** The real API returns neither filename nor size (see DocumentRecord). */
+/** Bank name + logo are shown by BankBadge itself; the subtitle is just date + count. */
 function documentSubtitle(
   doc: DocumentRecord,
   t: (key: string, options?: Record<string, unknown>) => string,
+  timeFormat: TimeFormat,
 ) {
-  const parts = [formatDate(doc.uploadDate)];
-  if (doc.sizeKb !== undefined) parts.push(formatSize(doc.sizeKb, t));
+  const parts = [formatDateTime(doc.uploadDate, timeFormat, t)];
   if (doc.extractedTransactions) {
     parts.push(
       t("data.documentDetail.transactionCount", {
@@ -171,30 +167,14 @@ function DocumentCard({
   const { t } = useTranslation();
   const deleteDocument = useDeleteDocument();
   const confirm = useConfirmStore((s) => s.confirm);
+  const timeFormat = useTimeFormatStore((s) => s.format);
   const isGrid = view === "grid";
 
   const logoAndText = (
     <BankBadge
       bank={doc.bankName}
       className="flex-1"
-      subtitle={
-        isGrid ? (
-          <>
-            <span className="block truncate">
-              {doc.name || t("data.documentFallbackName")}
-            </span>
-            <span className="block truncate">
-              {formatDate(doc.uploadDate)}
-              {doc.extractedTransactions &&
-                ` · ${t("data.documentDetail.transactionCount", { count: doc.extractedTransactions.length })}`}
-            </span>
-          </>
-        ) : (
-          <>
-            {doc.name || t("data.documentFallbackName")} · {documentSubtitle(doc, t)}
-          </>
-        )
-      }
+      subtitle={documentSubtitle(doc, t, timeFormat)}
     />
   );
 

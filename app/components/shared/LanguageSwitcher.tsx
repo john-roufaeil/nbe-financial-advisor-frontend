@@ -2,15 +2,18 @@ import { useParams, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 import { LANGUAGE_STORAGE_KEY } from "@/routes/lang-layout";
-import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
-
-const LABELS: Record<SupportedLanguage, string> = { en: "EN", ar: "عر" };
+import { LinkToggle } from "@/components/shared/LinkToggle";
 
 export function LanguageSwitcher({ onSelect }: { onSelect?: () => void }) {
   const { lang } = useParams<{ lang: string }>();
   const location = useLocation();
   const navigate = useNavigate();
   const { i18n, t } = useTranslation();
+
+  const labels: Record<SupportedLanguage, string> = {
+    en: t("settings.languageNames.en"),
+    ar: t("settings.languageNames.ar"),
+  };
 
   function switchTo(next: SupportedLanguage) {
     onSelect?.();
@@ -25,11 +28,10 @@ export function LanguageSwitcher({ onSelect }: { onSelect?: () => void }) {
   }
 
   return (
-    <ToggleSwitch
+    <LinkToggle
       value={(lang as SupportedLanguage) ?? SUPPORTED_LANGUAGES[0]}
       options={SUPPORTED_LANGUAGES}
-      labels={LABELS}
-      forceLtrOrder
+      labels={labels}
       onChange={switchTo}
       aria-label={t("settings.language")}
     />

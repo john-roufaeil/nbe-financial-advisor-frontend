@@ -1,7 +1,7 @@
 import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, Pencil, Trash2, Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatDate, formatDateTime } from "@/lib/format";
+import { formatDateTime } from "@/lib/format";
 import type { Transaction } from "@/types/transaction";
 import { AMOUNT_RANGES, TRANSACTION_CATEGORIES } from "@/types/transaction";
 import { useTransactions, useDeleteTransaction } from "@/queries/transactions";
@@ -19,6 +19,7 @@ import {
 import { Money } from "@/components/shared/Money";
 import { useViewModeStore, type ViewMode } from "@/store/use-view-mode-store";
 import { usePageSizeStore } from "@/store/use-page-size-store";
+import { useTimeFormatStore } from "@/store/use-time-format-store";
 import { useLoadAnimation } from "@/lib/use-load-animation";
 import { useDebouncedValue } from "@/lib/use-debounced-value";
 
@@ -30,16 +31,6 @@ const VIEW_CONTAINER = {
 
 const FILTERS = ["all", "income", "expense"] as const;
 type Filter = (typeof FILTERS)[number];
-
-/** The real backend has no time component (always pinned to midnight), so a
- * literal 00:00 reads as "no time recorded" rather than an actual midnight
- * transaction — hide it and show the date alone. */
-function formatTransactionDateTime(iso: string) {
-  const d = new Date(iso);
-  return d.getHours() === 0 && d.getMinutes() === 0
-    ? formatDate(iso)
-    : formatDateTime(iso);
-}
 
 export interface TransactionsTabHandle {
   openAdd: () => void;
@@ -61,6 +52,7 @@ function TransactionCard({
   const Icon = isIncome ? ArrowUpCircle : ArrowDownCircle;
   const currencyLabel = t("currency.EGP");
   const isGrid = view === "grid";
+  const timeFormat = useTimeFormatStore((s) => s.format);
 
   const iconAndText = (
     <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -76,7 +68,7 @@ function TransactionCard({
         <p className="truncate text-sm font-medium">{transaction.title}</p>
         <p className="text-base-content/50 text-xs">
           {t(`data.categories.${transaction.category}`, transaction.category)} ·{" "}
-          {formatTransactionDateTime(transaction.datetime)}
+          {formatDateTime(transaction.datetime, timeFormat, t)}
         </p>
       </div>
     </div>

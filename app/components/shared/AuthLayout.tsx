@@ -24,7 +24,7 @@ export function AuthLayout({
 
   return (
     <div className="bg-base-100 relative flex min-h-screen flex-col lg:flex-row">
-      <div className="absolute inset-e-4 top-4 z-20 w-32">
+      <div className="absolute inset-e-4 top-4 z-20">
         <LanguageSwitcher />
       </div>
 

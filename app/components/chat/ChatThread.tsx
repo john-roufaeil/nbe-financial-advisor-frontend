@@ -28,10 +28,8 @@ import { QuestionsNav } from "@/components/chat/QuestionsNav";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useChatStore } from "@/store/use-chat-store";
 import { useSendChatMessage } from "@/lib/use-chat-runtime";
-
-function formatTime(date: Date, locale: string) {
-  return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
-}
+import { useTimeFormatStore } from "@/store/use-time-format-store";
+import { formatTime } from "@/lib/format";
 
 function ComposerAttachment() {
   const { t } = useTranslation();
@@ -113,9 +111,10 @@ function AssistantActionBar() {
 }
 
 function UserMessage() {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const id = useMessage((m) => m.id);
   const createdAt = useMessage((m) => m.createdAt);
+  const timeFormat = useTimeFormatStore((s) => s.format);
   return (
     <MessagePrimitive.Root id={`msg-${id}`} className="flex justify-end">
       <div className="animate-message-in flex max-w-[80%] min-w-0 flex-col items-end">
@@ -130,7 +129,7 @@ function UserMessage() {
           </div>
         </div>
         <span className="text-base-content/40 mt-1 px-1 text-[11px]">
-          {formatTime(createdAt, i18n.language)}
+          {formatTime(createdAt, timeFormat, t)}
         </span>
       </div>
     </MessagePrimitive.Root>
@@ -138,10 +137,11 @@ function UserMessage() {
 }
 
 function AssistantMessage() {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const id = useMessage((m) => m.id);
   const createdAt = useMessage((m) => m.createdAt);
   const isLast = useMessage((m) => m.isLast);
+  const timeFormat = useTimeFormatStore((s) => s.format);
   return (
     <MessagePrimitive.Root id={`msg-${id}`} className="group">
       <MessagePrimitive.If hasContent>
@@ -156,7 +156,7 @@ function AssistantMessage() {
               />
             </div>
             <span className="text-base-content/40 mt-1 px-1 text-[11px]">
-              {formatTime(createdAt, i18n.language)}
+              {formatTime(createdAt, timeFormat, t)}
             </span>
             <div
               className={`grid w-full transition-[grid-template-rows] duration-200 ease-out ${

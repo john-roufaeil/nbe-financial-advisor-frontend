@@ -1,5 +1,14 @@
 import { useState } from "react";
-import { Pencil, Check, X, User, Landmark, Loader2, CreditCard } from "lucide-react";
+import {
+  Pencil,
+  Check,
+  X,
+  User,
+  Landmark,
+  Loader2,
+  CreditCard,
+  Clock,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
@@ -8,6 +17,7 @@ import { useAccounts } from "@/queries/accounts";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
+import { TimeFormatSwitcher } from "@/components/shared/TimeFormatSwitcher";
 import type { User as UserType } from "@/types/profile";
 import type { BankAccount } from "@/types/account";
 import { CardSkeleton, ErrorState } from "@/components/shared/QueryState";
@@ -412,6 +422,32 @@ function BankAccountsCard() {
   );
 }
 
+function PreferencesCard() {
+  const { t } = useTranslation();
+
+  return (
+    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm sm:col-span-2">
+      <div className="card-body gap-4 p-4">
+        <div className="flex items-center gap-2">
+          <span className="bg-warning/10 text-warning grid size-9 shrink-0 place-items-center rounded-lg">
+            <Clock className="size-4.5" />
+          </span>
+          <h2 className="card-title flex-1 text-base">
+            {t("data.sections.preferences.title")}
+          </h2>
+        </div>
+
+        <label className="flex max-w-xs flex-col gap-1">
+          <span className="label-text text-base-content/50 text-xs">
+            {t("settings.timeFormat.label")}
+          </span>
+          <TimeFormatSwitcher />
+        </label>
+      </div>
+    </div>
+  );
+}
+
 // ── Public export ─────────────────────────────────────────────────────────────
 
 export function PersonalDataSections() {
@@ -447,6 +483,7 @@ export function PersonalDataSections() {
         <SectionCard key={s.key} section={s} user={user} />
       ))}
       <BankAccountsCard />
+      <PreferencesCard />
     </div>
   );
 }

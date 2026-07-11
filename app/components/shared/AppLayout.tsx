@@ -18,7 +18,7 @@ import { useDrawerStore } from "@/store/use-drawer-store";
 import { useMe } from "@/queries/profile";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { BalanceVisibilityToggle } from "@/components/shared/BalanceVisibilityToggle";
-import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
+import { LinkToggle } from "@/components/shared/LinkToggle";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useDataSourceStore } from "@/store/use-data-source-store";
 
@@ -30,7 +30,7 @@ function DataSourceToggle() {
   const setSource = useDataSourceStore((s) => s.setSource);
 
   return (
-    <ToggleSwitch
+    <LinkToggle
       value={source}
       options={DATA_SOURCE_OPTIONS}
       labels={{
@@ -183,10 +183,10 @@ export default function AppLayout() {
             <div className="border-base-300 flex shrink-0 flex-col gap-4 border-t p-4">
               <div className="flex w-full items-center gap-2">
                 <div className="flex w-full flex-col gap-2">
-                  <DataSourceToggle />
-                  <div className="flex min-w-0 flex-1 gap-2">
-                    <LanguageSwitcher onSelect={close} />
+                  <div className="flex min-w-0 items-center justify-between gap-2">
+                    <DataSourceToggle />
                     <BalanceVisibilityToggle className="btn-square" />
+                    <LanguageSwitcher onSelect={close} />
                   </div>
                 </div>
               </div>

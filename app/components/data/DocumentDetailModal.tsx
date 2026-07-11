@@ -18,6 +18,7 @@ import {
   type ExtractedTransaction,
 } from "@/types/document";
 import { Button } from "@/components/shared/Button";
+import { formatSize } from "@/lib/format";
 import { useBankInfo } from "@/lib/banks";
 import { BaseModal } from "@/components/shared/BaseModal";
 import { Tooltip } from "@/components/shared/Tooltip";
@@ -161,6 +162,12 @@ export const DocumentDetailModal = forwardRef<
   const approveDocument = useApproveDocument();
   const reuploadInputRef = useRef<HTMLInputElement>(null);
   const { label: bankLabel, logo: bankLogo } = useBankInfo(doc?.bankName);
+  const fileMeta = [
+    doc?.type && t(`data.filters.${doc.type}`),
+    doc?.sizeKb !== undefined && formatSize(doc.sizeKb, t),
+  ]
+    .filter(Boolean)
+    .join(" · ");
 
   // Extracted rows are edited entirely client-side while under review — the
   // only request this modal ever sends is the approve call, with this draft
@@ -241,6 +248,7 @@ export const DocumentDetailModal = forwardRef<
             <span className="truncate">{bankLabel}</span>
             <span className="text-base-content/50 truncate text-xs font-normal">
               {doc.name || t("data.documentFallbackName")}
+              {fileMeta && ` · ${fileMeta}`}
             </span>
           </span>
         )
