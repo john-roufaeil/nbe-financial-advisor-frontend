@@ -11,9 +11,15 @@
     "goalCreated": "تمت إضافة الهدف",
     "goalUpdated": "تم تحديث الهدف",
     "goalDeleted": "تم حذف الهدف",
+    "accountCreated": "تمت إضافة الحساب البنكي",
+    "accountUpdated": "تم تحديث الحساب البنكي",
+    "accountDeleted": "تم حذف الحساب البنكي",
     "genericError": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
     "emailTaken": "هذا البريد الإلكتروني مسجل بالفعل.",
     "budgetCreated": "تم التسجيل بنجاح",
-    "budgetUpdated": "تم تحديث الخطة"
+    "budgetUpdated": "تم تحديث الخطة",
+    "timeFormatChanged": "تم ضبط صيغة الوقت على {{format}}",
+    "languageChanged": "تم ضبط اللغة على {{language}}",
+    "dataSourceChanged": "تم ضبط مصدر البيانات على {{source}}"
   }
 }

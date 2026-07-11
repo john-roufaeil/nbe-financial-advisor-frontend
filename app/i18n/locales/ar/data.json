@@ -79,6 +79,10 @@
       "add": "إضافة معاملة",
       "name": "الاسم",
       "namePlaceholder": "مثال: كارفور ماركت",
+      "account": "الحساب",
+      "accountPlaceholder": "اختر حسابًا",
+      "addNewAccount": "+ إضافة حساب جديد",
+      "noAccounts": "لا توجد حسابات مرتبطة بعد. أضف حسابًا لتسجيل معاملة.",
       "category": "الفئة",
       "amount": "المبلغ",
       "amountPlaceholder": "0.00",
@@ -86,7 +90,42 @@
       "errors": {
         "nameRequired": "أدخل اسمًا لهذه المعاملة.",
         "nameTooLong": "يجب ألا يتجاوز الاسم 20 حرفًا.",
-        "amountInvalid": "أدخل مبلغًا أكبر من 0."
+        "amountInvalid": "أدخل مبلغًا أكبر من 0.",
+        "accountRequired": "اختر حسابًا."
+      }
+    },
+    "addAccount": {
+      "title": "إضافة حساب بنكي",
+      "add": "إضافة حساب بنكي",
+      "accountType": "نوع الحساب",
+      "accountTypes": {
+        "checking": "حساب جاري",
+        "savings": "حساب توفير",
+        "salary": "حساب راتب",
+        "business": "حساب أعمال"
+      },
+      "currency": "العملة",
+      "bank": "البنك",
+      "bankPlaceholder": "اختر بنكًا",
+      "bankSearchPlaceholder": "ابحث عن بنك...",
+      "addCustomBank": "إضافة \"{{name}}\" كبنك جديد",
+      "accountNumber": "آخر 8 أرقام من رقم الحساب",
+      "accountNumberConfirm": "تأكيد رقم الحساب",
+      "accountNumberPlaceholder": "12345678",
+      "initialBalance": "الرصيد الابتدائي",
+      "initialBalancePlaceholder": "0.00",
+      "errors": {
+        "bankRequired": "اختر بنكًا أو أضف واحدًا.",
+        "accountNumberInvalid": "أدخل 8 أرقام بالضبط.",
+        "accountNumberMismatch": "أرقام الحساب غير متطابقة.",
+        "balanceInvalid": "أدخل رصيدًا صالحًا."
+      }
+    },
+    "editAccount": {
+      "title": "تعديل الحساب البنكي",
+      "balance": "الرصيد الحالي",
+      "errors": {
+        "balanceInvalid": "أدخل رصيدًا صالحًا."
       }
     },
     "addDocument": {
@@ -113,6 +152,12 @@
       "uploadFailedTitle": "فشل الرفع",
       "uploadFailedGeneric": "تعذر رفع هذا الملف. تحقق من اتصالك وأعد المحاولة برفع الملف.",
       "uploadAgain": "إعادة الرفع",
+      "stepOf": "الخطوة {{current}} من {{total}}",
+      "confirmAccountTitle": "تأكيد الحساب البنكي",
+      "confirmAccountSubtitle": "اختر الحساب الذي يخص هذا الكشف، أو أضف حسابًا جديدًا.",
+      "noAccountsYet": "ليس لديك أي حسابات بنكية مرتبطة بعد.",
+      "addNewAccount": "إضافة حساب بنكي جديد",
+      "confirmAccount": "متابعة",
       "reviewTitle": "مراجعة المعاملات المستخرجة",
       "reviewSubtitle": "عدّل أي شيء غير دقيق، ثم وافق لإضافتها إلى معاملاتك.",
       "approve": "الموافقة والإضافة إلى المعاملات",
@@ -125,6 +170,15 @@
       "transactionCount_few": "{{count}} معاملات",
       "transactionCount_many": "{{count}} معاملة",
       "transactionCount_other": "{{count}} معاملة"
+    },
+    "transactionDetail": {
+      "title": "المعاملة",
+      "amount": "المبلغ",
+      "category": "الفئة",
+      "date": "التاريخ",
+      "type": "النوع",
+      "account": "الحساب البنكي",
+      "accountUnknown": "لا يوجد حساب مرتبط"
     },
     "sections": {
       "errors": {

@@ -7,6 +7,7 @@
     "hideBalances": "إخفاء الأرصدة",
     "showBalances": "إظهار الأرصدة",
     "dataSource": {
+      "title": "مصدر البيانات",
       "mock": "بيانات تجريبية",
       "backend": "بيانات مباشرة"
     },
