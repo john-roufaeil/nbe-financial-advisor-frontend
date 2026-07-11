@@ -1,14 +1,5 @@
 import { NavLink, Outlet, useParams, useLocation, Link } from "react-router";
-import {
-  LayoutDashboard,
-  Bot,
-  ArrowLeftRight,
-  FileText,
-  Menu,
-  X,
-  Database,
-  Cloud,
-} from "lucide-react";
+import { LayoutDashboard, Bot, ArrowLeftRight, FileText, Menu, X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
@@ -18,31 +9,8 @@ import { useDrawerStore } from "@/store/use-drawer-store";
 import { useMe } from "@/queries/profile";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { BalanceVisibilityToggle } from "@/components/shared/BalanceVisibilityToggle";
-import { LinkToggle } from "@/components/shared/LinkToggle";
+import { DataSourceToggle } from "@/components/shared/DataSourceToggle";
 import { Tooltip } from "@/components/shared/Tooltip";
-import { useDataSourceStore } from "@/store/use-data-source-store";
-
-const DATA_SOURCE_OPTIONS = ["mock", "backend"] as const;
-
-function DataSourceToggle() {
-  const { t } = useTranslation();
-  const source = useDataSourceStore((s) => s.source);
-  const setSource = useDataSourceStore((s) => s.setSource);
-
-  return (
-    <LinkToggle
-      value={source}
-      options={DATA_SOURCE_OPTIONS}
-      labels={{
-        mock: t("dashboard.dataSource.mock"),
-        backend: t("dashboard.dataSource.backend"),
-      }}
-      icons={{ mock: Database, backend: Cloud }}
-      onChange={setSource}
-      aria-label={t("dashboard.dataSource.mock")}
-    />
-  );
-}
 
 export default function AppLayout() {
   const { lang } = useParams<{ lang: string }>();
@@ -185,30 +153,32 @@ export default function AppLayout() {
                 <div className="flex w-full flex-col gap-2">
                   <div className="flex min-w-0 items-center justify-between gap-2">
                     <DataSourceToggle />
-                    <BalanceVisibilityToggle className="btn-square" />
                     <LanguageSwitcher onSelect={close} />
                   </div>
                 </div>
               </div>
-              <NavLink
-                to={`/${lang}/profile`}
-                onClick={close}
-                className={({ isActive }) =>
-                  `flex w-full items-center gap-3 rounded-lg p-2 transition-colors ${
-                    isActive ? "bg-base-300" : "hover:bg-base-300"
-                  }`
-                }
-              >
-                <span className="bg-primary text-primary-content grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold">
-                  {initial}
-                </span>
-                <div className="min-w-0 flex-1 text-start">
-                  <p className="truncate text-sm font-semibold">{fullName}</p>
-                  <p className="text-base-content/50 truncate text-xs">
-                    {t("nav.viewProfile")}
-                  </p>
-                </div>
-              </NavLink>
+              <div className="flex w-full items-center gap-2">
+                <NavLink
+                  to={`/${lang}/profile`}
+                  onClick={close}
+                  className={({ isActive }) =>
+                    `flex w-full min-w-0 items-center gap-3 rounded-lg p-2 transition-colors ${
+                      isActive ? "bg-base-300" : "hover:bg-base-300"
+                    }`
+                  }
+                >
+                  <span className="bg-primary text-primary-content grid size-10 shrink-0 place-items-center rounded-full text-sm font-semibold">
+                    {initial}
+                  </span>
+                  <div className="min-w-0 flex-1 text-start">
+                    <p className="truncate text-sm font-semibold">{fullName}</p>
+                    <p className="text-base-content/50 truncate text-xs">
+                      {t("nav.viewProfile")}
+                    </p>
+                  </div>
+                </NavLink>
+                <BalanceVisibilityToggle className="btn-square shrink-0" />
+              </div>
             </div>
           </aside>
         </div>
