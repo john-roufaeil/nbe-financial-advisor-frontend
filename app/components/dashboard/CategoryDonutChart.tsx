@@ -6,6 +6,8 @@ import { Money } from "@/components/shared/Money";
 interface DonutSlice {
   name: string;
   value: number;
+  /** Display text, if it differs from `name` (which stays the selection/key identity). */
+  displayName?: string;
 }
 
 export function CategoryDonutChart({
@@ -98,6 +100,28 @@ export function CategoryDonutChart({
                 onMouseEnter={(e) => setHovered({ index: i, x: e.clientX, y: e.clientY })}
                 onMouseMove={(e) => setHovered({ index: i, x: e.clientX, y: e.clientY })}
                 onMouseLeave={() => setHovered(null)}
+                onFocus={(e) => {
+                  const rect = e.currentTarget.getBoundingClientRect();
+                  setHovered({
+                    index: i,
+                    x: rect.left + rect.width / 2,
+                    y: rect.top + rect.height / 2,
+                  });
+                }}
+                onBlur={() => setHovered(null)}
+                onKeyDown={
+                  onSelectName
+                    ? (e) => {
+                        if (e.key === "Enter" || e.key === " ") {
+                          e.preventDefault();
+                          onSelectName(slice.name);
+                        }
+                      }
+                    : undefined
+                }
+                tabIndex={onSelectName ? 0 : undefined}
+                role={onSelectName ? "button" : undefined}
+                aria-label={onSelectName ? (slice.displayName ?? slice.name) : undefined}
                 style={{
                   transformOrigin: `${size / 2}px ${size / 2}px`,
                   transform: isHovered ? "scale(0.95)" : undefined,
@@ -131,7 +155,7 @@ export function CategoryDonutChart({
               transform: "translate(-50%, -100%)",
             }}
           >
-            {slices[hovered.index].name}{" "}
+            {slices[hovered.index].displayName ?? slices[hovered.index].name}{" "}
             {Math.round((slices[hovered.index].value / total) * 100)}%
           </span>,
           document.body,

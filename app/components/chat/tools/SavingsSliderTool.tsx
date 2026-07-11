@@ -61,7 +61,7 @@ function ProjectionChart({
   const first = coords[0];
 
   return (
-    <div ref={containerRef} className="bg-base-200/60 w-full rounded-xl p-3">
+    <div ref={containerRef} className="bg-base-200/60 w-full rounded-lg p-3">
       <svg
         width="100%"
         height={height}
@@ -120,7 +120,7 @@ export const SavingsSliderTool: ToolCallMessagePartComponent = ({ result }) => {
   const currencyLabel = t(`currency.${data.currency}`, data.currency);
 
   return (
-    <div className="border-base-300 bg-base-100 animate-entry my-2 flex flex-col gap-4 rounded-2xl border p-4 shadow-sm">
+    <div className="border-base-300 bg-base-100 animate-entry my-2 flex flex-col gap-4 rounded-xl border p-4 shadow-sm">
       <div className="flex items-center gap-2">
         <span className="bg-primary/10 text-primary grid size-8 shrink-0 place-items-center rounded-lg">
           <PiggyBank className="size-4" />
@@ -159,7 +159,11 @@ export const SavingsSliderTool: ToolCallMessagePartComponent = ({ result }) => {
           step={100}
           value={monthly}
           onChange={(e) => setMonthly(Number(e.target.value))}
-          className="range range-primary range-sm"
+          // Thumb size is a daisyUI CSS var, overridden inline so only this
+          // slider gets a larger (touch-friendly) thumb — a global `.range`
+          // override would resize every other slider in the app too.
+          style={{ "--range-thumb-size": "1.75rem" } as React.CSSProperties}
+          className="range range-primary range-sm py-2"
         />
       </label>
     </div>

@@ -34,7 +34,7 @@ import { formatTime } from "@/lib/format";
 function ComposerAttachment() {
   const { t } = useTranslation();
   return (
-    <AttachmentPrimitive.Root className="border-base-300 bg-base-100 flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm">
+    <AttachmentPrimitive.Root className="border-base-300 bg-base-100 flex items-center gap-2 rounded-full border px-3 py-1.5 text-sm">
       <span className="max-w-40 truncate">
         <AttachmentPrimitive.Name />
       </span>
@@ -57,7 +57,7 @@ function MessageAttachmentChip({
 }) {
   const Icon = attachment.type === "image" ? ImageIcon : FileText;
   return (
-    <span className="bg-primary-content/10 flex max-w-full items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs">
+    <span className="bg-primary-content/10 flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs">
       <Icon className="size-3.5 shrink-0" />
       <span className="truncate">{attachment.name}</span>
     </span>
@@ -118,7 +118,7 @@ function UserMessage() {
   return (
     <MessagePrimitive.Root id={`msg-${id}`} className="flex justify-end">
       <div className="animate-message-in flex max-w-[80%] min-w-0 flex-col items-end">
-        <div className="bg-primary text-primary-content min-w-0 overflow-hidden rounded-2xl rounded-ee-sm px-4 py-2.5">
+        <div className="bg-primary text-primary-content min-w-0 overflow-hidden rounded-xl rounded-ee-sm px-4 py-2.5">
           <div className="flex flex-wrap gap-1.5 pb-2 empty:hidden">
             <MessagePrimitive.Attachments>
               {({ attachment }) => <MessageAttachmentChip attachment={attachment} />}
@@ -187,7 +187,7 @@ function EmptyState() {
   return (
     <ThreadPrimitive.Empty>
       <div className="animate-entry mx-auto flex h-full w-full max-w-2xl flex-col items-center justify-center px-4 text-center">
-        <span className="bg-primary/10 text-primary grid size-14 place-items-center rounded-2xl">
+        <span className="bg-primary/10 text-primary grid size-14 place-items-center rounded-lg">
           <Bot className="size-7" />
         </span>
         <h2 className="mt-4 text-xl font-semibold">{t("chat.empty.title")}</h2>
@@ -199,7 +199,7 @@ function EmptyState() {
               prompt={t(key)}
               method="replace"
               autoSend
-              className="border-base-300 bg-base-100 hover:border-primary hover:bg-base-200 cursor-pointer rounded-xl border px-3 py-3 text-start text-sm shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md active:translate-y-0"
+              className="border-base-300 bg-base-100 hover:border-primary hover:bg-base-200 focus-visible:outline-primary/50 cursor-pointer rounded-xl border px-3 py-3 text-start text-sm shadow-sm transition-all hover:-translate-y-0.5 hover:shadow-md focus-visible:outline-2 focus-visible:outline-offset-2 active:translate-y-0"
             >
               {t(key)}
             </ThreadPrimitive.Suggestion>
@@ -231,7 +231,7 @@ function SuggestedQuestions() {
           key={question}
           type="button"
           onClick={() => send(question)}
-          className="border-base-300 bg-base-100 hover:border-primary hover:bg-base-200 cursor-pointer rounded-full border px-3 py-1.5 text-xs transition-colors"
+          className="border-base-300 bg-base-100 hover:border-primary hover:bg-base-200 focus-visible:outline-primary/50 cursor-pointer rounded-full border px-3 py-1.5 text-xs transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
         >
           {question}
         </button>
@@ -318,14 +318,14 @@ export function ChatThread() {
       </div>
 
       <div className="bg-base-100 animate-entry">
-        <ComposerPrimitive.AttachmentDropzone className="data-dragging:border-primary mx-auto w-full max-w-3xl rounded-2xl data-dragging:border-2 data-dragging:border-dashed">
+        <ComposerPrimitive.AttachmentDropzone className="data-dragging:border-primary mx-auto w-full max-w-3xl rounded-xl data-dragging:border-2 data-dragging:border-dashed">
           <ComposerPrimitive.Root className="flex flex-col gap-2 p-4">
             <div className="flex flex-wrap gap-2 empty:hidden">
               <ComposerPrimitive.Attachments
                 components={{ Attachment: ComposerAttachment }}
               />
             </div>
-            <div className="border-base-300 bg-base-200 focus-within:border-primary flex items-end gap-2 rounded-2xl border p-2">
+            <div className="border-base-300 bg-base-200 focus-within:border-primary flex items-end gap-2 rounded-lg border p-2">
               <Tooltip content={t("chat.attach")} className="shrink-0">
                 <ComposerPrimitive.AddAttachment asChild>
                   <button

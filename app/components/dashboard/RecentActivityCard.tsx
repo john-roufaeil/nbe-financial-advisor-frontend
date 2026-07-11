@@ -64,9 +64,15 @@ function SummaryCard({
           <ChevronRight className="text-base-content/30 group-hover:text-primary size-4 shrink-0 transition-[color,translate] ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
         </div>
         {count > 0 ? (
-          <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
-            {children}
-          </ul>
+          <div className="relative min-h-0 flex-1">
+            <ul className="flex h-full flex-col gap-2 overflow-y-auto">{children}</ul>
+            {/* Fade hints that the list keeps going below the fold — cheap CSS-only
+                affordance, harmless to render even when the list doesn't overflow. */}
+            <div
+              aria-hidden="true"
+              className="from-base-100 pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-linear-to-t to-transparent"
+            />
+          </div>
         ) : (
           <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
             <div className="flex items-center gap-1.5">
