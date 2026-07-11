@@ -2,19 +2,20 @@ import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useParams, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Settings, Clock, Languages, Database } from "lucide-react";
+import { Settings2, Clock, Globe, Database, X } from "lucide-react";
 import { TimeFormatSwitcher } from "@/components/shared/TimeFormatSwitcher";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
 import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 import { LANGUAGE_STORAGE_KEY } from "@/routes/lang-layout";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { useToastStore } from "@/store/use-toast-store";
+import { Tooltip } from "./Tooltip";
 
-const PANEL_WIDTH = 288; // w-72
+const PANEL_WIDTH = 288; // w-72, used only for initial JS positioning math; actual rendered width is clamped by CSS (max-w-[90vw])
 const PANEL_GAP = 8;
 const DATA_SOURCE_OPTIONS: readonly [DataSource, DataSource] = ["mock", "backend"];
 
-function LanguageToggle() {
+function LanguageToggle({ onAfterChange }: { onAfterChange?: () => void }) {
   const { t } = useTranslation();
   const { lang } = useParams<{ lang: string }>();
   const location = useLocation();
@@ -33,6 +34,9 @@ function LanguageToggle() {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, next);
     void i18n.changeLanguage(next);
     showToast(t("toast.languageChanged", { language: labels[next] }), "info");
+    // Navigating to the new /:lang segment reuses this route's component
+    // instance, so the panel's `open` state wouldn't otherwise reset itself.
+    onAfterChange?.();
     if (next !== lang) {
       const rest = location.pathname.replace(`/${lang}`, "");
       navigate(`/${next}${rest}${location.search}`);
@@ -143,7 +147,7 @@ export function PreferencesMenu() {
         aria-haspopup="dialog"
         className="btn btn-outline btn-sm bg-base-200 gap-2"
       >
-        <Settings className="size-4" />
+        <Settings2 className="size-4" />
         {t("data.sections.preferences.title")}
       </button>
 
@@ -153,9 +157,29 @@ export function PreferencesMenu() {
             ref={panelRef}
             role="dialog"
             aria-label={t("data.sections.preferences.title")}
-            style={{ top: position.top, left: position.left, width: PANEL_WIDTH }}
-            className="border-base-300 bg-base-100 text-base-content animate-a11y-panel-in fixed z-50 rounded-2xl border p-4 shadow-2xl"
+            style={{ top: position.top, left: position.left }}
+            className="border-base-300 bg-base-100 text-base-content animate-a11y-panel-in fixed z-50 max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-2xl border p-4 shadow-2xl"
           >
+            <div className="mb-3 flex items-center justify-between gap-2">
+              <h2 className="flex items-center gap-2 text-sm font-semibold">
+                <Settings2 className="size-4" />
+                {t("data.sections.preferences.title")}
+              </h2>
+              <Tooltip content={t("actions.close")}>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setOpen(false);
+                    triggerRef.current?.focus();
+                  }}
+                  aria-label={t("actions.close")}
+                  className="btn btn-ghost btn-xs btn-square"
+                >
+                  <X className="size-4" />
+                </button>
+              </Tooltip>
+            </div>
+
             <div className="flex flex-col gap-4">
               <label className="flex flex-col gap-1.5">
                 <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
@@ -167,10 +191,10 @@ export function PreferencesMenu() {
 
               <label className="flex flex-col gap-1.5">
                 <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
-                  <Languages className="size-3.5" />
+                  <Globe className="size-3.5" />
                   {t("settings.language")}
                 </span>
-                <LanguageToggle />
+                <LanguageToggle onAfterChange={() => setOpen(false)} />
               </label>
 
               <label className="flex flex-col gap-1.5">

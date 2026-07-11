@@ -33,12 +33,25 @@ export function Tooltip({
   } | null>(null);
   const [isSuppressed, setIsSuppressed] = useState(false);
 
-  // Once the bubble has actually rendered at its natural position, pull it back
-  // inward by whatever amount pokes past the viewport edge — the origin point
-  // (and the `transform` centering) are left untouched, only `top`/`left` shift.
+  // The bubble lives in the top layer (via the Popover API) so it can out-rank
+  // other top-layer content — like toasts — by z-index; a plain `fixed` element
+  // can never paint over top-layer content no matter its z-index. It stays
+  // mounted at all times so `showPopover`/`hidePopover` always have a target.
   useLayoutEffect(() => {
-    if (!coords || !tooltipRef.current) return;
-    const rect = tooltipRef.current.getBoundingClientRect();
+    const el = tooltipRef.current;
+    if (!el) return;
+
+    if (!coords) {
+      if (el.matches(":popover-open")) el.hidePopover();
+      return;
+    }
+    if (!el.matches(":popover-open")) el.showPopover();
+
+    // Once the bubble has actually rendered at its natural position, pull it
+    // back inward by whatever amount pokes past the viewport edge — the
+    // origin point (and the `transform` centering) are left untouched, only
+    // `top`/`left` shift.
+    const rect = el.getBoundingClientRect();
     let dx = 0;
     let dy = 0;
     if (rect.left < VIEWPORT_PADDING) dx = VIEWPORT_PADDING - rect.left;
@@ -129,14 +142,18 @@ export function Tooltip({
       onClickCapture={handleInteractionClick}
     >
       {children}
-      {coords &&
-        typeof document !== "undefined" &&
+      {typeof document !== "undefined" &&
         createPortal(
           <span
             ref={tooltipRef}
+            popover="manual"
             role="tooltip"
-            className="bg-neutral text-neutral-content animate-fade-in pointer-events-none fixed z-[9999] rounded-(--radius-field) px-2 py-1 text-xs font-medium whitespace-nowrap shadow-lg"
-            style={{ top: coords.top, left: coords.left, transform: coords.transform }}
+            className="bg-neutral text-neutral-content animate-fade-in pointer-events-none fixed inset-auto z-9999 m-0 max-w-[min(80vw,16rem)] rounded-(--radius-field) border-0 px-2 py-1 text-xs font-medium text-wrap shadow-lg"
+            style={
+              coords
+                ? { top: coords.top, left: coords.left, transform: coords.transform }
+                : undefined
+            }
           >
             {content}
           </span>,
