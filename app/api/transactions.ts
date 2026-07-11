@@ -1,5 +1,4 @@
 import { apiClient } from "@/api/client";
-import { getAccounts } from "@/api/accounts";
 import type { Transaction } from "@/types/transaction";
 
 export interface TransactionFilters {
@@ -74,6 +73,7 @@ function toTransaction(raw: RawTransaction): Transaction {
     category: raw.category ?? "",
     type: toUiType(raw.transaction_type),
     amount: Math.abs(Number(raw.amount)),
+    accountId: raw.account_id,
   };
 }
 
@@ -147,24 +147,15 @@ export async function getTransactionsByStatement(
 
 export async function createTransaction(
   body: Omit<Transaction, "id">,
-  accountId?: string,
 ): Promise<Transaction> {
-  // POST /transactions requires an owned account_id, but the add-transaction
-  // form collects no account (there is no picker). Default to the user's first
-  // active account, which is correct while users link a single account; a picker
-  // is needed before multi-account users can choose where a manual entry lands.
-  let resolvedAccountId = accountId;
-  if (!resolvedAccountId) {
-    const accounts = await getAccounts();
-    const account = accounts.find((a) => a.is_active) ?? accounts[0];
-    if (!account) {
-      throw new Error("No bank account linked — cannot create a transaction.");
-    }
-    resolvedAccountId = account.id;
+  // POST /transactions requires an owned account_id. The add-transaction form
+  // now collects it via an account picker, so no implicit GET /accounts lookup.
+  if (!body.accountId) {
+    throw new Error("An account must be selected to create a transaction.");
   }
 
   const res = await apiClient.post<RawTransaction>("/transactions", {
-    account_id: resolvedAccountId,
+    account_id: body.accountId,
     transaction_date: body.datetime.slice(0, 10),
     merchant_raw: body.title,
     category: body.category,
