@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Pencil,
   Check,
@@ -7,17 +7,20 @@ import {
   Landmark,
   Loader2,
   CreditCard,
-  Clock,
+  Plus,
+  Trash2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { useMe, useUpdateProfile } from "@/queries/profile";
-import { useAccounts } from "@/queries/accounts";
+import { useAccounts, useDeleteAccount } from "@/queries/accounts";
+import { useConfirmStore } from "@/store/use-confirm-store";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
-import { TimeFormatSwitcher } from "@/components/shared/TimeFormatSwitcher";
+import { AddBankAccountModal } from "@/components/data/AddBankAccountModal";
+import { EditBankAccountModal } from "@/components/data/EditBankAccountModal";
 import type { User as UserType } from "@/types/profile";
 import type { BankAccount } from "@/types/account";
 import { CardSkeleton, ErrorState } from "@/components/shared/QueryState";
@@ -346,7 +349,15 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
 
 // ── Bank accounts ─────────────────────────────────────────────────────────────
 
-function AccountRow({ account }: { account: BankAccount }) {
+function AccountRow({
+  account,
+  onEdit,
+  onDelete,
+}: {
+  account: BankAccount;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
   const { t } = useTranslation();
   const currencyLabel = t(`currency.${account.currency}`, account.currency);
 
@@ -358,7 +369,9 @@ function AccountRow({ account }: { account: BankAccount }) {
         subtitle={
           <>
             <span dir="ltr">{account.masked_account_number}</span>
-            {account.account_type ? ` · ${account.account_type}` : ""}
+            {account.account_type
+              ? ` · ${t(`data.addAccount.accountTypes.${account.account_type}`, account.account_type)}`
+              : ""}
             {account.is_active ? "" : ` · ${t("data.sections.accounts.inactive")}`}
           </>
         }
@@ -366,6 +379,28 @@ function AccountRow({ account }: { account: BankAccount }) {
       <Money className="shrink-0 text-sm font-semibold tabular-nums">
         {Number(account.current_balance).toLocaleString()} {currencyLabel}
       </Money>
+      <div className="flex shrink-0 gap-1">
+        <Tooltip content={t("actions.edit")}>
+          <button
+            type="button"
+            onClick={onEdit}
+            className="btn btn-ghost btn-sm btn-square"
+            aria-label={t("actions.edit")}
+          >
+            <Pencil data-no-flip className="size-4" />
+          </button>
+        </Tooltip>
+        <Tooltip content={t("actions.remove")}>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="btn btn-ghost btn-sm btn-square text-error"
+            aria-label={t("actions.remove")}
+          >
+            <Trash2 data-no-flip className="size-4" />
+          </button>
+        </Tooltip>
+      </div>
     </li>
   );
 }
@@ -373,6 +408,24 @@ function AccountRow({ account }: { account: BankAccount }) {
 function BankAccountsCard() {
   const { t } = useTranslation();
   const { data: accounts, isPending, isError } = useAccounts();
+  const deleteAccount = useDeleteAccount();
+  const confirm = useConfirmStore((s) => s.confirm);
+  const addRef = useRef<HTMLDialogElement>(null);
+  const editRef = useRef<HTMLDialogElement>(null);
+  const [editing, setEditing] = useState<BankAccount | null>(null);
+
+  function openEdit(account: BankAccount) {
+    setEditing(account);
+    editRef.current?.showModal();
+  }
+
+  function confirmDelete(account: BankAccount) {
+    confirm({
+      title: t("confirm.deleteAccountTitle"),
+      message: t("confirm.deleteMessage"),
+      onConfirm: () => deleteAccount.mutate(account.id),
+    });
+  }
 
   if (isPending) {
     return (
@@ -404,12 +457,27 @@ function BankAccountsCard() {
           <h2 className="card-title flex-1 text-base">
             {t("data.sections.accounts.title")}
           </h2>
+          <Tooltip content={t("data.addAccount.add")}>
+            <button
+              type="button"
+              onClick={() => addRef.current?.showModal()}
+              className="btn btn-ghost btn-sm btn-square"
+              aria-label={t("data.addAccount.add")}
+            >
+              <Plus data-no-flip className="size-4" />
+            </button>
+          </Tooltip>
         </div>
 
         {accounts.length > 0 ? (
           <ul className="flex flex-col gap-2">
             {accounts.map((account) => (
-              <AccountRow key={account.id} account={account} />
+              <AccountRow
+                key={account.id}
+                account={account}
+                onEdit={() => openEdit(account)}
+                onDelete={() => confirmDelete(account)}
+              />
             ))}
           </ul>
         ) : (
@@ -418,32 +486,9 @@ function BankAccountsCard() {
           </p>
         )}
       </div>
-    </div>
-  );
-}
 
-function PreferencesCard() {
-  const { t } = useTranslation();
-
-  return (
-    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm sm:col-span-2">
-      <div className="card-body gap-4 p-4">
-        <div className="flex items-center gap-2">
-          <span className="bg-warning/10 text-warning grid size-9 shrink-0 place-items-center rounded-lg">
-            <Clock className="size-4.5" />
-          </span>
-          <h2 className="card-title flex-1 text-base">
-            {t("data.sections.preferences.title")}
-          </h2>
-        </div>
-
-        <label className="flex max-w-xs flex-col gap-1">
-          <span className="label-text text-base-content/50 text-xs">
-            {t("settings.timeFormat.label")}
-          </span>
-          <TimeFormatSwitcher />
-        </label>
-      </div>
+      <AddBankAccountModal ref={addRef} />
+      <EditBankAccountModal ref={editRef} account={editing} />
     </div>
   );
 }
@@ -483,7 +528,6 @@ export function PersonalDataSections() {
         <SectionCard key={s.key} section={s} user={user} />
       ))}
       <BankAccountsCard />
-      <PreferencesCard />
     </div>
   );
 }
