@@ -1,5 +1,6 @@
 import { delay } from "@/mocks/shared";
 import { createTransaction } from "@/mocks/transactions";
+import { getAccounts } from "@/mocks/accounts";
 import { BANK_CODES } from "@/lib/banks";
 import type { DocumentFilters, DocumentListResponse } from "@/api/documents";
 import type {
@@ -16,6 +17,20 @@ const SAMPLE_POOL: Omit<ExtractedTransaction, "id" | "datetime">[] = [
   { title: "Online purchase", category: "Shopping", type: "expense", amount: 95 },
   { title: "Ride share", category: "Transport", type: "expense", amount: 65 },
 ];
+
+/**
+ * Simulates OCR reading an account number off the statement: most of the time
+ * it "reads" the last 4 digits of one of the user's existing accounts (so step 1
+ * can demo the auto-match path), otherwise a random non-matching 4-digit string.
+ */
+async function generatePerceivedAccountNumber(): Promise<string> {
+  const accounts = await getAccounts();
+  if (accounts.length > 0 && Math.random() > 0.3) {
+    const pick = accounts[Math.floor(Math.random() * accounts.length)];
+    return pick.masked_account_number.slice(-4);
+  }
+  return String(Math.floor(1000 + Math.random() * 9000));
+}
 
 function generateExtractedTransactions(uploadDate: string): ExtractedTransaction[] {
   const count = 2 + Math.floor(Math.random() * 3);
@@ -107,6 +122,7 @@ const SEED_DOCS: DocumentRecord[] = [
 
 let documents: DocumentRecord[] = SEED_DOCS.map((doc) => ({
   ...doc,
+  accountConfirmed: true,
   extractedTransactions: generateExtractedTransactions(doc.uploadDate),
 }));
 
@@ -131,10 +147,13 @@ function runProcessing(id: string) {
 
     documents = documents.map((d) => (d.id === id ? { ...d, status: "processing" } : d));
 
-    setTimeout(() => {
+    setTimeout(async () => {
       const doc = documents.find((d) => d.id === id);
       if (!doc) return;
       const succeeded = Math.random() > 0.15;
+      const perceivedAccountNumber = succeeded
+        ? await generatePerceivedAccountNumber()
+        : undefined;
       documents = documents.map((d) =>
         d.id === id
           ? succeeded
@@ -146,6 +165,8 @@ function runProcessing(id: string) {
                 bankName:
                   d.bankName ?? BANK_CODES[Math.floor(Math.random() * BANK_CODES.length)],
                 extractedTransactions: generateExtractedTransactions(d.uploadDate),
+                perceivedAccountNumber,
+                accountConfirmed: false,
               }
             : {
                 ...d,
@@ -214,6 +235,18 @@ export function retryDocument(id: string): Promise<DocumentRecord> {
       : d,
   );
   runProcessing(id);
+  const doc = documents.find((d) => d.id === id);
+  if (!doc) return Promise.reject(new Error(`Document ${id} not found`));
+  return delay(doc);
+}
+
+export function confirmDocumentAccount(
+  id: string,
+  accountId: string,
+): Promise<DocumentRecord> {
+  documents = documents.map((d) =>
+    d.id === id ? { ...d, accountId, accountConfirmed: true } : d,
+  );
   const doc = documents.find((d) => d.id === id);
   if (!doc) return Promise.reject(new Error(`Document ${id} not found`));
   return delay(doc);

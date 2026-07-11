@@ -87,6 +87,7 @@ function toStatus(raw: string): DocumentStatus {
 
 function toDocument(raw: RawStatement, bankName?: string): DocumentRecord {
   const status = toStatus(raw.status);
+  const approved = status === "processed";
   return {
     id: raw.id,
     accountId: raw.account_id ?? undefined,
@@ -95,11 +96,17 @@ function toDocument(raw: RawStatement, bankName?: string): DocumentRecord {
     // A stored failed statement got uploaded fine (upload errors surface as HTTP
     // failures at POST time), so recovery is a processing retry, not a re-upload.
     failedStage: status === "failed" ? "processing" : undefined,
-    approved: status === "processed",
+    approved,
+    // No pending-account-confirmation concept server-side either; the backend
+    // already resolves account_id (or leaves it unset) by the time it responds.
+    accountConfirmed: status === "processed",
     // Rows are edited/added client-side only while under review and are never
     // sent until the (currently unsupported) approve call — see approveDocument.
-    canEditTransactions: status === "processed",
-    canAddTransactions: status === "processed",
+    // Since the backend has no pending-approval state, `approved` is already
+    // true the moment a statement finishes processing, so editing is disabled
+    // from that same moment: the transactions are already committed server-side.
+    canEditTransactions: !approved,
+    canAddTransactions: !approved,
     bankName,
   };
 }
@@ -214,5 +221,12 @@ export async function approveDocument(
   _id: string,
   _transactions: ExtractedTransaction[],
 ): Promise<{ approvedAt: string; createdTransactionIds: string[] }> {
+  throw new Error(UNSUPPORTED);
+}
+
+export async function confirmDocumentAccount(
+  _id: string,
+  _accountId: string,
+): Promise<DocumentRecord> {
   throw new Error(UNSUPPORTED);
 }
