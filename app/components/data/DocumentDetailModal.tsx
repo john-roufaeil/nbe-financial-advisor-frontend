@@ -6,6 +6,7 @@ import {
   RotateCcw,
   Upload,
   CircleCheck,
+  Check,
   Plus,
   Trash2,
   ArrowDownCircle,
@@ -17,21 +18,118 @@ import {
   inferDocumentType,
   type ExtractedTransaction,
 } from "@/types/document";
+import type { BankAccount } from "@/types/account";
 import { Button } from "@/components/shared/Button";
 import { formatSize } from "@/lib/format";
 import { useBankInfo } from "@/lib/banks";
 import { BaseModal } from "@/components/shared/BaseModal";
+import { BankBadge } from "@/components/shared/BankBadge";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { toastError } from "@/lib/toast";
 import { Money } from "@/components/shared/Money";
+import { useAccounts } from "@/queries/accounts";
+import { AddBankAccountModal } from "@/components/data/AddBankAccountModal";
 import {
   useDocument,
   useRetryDocument,
   useUploadDocuments,
   useDeleteDocument,
   useApproveDocument,
+  useConfirmDocumentAccount,
 } from "@/queries/documents";
+
+/** Matches by the last 4 digits so a perceived account number lines up with `masked_account_number` (e.g. "****4821"). */
+function findMatchingAccount(
+  accounts: BankAccount[] | undefined,
+  perceivedAccountNumber: string | undefined,
+): BankAccount | undefined {
+  if (!accounts || !perceivedAccountNumber) return undefined;
+  return accounts.find((a) =>
+    a.masked_account_number.endsWith(perceivedAccountNumber.slice(-4)),
+  );
+}
+
+/** Step 1 of the statement review flow: confirm (or add) which bank account this statement belongs to. */
+function AccountConfirmStep({
+  accounts,
+  accountsLoading,
+  selectedAccountId,
+  onSelectAccount,
+  onAddNewAccount,
+}: {
+  accounts: BankAccount[] | undefined;
+  accountsLoading: boolean;
+  selectedAccountId: string | null;
+  onSelectAccount: (id: string) => void;
+  onAddNewAccount: () => void;
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <div className="flex flex-col gap-3">
+      <div>
+        <p className="text-base-content/50 text-xs">
+          {t("data.documentDetail.stepOf", { current: 1, total: 2 })}
+        </p>
+        <p className="text-sm font-medium">
+          {t("data.documentDetail.confirmAccountTitle")}
+        </p>
+        <p className="text-base-content/60 text-xs">
+          {t("data.documentDetail.confirmAccountSubtitle")}
+        </p>
+      </div>
+
+      {accountsLoading ? (
+        <div className="flex justify-center py-6">
+          <Loader2 data-no-flip className="text-primary size-6 animate-spin" />
+        </div>
+      ) : (
+        accounts &&
+        accounts.length > 0 && (
+          <ul className="flex flex-col gap-2">
+            {accounts.map((account) => {
+              const selected = account.id === selectedAccountId;
+              return (
+                <li key={account.id}>
+                  <button
+                    type="button"
+                    onClick={() => onSelectAccount(account.id)}
+                    className={`border-base-300 bg-base-100 hover:border-primary flex w-full cursor-pointer items-center gap-3 rounded-xl border p-3 text-start shadow-sm ${selected ? "border-primary ring-primary/30 ring-1" : ""}`}
+                  >
+                    <BankBadge
+                      bank={account.bank_name}
+                      subtitle={<span dir="ltr">{account.masked_account_number}</span>}
+                      className="flex-1"
+                    />
+                    {selected && (
+                      <Check data-no-flip className="text-primary size-4 shrink-0" />
+                    )}
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+        )
+      )}
+
+      {!accountsLoading && accounts?.length === 0 && (
+        <p className="text-base-content/50 py-2 text-sm">
+          {t("data.documentDetail.noAccountsYet")}
+        </p>
+      )}
+
+      <button
+        type="button"
+        onClick={onAddNewAccount}
+        className="btn btn-ghost btn-sm w-fit gap-2 self-start"
+      >
+        <Plus className="size-4" />
+        {t("data.documentDetail.addNewAccount")}
+      </button>
+    </div>
+  );
+}
 
 /** Rows here are edited purely in local state (see `draft` in the parent) —
  * nothing is sent to the server until "Approve" — so every keystroke is a
@@ -66,6 +164,7 @@ function ExtractedTransactionRow({
             value={tx.title}
             maxLength={20}
             onChange={(e) => onUpdate({ title: e.target.value })}
+            placeholder={t("data.addTransaction.namePlaceholder")}
             className="input input-bordered input-sm w-full flex-1 font-medium"
           />
           <Tooltip content={t("actions.delete", { name: tx.title })} className="shrink-0">
@@ -160,6 +259,9 @@ export const DocumentDetailModal = forwardRef<
   const uploadDocuments = useUploadDocuments();
   const deleteDocument = useDeleteDocument();
   const approveDocument = useApproveDocument();
+  const confirmDocumentAccount = useConfirmDocumentAccount();
+  const { data: accounts, isLoading: accountsLoading } = useAccounts();
+  const accountModalRef = useRef<HTMLDialogElement>(null);
   const reuploadInputRef = useRef<HTMLInputElement>(null);
   const { label: bankLabel, logo: bankLogo } = useBankInfo(doc?.bankName);
   const fileMeta = [
@@ -176,6 +278,37 @@ export const DocumentDetailModal = forwardRef<
   useEffect(() => {
     setDraft(doc?.extractedTransactions ?? []);
   }, [doc?.id]);
+
+  // Step 1 state: which account this statement belongs to. Reset whenever a
+  // different statement is opened.
+  const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
+  const [awaitingNewAccount, setAwaitingNewAccount] = useState(false);
+  useEffect(() => {
+    setSelectedAccountId(null);
+    setAwaitingNewAccount(false);
+  }, [doc?.id]);
+
+  // Pre-select the account matching the perceived account number, once per
+  // statement — later account-list refetches (e.g. after adding one via the
+  // stacked "add account" modal) must not clobber a manual or just-created
+  // selection.
+  const matchedDocIdRef = useRef<string | null>(null);
+  useEffect(() => {
+    if (!doc || !accounts || matchedDocIdRef.current === doc.id) return;
+    matchedDocIdRef.current = doc.id;
+    const match = findMatchingAccount(accounts, doc.perceivedAccountNumber);
+    if (match) setSelectedAccountId(match.id);
+  }, [doc, accounts]);
+
+  // Auto-select the account just created via the stacked "add new account" modal.
+  useEffect(() => {
+    if (!awaitingNewAccount || !accounts || accounts.length === 0) return;
+    const newest = [...accounts].sort((a, b) =>
+      b.created_at.localeCompare(a.created_at),
+    )[0];
+    setSelectedAccountId(newest.id);
+    setAwaitingNewAccount(false);
+  }, [accounts, awaitingNewAccount]);
 
   function updateDraftTransaction(
     txId: string,
@@ -228,7 +361,15 @@ export const DocumentDetailModal = forwardRef<
     }
   }
 
-  const showApprove = doc?.status === "processed" && !doc.approved && draft.length > 0;
+  const needsAccountConfirm = doc?.status === "processed" && !doc.accountConfirmed;
+  const showApprove =
+    doc?.status === "processed" &&
+    doc.accountConfirmed &&
+    !doc.approved &&
+    draft.length > 0;
+  const draftHasInvalidTransaction = draft.some(
+    (tx) => !tx.title.trim() || !Number.isFinite(tx.amount) || tx.amount <= 0,
+  );
 
   return (
     <BaseModal
@@ -254,11 +395,27 @@ export const DocumentDetailModal = forwardRef<
         )
       }
       actions={
-        showApprove ? (
+        needsAccountConfirm ? (
+          <Button
+            type="button"
+            onClick={() =>
+              confirmDocumentAccount.mutate({
+                id: doc.id,
+                accountId: selectedAccountId as string,
+              })
+            }
+            loading={confirmDocumentAccount.isPending}
+            disabled={!selectedAccountId}
+            className="btn btn-primary btn-sm"
+          >
+            {t("data.documentDetail.confirmAccount")}
+          </Button>
+        ) : showApprove ? (
           <Button
             type="button"
             onClick={() => approveDocument.mutate({ id: doc.id, transactions: draft })}
             loading={approveDocument.isPending}
+            disabled={draftHasInvalidTransaction}
             className="btn btn-primary btn-sm"
           >
             {t("data.documentDetail.approve")}
@@ -330,8 +487,28 @@ export const DocumentDetailModal = forwardRef<
                 </div>
               ))}
 
-            {doc.status === "processed" && (
+            {doc.status === "processed" && needsAccountConfirm && (
+              <AccountConfirmStep
+                accounts={accounts}
+                accountsLoading={accountsLoading}
+                selectedAccountId={selectedAccountId}
+                onSelectAccount={setSelectedAccountId}
+                onAddNewAccount={() => {
+                  setAwaitingNewAccount(true);
+                  accountModalRef.current?.showModal();
+                }}
+              />
+            )}
+
+            {doc.status === "processed" && !needsAccountConfirm && (
               <div className="flex flex-col gap-3">
+                {!doc.approved && (
+                  <div>
+                    <p className="text-base-content/50 text-xs">
+                      {t("data.documentDetail.stepOf", { current: 2, total: 2 })}
+                    </p>
+                  </div>
+                )}
                 <div className="flex items-start justify-between gap-3">
                   {doc.approved ? (
                     <p className="text-success flex items-center gap-1.5 text-sm font-medium">
@@ -423,6 +600,7 @@ export const DocumentDetailModal = forwardRef<
           </>
         )}
       </div>
+      <AddBankAccountModal ref={accountModalRef} />
     </BaseModal>
   );
 });

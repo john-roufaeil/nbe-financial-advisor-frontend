@@ -5,8 +5,10 @@ import { formatDateTime } from "@/lib/format";
 import type { Transaction } from "@/types/transaction";
 import { AMOUNT_RANGES, TRANSACTION_CATEGORIES } from "@/types/transaction";
 import { useTransactions, useDeleteTransaction } from "@/queries/transactions";
+import { useAccounts } from "@/queries/accounts";
 import { Pagination } from "@/components/data/Pagination";
 import { AddTransactionModal } from "@/components/data/AddTransactionModal";
+import { TransactionDetailModal } from "@/components/data/TransactionDetailModal";
 import { DataToolbar } from "@/components/shared/DataToolbar";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useConfirmStore } from "@/store/use-confirm-store";
@@ -39,18 +41,25 @@ export interface TransactionsTabHandle {
 function TransactionCard({
   transaction,
   view,
+  onOpen,
   onEdit,
   onDelete,
 }: {
   transaction: Transaction;
   view: ViewMode;
+  onOpen: () => void;
   onEdit: () => void;
   onDelete: () => void;
 }) {
   const { t } = useTranslation();
   const isIncome = transaction.type === "income";
   const Icon = isIncome ? ArrowUpCircle : ArrowDownCircle;
-  const currencyLabel = t("currency.EGP");
+  const { data: accounts } = useAccounts();
+  const account = accounts?.find((a) => a.id === transaction.accountId);
+  const currencyLabel = t(
+    `currency.${account?.currency ?? "EGP"}`,
+    account?.currency ?? "EGP",
+  );
   const isGrid = view === "grid";
   const timeFormat = useTimeFormatStore((s) => s.format);
 
@@ -91,7 +100,10 @@ function TransactionCard({
       <Tooltip content={t("actions.edit")}>
         <button
           type="button"
-          onClick={onEdit}
+          onClick={(e) => {
+            e.stopPropagation();
+            onEdit();
+          }}
           className="btn btn-ghost btn-sm btn-square"
           aria-label={t("actions.edit")}
         >
@@ -101,7 +113,10 @@ function TransactionCard({
       <Tooltip content={t("actions.delete", { name: transaction.title })}>
         <button
           type="button"
-          onClick={onDelete}
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete();
+          }}
           className="btn btn-ghost btn-sm btn-square text-error"
           aria-label={t("actions.delete", { name: transaction.title })}
         >
@@ -113,7 +128,10 @@ function TransactionCard({
 
   if (isGrid) {
     return (
-      <li className="border-base-300 bg-base-100 flex flex-col gap-3 rounded-lg border p-3">
+      <li
+        onClick={onOpen}
+        className="border-base-300 bg-base-100 hover:border-primary flex cursor-pointer flex-col gap-3 rounded-lg border p-3 transition-colors"
+      >
         {iconAndText}
         <div className="border-base-200 flex items-center gap-2 border-t pt-2">
           {amount}
@@ -124,7 +142,10 @@ function TransactionCard({
   }
 
   return (
-    <li className="border-base-300 bg-base-100 flex items-center gap-3 rounded-lg border p-3">
+    <li
+      onClick={onOpen}
+      className="border-base-300 bg-base-100 hover:border-primary flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors"
+    >
       {iconAndText}
       {amount}
       {actions}
@@ -150,6 +171,9 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
     const viewMode = useViewModeStore((s) => s.mode);
     const modalRef = useRef<HTMLDialogElement>(null);
     const [editing, setEditing] = useState<Transaction | null>(null);
+    const detailModalRef = useRef<HTMLDialogElement>(null);
+    const [viewing, setViewing] = useState<Transaction | null>(null);
+    const [detailModalKey, setDetailModalKey] = useState<number | null>(null);
     // null = no open pending. A plain boolean ref to skip the mount run would
     // break under StrictMode's dev-only double-invoke of mount effects (the
     // ref flips on the first pass, so the duplicate pass reopens the modal
@@ -160,6 +184,11 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
       if (modalKey === null) return;
       modalRef.current?.showModal();
     }, [modalKey]);
+
+    useEffect(() => {
+      if (detailModalKey === null) return;
+      detailModalRef.current?.showModal();
+    }, [detailModalKey]);
 
     const selectedAmountRange = AMOUNT_RANGES.find((r) => r.key === amountRange);
 
@@ -188,6 +217,11 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
     function openEdit(tr: Transaction) {
       setEditing(tr);
       setModalKey((k) => (k ?? 0) + 1);
+    }
+
+    function openDetail(tr: Transaction) {
+      setViewing(tr);
+      setDetailModalKey((k) => (k ?? 0) + 1);
     }
 
     const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / pageSize));
@@ -298,6 +332,7 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
                 key={tr.id}
                 transaction={tr}
                 view={viewMode}
+                onOpen={() => openDetail(tr)}
                 onEdit={() => openEdit(tr)}
                 onDelete={() =>
                   confirm({
@@ -328,6 +363,11 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
         />
 
         <AddTransactionModal key={modalKey ?? 0} ref={modalRef} editing={editing} />
+        <TransactionDetailModal
+          key={`detail-${detailModalKey ?? 0}`}
+          ref={detailModalRef}
+          transaction={viewing}
+        />
       </div>
     );
   },

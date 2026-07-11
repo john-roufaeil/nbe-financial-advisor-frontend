@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { LogOut, User } from "lucide-react";
 import { PersonalDataSections } from "@/components/data/PersonalDataSections";
 import { PageBanner } from "@/components/shared/PageBanner";
+import { PreferencesMenu } from "@/components/shared/PreferencesMenu";
 import { useAuthStore } from "@/store/use-auth-store";
 import { usePageTitle } from "@/lib/use-page-title";
 import * as authApi from "@/api/auth";
@@ -29,14 +30,17 @@ export default function Profile() {
         subtitle={t("nav.profileSubtitle")}
         icon={User}
         actions={
-          <button
-            type="button"
-            onClick={handleSignOut}
-            className="btn btn-outline btn-error btn-sm bg-base-200 hover:bg-error gap-2"
-          >
-            <LogOut className="size-4" />
-            {t("settings.signOut")}
-          </button>
+          <>
+            <PreferencesMenu />
+            <button
+              type="button"
+              onClick={handleSignOut}
+              className="btn btn-outline btn-error btn-sm bg-base-200 hover:bg-error gap-2"
+            >
+              <LogOut className="size-4" />
+              {t("settings.signOut")}
+            </button>
+          </>
         }
       />
 

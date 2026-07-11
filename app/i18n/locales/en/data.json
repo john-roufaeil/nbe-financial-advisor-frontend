@@ -79,6 +79,10 @@
       "add": "Add Transaction",
       "name": "Name",
       "namePlaceholder": "e.g. Carrefour Market",
+      "account": "Account",
+      "accountPlaceholder": "Select an account",
+      "addNewAccount": "+ Add new account",
+      "noAccounts": "No accounts linked yet. Add one to record a transaction.",
       "category": "Category",
       "amount": "Amount",
       "amountPlaceholder": "0.00",
@@ -86,7 +90,42 @@
       "errors": {
         "nameRequired": "Enter a name for this transaction.",
         "nameTooLong": "Name must be 20 characters or fewer.",
-        "amountInvalid": "Enter an amount greater than 0."
+        "amountInvalid": "Enter an amount greater than 0.",
+        "accountRequired": "Select an account."
+      }
+    },
+    "addAccount": {
+      "title": "Add Bank Account",
+      "add": "Add Bank Account",
+      "accountType": "Account type",
+      "accountTypes": {
+        "checking": "Checking",
+        "savings": "Savings",
+        "salary": "Salary",
+        "business": "Business"
+      },
+      "currency": "Currency",
+      "bank": "Bank",
+      "bankPlaceholder": "Select a bank",
+      "bankSearchPlaceholder": "Search banks...",
+      "addCustomBank": "Add \"{{name}}\" as a new bank",
+      "accountNumber": "Last 8 digits of account number",
+      "accountNumberConfirm": "Confirm account number",
+      "accountNumberPlaceholder": "12345678",
+      "initialBalance": "Initial balance",
+      "initialBalancePlaceholder": "0.00",
+      "errors": {
+        "bankRequired": "Select or add a bank.",
+        "accountNumberInvalid": "Enter exactly 8 digits.",
+        "accountNumberMismatch": "Account numbers don't match.",
+        "balanceInvalid": "Enter a valid balance."
+      }
+    },
+    "editAccount": {
+      "title": "Edit Bank Account",
+      "balance": "Current balance",
+      "errors": {
+        "balanceInvalid": "Enter a valid balance."
       }
     },
     "addDocument": {
@@ -113,6 +152,12 @@
       "uploadFailedTitle": "Upload failed",
       "uploadFailedGeneric": "We couldn't upload this file. Check your connection and try again with the file.",
       "uploadAgain": "Upload again",
+      "stepOf": "Step {{current}} of {{total}}",
+      "confirmAccountTitle": "Confirm the bank account",
+      "confirmAccountSubtitle": "Select which account this statement belongs to, or add a new one.",
+      "noAccountsYet": "You don't have any linked bank accounts yet.",
+      "addNewAccount": "Add a new bank account",
+      "confirmAccount": "Continue",
       "reviewTitle": "Review extracted transactions",
       "reviewSubtitle": "Edit anything that looks off, then approve to add these to your transactions.",
       "approve": "Approve & add to transactions",
@@ -125,6 +170,15 @@
       "transactionCount_few": "{{count}} transactions",
       "transactionCount_many": "{{count}} transactions",
       "transactionCount_other": "{{count}} transactions"
+    },
+    "transactionDetail": {
+      "title": "Transaction",
+      "amount": "Amount",
+      "category": "Category",
+      "date": "Date",
+      "type": "Type",
+      "account": "Bank account",
+      "accountUnknown": "No linked account"
     },
     "sections": {
       "errors": {

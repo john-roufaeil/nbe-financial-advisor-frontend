@@ -7,6 +7,7 @@
     "hideBalances": "Hide balances",
     "showBalances": "Show balances",
     "dataSource": {
+      "title": "Data source",
       "mock": "Mock data",
       "backend": "Live data"
     },

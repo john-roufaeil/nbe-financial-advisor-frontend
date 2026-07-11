@@ -107,6 +107,19 @@ export function useApproveDocument() {
   });
 }
 
+export function useConfirmDocumentAccount() {
+  const queryClient = useQueryClient();
+  const source = useDataSourceStore((s) => s.source);
+  return useMutation({
+    mutationFn: ({ id, accountId }: { id: string; accountId: string }) =>
+      impl(source).confirmDocumentAccount(id, accountId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: documentKeys.all });
+    },
+    onError: (error) => toastApiError(error),
+  });
+}
+
 export function useDeleteDocument() {
   const queryClient = useQueryClient();
   const source = useDataSourceStore((s) => s.source);

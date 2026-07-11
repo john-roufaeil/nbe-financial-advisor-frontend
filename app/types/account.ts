@@ -10,3 +10,23 @@ export interface BankAccount {
   current_balance: string | number;
   created_at: string;
 }
+
+export const ACCOUNT_TYPES = ["checking", "savings", "salary", "business"] as const;
+export type AccountType = (typeof ACCOUNT_TYPES)[number];
+
+export const CURRENCIES = ["EGP", "SAR", "EUR", "USD"] as const;
+export type Currency = (typeof CURRENCIES)[number];
+
+/** Body for POST /accounts. `account_number` is the last 8 digits, entered twice client-side to confirm. */
+export interface CreateBankAccountBody {
+  bank_name: string;
+  account_type: AccountType;
+  currency: Currency;
+  account_number: string;
+  initial_balance: string;
+}
+
+/** Body for PATCH /accounts/:id — balance is the only editable field. */
+export interface UpdateBankAccountBody {
+  current_balance: string;
+}

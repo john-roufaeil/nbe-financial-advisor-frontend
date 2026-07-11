@@ -42,21 +42,25 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
     const [rejected, setRejected] = useState<string[]>([]);
     const [isDragging, setIsDragging] = useState(false);
 
+    // Only one statement can be staged at a time — the first accepted file
+    // wins and replaces whatever was staged before; anything else picked or
+    // dropped alongside it is reported as skipped.
     function handleFiles(fileList: FileList | null) {
       if (!fileList) return;
-      const nextStaged: StagedFile[] = [];
+      const files = Array.from(fileList);
       const nextRejected: string[] = [];
-      for (const file of Array.from(fileList)) {
+      let nextStaged: StagedFile | undefined;
+      for (const file of files) {
         const type = inferDocumentType(file);
-        if (type) nextStaged.push({ file, type });
+        if (type && !nextStaged) nextStaged = { file, type };
         else nextRejected.push(file.name);
       }
-      setStaged((s) => [...s, ...nextStaged]);
+      setStaged(nextStaged ? [nextStaged] : []);
       setRejected(nextRejected);
     }
 
-    function removeStaged(index: number) {
-      setStaged((s) => s.filter((_, i) => i !== index));
+    function removeStaged() {
+      setStaged([]);
     }
 
     function reset() {
@@ -140,7 +144,6 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
             </span>
             <input
               type="file"
-              multiple
               accept={DOCUMENT_UPLOAD_ACCEPT}
               onChange={(e) => handleFiles(e.target.files)}
               className="hidden"
@@ -173,7 +176,7 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
                     >
                       <button
                         type="button"
-                        onClick={() => removeStaged(i)}
+                        onClick={() => removeStaged()}
                         className="btn btn-ghost btn-xs btn-square"
                         aria-label={t("actions.delete", { name: file.name })}
                       >

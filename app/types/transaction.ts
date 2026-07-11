@@ -5,6 +5,8 @@ export interface Transaction {
   category: string;
   type: "income" | "expense";
   amount: number;
+  /** The linked bank account this transaction belongs to. Not patchable once created. */
+  accountId?: string;
 }
 
 export const TRANSACTION_CATEGORIES = [

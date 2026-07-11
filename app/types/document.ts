@@ -36,6 +36,10 @@ export interface DocumentRecord {
   bankName?: string;
   /** The bank account the statement was filed under, when the backend resolved one. */
   accountId?: string;
+  /** Last 4 digits OCR read off the statement, used to pre-select a matching account in step 1. */
+  perceivedAccountNumber?: string;
+  /** Whether step 1 (confirm the bank account) is done. Gates the 2-step review flow. */
+  accountConfirmed?: boolean;
   /** Whether extracted rows can be edited/deleted in the current data source. */
   canEditTransactions?: boolean;
   /** Whether a new row can be added to this statement (false against the real API). */

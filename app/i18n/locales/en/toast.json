@@ -11,9 +11,15 @@
     "goalCreated": "Goal added",
     "goalUpdated": "Goal updated",
     "goalDeleted": "Goal deleted",
+    "accountCreated": "Bank account added",
+    "accountUpdated": "Bank account updated",
+    "accountDeleted": "Bank account deleted",
     "genericError": "Something went wrong. Please try again.",
     "emailTaken": "This email is already registered.",
     "budgetCreated": "Registration successful",
-    "budgetUpdated": "Plan updated"
+    "budgetUpdated": "Plan updated",
+    "timeFormatChanged": "Time format set to {{format}}",
+    "languageChanged": "Language set to {{language}}",
+    "dataSourceChanged": "Data source set to {{source}}"
   }
 }

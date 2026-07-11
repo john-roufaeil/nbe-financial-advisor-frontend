@@ -3,7 +3,8 @@
     "EGP": "EGP",
     "EGP_full": "Egyptian pounds",
     "USD": "USD",
-    "EUR": "EUR"
+    "EUR": "EUR",
+    "SAR": "SAR"
   },
   "units": {
     "b": "B",
