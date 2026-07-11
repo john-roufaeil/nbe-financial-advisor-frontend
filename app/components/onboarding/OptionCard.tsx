@@ -16,7 +16,7 @@ export function OptionCard({
       type="button"
       onClick={onClick}
       aria-pressed={selected}
-      className={`flex cursor-pointer items-start gap-2 rounded-lg border p-3 text-start transition-colors ${
+      className={`focus-visible:outline-primary/50 flex cursor-pointer items-start gap-2 rounded-md border p-3 text-start transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
         selected ? "border-primary bg-primary/10" : "border-base-300 hover:bg-base-200"
       }`}
     >

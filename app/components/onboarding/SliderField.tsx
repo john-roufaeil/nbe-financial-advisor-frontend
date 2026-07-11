@@ -53,6 +53,9 @@ export function SliderField({
           step={step}
           value={value}
           onChange={(e) => onChange(Number(e.target.value))}
+          // Scoped thumb-size override (daisyUI CSS var) so only this slider
+          // gets a larger touch-friendly thumb, not every `.range` in the app.
+          style={{ "--range-thumb-size": "1.75rem" } as React.CSSProperties}
           className="range range-primary range-sm w-full flex-1 cursor-grab active:cursor-grabbing"
         />
 

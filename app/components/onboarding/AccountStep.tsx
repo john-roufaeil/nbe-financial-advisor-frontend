@@ -93,13 +93,20 @@ export function AccountStep({
         </span>
         <input
           type="text"
+          id="account-name"
           className="input input-bordered w-full"
           maxLength={20}
+          aria-invalid={!!errors.name}
+          aria-describedby={errors.name ? "account-name-error" : undefined}
           {...register("name", {
             onChange: (e) => setField("name", e.target.value),
           })}
         />
-        {errors.name && <span className="text-error text-xs">{errors.name.message}</span>}
+        {errors.name && (
+          <span id="account-name-error" role="alert" className="text-error text-xs">
+            {errors.name.message}
+          </span>
+        )}
       </label>
       <label className="flex flex-col gap-1">
         <span className="label-text text-xs">
@@ -108,7 +115,12 @@ export function AccountStep({
         </span>
         <input
           type="email"
+          id="account-email"
           className={`input input-bordered w-full ${errors.email || emailTaken ? "input-error" : ""}`}
+          aria-invalid={!!errors.email || emailTaken}
+          aria-describedby={
+            errors.email || emailTaken ? "account-email-error" : undefined
+          }
           {...register("email", {
             onChange: (e) => {
               setField("email", e.target.value);
@@ -117,10 +129,12 @@ export function AccountStep({
           })}
         />
         {errors.email ? (
-          <span className="text-error text-xs">{errors.email.message}</span>
+          <span id="account-email-error" role="alert" className="text-error text-xs">
+            {errors.email.message}
+          </span>
         ) : (
           emailTaken && (
-            <span className="text-error text-xs">
+            <span id="account-email-error" role="alert" className="text-error text-xs">
               {t("onboarding.account.errors.emailTaken")}
             </span>
           )
@@ -132,16 +146,21 @@ export function AccountStep({
           <RequiredMark />
         </span>
         <PasswordInput
+          id="account-password"
           autoComplete="new-password"
           className="input input-bordered w-full"
+          aria-invalid={!!errors.password}
+          aria-describedby="account-password-hint"
           {...register("password", {
             onChange: (e) => onPasswordChange(e.target.value),
           })}
         />
         {errors.password ? (
-          <span className="text-error text-xs">{errors.password.message}</span>
+          <span id="account-password-hint" role="alert" className="text-error text-xs">
+            {errors.password.message}
+          </span>
         ) : (
-          <span className="text-base-content/50 text-xs">
+          <span id="account-password-hint" className="text-base-content/50 text-xs">
             {t("onboarding.account.passwordHint")}
           </span>
         )}
@@ -153,11 +172,14 @@ export function AccountStep({
           control={control}
           render={({ field }) => (
             <PhoneInput
+              id="account-phone"
               className="input input-bordered w-full"
               defaultCountry="EG"
               international
               value={field.value}
               onBlur={field.onBlur}
+              aria-invalid={!!errors.phone}
+              aria-describedby={errors.phone ? "account-phone-error" : undefined}
               onChange={(value) => {
                 const next = value ?? "";
                 field.onChange(next);
@@ -167,17 +189,24 @@ export function AccountStep({
           )}
         />
         {errors.phone && (
-          <span className="text-error text-xs">{errors.phone.message}</span>
+          <span id="account-phone-error" role="alert" className="text-error text-xs">
+            {errors.phone.message}
+          </span>
         )}
       </label>
       <div className="mt-1 flex items-start gap-3">
-        <input
-          id="consent-agree"
-          type="checkbox"
-          className="checkbox checkbox-primary checkbox-sm mt-0.5"
-          checked={agreed}
-          onChange={(e) => onAgreedChange(e.target.checked)}
-        />
+        <label
+          htmlFor="consent-agree"
+          className="flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center"
+        >
+          <input
+            id="consent-agree"
+            type="checkbox"
+            className="checkbox checkbox-primary checkbox-sm"
+            checked={agreed}
+            onChange={(e) => onAgreedChange(e.target.checked)}
+          />
+        </label>
         <p className="text-base-content/70 flex flex-wrap items-center gap-x-1 text-sm">
           <label htmlFor="consent-agree" className="cursor-pointer">
             {t("consent.agreePrefix")}
@@ -185,7 +214,7 @@ export function AccountStep({
           <button
             type="button"
             onClick={() => policyRef.current?.showModal()}
-            className="link hover:text-primary p-0 align-baseline text-sm"
+            className="link hover:text-primary cursor-pointer p-0 align-baseline text-sm"
           >
             {t("consent.termsLink")}
           </button>

@@ -223,21 +223,23 @@ export default function Onboarding() {
                   onClick={() => handleStepClick(i)}
                   disabled={isStepLocked(i)}
                   aria-label={t(`onboarding.${STEP_KEYS[i]}.title`)}
-                  className={`bg-base-300 h-1.5 flex-1 overflow-hidden rounded-full ${
+                  className={`flex min-h-11 flex-1 items-center py-1 ${
                     isStepLocked(i) ? "cursor-not-allowed" : "cursor-pointer"
                   }`}
                 >
-                  <div
-                    className={`bg-primary h-full rounded-full ease-out ${
-                      i === step || i === prevStep
-                        ? "transition-transform duration-500"
-                        : ""
-                    }`}
-                    style={{
-                      transform: i <= step ? "scaleX(1)" : "scaleX(0)",
-                      transformOrigin: isRtl ? "right" : "left",
-                    }}
-                  />
+                  <span className="bg-base-300 h-1.5 w-full overflow-hidden rounded-full">
+                    <div
+                      className={`bg-primary h-full rounded-full ease-out ${
+                        i === step || i === prevStep
+                          ? "transition-transform duration-500"
+                          : ""
+                      }`}
+                      style={{
+                        transform: i <= step ? "scaleX(1)" : "scaleX(0)",
+                        transformOrigin: isRtl ? "right" : "left",
+                      }}
+                    />
+                  </span>
                 </button>
               ))}
             </div>
@@ -331,7 +333,7 @@ export default function Onboarding() {
         {stepKey === "account" && (
           <Link
             to={`/${lang}/sign-in`}
-            className="link text-base-content/60 text-center text-sm"
+            className="text-base-content/60 btn btn-ghost text-center text-sm"
           >
             {t("onboarding.login")}
           </Link>

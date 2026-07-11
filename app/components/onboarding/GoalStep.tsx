@@ -76,7 +76,7 @@ export function GoalStep() {
               onClick={() =>
                 setField("goal_name", t(`onboarding.goal.suggestions.${key}`))
               }
-              className="btn btn-outline btn-xs cursor-pointer select-none"
+              className="btn btn-outline btn-sm cursor-pointer select-none"
             >
               {t(`onboarding.goal.suggestions.${key}`)}
             </button>
