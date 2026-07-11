@@ -12,7 +12,7 @@ export function ReplanFab() {
       aria-label={t("data.replan")}
     >
       <Bot className="size-4" />
-      <span className="hidden sm:inline">{t("data.replan")}</span>
+      <span>{t("data.replan")}</span>
     </Link>
   );
 }

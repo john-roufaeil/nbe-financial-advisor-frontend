@@ -1,5 +1,14 @@
-import { NavLink, Outlet, useParams, useLocation } from "react-router";
-import { LayoutDashboard, Bot, ArrowLeftRight, FileText, Menu, X } from "lucide-react";
+import { NavLink, Outlet, useParams, useLocation, Link } from "react-router";
+import {
+  LayoutDashboard,
+  Bot,
+  ArrowLeftRight,
+  FileText,
+  Menu,
+  X,
+  Database,
+  Cloud,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
@@ -9,6 +18,31 @@ import { useDrawerStore } from "@/store/use-drawer-store";
 import { useMe } from "@/queries/profile";
 import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { BalanceVisibilityToggle } from "@/components/shared/BalanceVisibilityToggle";
+import { LinkToggle } from "@/components/shared/LinkToggle";
+import { Tooltip } from "@/components/shared/Tooltip";
+import { useDataSourceStore } from "@/store/use-data-source-store";
+
+const DATA_SOURCE_OPTIONS = ["mock", "backend"] as const;
+
+function DataSourceToggle() {
+  const { t } = useTranslation();
+  const source = useDataSourceStore((s) => s.source);
+  const setSource = useDataSourceStore((s) => s.setSource);
+
+  return (
+    <LinkToggle
+      value={source}
+      options={DATA_SOURCE_OPTIONS}
+      labels={{
+        mock: t("dashboard.dataSource.mock"),
+        backend: t("dashboard.dataSource.backend"),
+      }}
+      icons={{ mock: Database, backend: Cloud }}
+      onChange={setSource}
+      aria-label={t("dashboard.dataSource.mock")}
+    />
+  );
+}
 
 export default function AppLayout() {
   const { lang } = useParams<{ lang: string }>();
@@ -50,19 +84,33 @@ export default function AppLayout() {
         {/* Main content surface — base-100 */}
         <div className="drawer-content bg-base-100 flex h-screen min-w-0 flex-col">
           <header className="navbar border-base-300 bg-base-200 min-h-14 shrink-0 border-b px-2 lg:hidden">
-            <button
-              className="btn btn-square btn-ghost"
-              onClick={toggle}
-              aria-label={t("nav.menu")}
+            <Tooltip content={t("nav.menu")} position="bottom">
+              <button
+                className="btn btn-square btn-ghost"
+                onClick={toggle}
+                aria-label={t("nav.menu")}
+              >
+                <Menu className="size-5" />
+              </button>
+            </Tooltip>
+            <Tooltip
+              content={t("nav.dashboard")}
+              position="bottom"
+              className="mx-auto w-1/2 sm:w-1/3"
             >
-              <Menu className="size-5" />
-            </button>
-            <img
-              src="/logo.webp"
-              alt={t("app.name")}
-              className="mx-auto h-8 w-auto px-2"
-            />
-            <BalanceVisibilityToggle />
+              <Link
+                to={`/${lang}/dashboard`}
+                onClick={close}
+                className="w-full px-2"
+                aria-label={t("nav.dashboard")}
+              >
+                <img
+                  src="/logo.webp"
+                  alt={t("app.name")}
+                  className="h-auto w-full max-w-40"
+                />
+              </Link>
+            </Tooltip>
           </header>
 
           <main className="min-h-0 flex-1 overflow-y-auto pt-3">
@@ -75,14 +123,37 @@ export default function AppLayout() {
           <label htmlFor="app-drawer" className="drawer-overlay" onClick={close} />
           <aside className="border-base-300 bg-base-200 flex h-screen w-72 flex-col border-e">
             <div className="border-base-300 relative flex h-16 shrink-0 items-center border-b px-4">
-              <button
-                className="btn btn-square btn-ghost absolute inset-y-0 start-2 my-auto lg:hidden"
-                onClick={close}
-                aria-label={t("nav.menu")}
+              <Tooltip
+                content={t("nav.menu")}
+                position="end"
+                className="absolute inset-y-0 inset-s-2 my-auto lg:hidden"
               >
-                <X className="size-5" />
-              </button>
-              <img src="/logo.webp" alt={t("app.name")} className="mx-auto h-9 w-auto" />
+                <button
+                  className="btn btn-square btn-ghost"
+                  onClick={close}
+                  aria-label={t("nav.menu")}
+                >
+                  <X className="size-5" />
+                </button>
+              </Tooltip>
+              <Tooltip
+                content={t("nav.dashboard")}
+                position="bottom"
+                className="mx-auto w-1/2"
+              >
+                <Link
+                  to={`/${lang}/dashboard`}
+                  onClick={close}
+                  className="w-full"
+                  aria-label={t("nav.dashboard")}
+                >
+                  <img
+                    src="/logo.webp"
+                    alt={t("app.name")}
+                    className="h-auto w-full max-w-50"
+                  />
+                </Link>
+              </Tooltip>
             </div>
 
             <nav className="flex flex-col gap-2 p-3">
@@ -110,11 +181,14 @@ export default function AppLayout() {
             )}
 
             <div className="border-base-300 flex shrink-0 flex-col gap-4 border-t p-4">
-              <div className="flex items-center gap-2">
-                <div className="min-w-0 flex-1">
-                  <LanguageSwitcher onSelect={close} />
+              <div className="flex w-full items-center gap-2">
+                <div className="flex w-full flex-col gap-2">
+                  <div className="flex min-w-0 items-center justify-between gap-2">
+                    <DataSourceToggle />
+                    <BalanceVisibilityToggle className="btn-square" />
+                    <LanguageSwitcher onSelect={close} />
+                  </div>
                 </div>
-                <BalanceVisibilityToggle className="btn-square" />
               </div>
               <NavLink
                 to={`/${lang}/profile`}

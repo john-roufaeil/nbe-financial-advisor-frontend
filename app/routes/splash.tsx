@@ -1,9 +1,16 @@
 import { Link, Navigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { Wallet, Target, Bot } from "lucide-react";
+import { AuthLayout } from "@/components/shared/AuthLayout";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { usePageTitle } from "@/lib/use-page-title";
+
+const FEATURES = [
+  { icon: Wallet, key: "track" },
+  { icon: Target, key: "goals" },
+  { icon: Bot, key: "advisor" },
+] as const;
 
 export default function Splash() {
   const { lang } = useParams<{ lang: string }>();
@@ -11,42 +18,54 @@ export default function Splash() {
   usePageTitle(t("splash.welcome"));
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const onboardingStarted = useOnboardingStore((s) => s.started);
-  const resetOnboarding = useOnboardingStore((s) => s.reset);
+  const begin = useOnboardingStore((s) => s.begin);
 
   if (isAuthenticated) return <Navigate to={`/${lang}/dashboard`} replace />;
 
   return (
-    <div className="bg-base-200 relative flex min-h-screen flex-col items-center justify-center gap-6 p-6">
-      <div className="absolute inset-e-4 top-4 w-28">
-        <LanguageSwitcher />
-      </div>
+    <AuthLayout>
+      <div className="mx-auto flex w-full flex-col gap-10">
+        <img src="/logo.webp" alt={t("app.name")} className="mx-auto w-1/2 max-w-50" />
 
-      <img src="/logo.webp" alt={t("app.name")} className="h-16 w-auto" />
+        <div className="flex flex-col gap-1.5 text-center">
+          <h1 className="text-2xl font-semibold text-balance">{t("splash.welcome")}</h1>
+          <p className="text-base-content/60">{t("splash.tagline")}</p>
+        </div>
 
-      <div className="mb-20 flex flex-col items-center gap-1.5 text-center">
-        <p className="text-base-content max-w-sm text-lg font-medium">
-          {t("splash.welcome")}
-        </p>
-        <p className="text-base-content/60 text- max-w-sm">{t("splash.tagline")}</p>
-      </div>
+        <ul className="grid w-full grid-cols-3 gap-3">
+          {FEATURES.map(({ icon: Icon, key }) => (
+            <li
+              key={key}
+              className="bg-primary/10 flex aspect-square flex-col items-center justify-center gap-2 rounded-xl p-2 text-center"
+            >
+              <span className="text-primary grid size-10 shrink-0 place-items-center rounded-lg">
+                <Icon className="size-6 lg:size-8" />
+              </span>
+              <p className="w-2/3 text-sm font-medium text-balance">
+                {t(`authPanel.features.${key}.title`)}
+              </p>
+            </li>
+          ))}
+        </ul>
 
-      <div className="flex w-full max-w-xs flex-col gap-3">
-        {onboardingStarted && (
-          <Link to={`/${lang}/onboarding`} className="btn btn-primary">
-            {t("splash.continue")}
+        <div className="flex w-full flex-col gap-3">
+          {onboardingStarted && (
+            <Link to={`/${lang}/onboarding`} className="btn btn-primary">
+              {t("splash.continue")}
+            </Link>
+          )}
+          <Link
+            to={`/${lang}/onboarding`}
+            onClick={() => begin()}
+            className={`btn ${onboardingStarted ? "btn-outline btn-primary" : "btn-primary"}`}
+          >
+            {t("splash.getStarted")}
           </Link>
-        )}
-        <Link
-          to={`/${lang}/consent`}
-          onClick={() => onboardingStarted && resetOnboarding()}
-          className={`btn ${onboardingStarted ? "btn-outline btn-primary" : "btn-primary"}`}
-        >
-          {t("splash.getStarted")}
-        </Link>
-        <Link to={`/${lang}/sign-in`} className="btn btn-outline">
-          {t("splash.login")}
-        </Link>
+          <Link to={`/${lang}/sign-in`} className="btn btn-ghost">
+            {t("splash.login")}
+          </Link>
+        </div>
       </div>
-    </div>
+    </AuthLayout>
   );
 }

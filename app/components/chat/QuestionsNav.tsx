@@ -63,7 +63,7 @@ export function QuestionsNav({
   return (
     <nav
       aria-label={t("chat.nav.questions")}
-      className="border-base-300 bg-base-100/90 absolute inset-e-3 top-1/2 z-10 hidden -translate-y-1/2 flex-col items-center gap-2.5 rounded-full border px-1.5 py-2.5 shadow-sm backdrop-blur sm:flex"
+      className="border-base-300 bg-base-100/90 absolute inset-e-6 top-1/2 z-10 hidden -translate-y-1/2 flex-col items-center gap-2.5 rounded-full border px-1.5 py-2.5 shadow-sm backdrop-blur sm:flex"
     >
       {hiddenCount > 0 && (
         <div className="group/dot relative flex shrink-0 cursor-default items-center justify-center rounded-full p-1.5">

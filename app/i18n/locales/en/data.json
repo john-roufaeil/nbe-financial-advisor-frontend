@@ -1,17 +1,51 @@
 {
   "data": {
     "transactions": "Transactions",
+    "transactionsSubtitle": "Track your income and expenses",
     "documents": "Bank Statements",
+    "documentsSubtitle": "Upload statements to auto-extract transactions",
     "search": "Search...",
     "noResults": "No results found.",
     "transactionsEmpty": "No transactions yet. Add one manually, or upload a bank statement and we'll pull them out for you.",
     "documentsEmpty": "No bank statements yet. Upload one and we'll extract the transactions automatically.",
+    "transactionsEmptyShort": "No transactions",
+    "documentsEmptyShort": "No bank statements",
+    "documentFallbackName": "Bank statement",
     "loading": "Loading...",
     "loadError": "Sorry, something went wrong. Please try again.",
     "retry": "Retry",
-    "replan": "Ask advisor to re-plan",
+    "replan": "Chat with advisor",
     "dateFrom": "From",
     "dateTo": "To",
+    "clearFilters": "Clear filters",
+    "category": "Category",
+    "allCategories": "All categories",
+    "categories": {
+      "Groceries": "Groceries",
+      "Dining": "Dining",
+      "Transport": "Transport",
+      "Utilities": "Utilities",
+      "Shopping": "Shopping",
+      "Health": "Health",
+      "Income": "Income",
+      "Rent": "Rent",
+      "Savings": "Savings",
+      "Transportation": "Transportation",
+      "Entertainment": "Entertainment"
+    },
+    "filtersLabel": "Filters",
+    "amountRange": "Amount range",
+    "amountRanges": {
+      "any": "Any amount",
+      "under500": "Under 500",
+      "500to1000": "500 – 1,000",
+      "1000to5000": "1,000 – 5,000",
+      "over5000": "Over 5,000"
+    },
+    "sort": {
+      "dateAsc": "Oldest first",
+      "dateDesc": "Newest first"
+    },
     "filters": {
       "all": "All",
       "income": "Income",
@@ -23,16 +57,37 @@
     "pagination": {
       "prev": "Previous",
       "next": "Next",
-      "page": "Page {{page}} of {{totalPages}}"
+      "page": "Page {{page}} of {{totalPages}}",
+      "goToPage": "Go to page {{page}}",
+      "totalTransactions_zero": "No transactions",
+      "totalTransactions_one": "{{count}} transaction",
+      "totalTransactions_two": "{{count}} transactions",
+      "totalTransactions_few": "{{count}} transactions",
+      "totalTransactions_many": "{{count}} transactions",
+      "totalTransactions_other": "{{count}} transactions",
+      "totalDocuments_zero": "No bank statements",
+      "totalDocuments_one": "{{count}} bank statement",
+      "totalDocuments_two": "{{count}} bank statements",
+      "totalDocuments_few": "{{count}} bank statements",
+      "totalDocuments_many": "{{count}} bank statements",
+      "totalDocuments_other": "{{count}} bank statements",
+      "perPage": "{{count}} / page"
     },
     "addTransaction": {
       "title": "Add Transaction",
       "editTitle": "Edit Transaction",
       "add": "Add Transaction",
       "name": "Name",
+      "namePlaceholder": "e.g. Carrefour Market",
       "category": "Category",
       "amount": "Amount",
-      "date": "Date"
+      "amountPlaceholder": "0.00",
+      "date": "Date",
+      "errors": {
+        "nameRequired": "Enter a name for this transaction.",
+        "nameTooLong": "Name must be 20 characters or fewer.",
+        "amountInvalid": "Enter an amount greater than 0."
+      }
     },
     "addDocument": {
       "title": "Add Bank Statement",
@@ -55,17 +110,31 @@
       "failedTitle": "Processing failed",
       "documentFailedGeneric": "We couldn't process this file. It may be unreadable or in an unsupported format.",
       "retry": "Retry",
+      "uploadFailedTitle": "Upload failed",
+      "uploadFailedGeneric": "We couldn't upload this file. Check your connection and try again with the file.",
+      "uploadAgain": "Upload again",
       "reviewTitle": "Review extracted transactions",
       "reviewSubtitle": "Edit anything that looks off, then approve to add these to your transactions.",
       "approve": "Approve & add to transactions",
       "approved": "Added to your transactions",
-      "noTransactions": "No transactions found in this bank statement."
+      "noTransactions": "No transactions found in this bank statement.",
+      "addTransaction": "Add a transaction",
+      "transactionCount_zero": "No transactions",
+      "transactionCount_one": "{{count}} transaction",
+      "transactionCount_two": "{{count}} transactions",
+      "transactionCount_few": "{{count}} transactions",
+      "transactionCount_many": "{{count}} transactions",
+      "transactionCount_other": "{{count}} transactions"
     },
     "sections": {
+      "errors": {
+        "phoneInvalid": "Enter a valid phone number."
+      },
       "profile": {
         "title": "Profile",
         "fields": {
           "fullName": "Full name",
+          "fullNamePlaceholder": "e.g. Amina El-Sayed",
           "id": "User ID",
           "dob": "Date of birth",
           "nationalId": "National ID"
@@ -75,15 +144,8 @@
         "title": "Contact",
         "fields": {
           "email": "Email",
-          "phone": "Phone"
-        }
-      },
-      "address": {
-        "title": "Address",
-        "fields": {
-          "country": "Country",
-          "city": "City",
-          "addressLine": "Street address"
+          "phone": "Phone",
+          "phonePlaceholder": "e.g. 01001234567"
         }
       },
       "financial": {
@@ -91,11 +153,25 @@
         "fields": {
           "employmentStatus": "Employment status",
           "monthlyIncome": "Monthly income",
-          "incomeBracket": "Income bracket",
+          "monthlyIncomePlaceholder": "e.g. 5000.00",
           "incomeSteadiness": "Income steadiness",
           "riskTolerance": "Risk tolerance"
         }
+      },
+      "accounts": {
+        "title": "Bank accounts",
+        "empty": "No linked bank accounts yet.",
+        "error": "Couldn't load your bank accounts. Please try again.",
+        "inactive": "Inactive"
+      },
+      "preferences": {
+        "title": "Preferences"
       }
+    },
+    "view": {
+      "toggleLabel": "View mode",
+      "list": "List view",
+      "grid": "Grid view"
     }
   }
 }

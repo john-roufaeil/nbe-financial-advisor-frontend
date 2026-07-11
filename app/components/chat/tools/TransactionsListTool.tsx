@@ -67,7 +67,8 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{tx.title}</p>
                 <p className="text-base-content/50 text-xs">
-                  {tx.category} · {formatDate(tx.datetime)}
+                  {t(`data.categories.${tx.category}`, tx.category)} ·{" "}
+                  {formatDate(tx.datetime)}
                 </p>
               </div>
               <Money
@@ -75,9 +76,9 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
               >
                 <span dir="ltr">
                   {isIncome ? "+" : "-"}
-                  {tx.amount.toLocaleString()}{" "}
-                  {t(`currency.${data.currency}`, data.currency)}
-                </span>
+                  {tx.amount.toLocaleString()}
+                </span>{" "}
+                {t(`currency.${data.currency}`, data.currency)}
               </Money>
             </li>
           );

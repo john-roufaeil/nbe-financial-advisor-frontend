@@ -1,47 +1,58 @@
 import { useEffect, useRef } from "react";
-import { useSearchParams } from "react-router";
+import { useLocation } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Plus } from "lucide-react";
+import { ArrowLeftRight, Plus } from "lucide-react";
 import {
   TransactionsTab,
   type TransactionsTabHandle,
 } from "@/components/data/TransactionsTab";
 import { ReplanFab } from "@/components/data/ReplanFab";
+import { PageBanner } from "@/components/shared/PageBanner";
 import { usePageTitle } from "@/lib/use-page-title";
 
 export default function Transactions() {
   const { t } = useTranslation();
   usePageTitle(t("data.transactions"));
   const tabRef = useRef<TransactionsTabHandle>(null);
-  const [searchParams, setSearchParams] = useSearchParams();
+  const location = useLocation();
+  const consumedOpenAdd = useRef(false);
 
   useEffect(() => {
-    if (searchParams.get("add")) {
+    // Guard against firing twice for the same mount (e.g. dev double-effects)
+    // and against a stray re-render seeing the not-yet-cleared state again.
+    if (consumedOpenAdd.current) return;
+    if ((location.state as { openAdd?: boolean } | null)?.openAdd) {
+      consumedOpenAdd.current = true;
       tabRef.current?.openAdd();
-      setSearchParams((prev) => {
-        const next = new URLSearchParams(prev);
-        next.delete("add");
-        return next;
-      });
+      // Clear via the raw history API (not react-router's navigate) so the
+      // one-shot intent is wiped from this entry synchronously and
+      // unconditionally — it doesn't depend on the router's navigation queue,
+      // so it can't be skipped or lingered on, which would otherwise reopen
+      // the modal on a later back/forward navigation to this entry.
+      window.history.replaceState(null, "", location.pathname);
     }
-  }, []);
+  }, [location]);
 
   return (
-    <div className="mx-auto flex w-full max-w-5xl flex-col gap-4 p-4 md:p-6">
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-xl font-semibold">{t("data.transactions")}</h1>
-        <div className="flex items-center gap-2">
-          <button
-            type="button"
-            onClick={() => tabRef.current?.openAdd()}
-            className="btn btn-primary btn-sm gap-2"
-          >
-            <Plus className="size-4" />
-            <span className="hidden sm:inline">{t("data.addTransaction.add")}</span>
-          </button>
-          <ReplanFab />
-        </div>
-      </div>
+    <div className="mx-auto flex min-h-full w-full max-w-5xl flex-col gap-4 p-4 md:p-6">
+      <PageBanner
+        title={t("data.transactions")}
+        subtitle={t("data.transactionsSubtitle")}
+        icon={ArrowLeftRight}
+        actions={
+          <>
+            <button
+              type="button"
+              onClick={() => tabRef.current?.openAdd()}
+              className="btn btn-sm text-primary bg-primary-content hover:bg-primary-content/90 gap-2 border-none shadow-sm"
+            >
+              <Plus className="size-4" />
+              <span>{t("data.addTransaction.add")}</span>
+            </button>
+            <ReplanFab />
+          </>
+        }
+      />
 
       <TransactionsTab ref={tabRef} />
     </div>

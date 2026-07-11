@@ -14,6 +14,10 @@ import {
   type DocumentType,
 } from "@/types/document";
 import { useUploadDocuments } from "@/queries/documents";
+import { toastError } from "@/lib/toast";
+import { Button } from "@/components/shared/Button";
+import { BaseModal } from "@/components/shared/BaseModal";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 const TYPE_ICONS: Record<DocumentType, typeof FileText> = {
   pdf: FileText,
@@ -60,7 +64,7 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
       setRejected([]);
     }
 
-    function handleUpload() {
+    async function handleUpload() {
       if (staged.length === 0) return;
       const documents = staged.map(({ file, type }) => ({
         name: file.name,
@@ -68,27 +72,52 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
         sizeKb: Math.max(1, Math.round(file.size / 1024)),
         file,
       }));
-      uploadDocuments.mutate(documents);
-      reset();
-      closeDialog(ref);
+
+      try {
+        // Each file is its own request, so a batch can partially succeed —
+        // a byte-identical re-upload is rejected while its siblings land.
+        const uploaded = await uploadDocuments.mutateAsync(documents);
+        if (uploaded.length < documents.length) {
+          toastError("toast.documentsPartiallyUploaded");
+        }
+        reset();
+        closeDialog(ref);
+      } catch {
+        // Every file failed. The mutation's onError toasted; stay open with the
+        // staged list intact so the user can fix the selection and retry.
+      }
     }
 
     return (
-      <dialog ref={ref} className="modal">
-        <div className="modal-box relative flex flex-col gap-4">
-          <button
-            type="button"
-            onClick={() => {
-              reset();
-              closeDialog(ref);
-            }}
-            className="btn btn-ghost btn-sm btn-circle absolute end-2 top-2"
-            aria-label={t("actions.close")}
-          >
-            <X data-no-flip className="size-4" />
-          </button>
-          <h3 className="text-lg font-semibold">{t("data.addDocument.title")}</h3>
-
+      <BaseModal
+        ref={ref}
+        onClose={reset}
+        title={t("data.addDocument.title")}
+        actions={
+          <>
+            <Button
+              type="button"
+              disabled={staged.length === 0 || uploadDocuments.isPending}
+              loading={uploadDocuments.isPending}
+              onClick={handleUpload}
+              className="btn btn-primary"
+            >
+              {t("actions.upload")}
+            </Button>
+            <button
+              type="button"
+              onClick={() => {
+                reset();
+                closeDialog(ref);
+              }}
+              className="btn btn-ghost"
+            >
+              {t("actions.cancel")}
+            </button>
+          </>
+        }
+      >
+        <div className="flex flex-col gap-4">
           <label
             onDragOver={(e) => {
               e.preventDefault();
@@ -138,45 +167,26 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
                       <Icon className="size-4" />
                     </span>
                     <span className="min-w-0 flex-1 truncate text-sm">{file.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeStaged(i)}
-                      className="btn btn-ghost btn-xs btn-square shrink-0"
-                      aria-label={t("actions.delete", { name: file.name })}
+                    <Tooltip
+                      content={t("actions.delete", { name: file.name })}
+                      className="shrink-0"
                     >
-                      <X className="size-3.5" />
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => removeStaged(i)}
+                        className="btn btn-ghost btn-xs btn-square"
+                        aria-label={t("actions.delete", { name: file.name })}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </Tooltip>
                   </li>
                 );
               })}
             </ul>
           )}
-
-          <div className="modal-action">
-            <button
-              type="button"
-              onClick={() => {
-                reset();
-                closeDialog(ref);
-              }}
-              className="btn btn-ghost"
-            >
-              {t("actions.cancel")}
-            </button>
-            <button
-              type="button"
-              disabled={staged.length === 0}
-              onClick={handleUpload}
-              className="btn btn-primary"
-            >
-              {t("actions.upload")}
-            </button>
-          </div>
         </div>
-        <form method="dialog" className="modal-backdrop">
-          <button className="cursor-default">{t("actions.close")}</button>
-        </form>
-      </dialog>
+      </BaseModal>
     );
   },
 );

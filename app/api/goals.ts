@@ -1,28 +1,37 @@
 import { apiClient } from "@/api/client";
 import type { FinancialGoal } from "@/types/goal";
 
-interface RawGoalDashboard {
+interface RawSavingsProgress {
   goal?: {
     name?: string;
     target_amount?: string | number;
-    percentage_complete?: number;
+    months_remaining?: number;
   };
+  saved_so_far?: string | number;
+  percentage_complete?: number;
+  projected_completion_date?: string;
+  on_track?: boolean;
 }
 
 export async function getGoals(): Promise<FinancialGoal[]> {
-  const res = await apiClient.get<RawGoalDashboard>("/dashboard");
+  const res = await apiClient.get<RawSavingsProgress>("/budget/savings-progress");
   const data = res.data;
 
+  // Make sure the inner goal object exists with a valid name
   if (data.goal && data.goal.name) {
     const target = parseFloat(String(data.goal.target_amount ?? "")) || 0;
-    // Calculate current saved amount based on percentage and target
-    const current = ((data.goal.percentage_complete ?? 0) / 100) * target;
+    const duration = Number(data.goal.months_remaining) || 0;
+    const current = parseFloat(String(data.saved_so_far ?? "")) || 0;
+
     return [
       {
         id: "primary-goal",
         name: data.goal.name,
-        current: current,
         target: target,
+        duration: duration,
+        current: current,
+        percentageComplete: data.percentage_complete,
+        onTrack: data.on_track,
       },
     ];
   }
@@ -32,14 +41,14 @@ export async function getGoals(): Promise<FinancialGoal[]> {
 export async function createGoal(
   body: Omit<FinancialGoal, "id">,
 ): Promise<FinancialGoal> {
-  const patchData = {
+  await apiClient.patch("/budget", {
     goal: {
       name: body.name,
       target_amount: body.target,
-      target_months: 12, // Backend requires target_months
+      target_months: body.duration,
     },
-  };
-  await apiClient.patch("/dashboard/goal/", patchData);
+    changed_via: "dashboard",
+  });
   return { ...body, id: "primary-goal" };
 }
 
@@ -47,36 +56,25 @@ export async function updateGoal(
   id: string,
   patch: Omit<FinancialGoal, "id">,
 ): Promise<FinancialGoal> {
-  // We only support one goal, so we fetch the current to retain unaffected fields
-  const current = await getGoals();
-  const goal = current[0] || { name: "", current: 0, target: 0 };
-  const updatedName = patch.name ?? goal.name;
-  const updatedTarget = patch.target ?? goal.target;
-
-  const patchData = {
+  await apiClient.patch("/budget", {
     goal: {
-      name: updatedName,
-      target_amount: updatedTarget,
-      target_months: 12,
+      name: patch.name,
+      target_amount: patch.target,
+      target_months: patch.duration,
     },
-  };
-  await apiClient.patch("/dashboard/goal/", patchData);
-  return {
-    id: "primary-goal",
-    name: updatedName,
-    current: goal.current,
-    target: updatedTarget,
-  };
+    changed_via: "dashboard",
+  });
+
+  return { id, ...patch };
 }
 
 export async function deleteGoal(_id: string): Promise<void> {
-  // Clear out the single goal fields
-  const patchData = {
+  await apiClient.patch("/budget", {
     goal: {
       name: "",
       target_amount: 0,
-      target_months: 12,
+      target_months: 0,
     },
-  };
-  await apiClient.patch("/dashboard/goal/", patchData);
+    changed_via: "dashboard",
+  });
 }

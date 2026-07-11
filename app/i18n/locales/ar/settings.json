@@ -1,5 +1,25 @@
 {
   "settings": {
-    "signOut": "تسجيل الخروج"
+    "signOut": "تسجيل الخروج",
+    "language": "اللغة",
+    "languageNames": {
+      "en": "English",
+      "ar": "العربية"
+    },
+    "timeFormat": {
+      "label": "صيغة الوقت",
+      "12h": "12 ساعة (ص/م)",
+      "24h": "24 ساعة"
+    },
+    "accessibility": {
+      "menuLabel": "خيارات إمكانية الوصول",
+      "title": "إمكانية الوصول",
+      "close": "إغلاق",
+      "fontSize": "حجم الخط",
+      "increaseFontSize": "تكبير حجم الخط",
+      "decreaseFontSize": "تصغير حجم الخط",
+      "resetFontSize": "إعادة التعيين للوضع الافتراضي",
+      "highContrast": "تباين عالٍ"
+    }
   }
 }

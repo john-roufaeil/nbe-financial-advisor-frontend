@@ -18,20 +18,63 @@
       "vsLastMonth": "مقارنة بالشهر الماضي"
     },
     "goals": {
+      "goal": "الهدف",
       "title": "تقدم الأهداف",
+      "titleShort": "هدفك",
       "remaining": "متبقي {{amount}} {{currency}}",
-      "empty": "لا توجد أهداف بعد — أضف هدفًا للبدء.",
-      "editTitle": "تعديل الأهداف",
+      "empty": "لم يتم تحديد هدف بعد. أضف هدفك الآن لبدء التتبع.",
+      "emptyTitle": "لا يوجد هدف نشط",
+      "addYours": "أضف هدفك",
+      "editTitle": "تعديل الهدف",
       "name": "الاسم",
       "current": "المدخر",
       "target": "الهدف",
       "newNamePlaceholder": "مثال: تجديد المنزل",
-      "add": "إضافة هدف"
+      "add": "إضافة هدف",
+      "save": "حفظ الهدف",
+      "duration": "مدة (أشهر)",
+      "monthsPlaceholder": "أشهر",
+      "onTrack": "على المسار الصحيح",
+      "behindSchedule": "متأخر عن الجدول",
+      "projectedCompletion": "من المتوقع الانتهاء في {{date}}",
+      "errors": {
+        "nameRequired": "أدخل اسمًا لهذا الهدف.",
+        "nameTooLong": "يجب ألا يتجاوز الاسم 20 حرفًا.",
+        "targetInvalid": "أدخل مبلغًا مستهدفًا أكبر من 0.",
+        "durationInvalid": "أدخل مدة أكبر من 0."
+      },
+      "status": {
+        "reached": "تم التحقيق",
+        "next": "القادم",
+        "locked": "مقفل"
+      },
+      "onTrack": "على المسار الصحيح",
+      "offTrack": "خارج المسار",
+      "projectedCompletion": "الإتمام المتوقع: {{date}}"
     },
     "budget": {
       "title": "توزيع خطة الميزانية",
       "over": "تجاوز الميزانية",
-      "spent": "منفق"
+      "allocated": "مخصص",
+      "empty": "لا تحتوي هذه الخطة على فئات بعد.",
+      "editAllocations": "تعديل التوزيعات",
+      "allocationsNeedMore": "تحتاج إلى تخصيص {{amount}}٪ أخرى للمتابعة",
+      "allocationsOverAllocated": "تجاوز التخصيص بمقدار {{amount}}٪",
+      "errors": {
+        "percentageRange": "يجب أن يكون بين 0 و100 شاملاً."
+      },
+      "categoryNames": {
+        "needs": "الاحتياجات",
+        "wants": "الرغبات",
+        "savings": "المدخرات"
+      }
+    },
+    "noPlan": {
+      "title": "ليس لديك خطة بعد",
+      "description": "حدّد هدف ادخار ووزّع دخلك على الفئات. ستمتلئ لوحتك بمجرد قيامك بذلك.",
+      "benefitGoal": "تتبّع هدف الادخار",
+      "benefitBudget": "اعرف أين يذهب مالك",
+      "cta": "أنشئ خطة مع المستشار"
     }
   }
 }

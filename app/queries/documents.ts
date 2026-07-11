@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import * as documentsApi from "@/api/documents";
 import * as documentsMock from "@/mocks/documents";
 import type { DocumentFilters } from "@/api/documents";
@@ -23,6 +28,7 @@ export function useDocuments(filters: DocumentFilters) {
   return useQuery({
     queryKey: documentKeys.list(filters, source),
     queryFn: () => impl(source).getDocuments(filters),
+    placeholderData: keepPreviousData,
     refetchInterval: (query) => {
       const hasInFlight = query.state.data?.items?.some(
         (d) => d.status === "uploading" || d.status === "processing",
@@ -76,29 +82,22 @@ export function useRetryDocument() {
   });
 }
 
-export function useUpdateExtractedTransaction() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
-    mutationFn: ({
-      documentId,
-      transactionId,
-      patch,
-    }: {
-      documentId: string;
-      transactionId: string;
-      patch: Partial<Omit<ExtractedTransaction, "id">>;
-    }) => impl(source).updateExtractedTransaction(documentId, transactionId, patch),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: documentKeys.all }),
-    onError: (error) => toastApiError(error),
-  });
-}
-
+/**
+ * Extracted-row edits are kept purely client-side while a statement is under
+ * review (see DocumentDetailModal) — the only request this screen ever sends
+ * is the approve call below, with the user's final edited rows attached.
+ */
 export function useApproveDocument() {
   const queryClient = useQueryClient();
   const source = useDataSourceStore((s) => s.source);
   return useMutation({
-    mutationFn: (id: string) => impl(source).approveDocument(id),
+    mutationFn: ({
+      id,
+      transactions,
+    }: {
+      id: string;
+      transactions: ExtractedTransaction[];
+    }) => impl(source).approveDocument(id, transactions),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: documentKeys.all });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });

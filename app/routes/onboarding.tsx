@@ -1,8 +1,14 @@
 import { useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { useOnboardingStore } from "@/store/use-onboarding-store";
-import { useAuthStore } from "@/store/use-auth-store";
+import { ArrowLeft, ArrowRight, ChevronsRight, Check } from "lucide-react";
+import {
+  useOnboardingStore,
+  INITIAL_ONBOARDING_DATA,
+} from "@/store/use-onboarding-store";
+import { AuthLayout } from "@/components/shared/AuthLayout";
+import { Button } from "@/components/shared/Button";
+import { Tooltip } from "@/components/shared/Tooltip";
 import { AccountStep } from "@/components/onboarding/AccountStep";
 import { IncomeStep } from "@/components/onboarding/IncomeStep";
 import { GoalStep } from "@/components/onboarding/GoalStep";
@@ -12,12 +18,19 @@ import { useSignup } from "@/queries/auth";
 import { useUpdateProfile } from "@/queries/profile";
 import { useStarterTemplates, useCreateBudget } from "@/queries/budget";
 import { usePageTitle } from "@/lib/use-page-title";
+import { isEmailTakenError } from "@/lib/toast";
+import {
+  STEP_FIELDS,
+  isStepDirty,
+  isStepComplete,
+  type OptionalStepKey,
+} from "@/lib/onboarding-fields";
 
 const STEP_KEYS = ["account", "income", "goal", "template", "review"] as const;
 
 export default function Onboarding() {
-  const { step, totalSteps, next, back, reset, data } = useOnboardingStore();
-  const login = useAuthStore((s) => s.login);
+  const { step, totalSteps, next, back, goToStep, reset, data, setField } =
+    useOnboardingStore();
   const navigate = useNavigate();
   const { lang } = useParams<{ lang: string }>();
   const { t } = useTranslation();
@@ -29,165 +42,301 @@ export default function Onboarding() {
   // onboarding store (bank-adjacent app). Used solely for POST /auth/signup.
   const [password, setPassword] = useState("");
 
+  // Consent acknowledgement, merged into the account step. Kept in local state
+  // (not persisted) — a per-session acknowledgement gating signup.
+  const [agreed, setAgreed] = useState(false);
+
+  // Live zod-validity of the account step's fields (name/email/password/phone),
+  // reported up by AccountStep. Consent isn't part of that schema, so it's
+  // ANDed in separately below.
+  const [accountFieldsValid, setAccountFieldsValid] = useState(false);
+
+  // Set when signup fails because the email is already registered — surfaced
+  // as a field error on the account step, cleared as soon as the user edits
+  // the email again.
+  const [emailTaken, setEmailTaken] = useState(false);
+
   // Guards against double-submit while a step's async call is in flight. A ref
   // (not state) so it doesn't change how anything renders.
   const submittingRef = useRef(false);
 
+  // Every step's data is held locally until "Create plan" on the final step —
+  // no API calls fire before then. If a later call in that sequence fails
+  // after an earlier one already succeeded, retrying "Create plan" must not
+  // redo the calls that already went through (e.g. signup can't be repeated
+  // — the email is already registered), so completed steps are tracked here.
+  const completedRef = useRef({ signup: false, profile: false });
+
   const signup = useSignup();
   const updateProfile = useUpdateProfile();
   const createBudget = useCreateBudget();
+  const isSubmitting =
+    signup.isPending || updateProfile.isPending || createBudget.isPending;
   // Same query (cached) TemplateStep uses — lets the review step read the
   // selected template's allocations for the create-budget call.
   const { data: templates } = useStarterTemplates();
 
   const prevStepRef = useRef(step);
-  const direction = step >= prevStepRef.current ? 1 : -1;
+  const prevStep = prevStepRef.current;
+  const direction = step >= prevStep ? 1 : -1;
   prevStepRef.current = step;
   const isRtl = typeof document !== "undefined" && document.documentElement.dir === "rtl";
   const enterX = 16 * direction * (isRtl ? -1 : 1);
 
+  // Only the account step is hard-required (name, email, password, consent,
+  // and no unresolved "email already registered" conflict — the user must
+  // change the email before continuing). Every later step is "all or
+  // nothing": Skip always works, but Continue only enables once every field
+  // on that step is filled in, so a half-filled step can never be submitted.
+  const isAccountValid = accountFieldsValid && agreed && !emailTaken;
+
+  const optionalStepKey: OptionalStepKey | null =
+    stepKey === "income" || stepKey === "goal" || stepKey === "template" ? stepKey : null;
+  const stepIsComplete =
+    optionalStepKey !== null && isStepComplete(optionalStepKey, data);
+
   const canContinue =
     stepKey === "account"
-      ? data.name.trim().length > 0 &&
-        data.email.trim().length > 0 &&
-        password.length >= 8
-      : stepKey === "goal"
-        ? data.goal_name.trim().length > 0 &&
-          data.goal_target_amount.trim().length > 0 &&
-          data.goal_target_months.trim().length > 0
-        : stepKey === "template"
-          ? data.selected_template_key.length > 0
-          : true;
+      ? isAccountValid
+      : optionalStepKey !== null
+        ? stepIsComplete
+        : true;
+
+  // Can only jump to a step ahead of the current one if the account step
+  // (the one hard gate) has already been satisfied.
+  function isStepLocked(target: number) {
+    return target > 0 && !isAccountValid && step === 0;
+  }
+
+  function handleStepClick(target: number) {
+    if (isSubmitting || target === step || isStepLocked(target)) return;
+    goToStep(target);
+  }
+
+  // "Skip" always works on an optional step, even mid-fill — it resets that
+  // step's fields back to their defaults first, so the final submit's
+  // dirty-check sees a genuinely untouched step rather than a partial one.
+  function handleSkip() {
+    if (isSubmitting || optionalStepKey === null) return;
+    for (const field of STEP_FIELDS[optionalStepKey]) {
+      setField(field, INITIAL_ONBOARDING_DATA[field]);
+    }
+    next();
+  }
 
   async function handlePrimary() {
     if (submittingRef.current) return;
     submittingRef.current = true;
     try {
-      if (stepKey === "account") {
-        // Step 1 → POST /auth/signup. Password from LOCAL state only. Tokens are
-        // stored (useSignup.onSuccess) but isAuthenticated is NOT flipped here.
+      if (!isLast) {
+        // Steps 1-4 → no API calls. Everything is held in local/store state
+        // until "Create plan" on the final step.
+        next();
+        return;
+      }
+
+      // Final step → run signup, profile update, and budget creation in
+      // sequence, all triggered only by this click. If a call already
+      // succeeded on a prior attempt (partial failure + retry), it's not
+      // repeated — signup in particular can't run twice for the same email.
+      if (!completedRef.current.signup) {
         await signup.mutateAsync({
           name: data.name,
           email: data.email,
           password,
           phone: data.phone.trim() ? data.phone : undefined,
         });
-        next();
-      } else if (stepKey === "income") {
-        // Step 2 → PATCH /users/me with ONLY the step-2 fields.
+        completedRef.current.signup = true;
+      }
+
+      if (isStepDirty("income", data) && !completedRef.current.profile) {
         await updateProfile.mutateAsync({
           employment_status: data.employment_status,
           monthly_income: data.monthly_income,
-          income_bracket: data.income_bracket,
           income_steadiness: data.income_steadiness,
           dependents_count: data.dependents_count,
         });
-        next();
-      } else if (stepKey === "goal") {
-        // Step 3 → no API call; goal held in form state.
-        next();
-      } else if (stepKey === "template") {
-        // Step 4 → options loaded by TemplateStep; selection already in state.
-        next();
-      } else {
-        // Step 5 → POST /budget (allocations from the chosen template, sum 100),
-        // then flip isAuthenticated and go to the dashboard.
-        const template = templates?.find(
-          (tpl) => tpl.template_key === data.selected_template_key,
-        );
-        await createBudget.mutateAsync({
-          selected_template_key: data.selected_template_key,
-          goal: {
-            name: data.goal_name,
-            target_amount: Number(data.goal_target_amount),
-            target_months: Number(data.goal_target_months),
-          },
-          allocations: template?.allocations ?? [],
-        });
-        reset();
-        setPassword("");
-        login();
-        navigate(`/${lang}/dashboard`);
+        completedRef.current.profile = true;
       }
-    } catch {
+
+      // POST /budget (allocations from the chosen template, sum 100), then
+      // flip isAuthenticated and go to the dashboard. Falls back to the
+      // suggested (or first) template and a zeroed goal if the user skipped
+      // those steps — the backend requires both on every budget.
+      const fallbackTemplate =
+        templates?.find((tpl) => tpl.is_suggested) ?? templates?.[0];
+      const template =
+        templates?.find((tpl) => tpl.template_key === data.selected_template_key) ??
+        fallbackTemplate;
+      await createBudget.mutateAsync({
+        selected_template_key: template?.template_key ?? "",
+        goal: {
+          name: data.goal_name || t("onboarding.review.empty"),
+          target_amount: Number(data.goal_target_amount) || 0,
+          // Backend requires target_months >= 1 — 0 is invalid, so a skipped
+          // goal step defaults to 1 rather than sending an out-of-range value.
+          target_months: Number(data.goal_target_months) || 1,
+        },
+        allocations: template?.allocations ?? [],
+      });
+      reset();
+      setPassword("");
+      setAgreed(false);
+      completedRef.current = { signup: false, profile: false };
+      navigate(`/${lang}/sign-in`);
+    } catch (error) {
       // Writes (signup, profile, budget) must NOT fake success. The mutation's
       // onError already surfaced a toast; stay on the current step, don't advance.
+      // completedRef retains whichever calls already succeeded so a retry resumes.
+      // A signup-specific "email already registered" failure additionally sends
+      // the user back to the account step to fix the email.
+      if (!completedRef.current.signup && isEmailTakenError(error)) {
+        setEmailTaken(true);
+        goToStep(0);
+      }
     } finally {
       submittingRef.current = false;
     }
   }
 
   return (
-    <div className="bg-base-200 flex min-h-screen items-center justify-center p-6">
-      <div className="card bg-base-100 w-full max-w-md shadow-sm">
-        <div className="card-body gap-4">
-          <div
-            className="flex gap-1.5"
-            role="progressbar"
-            aria-valuenow={step + 1}
-            aria-valuemax={totalSteps}
-          >
-            {Array.from({ length: totalSteps }, (_, i) => (
-              <div
-                key={i}
-                className="bg-base-300 h-1.5 flex-1 overflow-hidden rounded-full"
-              >
-                <div
-                  className="bg-primary h-full rounded-full transition-transform duration-500 ease-out"
-                  style={{
-                    transform: i <= step ? "scaleX(1)" : "scaleX(0)",
-                    transformOrigin: isRtl ? "right" : "left",
-                  }}
-                />
-              </div>
-            ))}
-          </div>
+    <AuthLayout align="start">
+      <div className="flex flex-col gap-5">
+        <img
+          src="/logo.webp"
+          alt={t("app.name")}
+          className="mx-auto h-auto w-1/2 max-w-50"
+        />
 
-          <div
-            key={step}
-            style={{ "--step-enter-x": `${enterX}px` } as React.CSSProperties}
-            className="flex animate-[step-enter_300ms_ease-out] flex-col gap-4"
-          >
-            <div>
-              <h1 className="card-title">{t(`onboarding.${stepKey}.title`)}</h1>
-              <p className="text-base-content/60 mt-1 text-sm">
-                {t(`onboarding.${stepKey}.subtitle`)}
-              </p>
-            </div>
-            {stepKey === "account" ? (
-              <AccountStep password={password} onPasswordChange={setPassword} />
-            ) : stepKey === "income" ? (
-              <IncomeStep />
-            ) : stepKey === "goal" ? (
-              <GoalStep />
-            ) : stepKey === "template" ? (
-              <TemplateStep />
-            ) : (
-              <ReviewStep />
-            )}
-          </div>
-
-          <div className="mt-2 flex justify-between">
-            <button className="btn btn-ghost" disabled={step === 0} onClick={back}>
-              {t("actions.back")}
-            </button>
-            <button
-              className="btn btn-primary"
-              disabled={!canContinue}
-              onClick={handlePrimary}
+        <div className="card border-base-300 bg-base-100 border shadow-sm">
+          <div className="card-body gap-5 p-5 sm:p-6">
+            <div
+              className="flex gap-1.5"
+              role="progressbar"
+              aria-valuenow={step + 1}
+              aria-valuemax={totalSteps}
             >
-              {isLast ? t("onboarding.finish") : t("actions.continue")}
-            </button>
-          </div>
+              {Array.from({ length: totalSteps }, (_, i) => (
+                <button
+                  key={i}
+                  type="button"
+                  onClick={() => handleStepClick(i)}
+                  disabled={isStepLocked(i)}
+                  aria-label={t(`onboarding.${STEP_KEYS[i]}.title`)}
+                  className={`bg-base-300 h-1.5 flex-1 overflow-hidden rounded-full ${
+                    isStepLocked(i) ? "cursor-not-allowed" : "cursor-pointer"
+                  }`}
+                >
+                  <div
+                    className={`bg-primary h-full rounded-full ease-out ${
+                      i === step || i === prevStep
+                        ? "transition-transform duration-500"
+                        : ""
+                    }`}
+                    style={{
+                      transform: i <= step ? "scaleX(1)" : "scaleX(0)",
+                      transformOrigin: isRtl ? "right" : "left",
+                    }}
+                  />
+                </button>
+              ))}
+            </div>
 
+            <div
+              key={step}
+              style={{ "--step-enter-x": `${enterX}px` } as React.CSSProperties}
+              className="flex animate-[step-enter_300ms_ease-out_both] flex-col gap-4"
+            >
+              <div>
+                <h1 className="text-xl font-semibold">
+                  {t(`onboarding.${stepKey}.title`)}
+                </h1>
+                <p className="text-base-content/60 mt-1 text-sm">
+                  {t(`onboarding.${stepKey}.subtitle`)}
+                </p>
+              </div>
+              {stepKey === "account" ? (
+                <AccountStep
+                  password={password}
+                  onPasswordChange={setPassword}
+                  agreed={agreed}
+                  onAgreedChange={setAgreed}
+                  onValidityChange={setAccountFieldsValid}
+                  emailTaken={emailTaken}
+                  onEmailChange={() => setEmailTaken(false)}
+                />
+              ) : stepKey === "income" ? (
+                <IncomeStep />
+              ) : stepKey === "goal" ? (
+                <GoalStep />
+              ) : stepKey === "template" ? (
+                <TemplateStep />
+              ) : (
+                <ReviewStep />
+              )}
+            </div>
+
+            <div className="mt-1 flex items-center justify-between">
+              <button
+                className="btn btn-ghost gap-1.5"
+                disabled={isSubmitting}
+                onClick={() => (step === 0 ? navigate(`/${lang}`) : back())}
+              >
+                <ArrowLeft className="size-4" />
+                {t("actions.back")}
+              </button>
+              <div className="flex items-center gap-2">
+                {optionalStepKey !== null && optionalStepKey !== "template" && (
+                  <button
+                    type="button"
+                    className="btn btn-ghost gap-1.5"
+                    disabled={isSubmitting}
+                    onClick={handleSkip}
+                  >
+                    {t("actions.skip")}
+                    <ChevronsRight className="size-4" />
+                  </button>
+                )}
+                <Tooltip
+                  content={
+                    !canContinue && optionalStepKey !== null
+                      ? t("onboarding.errors.fillAllRequired")
+                      : ""
+                  }
+                >
+                  <Button
+                    className="btn btn-primary gap-1.5"
+                    disabled={!canContinue}
+                    loading={isSubmitting}
+                    onClick={handlePrimary}
+                  >
+                    {isLast ? (
+                      <>
+                        {t("onboarding.finish")}
+                        <Check data-no-flip className="size-4" />
+                      </>
+                    ) : (
+                      <>
+                        {t("actions.continue")}
+                        <ArrowRight className="size-4" />
+                      </>
+                    )}
+                  </Button>
+                </Tooltip>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {stepKey === "account" && (
           <Link
             to={`/${lang}/sign-in`}
             className="link text-base-content/60 text-center text-sm"
           >
             {t("onboarding.login")}
           </Link>
-        </div>
+        )}
       </div>
-    </div>
+    </AuthLayout>
   );
 }

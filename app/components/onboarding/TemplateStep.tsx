@@ -1,22 +1,31 @@
+import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { OptionCard } from "@/components/onboarding/OptionCard";
 import { useStarterTemplates } from "@/queries/budget";
+import { ListSkeleton, ErrorState } from "@/components/shared/QueryState";
 
 export function TemplateStep() {
   const { t } = useTranslation();
   const selected = useOnboardingStore((s) => s.data.selected_template_key);
   const setField = useOnboardingStore((s) => s.setField);
   // GET /budget/starter-templates via the data-source-aware query hook.
-  const { data: templates, isPending, isError } = useStarterTemplates();
+  const { data: templates, isPending, isError, refetch } = useStarterTemplates();
+
+  // Default to the first template once they load and nothing is selected yet.
+  useEffect(() => {
+    if (!selected && templates?.length) {
+      setField("selected_template_key", templates[0].template_key);
+    }
+  }, [selected, templates, setField]);
 
   if (isPending) {
-    return (
-      <p className="text-base-content/50 text-sm">{t("onboarding.template.loading")}</p>
-    );
+    return <ListSkeleton rows={3} />;
   }
   if (isError || !templates) {
-    return <p className="text-error text-sm">{t("onboarding.template.error")}</p>;
+    return (
+      <ErrorState message={t("onboarding.template.error")} onRetry={() => refetch()} />
+    );
   }
 
   return (

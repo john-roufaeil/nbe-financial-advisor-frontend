@@ -1,5 +1,25 @@
 {
   "settings": {
-    "signOut": "Sign Out"
+    "signOut": "Sign Out",
+    "language": "Language",
+    "languageNames": {
+      "en": "English",
+      "ar": "العربية"
+    },
+    "timeFormat": {
+      "label": "Time format",
+      "12h": "12h (am/pm)",
+      "24h": "24h"
+    },
+    "accessibility": {
+      "menuLabel": "Accessibility options",
+      "title": "Accessibility",
+      "close": "Close",
+      "fontSize": "Font size",
+      "increaseFontSize": "Increase font size",
+      "decreaseFontSize": "Decrease font size",
+      "resetFontSize": "Reset to default",
+      "highContrast": "High contrast"
+    }
   }
 }

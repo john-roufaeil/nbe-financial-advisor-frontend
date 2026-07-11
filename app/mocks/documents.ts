@@ -27,7 +27,7 @@ function generateExtractedTransactions(uploadDate: string): ExtractedTransaction
   }));
 }
 
-let documents: DocumentRecord[] = [
+const SEED_DOCS: DocumentRecord[] = [
   {
     id: "d1",
     name: "Bank Statement - June 2026.pdf",
@@ -105,8 +105,30 @@ let documents: DocumentRecord[] = [
   },
 ];
 
+let documents: DocumentRecord[] = SEED_DOCS.map((doc) => ({
+  ...doc,
+  extractedTransactions: generateExtractedTransactions(doc.uploadDate),
+}));
+
 function runProcessing(id: string) {
   setTimeout(() => {
+    // The upload itself can fail before processing ever starts — the file never
+    // lands, so recovery means picking the file again, not a retry.
+    const uploaded = Math.random() > 0.1;
+    if (!uploaded) {
+      documents = documents.map((d) =>
+        d.id === id
+          ? {
+              ...d,
+              status: "failed",
+              failedStage: "upload",
+              errorMessage: "uploadFailedGeneric",
+            }
+          : d,
+      );
+      return;
+    }
+
     documents = documents.map((d) => (d.id === id ? { ...d, status: "processing" } : d));
 
     setTimeout(() => {
@@ -120,11 +142,17 @@ function runProcessing(id: string) {
                 ...d,
                 status: "processed",
                 errorMessage: undefined,
+                failedStage: undefined,
                 bankName:
                   d.bankName ?? BANK_CODES[Math.floor(Math.random() * BANK_CODES.length)],
                 extractedTransactions: generateExtractedTransactions(d.uploadDate),
               }
-            : { ...d, status: "failed", errorMessage: "documentFailedGeneric" }
+            : {
+                ...d,
+                status: "failed",
+                failedStage: "processing",
+                errorMessage: "documentFailedGeneric",
+              }
           : d,
       );
     }, 1600);
@@ -135,12 +163,17 @@ export function getDocuments(filters: DocumentFilters): Promise<DocumentListResp
   const filtered = documents.filter((doc) => {
     const matchesType = !filters.type || doc.type === filters.type;
     const q = filters.q?.trim().toLowerCase();
-    const matchesSearch = !q || doc.name.toLowerCase().includes(q);
+    const matchesSearch = !q || (doc.name ?? "").toLowerCase().includes(q);
     const matchesDate =
       (!filters.from || doc.uploadDate >= filters.from) &&
       (!filters.to || doc.uploadDate <= filters.to);
     return matchesType && matchesSearch && matchesDate;
   });
+  filtered.sort((a, b) =>
+    filters.sort === "asc"
+      ? a.uploadDate.localeCompare(b.uploadDate)
+      : b.uploadDate.localeCompare(a.uploadDate),
+  );
   const offset = filters.offset ?? 0;
   const limit = filters.limit ?? filtered.length;
   return delay({ items: filtered.slice(offset, offset + limit), total: filtered.length });
@@ -149,7 +182,12 @@ export function getDocuments(filters: DocumentFilters): Promise<DocumentListResp
 export function getDocument(id: string): Promise<DocumentRecord> {
   const doc = documents.find((d) => d.id === id);
   if (!doc) return Promise.reject(new Error(`Document ${id} not found`));
-  return delay(doc, 150);
+  // Mock mode keeps the full review flow: rows stay editable and addable until
+  // the user approves, at which point they're committed and become read-only.
+  return delay(
+    { ...doc, canEditTransactions: !doc.approved, canAddTransactions: !doc.approved },
+    150,
+  );
 }
 
 export function uploadDocuments(
@@ -171,7 +209,9 @@ export function uploadDocuments(
 
 export function retryDocument(id: string): Promise<DocumentRecord> {
   documents = documents.map((d) =>
-    d.id === id ? { ...d, status: "uploading", errorMessage: undefined } : d,
+    d.id === id
+      ? { ...d, status: "uploading", errorMessage: undefined, failedStage: undefined }
+      : d,
   );
   runProcessing(id);
   const doc = documents.find((d) => d.id === id);
@@ -179,35 +219,19 @@ export function retryDocument(id: string): Promise<DocumentRecord> {
   return delay(doc);
 }
 
-export function updateExtractedTransaction(
-  documentId: string,
-  transactionId: string,
-  patch: Partial<Omit<ExtractedTransaction, "id">>,
-): Promise<ExtractedTransaction> {
-  documents = documents.map((d) =>
-    d.id === documentId
-      ? {
-          ...d,
-          extractedTransactions: d.extractedTransactions?.map((tx) =>
-            tx.id === transactionId ? { ...tx, ...patch } : tx,
-          ),
-        }
-      : d,
-  );
-  const updated = documents
-    .find((d) => d.id === documentId)
-    ?.extractedTransactions?.find((tx) => tx.id === transactionId);
-  if (!updated) return Promise.reject(new Error("Extracted transaction not found"));
-  return delay(updated, 150);
-}
-
+/**
+ * Rows are edited/added/removed purely client-side while under review (see
+ * DocumentDetailModal) — the edited list only reaches the mock store here,
+ * in one shot, when the user approves.
+ */
 export async function approveDocument(
   id: string,
+  transactions: ExtractedTransaction[],
 ): Promise<{ approvedAt: string; createdTransactionIds: string[] }> {
   const doc = documents.find((d) => d.id === id);
-  if (!doc?.extractedTransactions) throw new Error(`Document ${id} not found`);
+  if (!doc) throw new Error(`Document ${id} not found`);
   const created = await Promise.all(
-    doc.extractedTransactions.map((tx) =>
+    transactions.map((tx) =>
       createTransaction({
         datetime: tx.datetime,
         title: tx.title,
@@ -219,7 +243,14 @@ export async function approveDocument(
   );
   const approvedAt = new Date().toISOString();
   documents = documents.map((d) =>
-    d.id === id ? { ...d, approved: true, approvedAt: Date.now() } : d,
+    d.id === id
+      ? {
+          ...d,
+          approved: true,
+          approvedAt: Date.now(),
+          extractedTransactions: transactions,
+        }
+      : d,
   );
   return delay({ approvedAt, createdTransactionIds: created.map((c) => c.id) });
 }

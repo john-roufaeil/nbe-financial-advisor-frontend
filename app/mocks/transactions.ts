@@ -137,11 +137,21 @@ export function getTransactions(
     const date = tr.datetime.slice(0, 10);
     const matchesDate =
       (!filters.from || date >= filters.from) && (!filters.to || date <= filters.to);
-    return matchesType && matchesCategory && matchesSearch && matchesDate;
+    const matchesAmount =
+      (filters.minAmount === undefined || tr.amount >= filters.minAmount) &&
+      (filters.maxAmount === undefined || tr.amount <= filters.maxAmount);
+    return (
+      matchesType && matchesCategory && matchesSearch && matchesDate && matchesAmount
+    );
   });
+  const sorted = [...filtered].sort((a, b) =>
+    filters.sort === "asc"
+      ? a.datetime.localeCompare(b.datetime)
+      : b.datetime.localeCompare(a.datetime),
+  );
   const offset = filters.offset ?? 0;
-  const limit = filters.limit ?? filtered.length;
-  return delay({ items: filtered.slice(offset, offset + limit), total: filtered.length });
+  const limit = filters.limit ?? sorted.length;
+  return delay({ items: sorted.slice(offset, offset + limit), total: sorted.length });
 }
 
 export function createTransaction(body: Omit<Transaction, "id">): Promise<Transaction> {

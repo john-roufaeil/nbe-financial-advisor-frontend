@@ -25,22 +25,27 @@ import {
 import { useTranslation } from "react-i18next";
 import { chatToolComponents } from "@/components/chat/tools";
 import { QuestionsNav } from "@/components/chat/QuestionsNav";
+import { Tooltip } from "@/components/shared/Tooltip";
 import { useChatStore } from "@/store/use-chat-store";
 import { useSendChatMessage } from "@/lib/use-chat-runtime";
-
-function formatTime(date: Date, locale: string) {
-  return date.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit" });
-}
+import { useTimeFormatStore } from "@/store/use-time-format-store";
+import { formatTime } from "@/lib/format";
 
 function ComposerAttachment() {
+  const { t } = useTranslation();
   return (
     <AttachmentPrimitive.Root className="border-base-300 bg-base-100 flex items-center gap-2 rounded-lg border px-3 py-1.5 text-sm">
       <span className="max-w-40 truncate">
         <AttachmentPrimitive.Name />
       </span>
-      <AttachmentPrimitive.Remove className="btn btn-ghost btn-xs btn-square">
-        <X className="size-3" />
-      </AttachmentPrimitive.Remove>
+      <Tooltip content={t("actions.remove")}>
+        <AttachmentPrimitive.Remove
+          aria-label={t("actions.remove")}
+          className="btn btn-ghost btn-xs btn-square"
+        >
+          <X className="size-3" />
+        </AttachmentPrimitive.Remove>
+      </Tooltip>
     </AttachmentPrimitive.Root>
   );
 }
@@ -60,6 +65,7 @@ function MessageAttachmentChip({
 }
 
 function AssistantActionBar() {
+  const { t } = useTranslation();
   const feedback = useMessage((m) => m.metadata?.submittedFeedback?.type);
   return (
     <ActionBarPrimitive.Root
@@ -67,36 +73,48 @@ function AssistantActionBar() {
       autohide="never"
       className="text-base-content/50 flex items-center gap-1 pt-1"
     >
-      <ActionBarPrimitive.Copy className="btn btn-ghost btn-xs btn-square">
-        <MessagePrimitive.If copied={false}>
-          <Copy className="size-3.5" />
-        </MessagePrimitive.If>
-        <MessagePrimitive.If copied>
-          <Check className="text-success size-3.5" />
-        </MessagePrimitive.If>
-      </ActionBarPrimitive.Copy>
-      <ActionBarPrimitive.FeedbackPositive
-        className={`btn btn-ghost btn-xs btn-square ${feedback === "positive" ? "text-success" : ""}`}
-      >
-        <ThumbsUp
-          className={`size-3.5 ${feedback === "positive" ? "fill-current" : ""}`}
-        />
-      </ActionBarPrimitive.FeedbackPositive>
-      <ActionBarPrimitive.FeedbackNegative
-        className={`btn btn-ghost btn-xs btn-square ${feedback === "negative" ? "text-error" : ""}`}
-      >
-        <ThumbsDown
-          className={`size-3.5 ${feedback === "negative" ? "fill-current" : ""}`}
-        />
-      </ActionBarPrimitive.FeedbackNegative>
+      <Tooltip content={t("chat.copy")}>
+        <ActionBarPrimitive.Copy
+          aria-label={t("chat.copy")}
+          className="btn btn-ghost btn-xs btn-square"
+        >
+          <MessagePrimitive.If copied={false}>
+            <Copy className="size-3.5" />
+          </MessagePrimitive.If>
+          <MessagePrimitive.If copied>
+            <Check data-no-flip className="text-success size-3.5" />
+          </MessagePrimitive.If>
+        </ActionBarPrimitive.Copy>
+      </Tooltip>
+      <Tooltip content={t("chat.goodResponse")}>
+        <ActionBarPrimitive.FeedbackPositive
+          aria-label={t("chat.goodResponse")}
+          className={`btn btn-ghost btn-xs btn-square ${feedback === "positive" ? "text-success" : ""}`}
+        >
+          <ThumbsUp
+            className={`size-3.5 ${feedback === "positive" ? "fill-current" : ""}`}
+          />
+        </ActionBarPrimitive.FeedbackPositive>
+      </Tooltip>
+      <Tooltip content={t("chat.badResponse")}>
+        <ActionBarPrimitive.FeedbackNegative
+          aria-label={t("chat.badResponse")}
+          className={`btn btn-ghost btn-xs btn-square ${feedback === "negative" ? "text-error" : ""}`}
+        >
+          <ThumbsDown
+            className={`size-3.5 ${feedback === "negative" ? "fill-current" : ""}`}
+          />
+        </ActionBarPrimitive.FeedbackNegative>
+      </Tooltip>
     </ActionBarPrimitive.Root>
   );
 }
 
 function UserMessage() {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const id = useMessage((m) => m.id);
   const createdAt = useMessage((m) => m.createdAt);
+  const timeFormat = useTimeFormatStore((s) => s.format);
   return (
     <MessagePrimitive.Root id={`msg-${id}`} className="flex justify-end">
       <div className="animate-message-in flex max-w-[80%] min-w-0 flex-col items-end">
@@ -111,7 +129,7 @@ function UserMessage() {
           </div>
         </div>
         <span className="text-base-content/40 mt-1 px-1 text-[11px]">
-          {formatTime(createdAt, i18n.language)}
+          {formatTime(createdAt, timeFormat, t)}
         </span>
       </div>
     </MessagePrimitive.Root>
@@ -119,10 +137,11 @@ function UserMessage() {
 }
 
 function AssistantMessage() {
-  const { i18n } = useTranslation();
+  const { t } = useTranslation();
   const id = useMessage((m) => m.id);
   const createdAt = useMessage((m) => m.createdAt);
   const isLast = useMessage((m) => m.isLast);
+  const timeFormat = useTimeFormatStore((s) => s.format);
   return (
     <MessagePrimitive.Root id={`msg-${id}`} className="group">
       <MessagePrimitive.If hasContent>
@@ -137,7 +156,7 @@ function AssistantMessage() {
               />
             </div>
             <span className="text-base-content/40 mt-1 px-1 text-[11px]">
-              {formatTime(createdAt, i18n.language)}
+              {formatTime(createdAt, timeFormat, t)}
             </span>
             <div
               className={`grid w-full transition-[grid-template-rows] duration-200 ease-out ${
@@ -167,7 +186,7 @@ function EmptyState() {
   const { t } = useTranslation();
   return (
     <ThreadPrimitive.Empty>
-      <div className="mx-auto flex h-full w-full max-w-2xl flex-col items-center justify-center px-4 text-center">
+      <div className="animate-entry mx-auto flex h-full w-full max-w-2xl flex-col items-center justify-center px-4 text-center">
         <span className="bg-primary/10 text-primary grid size-14 place-items-center rounded-2xl">
           <Bot className="size-7" />
         </span>
@@ -267,32 +286,38 @@ export function ChatThread() {
 
         <QuestionsNav viewportRef={viewportRef} />
 
-        <div className="absolute end-3 bottom-3 z-10 flex flex-col gap-2">
-          <button
-            type="button"
-            disabled={atTop}
-            onClick={() => viewportRef.current?.scrollTo({ top: 0, behavior: "smooth" })}
-            className="btn btn-circle btn-sm border-base-300 bg-base-100 border shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
-            aria-label={t("chat.nav.top")}
-          >
-            <ChevronUp className="size-4" />
-          </button>
-          <button
-            type="button"
-            disabled={atBottom}
-            onClick={() => {
-              const el = viewportRef.current;
-              if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
-            }}
-            className="btn btn-circle btn-sm border-base-300 bg-base-100 border shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
-            aria-label={t("chat.nav.bottom")}
-          >
-            <ChevronDown className="size-4" />
-          </button>
+        <div className="absolute inset-e-6 bottom-3 z-10 flex flex-col gap-2">
+          <Tooltip content={t("chat.nav.top")} position="start">
+            <button
+              type="button"
+              disabled={atTop}
+              onClick={() =>
+                viewportRef.current?.scrollTo({ top: 0, behavior: "smooth" })
+              }
+              className="btn btn-circle btn-sm border-base-300 bg-base-100 border shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+              aria-label={t("chat.nav.top")}
+            >
+              <ChevronUp className="size-4" />
+            </button>
+          </Tooltip>
+          <Tooltip content={t("chat.nav.bottom")} position="start">
+            <button
+              type="button"
+              disabled={atBottom}
+              onClick={() => {
+                const el = viewportRef.current;
+                if (el) el.scrollTo({ top: el.scrollHeight, behavior: "smooth" });
+              }}
+              className="btn btn-circle btn-sm border-base-300 bg-base-100 border shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
+              aria-label={t("chat.nav.bottom")}
+            >
+              <ChevronDown className="size-4" />
+            </button>
+          </Tooltip>
         </div>
       </div>
 
-      <div className="bg-base-100">
+      <div className="bg-base-100 animate-entry">
         <ComposerPrimitive.AttachmentDropzone className="data-[dragging]:border-primary mx-auto w-full max-w-3xl rounded-2xl data-[dragging]:border-2 data-[dragging]:border-dashed">
           <ComposerPrimitive.Root className="flex flex-col gap-2 p-4">
             <div className="flex flex-wrap gap-2 empty:hidden">
@@ -301,39 +326,45 @@ export function ChatThread() {
               />
             </div>
             <div className="border-base-300 bg-base-200 focus-within:border-primary flex items-end gap-2 rounded-2xl border p-2">
-              <ComposerPrimitive.AddAttachment asChild>
-                <button
-                  type="button"
-                  className="btn btn-ghost btn-circle btn-sm shrink-0"
-                  aria-label={t("chat.attach")}
-                >
-                  <Paperclip className="size-5" />
-                </button>
-              </ComposerPrimitive.AddAttachment>
+              <Tooltip content={t("chat.attach")} className="shrink-0">
+                <ComposerPrimitive.AddAttachment asChild>
+                  <button
+                    type="button"
+                    className="btn btn-ghost btn-circle btn-sm"
+                    aria-label={t("chat.attach")}
+                  >
+                    <Paperclip className="size-5" />
+                  </button>
+                </ComposerPrimitive.AddAttachment>
+              </Tooltip>
               <ComposerPrimitive.Input
                 placeholder={t("chat.placeholder")}
                 rows={1}
                 className="max-h-40 min-h-9 flex-1 resize-none bg-transparent px-1 py-1.5 focus:outline-none"
               />
               <ThreadPrimitive.If running={false}>
-                <ComposerPrimitive.Send asChild>
-                  <button
-                    className="btn btn-primary btn-circle btn-sm shrink-0"
-                    aria-label={t("chat.send")}
-                  >
-                    <ArrowUp className="size-5" />
-                  </button>
-                </ComposerPrimitive.Send>
+                <Tooltip content={t("chat.send")} position="start" className="shrink-0">
+                  <ComposerPrimitive.Send asChild>
+                    <button
+                      className="btn btn-primary btn-circle btn-sm"
+                      aria-label={t("chat.send")}
+                    >
+                      <ArrowUp className="size-5" />
+                    </button>
+                  </ComposerPrimitive.Send>
+                </Tooltip>
               </ThreadPrimitive.If>
               <ThreadPrimitive.If running>
-                <ComposerPrimitive.Cancel asChild>
-                  <button
-                    className="btn btn-neutral btn-circle btn-sm shrink-0"
-                    aria-label={t("chat.stop")}
-                  >
-                    <Square className="size-4" />
-                  </button>
-                </ComposerPrimitive.Cancel>
+                <Tooltip content={t("chat.stop")} position="start" className="shrink-0">
+                  <ComposerPrimitive.Cancel asChild>
+                    <button
+                      className="btn btn-neutral btn-circle btn-sm"
+                      aria-label={t("chat.stop")}
+                    >
+                      <Square className="size-4" />
+                    </button>
+                  </ComposerPrimitive.Cancel>
+                </Tooltip>
               </ThreadPrimitive.If>
             </div>
           </ComposerPrimitive.Root>

@@ -2,7 +2,6 @@
 export interface UpdateProfileBody {
   employment_status?: string;
   monthly_income?: string;
-  income_bracket?: string;
   income_steadiness?: string;
   dependents_count?: string;
 }
@@ -15,7 +14,6 @@ export interface User {
   phone?: string;
   employment_status?: string;
   monthly_income?: string;
-  income_bracket?: string;
   income_steadiness?: string;
   dependents_count?: string;
 }

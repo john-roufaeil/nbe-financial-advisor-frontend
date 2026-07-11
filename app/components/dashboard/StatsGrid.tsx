@@ -5,6 +5,7 @@ import {
   PiggyBank,
   ArrowUp,
   ArrowDown,
+  Minus,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { DashboardStat } from "@/types/dashboard";
@@ -24,15 +25,23 @@ function StatCard({ stat, currency }: { stat: DashboardStat; currency: string })
       ? `${stat.value}%`
       : `${stat.value.toLocaleString()} ${t(`currency.${currency}`, currency)}`;
   const Icon = ICONS[stat.key];
+  const isFlat = stat.deltaPct === 0;
   const isUp = stat.deltaPct >= 0;
   const isGood = isUp ? stat.goodDirection === "up" : stat.goodDirection === "down";
-  const DeltaIcon = isUp ? ArrowUp : ArrowDown;
+  const DeltaIcon = isFlat ? Minus : isUp ? ArrowUp : ArrowDown;
+  const trendClass = isFlat
+    ? "bg-base-200 text-base-content/50"
+    : isGood
+      ? "bg-success/10 text-success"
+      : "bg-error/10 text-error";
 
   return (
-    <div className="card border-base-300 bg-base-100 border shadow-sm">
+    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
       <div className="card-body gap-3 p-4">
         <div className="flex items-center gap-2">
-          <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
+          <span
+            className={`grid size-9 shrink-0 place-items-center rounded-lg ${trendClass}`}
+          >
             <Icon
               data-no-flip={stat.key === "spending" || undefined}
               className="size-4.5"
@@ -46,9 +55,7 @@ function StatCard({ stat, currency }: { stat: DashboardStat; currency: string })
           {stat.key === "savingsRate" ? formattedValue : <Money>{formattedValue}</Money>}
         </p>
         <div
-          className={`flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-            isGood ? "bg-success/10 text-success" : "bg-error/10 text-error"
-          }`}
+          className={`flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${trendClass}`}
         >
           <DeltaIcon className="size-3.5" />
           <span>

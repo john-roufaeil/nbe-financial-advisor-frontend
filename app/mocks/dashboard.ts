@@ -4,6 +4,7 @@ import type { DashboardSummary } from "@/types/dashboard";
 export function getDashboardSummary(): Promise<DashboardSummary> {
   return delay({
     currency: "EGP",
+    hasPlan: true,
     stats: [
       { key: "balance", value: 128450, deltaPct: 4.2, goodDirection: "up" },
       { key: "income", value: 42000, deltaPct: 1.5, goodDirection: "up" },

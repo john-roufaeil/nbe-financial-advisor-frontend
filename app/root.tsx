@@ -50,13 +50,21 @@ export function HydrateFallback() {
   return null;
 }
 
+import { AccessibilityMenu } from "@/components/shared/AccessibilityMenu";
 import { ToastHost } from "@/components/shared/ToastHost";
+import { SessionExpiredModal } from "@/components/shared/SessionExpiredModal";
+import { useStackedModals } from "@/lib/use-stacked-modals";
+import { useButtonRipple } from "@/lib/use-button-ripple";
 
 export default function App() {
+  useStackedModals();
+  useButtonRipple();
   return (
     <QueryClientProvider client={queryClient}>
+      <AccessibilityMenu />
       <Outlet />
       <ToastHost />
+      <SessionExpiredModal />
     </QueryClientProvider>
   );
 }

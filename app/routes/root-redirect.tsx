@@ -11,7 +11,9 @@ function getPreferredLanguage(): SupportedLanguage {
 }
 
 export default function RootRedirect() {
-  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  // Same session test as RequireAuth: a rehydrated flag without an in-memory
+  // token is not a session, so don't send the user somewhere they'll bounce off.
+  const hasSession = useAuthStore((s) => s.isAuthenticated && s.accessToken !== null);
   const lang = getPreferredLanguage();
-  return <Navigate to={isAuthenticated ? `/${lang}/dashboard` : `/${lang}`} replace />;
+  return <Navigate to={hasSession ? `/${lang}/dashboard` : `/${lang}`} replace />;
 }

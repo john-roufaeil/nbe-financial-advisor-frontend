@@ -1,8 +1,9 @@
 import { forwardRef, useEffect, useState, type Ref } from "react";
 import { useTranslation } from "react-i18next";
-import { X } from "lucide-react";
 import { TRANSACTION_CATEGORIES, type Transaction } from "@/types/transaction";
 import { useCreateTransaction, useUpdateTransaction } from "@/queries/transactions";
+import { Button } from "@/components/shared/Button";
+import { BaseModal } from "@/components/shared/BaseModal";
 
 function closeDialog(ref: Ref<HTMLDialogElement>) {
   if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
@@ -10,6 +11,12 @@ function closeDialog(ref: Ref<HTMLDialogElement>) {
 
 function today() {
   return new Date().toISOString().slice(0, 10);
+}
+
+function minDate() {
+  const d = new Date();
+  d.setFullYear(d.getFullYear() - 100);
+  return d.toISOString().slice(0, 10);
 }
 
 export const AddTransactionModal = forwardRef<
@@ -24,6 +31,7 @@ export const AddTransactionModal = forwardRef<
   const [type, setType] = useState<"income" | "expense">("expense");
   const [amount, setAmount] = useState("");
   const [date, setDate] = useState(today);
+  const [errors, setErrors] = useState<{ title?: string; amount?: string }>({});
 
   useEffect(() => {
     if (editing) {
@@ -43,12 +51,43 @@ export const AddTransactionModal = forwardRef<
     setType("expense");
     setAmount("");
     setDate(today());
+    setErrors({});
+  }
+
+  const amountNum = Number(amount);
+  const isValid =
+    title.trim().length > 0 &&
+    amount !== "" &&
+    Number.isFinite(amountNum) &&
+    amountNum > 0;
+
+  function titleError(value: string): string | undefined {
+    if (!value.trim()) return undefined;
+    if (value.trim().length > 20) return t("data.addTransaction.errors.nameTooLong");
+    return undefined;
+  }
+
+  function amountError(value: string): string | undefined {
+    if (value === "") return undefined;
+    const num = Number(value);
+    if (!Number.isFinite(num) || num <= 0) {
+      return t("data.addTransaction.errors.amountInvalid");
+    }
+    return undefined;
   }
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const amountNum = Number(amount);
-    if (!title.trim() || !amountNum || amountNum <= 0) return;
+    const nextErrors: typeof errors = {};
+    if (!title.trim()) nextErrors.title = t("data.addTransaction.errors.nameRequired");
+    else if (title.trim().length > 20)
+      nextErrors.title = t("data.addTransaction.errors.nameTooLong");
+    if (!amount || !Number.isFinite(amountNum) || amountNum <= 0) {
+      nextErrors.amount = t("data.addTransaction.errors.amountInvalid");
+    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     const patch = {
       datetime: `${date}T00:00:00`,
       title: title.trim(),
@@ -68,115 +107,126 @@ export const AddTransactionModal = forwardRef<
   const isSaving = createTransaction.isPending || updateTransaction.isPending;
 
   return (
-    <dialog ref={ref} className="modal">
-      <div className="modal-box relative flex flex-col gap-4">
-        <button
-          type="button"
-          onClick={() => {
-            reset();
-            closeDialog(ref);
-          }}
-          className="btn btn-ghost btn-sm btn-circle absolute end-2 top-2"
-          aria-label={t("actions.close")}
-        >
-          <X data-no-flip className="size-4" />
-        </button>
-        <h3 className="text-lg font-semibold">
-          {editing ? t("data.addTransaction.editTitle") : t("data.addTransaction.title")}
-        </h3>
+    <BaseModal
+      ref={ref}
+      onClose={reset}
+      title={
+        editing ? t("data.addTransaction.editTitle") : t("data.addTransaction.title")
+      }
+      actions={
+        <>
+          <Button
+            type="submit"
+            form="add-transaction-form"
+            loading={isSaving}
+            disabled={!isValid}
+            className="btn btn-primary"
+          >
+            {editing ? t("actions.done") : t("data.addTransaction.add")}
+          </Button>
+          <button
+            type="button"
+            onClick={() => {
+              reset();
+              closeDialog(ref);
+            }}
+            className="btn btn-ghost"
+          >
+            {t("actions.cancel")}
+          </button>
+        </>
+      }
+    >
+      <form
+        id="add-transaction-form"
+        onSubmit={handleSubmit}
+        className="flex flex-col gap-3"
+      >
+        <label className="flex flex-col gap-1">
+          <span className="label-text text-xs">{t("data.addTransaction.name")}</span>
+          <input
+            type="text"
+            value={title}
+            onChange={(e) => {
+              setTitle(e.target.value);
+              setErrors((err) => ({ ...err, title: titleError(e.target.value) }));
+            }}
+            placeholder={t("data.addTransaction.namePlaceholder")}
+            maxLength={20}
+            className={`input input-bordered input-sm w-full ${errors.title ? "input-error" : ""}`}
+          />
+          {errors.title && <span className="text-error text-xs">{errors.title}</span>}
+        </label>
 
-        <form onSubmit={handleSubmit} className="flex flex-col gap-3">
+        <div className="join border-base-300 w-fit rounded-lg border">
+          <button
+            type="button"
+            onClick={() => setType("expense")}
+            className={`btn btn-sm join-item cursor-pointer ${type === "expense" ? "btn-error" : "btn-ghost"}`}
+          >
+            {t("data.filters.expense")}
+          </button>
+          <button
+            type="button"
+            onClick={() => setType("income")}
+            className={`btn btn-sm join-item cursor-pointer ${type === "income" ? "btn-success" : "btn-ghost"}`}
+          >
+            {t("data.filters.income")}
+          </button>
+        </div>
+
+        <label className="flex flex-col gap-1">
+          <span className="label-text text-xs">{t("data.addTransaction.category")}</span>
+          <select
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className="select select-bordered select-sm w-full"
+          >
+            {TRANSACTION_CATEGORIES.map((c) => (
+              <option key={c} value={c}>
+                {t(`data.categories.${c}`, c)}
+              </option>
+            ))}
+          </select>
+        </label>
+
+        <div className="flex gap-3">
           <label className="flex flex-col gap-1">
-            <span className="label-text text-xs">{t("data.addTransaction.name")}</span>
-            <input
-              type="text"
-              value={title}
-              onChange={(e) => setTitle(e.target.value)}
-              className="input input-bordered input-sm w-full"
-              required
-            />
-          </label>
-
-          <div className="join border-base-300 w-fit rounded-lg border">
-            <button
-              type="button"
-              onClick={() => setType("expense")}
-              className={`btn btn-sm join-item cursor-pointer ${type === "expense" ? "btn-error" : "btn-ghost"}`}
+            <span className="label-text text-xs">{t("data.addTransaction.amount")}</span>
+            <label
+              className={`input input-bordered input-sm flex w-fit items-center gap-2 ${errors.amount ? "input-error" : ""}`}
             >
-              {t("data.filters.expense")}
-            </button>
-            <button
-              type="button"
-              onClick={() => setType("income")}
-              className={`btn btn-sm join-item cursor-pointer ${type === "income" ? "btn-success" : "btn-ghost"}`}
-            >
-              {t("data.filters.income")}
-            </button>
-          </div>
-
-          <label className="flex flex-col gap-1">
-            <span className="label-text text-xs">
-              {t("data.addTransaction.category")}
-            </span>
-            <select
-              value={category}
-              onChange={(e) => setCategory(e.target.value)}
-              className="select select-bordered select-sm w-full"
-            >
-              {TRANSACTION_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {c}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="flex gap-3">
-            <label className="flex flex-1 flex-col gap-1">
-              <span className="label-text text-xs">
-                {t("data.addTransaction.amount")}
-              </span>
               <input
                 type="number"
-                min={0}
+                min={0.01}
                 step="0.01"
                 value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                className="input input-bordered input-sm w-full"
-                required
+                onChange={(e) => {
+                  setAmount(e.target.value);
+                  setErrors((err) => ({ ...err, amount: amountError(e.target.value) }));
+                }}
+                placeholder={t("data.addTransaction.amountPlaceholder")}
+                className="w-24"
               />
+              <span className="text-base-content/50 shrink-0 text-xs">
+                {t("currency.EGP")}
+              </span>
             </label>
-            <label className="flex flex-1 flex-col gap-1">
-              <span className="label-text text-xs">{t("data.addTransaction.date")}</span>
-              <input
-                type="date"
-                value={date}
-                onChange={(e) => setDate(e.target.value)}
-                className="input input-bordered input-sm w-full"
-              />
-            </label>
-          </div>
-
-          <div className="modal-action">
-            <button
-              type="button"
-              onClick={() => {
-                reset();
-                closeDialog(ref);
-              }}
-              className="btn btn-ghost"
-            >
-              {t("actions.cancel")}
-            </button>
-            <button type="submit" disabled={isSaving} className="btn btn-primary">
-              {editing ? t("actions.done") : t("data.addTransaction.add")}
-            </button>
-          </div>
-        </form>
-      </div>
-      <form method="dialog" className="modal-backdrop">
-        <button className="cursor-default">{t("actions.close")}</button>
+            {errors.amount && <span className="text-error text-xs">{errors.amount}</span>}
+          </label>
+          <label className="flex flex-1 flex-col gap-1">
+            <span className="label-text text-xs">{t("data.addTransaction.date")}</span>
+            <input
+              type="date"
+              value={date}
+              min={minDate()}
+              max={today()}
+              onChange={(e) => setDate(e.target.value)}
+              className="input input-bordered input-sm w-full"
+            />
+          </label>
+        </div>
       </form>
-    </dialog>
+    </BaseModal>
   );
 });

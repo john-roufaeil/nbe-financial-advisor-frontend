@@ -6,6 +6,9 @@
     "attach": "Attach file",
     "send": "Send message",
     "stop": "Stop",
+    "copy": "Copy message",
+    "goodResponse": "Good response",
+    "badResponse": "Bad response",
     "nav": {
       "top": "Scroll to top",
       "bottom": "Scroll to latest",

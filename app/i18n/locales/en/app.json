@@ -1,6 +1,8 @@
 {
   "app": {
     "name": "Financial Advisor",
-    "bank": "| National Bank of Egypt"
+    "bank": "| National Bank of Egypt",
+    "am": "am",
+    "pm": "pm"
   }
 }

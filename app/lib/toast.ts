@@ -11,47 +11,38 @@ export function toastError(key = "toast.genericError") {
 }
 
 export function toastApiError(error: unknown) {
-  if (isAxiosError(error) && error.response?.data) {
-    const data: unknown = error.response.data;
-
-    if (data && typeof data === "object") {
-      // Custom backend envelope: { error: { message: "..." } }
-      const errorField = (data as Record<string, unknown>).error;
-      if (
-        errorField &&
-        typeof errorField === "object" &&
-        typeof (errorField as Record<string, unknown>).message === "string"
-      ) {
-        useToastStore
-          .getState()
-          .show((errorField as { message: string }).message, "error");
-        return;
-      }
-
-      // DRF standard 'detail' key
-      const detail = (data as Record<string, unknown>).detail;
-      if (typeof detail === "string") {
-        useToastStore.getState().show(detail, "error");
-        return;
-      }
-
-      // DRF field validation errors (e.g., { email: ["Already exists"] })
-      const firstKey = Object.keys(data)[0];
-      const firstValue = firstKey
-        ? (data as Record<string, unknown>)[firstKey]
-        : undefined;
-      if (firstKey && Array.isArray(firstValue) && typeof firstValue[0] === "string") {
-        const fieldName = firstKey.charAt(0).toUpperCase() + firstKey.slice(1);
-        useToastStore.getState().show(`${fieldName}: ${firstValue[0]}`, "error");
-        return;
-      }
-      if (firstKey && typeof firstValue === "string") {
-        useToastStore.getState().show(firstValue, "error");
-        return;
-      }
-    }
+  // Backend error text is untranslated and shouldn't be shown verbatim in
+  // a non-English locale. Known cases get a translated message; everything
+  // else falls back to the generic translated error.
+  if (isEmailTakenError(error)) {
+    toastError("toast.emailTaken");
+    return;
   }
 
-  // Fallback to generic translation
   toastError();
+}
+
+/** Whether a failed signup call failed specifically because the email is already registered. */
+export function isEmailTakenError(error: unknown): boolean {
+  if (!isAxiosError(error)) return false;
+  if (error.response?.status === 409) return true;
+
+  const data: unknown = error.response?.data;
+  if (!data || typeof data !== "object") return false;
+  // DRF field validation errors key the response by field name (e.g. { email: [...] }).
+  if ("email" in data) return true;
+
+  const record = data as Record<string, unknown>;
+  const errorField = record.error;
+  let message = "";
+  if (typeof record.detail === "string") {
+    message = record.detail;
+  } else if (
+    errorField &&
+    typeof errorField === "object" &&
+    typeof (errorField as Record<string, unknown>).message === "string"
+  ) {
+    message = (errorField as { message: string }).message;
+  }
+  return /email/i.test(message) && /(exist|taken|registered)/i.test(message);
 }

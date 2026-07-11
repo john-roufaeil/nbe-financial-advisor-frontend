@@ -1,0 +1,167 @@
+import { Link, useParams } from "react-router";
+import { useTranslation } from "react-i18next";
+import {
+  ArrowLeftRight,
+  FileText,
+  ArrowUpCircle,
+  ArrowDownCircle,
+  ChevronRight,
+  Receipt,
+} from "lucide-react";
+import { useTransactions } from "@/queries/transactions";
+import { useDocuments } from "@/queries/documents";
+import { BankBadge } from "@/components/shared/BankBadge";
+import { Money } from "@/components/shared/Money";
+import { CardSkeleton } from "@/components/shared/QueryState";
+import { formatDate } from "@/lib/format";
+
+const RECENT_COUNT = 2;
+
+function SummaryCard({
+  to,
+  icon: Icon,
+  color,
+  title,
+  count,
+  countLabel,
+  emptyIcon: EmptyIcon,
+  emptyLabel,
+  children,
+}: {
+  to: string;
+  icon: typeof ArrowLeftRight;
+  color: string;
+  title: string;
+  count: number;
+  countLabel: string;
+  emptyIcon: typeof ArrowLeftRight;
+  emptyLabel: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <Link
+      to={to}
+      className="card border-base-300 bg-base-100 hover:border-primary group animate-entry h-40 border shadow-sm transition-colors"
+    >
+      <div className="card-body flex h-full min-h-0 flex-col gap-3 p-4">
+        <div className="flex shrink-0 items-center gap-2">
+          <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${color}`}>
+            <Icon className="size-4.5" />
+          </span>
+          <div className="min-w-0 flex-1">
+            <h3 className="text-base-content text-sm font-semibold">{title}</h3>
+            {count > 0 && <p className="text-base-content/50 text-xs">{countLabel}</p>}
+          </div>
+          <ChevronRight className="text-base-content/30 group-hover:text-primary size-4 shrink-0 transition-[color,translate] ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+        </div>
+        {count > 0 ? (
+          <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+            {children}
+          </ul>
+        ) : (
+          <div className="flex flex-1 flex-col items-center justify-center">
+            <EmptyIcon className="text-base-content/25 size-5" />
+            <p className="text-base-content/40 text-xs">{emptyLabel}</p>
+          </div>
+        )}
+      </div>
+    </Link>
+  );
+}
+
+function TransactionsSummary() {
+  const { t } = useTranslation();
+  const { lang } = useParams<{ lang: string }>();
+  const { data, isPending } = useTransactions({ limit: RECENT_COUNT });
+
+  if (isPending) return <CardSkeleton icon={ArrowLeftRight} className="animate-entry" />;
+
+  return (
+    <SummaryCard
+      to={`/${lang}/transactions`}
+      icon={ArrowLeftRight}
+      color="bg-info/10 text-info"
+      title={t("data.transactions")}
+      count={data?.total ?? 0}
+      countLabel={t("data.pagination.totalTransactions", { count: data?.total ?? 0 })}
+      emptyIcon={Receipt}
+      emptyLabel={t("data.transactionsEmptyShort")}
+    >
+      {data?.items.map((tx) => {
+        const isIncome = tx.type === "income";
+        const TypeIcon = isIncome ? ArrowUpCircle : ArrowDownCircle;
+        return (
+          <li key={tx.id} className="flex items-center gap-2">
+            <TypeIcon
+              data-no-flip
+              className={`size-4 shrink-0 ${isIncome ? "text-success" : "text-base-content/40"}`}
+            />
+            <span className="min-w-0 flex-1 truncate text-sm">{tx.title}</span>
+            <Money
+              className={`shrink-0 text-sm font-medium tabular-nums ${isIncome ? "text-success" : "text-base-content"}`}
+            >
+              <span dir="ltr">
+                {isIncome ? "+" : "-"}
+                {tx.amount.toLocaleString()}
+              </span>
+            </Money>
+          </li>
+        );
+      })}
+    </SummaryCard>
+  );
+}
+
+function DocumentsSummary() {
+  const { t } = useTranslation();
+  const { lang } = useParams<{ lang: string }>();
+  const { data, isPending } = useDocuments({ limit: RECENT_COUNT });
+
+  if (isPending) return <CardSkeleton icon={FileText} className="animate-entry" />;
+
+  return (
+    <SummaryCard
+      to={`/${lang}/documents`}
+      icon={FileText}
+      color="bg-secondary/10 text-secondary"
+      title={t("data.documents")}
+      count={data?.total ?? 0}
+      countLabel={t("data.pagination.totalDocuments", { count: data?.total ?? 0 })}
+      emptyIcon={FileText}
+      emptyLabel={t("data.documentsEmptyShort")}
+    >
+      {data?.items.map((doc) => (
+        <li key={doc.id}>
+          <BankBadge
+            bank={doc.bankName}
+            size="size-6"
+            subtitle={formatDate(doc.uploadDate)}
+          />
+        </li>
+      ))}
+    </SummaryCard>
+  );
+}
+
+/**
+ * Dashboard-level summaries linking through to the full transactions/documents
+ * pages. This column sits full-width on narrower laptops (before the goal/budget
+ * row splits into a tight 12-col grid) so a container query — not a viewport
+ * one — lets the two cards sit side by side whenever they actually have the
+ * room, and stack once the column itself gets squeezed back to sidebar width.
+ * Deliberately not stretched to the row's full height: on the wide, single-column
+ * layout the two cards sit flush at the top and leave the rest of the column
+ * clear for the floating add button instead of stretching to match it.
+ */
+export function RecentActivityCard({ stacked = false }: { stacked?: boolean }) {
+  return (
+    <div className="@container">
+      <div
+        className={`grid grid-cols-1 gap-4 ${stacked ? "" : "@sm:grid-cols-2 @sm:grid-rows-1"}`}
+      >
+        <TransactionsSummary />
+        <DocumentsSummary />
+      </div>
+    </div>
+  );
+}

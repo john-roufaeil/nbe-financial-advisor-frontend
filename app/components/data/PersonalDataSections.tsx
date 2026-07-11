@@ -1,21 +1,56 @@
 import { useState } from "react";
-import { Pencil, Check, X, User, Mail, Landmark, Loader2, MapPin } from "lucide-react";
+import {
+  Pencil,
+  Check,
+  X,
+  User,
+  Landmark,
+  Loader2,
+  CreditCard,
+  Clock,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 import { useMe, useUpdateProfile } from "@/queries/profile";
+import { useAccounts } from "@/queries/accounts";
+import { BankBadge } from "@/components/shared/BankBadge";
+import { Money } from "@/components/shared/Money";
+import { Tooltip } from "@/components/shared/Tooltip";
+import { TimeFormatSwitcher } from "@/components/shared/TimeFormatSwitcher";
 import type { User as UserType } from "@/types/profile";
+import type { BankAccount } from "@/types/account";
+import { CardSkeleton, ErrorState } from "@/components/shared/QueryState";
 
 // ── Derived display sections from the User API shape ─────────────────────────
 
-// Real User fields plus a few display-only keys (address) that aren't on the
-// User type yet — see handoff doc. Writable fields are always real User keys.
-type DisplayKey = keyof UserType | "addressLine" | "city" | "country";
+const EMPLOYMENT_OPTIONS = [
+  "employed",
+  "selfEmployed",
+  "student",
+  "unemployed",
+  "retired",
+] as const;
+
+const STEADINESS_OPTIONS = ["steady", "variable", "seasonal"] as const;
+
+type Field = {
+  key: keyof UserType;
+  labelKey: string;
+  writable: boolean;
+  currency?: boolean;
+  ltr?: boolean;
+  phone?: boolean;
+  placeholderKey?: string;
+  options?: { value: string; labelKey: string }[];
+};
 
 type Section = {
   key: string;
   icon: typeof User;
   color: string;
   titleKey: string;
-  fields: { key: DisplayKey; labelKey: string; writable: boolean }[];
+  fields: Field[];
 };
 
 const SECTIONS: Section[] = [
@@ -25,18 +60,22 @@ const SECTIONS: Section[] = [
     color: "bg-primary/10 text-primary",
     titleKey: "data.sections.profile.title",
     fields: [
-      { key: "name", labelKey: "data.sections.profile.fields.fullName", writable: true },
+      {
+        key: "name",
+        labelKey: "data.sections.profile.fields.fullName",
+        writable: true,
+        placeholderKey: "data.sections.profile.fields.fullNamePlaceholder",
+      },
       { key: "id", labelKey: "data.sections.profile.fields.id", writable: false },
-    ],
-  },
-  {
-    key: "contact",
-    icon: Mail,
-    color: "bg-secondary/10 text-secondary",
-    titleKey: "data.sections.contact.title",
-    fields: [
       { key: "email", labelKey: "data.sections.contact.fields.email", writable: false },
-      { key: "phone", labelKey: "data.sections.contact.fields.phone", writable: true },
+      {
+        key: "phone",
+        labelKey: "data.sections.contact.fields.phone",
+        writable: true,
+        ltr: true,
+        phone: true,
+        placeholderKey: "data.sections.contact.fields.phonePlaceholder",
+      },
     ],
   },
   {
@@ -49,60 +88,130 @@ const SECTIONS: Section[] = [
         key: "employment_status",
         labelKey: "data.sections.financial.fields.employmentStatus",
         writable: true,
+        options: EMPLOYMENT_OPTIONS.map((opt) => ({
+          value: opt,
+          labelKey: `onboarding.income.options.${opt}`,
+        })),
       },
       {
         key: "monthly_income",
         labelKey: "data.sections.financial.fields.monthlyIncome",
         writable: true,
-      },
-      {
-        key: "income_bracket",
-        labelKey: "data.sections.financial.fields.incomeBracket",
-        writable: true,
+        currency: true,
+        placeholderKey: "data.sections.financial.fields.monthlyIncomePlaceholder",
       },
       {
         key: "income_steadiness",
         labelKey: "data.sections.financial.fields.incomeSteadiness",
         writable: true,
-      },
-    ],
-  },
-  {
-    key: "address",
-    icon: MapPin,
-    color: "bg-accent/10 text-accent",
-    titleKey: "data.sections.address.title",
-    // These fields don't exist on UserType, but we'll add them as read-only mock fields
-    fields: [
-      {
-        key: "addressLine",
-        labelKey: "data.sections.address.fields.addressLine",
-        writable: false,
-      },
-      { key: "city", labelKey: "data.sections.address.fields.city", writable: false },
-      {
-        key: "country",
-        labelKey: "data.sections.address.fields.country",
-        writable: false,
+        options: STEADINESS_OPTIONS.map((opt) => ({
+          value: opt,
+          labelKey: `onboarding.income.steadinessOptions.${opt}`,
+        })),
       },
     ],
   },
 ];
 
-// Placeholder values shown for the seeded demo user until /users/me returns
-// these fields (address fields aren't on the User type yet — see handoff doc).
-// Keyed by field.key as a plain string so it also covers the address keys that
-// don't exist on UserType.
-const AMINA_MOCK_EMAIL = "amina.elsayed@example.com";
-const AMINA_MOCK_VALUES: Record<string, string> = {
-  addressLine: "12 Nile Corniche St, Zamalek",
-  city: "Cairo",
-  country: "Egypt",
-  employment_status: "Employed",
-  monthly_income: "42000.00",
-  income_bracket: "High",
-  income_steadiness: "Fixed",
-};
+// ── Field editing/display ─────────────────────────────────────────────────────
+
+function FieldEditor({
+  field,
+  value,
+  error,
+  onChange,
+}: {
+  field: Field;
+  value: string;
+  error?: string;
+  onChange: (value: string) => void;
+}) {
+  const { t } = useTranslation();
+
+  if (field.options) {
+    return (
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="select select-sm select-bordered w-full"
+      >
+        <option value="" disabled>
+          {t("onboarding.review.empty")}
+        </option>
+        {field.options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {t(opt.labelKey)}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  if (field.phone) {
+    return (
+      <>
+        <PhoneInput
+          className={`input input-sm input-bordered w-full ${error ? "input-error" : ""}`}
+          defaultCountry="EG"
+          international
+          value={value}
+          onChange={(next) => onChange(next ?? "")}
+          placeholder={t(field.placeholderKey ?? field.labelKey)}
+        />
+        {error && <span className="text-error text-xs">{error}</span>}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={t(field.placeholderKey ?? field.labelKey)}
+        maxLength={field.key === "name" ? 20 : undefined}
+        className={`input input-sm input-bordered w-full ${error ? "input-error" : ""}`}
+      />
+      {error && <span className="text-error text-xs">{error}</span>}
+    </>
+  );
+}
+
+function FieldValue({ field, value }: { field: Field; value?: string }) {
+  const { t } = useTranslation();
+
+  const option = field.options?.find((opt) => opt.value === value);
+  if (option) {
+    return <span className="text-sm font-medium">{t(option.labelKey)}</span>;
+  }
+
+  if (!value) {
+    return (
+      <span className="text-base-content/30 text-sm font-medium italic">
+        {t("onboarding.review.empty")}
+      </span>
+    );
+  }
+
+  if (field.currency) {
+    return (
+      <Money className="text-sm font-medium">
+        {value} {t("currency.EGP")}
+      </Money>
+    );
+  }
+
+  if (field.ltr) {
+    return (
+      <span className="text-sm font-medium">
+        <bdi dir="ltr">{value.replace(/\s+/g, "")}</bdi>
+      </span>
+    );
+  }
+
+  return <span className="text-sm font-medium">{value}</span>;
+}
 
 // ── Section card ──────────────────────────────────────────────────────────────
 
@@ -111,38 +220,51 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
   const updateProfile = useUpdateProfile();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<UserType>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof UserType, string>>>({});
 
   const Icon = section.icon;
 
   function startEdit() {
     const initial: Partial<UserType> = {};
     for (const f of section.fields) {
-      // Writable fields are always real User keys (address is never writable).
       if (f.writable) {
         const key = f.key as keyof UserType;
         initial[key] = user[key] ?? "";
       }
     }
     setDraft(initial);
+    setErrors({});
     setEditing(true);
   }
 
   async function save() {
+    const nextErrors: Partial<Record<keyof UserType, string>> = {};
+    const phoneField = section.fields.find((f) => f.phone);
+    if (phoneField) {
+      const value = (draft[phoneField.key] as string) ?? "";
+      if (value && !isValidPhoneNumber(value)) {
+        nextErrors[phoneField.key] = t("data.sections.errors.phoneInvalid");
+      }
+    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     try {
       await updateProfile.mutateAsync(draft);
       setEditing(false);
     } catch {
-      // toast surfaced by mutation's onError
+      /* Error is gracefully surfaced globally via the mutation's onError toast handler */
     }
   }
 
   function cancel() {
     setDraft({});
+    setErrors({});
     setEditing(false);
   }
 
   return (
-    <div className="card border-base-300 bg-base-100 border shadow-sm">
+    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
       <div className="card-body gap-4 p-4">
         <div className="flex items-center gap-2">
           <span
@@ -153,38 +275,44 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
           <h2 className="card-title flex-1 text-base">{t(section.titleKey)}</h2>
           {editing ? (
             <div dir="ltr" className="flex gap-1">
-              <button
-                type="button"
-                onClick={cancel}
-                className="btn btn-ghost btn-sm btn-square text-error"
-                aria-label={t("actions.cancel")}
-                disabled={updateProfile.isPending}
-              >
-                <X className="size-4" />
-              </button>
-              <button
-                type="button"
-                onClick={save}
-                className="btn btn-ghost btn-sm btn-square text-success"
-                aria-label={t("actions.done")}
-                disabled={updateProfile.isPending}
-              >
-                {updateProfile.isPending ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Check className="size-4" />
-                )}
-              </button>
+              <Tooltip content={t("actions.cancel")}>
+                <button
+                  type="button"
+                  onClick={cancel}
+                  className="btn btn-ghost btn-sm btn-square text-error"
+                  aria-label={t("actions.cancel")}
+                  disabled={updateProfile.isPending}
+                >
+                  <X className="size-4" />
+                </button>
+              </Tooltip>
+              <Tooltip content={t("actions.done")}>
+                <button
+                  type="button"
+                  onClick={save}
+                  className="btn btn-ghost btn-sm btn-square text-success"
+                  aria-label={t("actions.done")}
+                  disabled={updateProfile.isPending}
+                >
+                  {updateProfile.isPending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Check data-no-flip className="size-4" />
+                  )}
+                </button>
+              </Tooltip>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={startEdit}
-              className="btn btn-ghost btn-sm btn-square"
-              aria-label={t("actions.edit")}
-            >
-              <Pencil data-no-flip className="size-4" />
-            </button>
+            <Tooltip content={t("actions.edit")}>
+              <button
+                type="button"
+                onClick={startEdit}
+                className="btn btn-ghost btn-sm btn-square"
+                aria-label={t("actions.edit")}
+              >
+                <Pencil data-no-flip className="size-4" />
+              </button>
+            </Tooltip>
           )}
         </div>
 
@@ -195,25 +323,18 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
                 {t(field.labelKey)}
               </span>
               {editing && field.writable ? (
-                <input
-                  type="text"
-                  value={(draft[field.key as keyof UserType] as string) ?? ""}
-                  onChange={(e) =>
-                    setDraft({ ...draft, [field.key as keyof UserType]: e.target.value })
-                  }
-                  className="input input-sm input-bordered w-full"
+                <FieldEditor
+                  field={field}
+                  value={(draft[field.key] as string) ?? ""}
+                  error={errors[field.key]}
+                  onChange={(value) => {
+                    setDraft({ ...draft, [field.key]: value });
+                    if (errors[field.key])
+                      setErrors({ ...errors, [field.key]: undefined });
+                  }}
                 />
               ) : (
-                <span className="text-sm font-medium">
-                  {user[field.key as keyof UserType] ||
-                    (user.email === AMINA_MOCK_EMAIL
-                      ? AMINA_MOCK_VALUES[field.key]
-                      : undefined) || (
-                      <span className="text-base-content/30 italic">
-                        {t("onboarding.review.empty")}
-                      </span>
-                    )}
-                </span>
+                <FieldValue field={field} value={user[field.key]} />
               )}
             </label>
           ))}
@@ -223,24 +344,105 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
   );
 }
 
-// ── Skeleton ──────────────────────────────────────────────────────────────────
+// ── Bank accounts ─────────────────────────────────────────────────────────────
 
-function SectionSkeleton() {
+function AccountRow({ account }: { account: BankAccount }) {
+  const { t } = useTranslation();
+  const currencyLabel = t(`currency.${account.currency}`, account.currency);
+
   return (
-    <div className="card border-base-300 bg-base-100 border shadow-sm">
+    <li className="border-base-300 bg-base-100 flex items-center gap-3 rounded-lg border p-3">
+      <BankBadge
+        bank={account.bank_name}
+        className="flex-1"
+        subtitle={
+          <>
+            <span dir="ltr">{account.masked_account_number}</span>
+            {account.account_type ? ` · ${account.account_type}` : ""}
+            {account.is_active ? "" : ` · ${t("data.sections.accounts.inactive")}`}
+          </>
+        }
+      />
+      <Money className="shrink-0 text-sm font-semibold tabular-nums">
+        {Number(account.current_balance).toLocaleString()} {currencyLabel}
+      </Money>
+    </li>
+  );
+}
+
+function BankAccountsCard() {
+  const { t } = useTranslation();
+  const { data: accounts, isPending, isError } = useAccounts();
+
+  if (isPending) {
+    return (
+      <CardSkeleton
+        icon={CreditCard}
+        className="animate-entry sm:col-span-2"
+        rows={[{ kind: "progress" }, { kind: "progress" }]}
+      />
+    );
+  }
+
+  if (isError) {
+    return (
+      <div className="card border-base-300 bg-base-100 border shadow-sm sm:col-span-2">
+        <div className="card-body p-4">
+          <p className="text-error text-sm">{t("data.sections.accounts.error")}</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm sm:col-span-2">
       <div className="card-body gap-4 p-4">
         <div className="flex items-center gap-2">
-          <div className="skeleton size-9 rounded-lg" />
-          <div className="skeleton h-4 flex-1 rounded" />
+          <span className="bg-success/10 text-success grid size-9 shrink-0 place-items-center rounded-lg">
+            <CreditCard className="size-4.5" />
+          </span>
+          <h2 className="card-title flex-1 text-base">
+            {t("data.sections.accounts.title")}
+          </h2>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2">
-          {[1, 2].map((i) => (
-            <div key={i} className="flex flex-col gap-1">
-              <div className="skeleton h-3 w-20 rounded" />
-              <div className="skeleton h-4 w-full rounded" />
-            </div>
-          ))}
+
+        {accounts.length > 0 ? (
+          <ul className="flex flex-col gap-2">
+            {accounts.map((account) => (
+              <AccountRow key={account.id} account={account} />
+            ))}
+          </ul>
+        ) : (
+          <p className="text-base-content/50 text-sm">
+            {t("data.sections.accounts.empty")}
+          </p>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function PreferencesCard() {
+  const { t } = useTranslation();
+
+  return (
+    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm sm:col-span-2">
+      <div className="card-body gap-4 p-4">
+        <div className="flex items-center gap-2">
+          <span className="bg-warning/10 text-warning grid size-9 shrink-0 place-items-center rounded-lg">
+            <Clock className="size-4.5" />
+          </span>
+          <h2 className="card-title flex-1 text-base">
+            {t("data.sections.preferences.title")}
+          </h2>
         </div>
+
+        <label className="flex max-w-xs flex-col gap-1">
+          <span className="label-text text-base-content/50 text-xs">
+            {t("settings.timeFormat.label")}
+          </span>
+          <TimeFormatSwitcher />
+        </label>
       </div>
     </div>
   );
@@ -249,20 +451,30 @@ function SectionSkeleton() {
 // ── Public export ─────────────────────────────────────────────────────────────
 
 export function PersonalDataSections() {
-  const { data: user, isLoading, isError } = useMe();
+  const { data: user, isLoading, isError, refetch } = useMe();
 
   if (isLoading) {
     return (
-      <div className="grid gap-4 sm:grid-cols-2">
+      <div className="animate-entry grid gap-4 sm:grid-cols-2">
         {SECTIONS.map((s) => (
-          <SectionSkeleton key={s.key} />
+          <CardSkeleton
+            key={s.key}
+            icon={s.icon}
+            rows={[{ kind: "fieldGrid", fields: s.fields.length }]}
+          />
         ))}
+        <div className="sm:col-span-2">
+          <CardSkeleton
+            icon={CreditCard}
+            rows={[{ kind: "progress" }, { kind: "progress" }]}
+          />
+        </div>
       </div>
     );
   }
 
   if (isError || !user) {
-    return <p className="text-error text-sm">Failed to load profile. Please refresh.</p>;
+    return <ErrorState onRetry={() => refetch()} />;
   }
 
   return (
@@ -270,6 +482,8 @@ export function PersonalDataSections() {
       {SECTIONS.map((s) => (
         <SectionCard key={s.key} section={s} user={user} />
       ))}
+      <BankAccountsCard />
+      <PreferencesCard />
     </div>
   );
 }

@@ -1,4 +1,9 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import {
+  useMutation,
+  useQuery,
+  useQueryClient,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import * as transactionsApi from "@/api/transactions";
 import * as transactionsMock from "@/mocks/transactions";
 import type { TransactionFilters } from "@/api/transactions";
@@ -21,6 +26,7 @@ export function useTransactions(filters: TransactionFilters) {
   return useQuery({
     queryKey: transactionKeys.list(filters, source),
     queryFn: () => impl(source).getTransactions(filters),
+    placeholderData: keepPreviousData,
   });
 }
 

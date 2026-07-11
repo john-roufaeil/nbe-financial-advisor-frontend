@@ -145,6 +145,93 @@ html[dir="rtl"] body {
   font-family: var(--font-arabic);
 }
 
+html[data-a11y-font-scale] {
+  font-size: calc(100% * var(--a11y-font-scale, 1));
+}
+
+.a11y-panel {
+  font-size: 16px;
+}
+
+html.a11y-high-contrast {
+  --color-primary: oklch(0% 0 0);
+  --color-primary-content: oklch(100% 0 0);
+
+  --color-secondary: oklch(0% 0 0);
+  --color-secondary-content: oklch(100% 0 0);
+
+  --color-accent: oklch(0% 0 0);
+  --color-accent-content: oklch(100% 0 0);
+
+  --color-neutral: oklch(0% 0 0);
+  --color-neutral-content: oklch(100% 0 0);
+
+  --color-base-100: oklch(100% 0 0);
+  --color-base-200: oklch(100% 0 0);
+  --color-base-300: oklch(100% 0 0);
+  --color-base-content: oklch(0% 0 0);
+
+  --color-info: oklch(0% 0 0);
+  --color-info-content: oklch(100% 0 0);
+  --color-success: oklch(0% 0 0);
+  --color-success-content: oklch(100% 0 0);
+  --color-warning: oklch(0% 0 0);
+  --color-warning-content: oklch(100% 0 0);
+  --color-error: oklch(0% 0 0);
+  --color-error-content: oklch(100% 0 0);
+}
+
+html.a11y-high-contrast * {
+  text-shadow: none !important;
+  box-shadow: none !important;
+  background-image: none !important;
+}
+
+html.a11y-high-contrast [class*="from-primary"] {
+  background-color: var(--color-primary) !important;
+}
+
+html.a11y-high-contrast [class*="from-secondary"] {
+  background-color: var(--color-secondary) !important;
+}
+
+html.a11y-high-contrast [class*="from-accent"] {
+  background-color: var(--color-accent) !important;
+}
+
+html.a11y-high-contrast [class*="from-neutral"] {
+  background-color: var(--color-neutral) !important;
+}
+
+html.a11y-high-contrast [class*="text-base-content/"],
+html.a11y-high-contrast [class*="text-primary/"],
+html.a11y-high-contrast [class*="text-secondary/"],
+html.a11y-high-contrast [class*="text-accent/"] {
+  color: var(--color-base-content) !important;
+}
+
+html.a11y-high-contrast :is(.btn, .card, .input, .select, .textarea, .badge, .alert) {
+  border-width: 2px !important;
+  border-color: oklch(0% 0 0) !important;
+}
+
+html.a11y-high-contrast
+  :is(a, button, [role="button"], input, select, textarea):focus-visible {
+  outline: 3px solid oklch(0% 0 0) !important;
+  outline-offset: 2px !important;
+}
+
+html.a11y-high-contrast img {
+  filter: contrast(200%);
+}
+
+@media (forced-colors: active) {
+  img {
+    forced-color-adjust: auto;
+    filter: contrast(200%);
+  }
+}
+
 /* date/time inputs render their internal fields+icon in a fixed LTR layout with
    built-in spacing; right-aligning them shoves the icon flush against the text. */
 html[dir="rtl"] input:not([type="date"], [type="time"]) {
@@ -193,6 +280,38 @@ html[dir="rtl"] svg.lucide:not([data-no-flip]) {
   animation: toast-in 0.2s ease-out;
 }
 
+@keyframes a11y-panel-in {
+  from {
+    opacity: 0;
+    transform: translateX(-8px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+html[dir="rtl"] .animate-a11y-panel-in {
+  animation-name: a11y-panel-in-rtl;
+}
+
+@keyframes a11y-panel-in-rtl {
+  from {
+    opacity: 0;
+    transform: translateX(8px) scale(0.97);
+  }
+
+  to {
+    opacity: 1;
+    transform: translateX(0) scale(1);
+  }
+}
+
+.animate-a11y-panel-in {
+  animation: a11y-panel-in 0.15s ease-out;
+}
+
 @keyframes fade-slide-up {
   from {
     opacity: 0;
@@ -205,24 +324,132 @@ html[dir="rtl"] svg.lucide:not([data-no-flip]) {
   }
 }
 
-/* Applied once per mount to page-level content and freshly-loaded cards/charts. */
+/* Applied once per mount to static page content and loading skeletons — fades in
+   while sliding up a touch. */
 .animate-entry {
   animation: fade-slide-up 0.3s ease-out both;
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+/* For dynamic data swapping in over its skeleton: fade only, no movement, so the
+   content settles in place instead of re-sliding after the skeleton already did. */
+.animate-fade-in {
+  animation: fade-in 0.25s ease-out both;
+}
+
+/* Native <select> elements default to an arrow cursor in most browsers even
+   though they're clickable dropdowns — force the hand cursor so they read as
+   interactive like every other control. */
+.select {
+  cursor: pointer;
 }
 
 /* Buttons and daisyUI's own toggle/checkbox controls get a snappy-but-not-instant
    transition on hover/active/checked state changes instead of an abrupt snap. */
 .btn {
+  position: relative;
+  overflow: hidden;
   transition:
     background-color 0.2s ease,
     border-color 0.2s ease,
     color 0.2s ease,
     box-shadow 0.2s ease,
-    transform 0.2s ease;
+    transform 0.2s ease,
+    filter 0.15s ease;
 }
 
-.btn:active {
-  transform: scale(0.97);
+.btn:disabled,
+.btn[disabled] {
+  cursor: not-allowed;
+}
+
+.btn:hover:not(:disabled) {
+  transform: translateY(-1px);
+  box-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.25);
+}
+
+.btn:active:not(:disabled) {
+  transform: translateY(0) scale(0.97);
+  filter: brightness(0.92);
+}
+
+/* Expanding fill spawned at the click point by useButtonRipple(), an app-wide
+   "this registered" cue. `currentColor` keeps it readable against any button
+   variant (light ripple on filled buttons, dark ripple on ghost/outline ones)
+   without hardcoding per-variant colors. */
+.btn-ripple {
+  position: absolute;
+  border-radius: 9999px;
+  background: currentColor;
+  opacity: 0.25;
+  scale: 0;
+  pointer-events: none;
+  animation: btn-ripple 0.5s ease-out;
+}
+
+@keyframes btn-ripple {
+  to {
+    scale: 1;
+    opacity: 0;
+  }
+}
+
+/* Any icon inside a button gets a small lift + pop on hover so icon buttons feel
+   responsive. Uses the standalone `scale`/`translate` properties (not `transform`)
+   so it composes with the RTL mirror flip above, which owns `transform`. */
+.btn svg {
+  transition:
+    scale 0.2s ease,
+    translate 0.2s ease;
+}
+
+.btn:hover svg {
+  scale: 1.15;
+  translate: 0 -1px;
+}
+
+.btn:active svg {
+  scale: 1;
+  translate: 0;
+}
+
+/* Delete buttons' bin icon shakes on hover as an extra "careful, destructive"
+   cue. Uses the standalone `rotate` property so it layers on top of the
+   lift/pop above (which owns `scale`/`translate`) and the RTL mirror flip
+   (which owns `transform`) without any of the three clobbering another. */
+@keyframes icon-shake {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+
+  20% {
+    rotate: -12deg;
+  }
+
+  40% {
+    rotate: 10deg;
+  }
+
+  60% {
+    rotate: -8deg;
+  }
+
+  80% {
+    rotate: 6deg;
+  }
+}
+
+.btn:hover svg.lucide-trash-2 {
+  animation: icon-shake 0.4s ease;
 }
 
 .toggle,
@@ -246,4 +473,83 @@ html[dir="rtl"] svg.lucide:not([data-no-flip]) {
    together — instead of the text popping in ahead of everything else around it. */
 .animate-message-in {
   animation: message-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Strip away layout-breaking native input spin buttons cross-browser */
+.no-spin-buttons::-webkit-outer-spin-button,
+.no-spin-buttons::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.no-spin-buttons[type="number"] {
+  -moz-appearance: textfield;
+}
+
+/* One consistent size for every modal: a shared max width, and a height capped at
+   three-quarters of the viewport (its own overflow-y auto keeps taller content
+   scrollable inside the box). */
+.modal-box {
+  max-width: var(--max-width-modal);
+  max-height: 75vh;
+}
+
+/* When a newer modal stacks on top, tuck the older one(s) back a touch for depth.
+   daisyUI animates .modal-box via the `scale` property, so this transitions for
+   free. The `modal-stacked-below` class is toggled by useStackedModals(). */
+.modal.modal-stacked-below .modal-box {
+  scale: 0.95;
+}
+
+/* react-phone-number-input's own style.css lays out the flag/select/input, but
+   looks like a plain HTML control next to daisyUI's `.input.input-bordered`
+   fields. AccountStep puts those two classes on the `.PhoneInput` wrapper
+   itself, so these compound selectors (2-3 classes) out-specificity the
+   library's plain single-class rules regardless of stylesheet import order,
+   making it read as just another bordered input. */
+.PhoneInput.input {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.PhoneInput.input .PhoneInputCountry {
+  display: flex;
+  flex-shrink: 0;
+  align-items: center;
+  gap: 0.25rem;
+  cursor: pointer;
+}
+
+.PhoneInput.input .PhoneInputCountryIcon {
+  width: 1.25rem;
+  box-shadow: none;
+}
+
+.PhoneInput.input .PhoneInputCountrySelectArrow {
+  opacity: 0.5;
+}
+
+.PhoneInput.input .PhoneInputInput {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-size: inherit;
+  color: inherit;
+}
+
+/* Honour the OS "reduce motion" setting: collapse entry/toast/message animations
+   and looping skeleton pulses to a near-instant, single frame so nothing moves,
+   fades, or throbs for motion-sensitive users. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
 }
