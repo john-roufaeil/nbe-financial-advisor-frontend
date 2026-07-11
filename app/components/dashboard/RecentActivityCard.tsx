@@ -6,7 +6,9 @@ import {
   ArrowUpCircle,
   ArrowDownCircle,
   ChevronRight,
-  Receipt,
+  Inbox,
+  FileX2,
+  Plus,
 } from "lucide-react";
 import { useTransactions } from "@/queries/transactions";
 import { useDocuments } from "@/queries/documents";
@@ -26,6 +28,7 @@ function SummaryCard({
   countLabel,
   emptyIcon: EmptyIcon,
   emptyLabel,
+  emptyCtaLabel,
   children,
 }: {
   to: string;
@@ -36,11 +39,17 @@ function SummaryCard({
   countLabel: string;
   emptyIcon: typeof ArrowLeftRight;
   emptyLabel: string;
+  emptyCtaLabel: string;
   children: React.ReactNode;
 }) {
+  const isEmpty = count === 0;
+
   return (
     <Link
       to={to}
+      // When empty, the whole card is the invitation to add the first item —
+      // send it straight into the add flow instead of the (empty) list view.
+      state={isEmpty ? { openAdd: true } : undefined}
       className="card border-base-300 bg-base-100 hover:border-primary group animate-entry h-40 border shadow-sm transition-colors"
     >
       <div className="card-body flex h-full min-h-0 flex-col gap-3 p-4">
@@ -59,9 +68,17 @@ function SummaryCard({
             {children}
           </ul>
         ) : (
-          <div className="flex flex-1 flex-col items-center justify-center">
-            <EmptyIcon className="text-base-content/25 size-5" />
-            <p className="text-base-content/40 text-xs">{emptyLabel}</p>
+          <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
+            <div className="flex items-center gap-1.5">
+              <EmptyIcon className="text-base-content/30 size-4 shrink-0" />
+              <p className="text-base-content/50 text-xs">{emptyLabel}</p>
+            </div>
+            {/* Purely visual — the card itself (the enclosing `<Link>`) is the
+                click target, so this isn't a real nested button. */}
+            <span className="btn btn-primary btn-xs pointer-events-none gap-1 font-medium normal-case shadow-sm">
+              <Plus className="size-3.5" />
+              {emptyCtaLabel}
+            </span>
           </div>
         )}
       </div>
@@ -84,8 +101,9 @@ function TransactionsSummary() {
       title={t("data.transactions")}
       count={data?.total ?? 0}
       countLabel={t("data.pagination.totalTransactions", { count: data?.total ?? 0 })}
-      emptyIcon={Receipt}
+      emptyIcon={Inbox}
       emptyLabel={t("data.transactionsEmptyShort")}
+      emptyCtaLabel={t("data.transactionsEmptyCta")}
     >
       {data?.items.map((tx) => {
         const isIncome = tx.type === "income";
@@ -127,8 +145,9 @@ function DocumentsSummary() {
       title={t("data.documents")}
       count={data?.total ?? 0}
       countLabel={t("data.pagination.totalDocuments", { count: data?.total ?? 0 })}
-      emptyIcon={FileText}
+      emptyIcon={FileX2}
       emptyLabel={t("data.documentsEmptyShort")}
+      emptyCtaLabel={t("data.documentsEmptyCta")}
     >
       {data?.items.map((doc) => (
         <li key={doc.id}>

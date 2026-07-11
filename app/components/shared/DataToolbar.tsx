@@ -179,7 +179,7 @@ export function DataToolbar<F extends string>({
                 role="dialog"
                 aria-label={t("data.filtersLabel")}
                 style={{ top: panelCoords.top, left: panelCoords.left }}
-                className="border-base-300 bg-base-100 animate-a11y-panel-in fixed z-50 w-72 rounded-2xl border p-4 shadow-2xl"
+                className="border-base-300 bg-base-100 animate-a11y-panel-in fixed z-50 max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-2xl border p-4 shadow-2xl"
               >
                 <div className="flex flex-col gap-3">
                   <div className="join border-base-300 w-full rounded-lg border">

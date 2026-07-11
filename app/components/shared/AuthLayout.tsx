@@ -64,7 +64,7 @@ export function AuthLayout({
 
       {/* Content panel. Scrolls if content exceeds the viewport. */}
       <div
-        className={`flex flex-1 justify-center overflow-y-auto p-6 lg:p-10 ${
+        className={`flex flex-1 justify-center overflow-y-auto p-4 lg:p-10 ${
           align === "start" ? "items-start" : "items-center"
         }`}
       >

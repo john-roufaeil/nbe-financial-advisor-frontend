@@ -25,7 +25,7 @@ export function AddItemFab() {
       </Tooltip>
       <ul
         tabIndex={0}
-        className="dropdown-content menu bg-base-100 border-base-300 rounded-box z-20 mb-2 w-56 border p-2 shadow-md"
+        className="dropdown-content menu bg-base-100 border-base-300 rounded-box z-20 mb-2 max-h-[70vh] w-56 max-w-[90vw] overflow-y-auto border p-2 shadow-md"
       >
         <li>
           <Link to={`/${lang}/transactions`} state={{ openAdd: true }}>
