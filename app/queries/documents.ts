@@ -82,73 +82,22 @@ export function useRetryDocument() {
   });
 }
 
-/** Extracted rows ARE ledger rows in backend mode, so the transactions list goes stale too. */
-function invalidateDocumentsAndLedger(queryClient: ReturnType<typeof useQueryClient>) {
-  queryClient.invalidateQueries({ queryKey: documentKeys.all });
-  queryClient.invalidateQueries({ queryKey: ["transactions"] });
-}
-
-export function useUpdateExtractedTransaction() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
-    mutationFn: ({
-      documentId,
-      transactionId,
-      patch,
-    }: {
-      documentId: string;
-      transactionId: string;
-      patch: Partial<Omit<ExtractedTransaction, "id">>;
-    }) => impl(source).updateExtractedTransaction(documentId, transactionId, patch),
-    onSuccess: () => invalidateDocumentsAndLedger(queryClient),
-    onError: (error) => toastApiError(error),
-  });
-}
-
-export function useDeleteExtractedTransaction() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
-    mutationFn: ({
-      documentId,
-      transactionId,
-    }: {
-      documentId: string;
-      transactionId: string;
-    }) => impl(source).deleteExtractedTransaction(documentId, transactionId),
-    onSuccess: () => {
-      invalidateDocumentsAndLedger(queryClient);
-      toastSuccess("toast.transactionDeleted");
-    },
-    onError: (error) => toastApiError(error),
-  });
-}
-
-export function useAddExtractedTransaction() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
-    mutationFn: ({
-      documentId,
-      body,
-    }: {
-      documentId: string;
-      body: Omit<ExtractedTransaction, "id">;
-    }) => impl(source).addExtractedTransaction(documentId, body),
-    onSuccess: () => {
-      invalidateDocumentsAndLedger(queryClient);
-      toastSuccess("toast.transactionCreated");
-    },
-    onError: (error) => toastApiError(error),
-  });
-}
-
+/**
+ * Extracted-row edits are kept purely client-side while a statement is under
+ * review (see DocumentDetailModal) — the only request this screen ever sends
+ * is the approve call below, with the user's final edited rows attached.
+ */
 export function useApproveDocument() {
   const queryClient = useQueryClient();
   const source = useDataSourceStore((s) => s.source);
   return useMutation({
-    mutationFn: (id: string) => impl(source).approveDocument(id),
+    mutationFn: ({
+      id,
+      transactions,
+    }: {
+      id: string;
+      transactions: ExtractedTransaction[];
+    }) => impl(source).approveDocument(id, transactions),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: documentKeys.all });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });

@@ -1,10 +1,6 @@
 import { apiClient } from "@/api/client";
 import { getAccounts } from "@/api/accounts";
-import {
-  getTransactionsByStatement,
-  updateTransaction,
-  deleteTransaction,
-} from "@/api/transactions";
+import { getTransactionsByStatement } from "@/api/transactions";
 import { getBankCode } from "@/lib/banks";
 import type {
   DocumentRecord,
@@ -18,6 +14,7 @@ export interface DocumentFilters {
   q?: string;
   from?: string;
   to?: string;
+  sort?: "asc" | "desc";
   offset?: number;
   limit?: number;
 }
@@ -99,12 +96,10 @@ function toDocument(raw: RawStatement, bankName?: string): DocumentRecord {
     // failures at POST time), so recovery is a processing retry, not a re-upload.
     failedStage: status === "failed" ? "processing" : undefined,
     approved: status === "processed",
-    // Extracted rows are real ledger transactions, so PATCH/DELETE /transactions
-    // edits them. Adding one is impossible: TransactionWriteSerializer has no
-    // `statement` field, so a new row could never be linked back to this
-    // statement and would vanish from this list on the next refetch.
+    // Rows are edited/added client-side only while under review and are never
+    // sent until the (currently unsupported) approve call — see approveDocument.
     canEditTransactions: status === "processed",
-    canAddTransactions: false,
+    canAddTransactions: status === "processed",
     bankName,
   };
 }
@@ -203,32 +198,11 @@ export async function deleteDocument(id: string): Promise<void> {
   await apiClient.delete(`/statements/${id}`);
 }
 
-// ── Extracted-transaction edits ───────────────────────────────────────────────
-// These go through /transactions/{id}, not /statements/.../normalized/{txId}
-// (which doesn't exist): the pipeline already committed each extracted row to
-// the ledger, so editing "the extracted transaction" IS editing the ledger row.
-
-export async function updateExtractedTransaction(
-  _documentId: string,
-  transactionId: string,
-  patch: Partial<Omit<ExtractedTransaction, "id">>,
-): Promise<ExtractedTransaction> {
-  return updateTransaction(transactionId, patch);
-}
-
-export async function deleteExtractedTransaction(
-  _documentId: string,
-  transactionId: string,
-): Promise<void> {
-  await deleteTransaction(transactionId);
-}
-
 // ── Not implemented server-side ───────────────────────────────────────────────
 // POST /statements/{id}/retry and POST /statements/{id}/approve do not exist in
 // core/urls.py. The mock pipeline never fails and commits transactions itself,
-// so there is nothing to retry or approve. Adding a transaction to a statement
-// is impossible for a different reason: TransactionWriteSerializer exposes no
-// `statement` field. Throwing surfaces an honest error instead of an opaque 404.
+// so there is nothing to retry or approve. Throwing surfaces an honest error
+// instead of an opaque 404.
 
 const UNSUPPORTED = "This action isn't supported by the backend yet.";
 
@@ -236,15 +210,9 @@ export async function retryDocument(_id: string): Promise<DocumentRecord> {
   throw new Error(UNSUPPORTED);
 }
 
-export async function addExtractedTransaction(
-  _documentId: string,
-  _body: Omit<ExtractedTransaction, "id">,
-): Promise<ExtractedTransaction> {
-  throw new Error(UNSUPPORTED);
-}
-
 export async function approveDocument(
   _id: string,
+  _transactions: ExtractedTransaction[],
 ): Promise<{ approvedAt: string; createdTransactionIds: string[] }> {
   throw new Error(UNSUPPORTED);
 }

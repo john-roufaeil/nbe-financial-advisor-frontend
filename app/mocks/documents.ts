@@ -27,7 +27,7 @@ function generateExtractedTransactions(uploadDate: string): ExtractedTransaction
   }));
 }
 
-let documents: DocumentRecord[] = [
+const SEED_DOCS: DocumentRecord[] = [
   {
     id: "d1",
     name: "Bank Statement - June 2026.pdf",
@@ -104,6 +104,11 @@ let documents: DocumentRecord[] = [
     bankName: "BM",
   },
 ];
+
+let documents: DocumentRecord[] = SEED_DOCS.map((doc) => ({
+  ...doc,
+  extractedTransactions: generateExtractedTransactions(doc.uploadDate),
+}));
 
 function runProcessing(id: string) {
   setTimeout(() => {
@@ -209,65 +214,19 @@ export function retryDocument(id: string): Promise<DocumentRecord> {
   return delay(doc);
 }
 
-export function updateExtractedTransaction(
-  documentId: string,
-  transactionId: string,
-  patch: Partial<Omit<ExtractedTransaction, "id">>,
-): Promise<ExtractedTransaction> {
-  documents = documents.map((d) =>
-    d.id === documentId
-      ? {
-          ...d,
-          extractedTransactions: d.extractedTransactions?.map((tx) =>
-            tx.id === transactionId ? { ...tx, ...patch } : tx,
-          ),
-        }
-      : d,
-  );
-  const updated = documents
-    .find((d) => d.id === documentId)
-    ?.extractedTransactions?.find((tx) => tx.id === transactionId);
-  if (!updated) return Promise.reject(new Error("Extracted transaction not found"));
-  return delay(updated, 150);
-}
-
-export function deleteExtractedTransaction(
-  documentId: string,
-  transactionId: string,
-): Promise<void> {
-  documents = documents.map((d) =>
-    d.id === documentId
-      ? {
-          ...d,
-          extractedTransactions: d.extractedTransactions?.filter(
-            (tx) => tx.id !== transactionId,
-          ),
-        }
-      : d,
-  );
-  return delay(undefined, 150);
-}
-
-export function addExtractedTransaction(
-  documentId: string,
-  body: Omit<ExtractedTransaction, "id">,
-): Promise<ExtractedTransaction> {
-  const created: ExtractedTransaction = { ...body, id: crypto.randomUUID() };
-  documents = documents.map((d) =>
-    d.id === documentId
-      ? { ...d, extractedTransactions: [...(d.extractedTransactions ?? []), created] }
-      : d,
-  );
-  return delay(created, 150);
-}
-
+/**
+ * Rows are edited/added/removed purely client-side while under review (see
+ * DocumentDetailModal) — the edited list only reaches the mock store here,
+ * in one shot, when the user approves.
+ */
 export async function approveDocument(
   id: string,
+  transactions: ExtractedTransaction[],
 ): Promise<{ approvedAt: string; createdTransactionIds: string[] }> {
   const doc = documents.find((d) => d.id === id);
-  if (!doc?.extractedTransactions) throw new Error(`Document ${id} not found`);
+  if (!doc) throw new Error(`Document ${id} not found`);
   const created = await Promise.all(
-    doc.extractedTransactions.map((tx) =>
+    transactions.map((tx) =>
       createTransaction({
         datetime: tx.datetime,
         title: tx.title,
@@ -279,7 +238,14 @@ export async function approveDocument(
   );
   const approvedAt = new Date().toISOString();
   documents = documents.map((d) =>
-    d.id === id ? { ...d, approved: true, approvedAt: Date.now() } : d,
+    d.id === id
+      ? {
+          ...d,
+          approved: true,
+          approvedAt: Date.now(),
+          extractedTransactions: transactions,
+        }
+      : d,
   );
   return delay({ approvedAt, createdTransactionIds: created.map((c) => c.id) });
 }

@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { Tooltip } from "@/components/shared/Tooltip";
 import { PAGE_SIZE_OPTIONS } from "@/lib/pagination";
 
 interface PaginationProps {
@@ -54,7 +55,7 @@ export function Pagination({
     <div
       className={
         attached
-          ? "border-base-300 flex flex-wrap items-center justify-between gap-3 border-t px-3 py-2 sm:px-4"
+          ? "border-base-300 bg-base-100 flex flex-wrap items-center justify-between gap-3 rounded-b-2xl border-t px-3 py-2 sm:px-4"
           : "border-base-300 bg-base-100 animate-entry mt-auto flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-3 py-2 shadow-sm sm:px-4"
       }
     >
@@ -80,15 +81,17 @@ export function Pagination({
         aria-label={t("data.pagination.page", { page, totalPages })}
         className="flex items-center gap-1"
       >
-        <button
-          type="button"
-          disabled={page <= 1}
-          onClick={() => onPageChange(page - 1)}
-          aria-label={t("data.pagination.prev")}
-          className="btn btn-ghost btn-xs btn-square disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          <ChevronLeft className="size-3.5" />
-        </button>
+        <Tooltip content={t("data.pagination.prev")}>
+          <button
+            type="button"
+            disabled={page <= 1}
+            onClick={() => onPageChange(page - 1)}
+            aria-label={t("data.pagination.prev")}
+            className="btn btn-ghost btn-xs btn-square disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            <ChevronLeft className="size-3.5" />
+          </button>
+        </Tooltip>
 
         {pageItems(page, totalPages).map((item, i) =>
           item === "…" ? (
@@ -115,15 +118,17 @@ export function Pagination({
           ),
         )}
 
-        <button
-          type="button"
-          disabled={page >= totalPages}
-          onClick={() => onPageChange(page + 1)}
-          aria-label={t("data.pagination.next")}
-          className="btn btn-ghost btn-xs btn-square disabled:cursor-not-allowed disabled:opacity-70"
-        >
-          <ChevronRight className="size-3.5" />
-        </button>
+        <Tooltip content={t("data.pagination.next")}>
+          <button
+            type="button"
+            disabled={page >= totalPages}
+            onClick={() => onPageChange(page + 1)}
+            aria-label={t("data.pagination.next")}
+            className="btn btn-ghost btn-xs btn-square disabled:cursor-not-allowed disabled:opacity-70"
+          >
+            <ChevronRight className="size-3.5" />
+          </button>
+        </Tooltip>
       </nav>
     </div>
   );

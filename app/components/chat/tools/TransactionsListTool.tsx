@@ -67,7 +67,8 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{tx.title}</p>
                 <p className="text-base-content/50 text-xs">
-                  {tx.category} · {formatDate(tx.datetime)}
+                  {t(`data.categories.${tx.category}`, tx.category)} ·{" "}
+                  {formatDate(tx.datetime)}
                 </p>
               </div>
               <Money

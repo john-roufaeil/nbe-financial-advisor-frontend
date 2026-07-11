@@ -7,7 +7,10 @@ export interface TransactionFilters {
   category?: string;
   from?: string;
   to?: string;
+  minAmount?: number;
+  maxAmount?: number;
   q?: string;
+  sort?: "asc" | "desc";
   offset?: number;
   limit?: number;
 }
@@ -75,17 +78,31 @@ function toTransaction(raw: RawTransaction): Transaction {
 }
 
 /**
- * `type` and `q` are deliberately NOT sent: GET /transactions supports no
- * transaction_type filter and no free-text search. Filtering them client-side
- * would desync `total` (the server counts unfiltered rows), silently breaking
- * pagination — so the type/search controls are a no-op against the real backend
- * until it grows those filters. See docs/frontend-wiring-gaps.md.
+ * `q` is deliberately NOT sent: GET /transactions supports no free-text
+ * search. Filtering it client-side would desync `total` (the server counts
+ * unfiltered rows), silently breaking pagination — so that control is a
+ * no-op against the real backend until it grows the filter. See
+ * docs/frontend-wiring-gaps.md.
+ *
+ * `min_amount`/`max_amount` have the same problem (GET /transactions has no
+ * documented amount filter) but are sent anyway, best-effort, on the same
+ * reasoning as `ordering` below: an unrecognized param is harmless, and if
+ * the backend ever grows the filter this starts working for free. Until
+ * then, expect `total` to undercount when an amount range is active.
  */
 function toQueryParams(filters: TransactionFilters): Record<string, string | number> {
   const params: Record<string, string | number> = {};
+  if (filters.type) params.transaction_type = toBackendType(filters.type);
   if (filters.category) params.category = filters.category;
   if (filters.from) params.from = filters.from;
   if (filters.to) params.to = filters.to;
+  if (filters.minAmount !== undefined) params.min_amount = filters.minAmount;
+  if (filters.maxAmount !== undefined) params.max_amount = filters.maxAmount;
+  // Best-effort: GET /transactions' sort support isn't confirmed, but an
+  // unrecognized param is harmless. No client-side re-sort fallback — all
+  // sorting is strictly server-side, per product decision.
+  if (filters.sort)
+    params.ordering = filters.sort === "asc" ? "transaction_date" : "-transaction_date";
   if (filters.offset !== undefined) params.offset = filters.offset;
   if (filters.limit !== undefined) params.limit = filters.limit;
   return params;

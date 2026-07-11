@@ -1,12 +1,14 @@
-import { forwardRef, useImperativeHandle, useRef, useState } from "react";
+import { forwardRef, useEffect, useImperativeHandle, useRef, useState } from "react";
 import { ArrowDownCircle, ArrowUpCircle, Pencil, Trash2, Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { formatDateTime } from "@/lib/format";
+import { formatDate, formatDateTime } from "@/lib/format";
 import type { Transaction } from "@/types/transaction";
+import { AMOUNT_RANGES, TRANSACTION_CATEGORIES } from "@/types/transaction";
 import { useTransactions, useDeleteTransaction } from "@/queries/transactions";
 import { Pagination } from "@/components/data/Pagination";
 import { AddTransactionModal } from "@/components/data/AddTransactionModal";
 import { DataToolbar } from "@/components/shared/DataToolbar";
+import { Tooltip } from "@/components/shared/Tooltip";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import {
   ListSkeleton,
@@ -18,6 +20,7 @@ import { Money } from "@/components/shared/Money";
 import { useViewModeStore, type ViewMode } from "@/store/use-view-mode-store";
 import { usePageSizeStore } from "@/store/use-page-size-store";
 import { useLoadAnimation } from "@/lib/use-load-animation";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 
 /** List = single column of rows; grid = responsive cards. */
 const VIEW_CONTAINER = {
@@ -27,6 +30,16 @@ const VIEW_CONTAINER = {
 
 const FILTERS = ["all", "income", "expense"] as const;
 type Filter = (typeof FILTERS)[number];
+
+/** The real backend has no time component (always pinned to midnight), so a
+ * literal 00:00 reads as "no time recorded" rather than an actual midnight
+ * transaction — hide it and show the date alone. */
+function formatTransactionDateTime(iso: string) {
+  const d = new Date(iso);
+  return d.getHours() === 0 && d.getMinutes() === 0
+    ? formatDate(iso)
+    : formatDateTime(iso);
+}
 
 export interface TransactionsTabHandle {
   openAdd: () => void;
@@ -62,7 +75,8 @@ function TransactionCard({
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{transaction.title}</p>
         <p className="text-base-content/50 text-xs">
-          {transaction.category} · {formatDateTime(transaction.datetime)}
+          {t(`data.categories.${transaction.category}`, transaction.category)} ·{" "}
+          {formatTransactionDateTime(transaction.datetime)}
         </p>
       </div>
     </div>
@@ -82,22 +96,26 @@ function TransactionCard({
 
   const actions = (
     <div className="flex shrink-0 items-center gap-1">
-      <button
-        type="button"
-        onClick={onEdit}
-        className="btn btn-ghost btn-sm btn-square"
-        aria-label={t("actions.edit")}
-      >
-        <Pencil data-no-flip className="size-4" />
-      </button>
-      <button
-        type="button"
-        onClick={onDelete}
-        className="btn btn-ghost btn-sm btn-square text-error"
-        aria-label={t("actions.delete", { name: transaction.title })}
-      >
-        <Trash2 className="size-4" />
-      </button>
+      <Tooltip content={t("actions.edit")}>
+        <button
+          type="button"
+          onClick={onEdit}
+          className="btn btn-ghost btn-sm btn-square"
+          aria-label={t("actions.edit")}
+        >
+          <Pencil data-no-flip className="size-4" />
+        </button>
+      </Tooltip>
+      <Tooltip content={t("actions.delete", { name: transaction.title })}>
+        <button
+          type="button"
+          onClick={onDelete}
+          className="btn btn-ghost btn-sm btn-square text-error"
+          aria-label={t("actions.delete", { name: transaction.title })}
+        >
+          <Trash2 className="size-4" />
+        </button>
+      </Tooltip>
     </div>
   );
 
@@ -125,10 +143,14 @@ function TransactionCard({
 export const TransactionsTab = forwardRef<TransactionsTabHandle>(
   function TransactionsTab(_props, ref) {
     const { t } = useTranslation();
-    const [search, setSearch] = useState("");
+    const [searchInput, setSearchInput] = useState("");
+    const search = useDebouncedValue(searchInput, 1000);
     const [filter, setFilter] = useState<Filter>("all");
+    const [category, setCategory] = useState("");
     const [fromDate, setFromDate] = useState("");
     const [toDate, setToDate] = useState("");
+    const [amountRange, setAmountRange] = useState("any");
+    const [sort, setSort] = useState<"asc" | "desc">("desc");
     const [page, setPage] = useState(1);
     const pageSize = usePageSizeStore((s) => s.pageSize);
     const setPageSize = usePageSizeStore((s) => s.setPageSize);
@@ -136,12 +158,28 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
     const viewMode = useViewModeStore((s) => s.mode);
     const modalRef = useRef<HTMLDialogElement>(null);
     const [editing, setEditing] = useState<Transaction | null>(null);
+    // null = no open pending. A plain boolean ref to skip the mount run would
+    // break under StrictMode's dev-only double-invoke of mount effects (the
+    // ref flips on the first pass, so the duplicate pass reopens the modal
+    // unconditionally) — state doesn't have that problem.
+    const [modalKey, setModalKey] = useState<number | null>(null);
+
+    useEffect(() => {
+      if (modalKey === null) return;
+      modalRef.current?.showModal();
+    }, [modalKey]);
+
+    const selectedAmountRange = AMOUNT_RANGES.find((r) => r.key === amountRange);
 
     const { data, isPending, isError, refetch } = useTransactions({
       type: filter === "all" ? undefined : filter,
+      category: category || undefined,
       q: search.trim() || undefined,
       from: fromDate || undefined,
       to: toDate || undefined,
+      minAmount: selectedAmountRange?.min,
+      maxAmount: selectedAmountRange?.max,
+      sort,
       offset: (page - 1) * pageSize,
       limit: pageSize,
     });
@@ -151,13 +189,13 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
     useImperativeHandle(ref, () => ({
       openAdd: () => {
         setEditing(null);
-        modalRef.current?.showModal();
+        setModalKey((k) => (k ?? 0) + 1);
       },
     }));
 
     function openEdit(tr: Transaction) {
       setEditing(tr);
-      modalRef.current?.showModal();
+      setModalKey((k) => (k ?? 0) + 1);
     }
 
     const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / pageSize));
@@ -168,27 +206,55 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
     }
 
     function updateSearch(value: string) {
-      setSearch(value);
+      setSearchInput(value);
       setPage(1);
     }
     function updateFilter(value: Filter) {
       setFilter(value);
       setPage(1);
     }
+    function updateCategory(value: string) {
+      setCategory(value);
+      setPage(1);
+    }
     function updateFromDate(value: string) {
       setFromDate(value);
+      if (toDate && value > toDate) setToDate(value);
       setPage(1);
     }
     function updateToDate(value: string) {
       setToDate(value);
+      if (fromDate && value < fromDate) setFromDate(value);
+      setPage(1);
+    }
+    function updateAmountRange(value: string) {
+      setAmountRange(value);
+      setPage(1);
+    }
+
+    const hasActiveFilters =
+      searchInput !== "" ||
+      filter !== "all" ||
+      category !== "" ||
+      fromDate !== "" ||
+      toDate !== "" ||
+      amountRange !== "any";
+
+    function clearAllFilters() {
+      setSearchInput("");
+      setFilter("all");
+      setCategory("");
+      setFromDate("");
+      setToDate("");
+      setAmountRange("any");
       setPage(1);
     }
 
     return (
       <div className="flex flex-1 flex-col gap-4">
-        <div className="border-base-300 bg-base-100 animate-entry overflow-hidden rounded-2xl border shadow-sm">
+        <div className="border-base-300 bg-base-100 animate-entry rounded-2xl border shadow-sm">
           <DataToolbar
-            search={search}
+            search={searchInput}
             onSearchChange={updateSearch}
             fromDate={fromDate}
             onFromDateChange={updateFromDate}
@@ -198,6 +264,20 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
             filter={filter}
             onFilterChange={updateFilter}
             filterLabel={(f) => t(`data.filters.${f}`)}
+            categories={TRANSACTION_CATEGORIES}
+            category={category}
+            onCategoryChange={updateCategory}
+            categoryLabel={(c) => t(`data.categories.${c}`, c)}
+            amountRanges={AMOUNT_RANGES.map((r) => ({
+              key: r.key,
+              label: t(`data.amountRanges.${r.key}`),
+            }))}
+            amountRange={amountRange}
+            onAmountRangeChange={updateAmountRange}
+            sort={sort}
+            onSortChange={setSort}
+            hasActiveFilters={hasActiveFilters}
+            onClearAll={clearAllFilters}
           />
           <Pagination
             attached
@@ -255,7 +335,7 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
           totalLabelKey="data.pagination.totalTransactions"
         />
 
-        <AddTransactionModal ref={modalRef} editing={editing} />
+        <AddTransactionModal key={modalKey ?? 0} ref={modalRef} editing={editing} />
       </div>
     );
   },

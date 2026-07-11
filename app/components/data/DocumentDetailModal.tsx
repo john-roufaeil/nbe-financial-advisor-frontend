@@ -1,4 +1,4 @@
-import { forwardRef, useRef } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Loader2,
@@ -12,10 +12,15 @@ import {
   ArrowUpCircle,
 } from "lucide-react";
 import { TRANSACTION_CATEGORIES } from "@/types/transaction";
-import { DOCUMENT_UPLOAD_ACCEPT, inferDocumentType } from "@/types/document";
+import {
+  DOCUMENT_UPLOAD_ACCEPT,
+  inferDocumentType,
+  type ExtractedTransaction,
+} from "@/types/document";
 import { Button } from "@/components/shared/Button";
 import { useBankInfo } from "@/lib/banks";
 import { BaseModal } from "@/components/shared/BaseModal";
+import { Tooltip } from "@/components/shared/Tooltip";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { toastError } from "@/lib/toast";
 import { Money } from "@/components/shared/Money";
@@ -24,11 +29,125 @@ import {
   useRetryDocument,
   useUploadDocuments,
   useDeleteDocument,
-  useUpdateExtractedTransaction,
-  useDeleteExtractedTransaction,
-  useAddExtractedTransaction,
   useApproveDocument,
 } from "@/queries/documents";
+
+/** Rows here are edited purely in local state (see `draft` in the parent) —
+ * nothing is sent to the server until "Approve" — so every keystroke is a
+ * plain re-render with no network round trip. */
+function ExtractedTransactionRow({
+  tx,
+  onUpdate,
+  onDelete,
+}: {
+  tx: ExtractedTransaction;
+  onUpdate: (patch: Partial<Omit<ExtractedTransaction, "id">>) => void;
+  onDelete: () => void;
+}) {
+  const { t } = useTranslation();
+  const confirm = useConfirmStore((s) => s.confirm);
+  const isIncome = tx.type === "income";
+  const TypeIcon = isIncome ? ArrowUpCircle : ArrowDownCircle;
+  const amountInvalid = !Number.isFinite(tx.amount) || tx.amount <= 0;
+
+  return (
+    <li className="border-base-300 bg-base-100 rounded-xl border p-3 shadow-sm">
+      <div className="flex flex-col gap-3">
+        <div className="flex items-center gap-2">
+          <span
+            data-no-flip
+            className={`grid size-8 shrink-0 place-items-center rounded-full ${isIncome ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}
+          >
+            <TypeIcon data-no-flip className="size-4" />
+          </span>
+          <input
+            type="text"
+            value={tx.title}
+            maxLength={20}
+            onChange={(e) => onUpdate({ title: e.target.value })}
+            className="input input-bordered input-sm w-full flex-1 font-medium"
+          />
+          <Tooltip content={t("actions.delete", { name: tx.title })} className="shrink-0">
+            <button
+              type="button"
+              onClick={() =>
+                confirm({
+                  title: t("confirm.deleteTransactionTitle"),
+                  message: t("confirm.deleteMessage"),
+                  onConfirm: onDelete,
+                })
+              }
+              className="btn btn-ghost btn-sm btn-square text-error"
+              aria-label={t("actions.delete", { name: tx.title })}
+            >
+              <Trash2 className="size-4" />
+            </button>
+          </Tooltip>
+        </div>
+
+        <div className="border-base-200 flex flex-wrap items-center gap-x-4 gap-y-2 border-t ps-10 pt-3">
+          <label className="flex items-center gap-1.5">
+            <span className="text-base-content/50 text-xs">
+              {t("data.addTransaction.category")}
+            </span>
+            <select
+              value={tx.category}
+              onChange={(e) => onUpdate({ category: e.target.value })}
+              className="select select-bordered select-xs"
+            >
+              {TRANSACTION_CATEGORIES.map((c) => (
+                <option key={c} value={c}>
+                  {t(`data.categories.${c}`, c)}
+                </option>
+              ))}
+            </select>
+          </label>
+
+          <div className="join border-base-300 rounded-lg border">
+            <button
+              type="button"
+              onClick={() => onUpdate({ type: "expense" })}
+              className={`btn btn-xs join-item cursor-pointer ${tx.type === "expense" ? "btn-error" : "btn-ghost"}`}
+            >
+              {t("data.filters.expense")}
+            </button>
+            <button
+              type="button"
+              onClick={() => onUpdate({ type: "income" })}
+              className={`btn btn-xs join-item cursor-pointer ${tx.type === "income" ? "btn-success" : "btn-ghost"}`}
+            >
+              {t("data.filters.income")}
+            </button>
+          </div>
+
+          <label className="ms-auto flex flex-col items-end gap-1">
+            <span className="flex items-center gap-1.5">
+              <span className="text-base-content/50 text-xs">
+                {t("data.addTransaction.amount")}
+              </span>
+              <input
+                type="number"
+                min={0}
+                step="0.01"
+                value={tx.amount}
+                onChange={(e) => onUpdate({ amount: Number(e.target.value) })}
+                className={`input input-bordered input-xs min-w-24 ${amountInvalid ? "input-error" : ""}`}
+                style={{
+                  width: `${Math.max(6, String(tx.amount).length + 3.5)}ch`,
+                }}
+              />
+            </span>
+            {amountInvalid && (
+              <span className="text-error text-xs">
+                {t("data.addTransaction.errors.amountInvalid")}
+              </span>
+            )}
+          </label>
+        </div>
+      </div>
+    </li>
+  );
+}
 
 export const DocumentDetailModal = forwardRef<
   HTMLDialogElement,
@@ -39,13 +158,43 @@ export const DocumentDetailModal = forwardRef<
   const retryDocument = useRetryDocument();
   const uploadDocuments = useUploadDocuments();
   const deleteDocument = useDeleteDocument();
-  const updateExtractedTransactionMutation = useUpdateExtractedTransaction();
-  const deleteExtractedTransaction = useDeleteExtractedTransaction();
-  const addExtractedTransaction = useAddExtractedTransaction();
   const approveDocument = useApproveDocument();
-  const confirm = useConfirmStore((s) => s.confirm);
   const reuploadInputRef = useRef<HTMLInputElement>(null);
   const { label: bankLabel, logo: bankLogo } = useBankInfo(doc?.bankName);
+
+  // Extracted rows are edited entirely client-side while under review — the
+  // only request this modal ever sends is the approve call, with this draft
+  // attached. Resynced whenever a different statement is opened.
+  const [draft, setDraft] = useState<ExtractedTransaction[]>([]);
+  useEffect(() => {
+    setDraft(doc?.extractedTransactions ?? []);
+  }, [doc?.id]);
+
+  function updateDraftTransaction(
+    txId: string,
+    patch: Partial<Omit<ExtractedTransaction, "id">>,
+  ) {
+    setDraft((d) => d.map((tx) => (tx.id === txId ? { ...tx, ...patch } : tx)));
+  }
+
+  function deleteDraftTransaction(txId: string) {
+    setDraft((d) => d.filter((tx) => tx.id !== txId));
+  }
+
+  function addDraftTransaction() {
+    if (!doc) return;
+    setDraft((d) => [
+      ...d,
+      {
+        id: crypto.randomUUID(),
+        datetime: `${doc.uploadDate.slice(0, 10)}T00:00:00`,
+        title: "",
+        category: TRANSACTION_CATEGORIES[0],
+        type: "expense",
+        amount: 0,
+      },
+    ]);
+  }
 
   // Recovery for a failed *upload*: pick the file again, upload it fresh, then
   // drop the stale failed record. Processing failures use retry instead.
@@ -72,23 +221,7 @@ export const DocumentDetailModal = forwardRef<
     }
   }
 
-  function updateExtractedTransaction(
-    docId: string,
-    txId: string,
-    patch: Parameters<typeof updateExtractedTransactionMutation.mutate>[0]["patch"],
-  ) {
-    updateExtractedTransactionMutation.mutate({
-      documentId: docId,
-      transactionId: txId,
-      patch,
-    });
-  }
-
-  const showApprove =
-    doc?.status === "processed" &&
-    !doc.approved &&
-    doc.extractedTransactions &&
-    doc.extractedTransactions.length > 0;
+  const showApprove = doc?.status === "processed" && !doc.approved && draft.length > 0;
 
   return (
     <BaseModal
@@ -116,7 +249,7 @@ export const DocumentDetailModal = forwardRef<
         showApprove ? (
           <Button
             type="button"
-            onClick={() => approveDocument.mutate(doc.id)}
+            onClick={() => approveDocument.mutate({ id: doc.id, transactions: draft })}
             loading={approveDocument.isPending}
             className="btn btn-primary btn-sm"
           >
@@ -191,33 +324,40 @@ export const DocumentDetailModal = forwardRef<
 
             {doc.status === "processed" && (
               <div className="flex flex-col gap-3">
-                {doc.approved ? (
-                  <p className="text-success flex items-center gap-1.5 text-sm font-medium">
-                    <CircleCheck data-no-flip className="size-4" />
-                    {t("data.documentDetail.approved")}
-                  </p>
-                ) : (
-                  <div>
-                    <p className="text-sm font-medium">
-                      {t("data.documentDetail.reviewTitle")}
+                <div className="flex items-start justify-between gap-3">
+                  {doc.approved ? (
+                    <p className="text-success flex items-center gap-1.5 text-sm font-medium">
+                      <CircleCheck data-no-flip className="size-4" />
+                      {t("data.documentDetail.approved")}
                     </p>
-                    <p className="text-base-content/60 text-xs">
-                      {t("data.documentDetail.reviewSubtitle")}
-                    </p>
-                  </div>
-                )}
+                  ) : (
+                    <div>
+                      <p className="text-sm font-medium">
+                        {t("data.documentDetail.reviewTitle")}
+                      </p>
+                      <p className="text-base-content/60 text-xs">
+                        {t("data.documentDetail.reviewSubtitle")}
+                      </p>
+                    </div>
+                  )}
+                  <span className="text-base-content/50 shrink-0 text-xs">
+                    {t("data.documentDetail.transactionCount", {
+                      count: draft.length,
+                    })}
+                  </span>
+                </div>
 
-                {doc.extractedTransactions && doc.extractedTransactions.length > 0 ? (
+                {draft.length > 0 ? (
                   <ul className="flex flex-col gap-3">
-                    {doc.extractedTransactions.map((tx) => {
+                    {draft.map((tx) => {
                       const isIncome = tx.type === "income";
                       const TypeIcon = isIncome ? ArrowUpCircle : ArrowDownCircle;
-                      return (
-                        <li
-                          key={tx.id}
-                          className="border-base-300 bg-base-100 rounded-xl border p-3 shadow-sm"
-                        >
-                          {!doc.canEditTransactions ? (
+                      if (!doc.canEditTransactions) {
+                        return (
+                          <li
+                            key={tx.id}
+                            className="border-base-300 bg-base-100 rounded-xl border p-3 shadow-sm"
+                          >
                             <div className="flex items-center gap-3">
                               <span
                                 data-no-flip
@@ -228,7 +368,7 @@ export const DocumentDetailModal = forwardRef<
                               <div className="min-w-0 flex-1">
                                 <p className="truncate text-sm font-medium">{tx.title}</p>
                                 <p className="text-base-content/50 text-xs">
-                                  {tx.category}
+                                  {t(`data.categories.${tx.category}`, tx.category)}
                                 </p>
                               </div>
                               <Money
@@ -241,116 +381,16 @@ export const DocumentDetailModal = forwardRef<
                                 {t("currency.EGP")}
                               </Money>
                             </div>
-                          ) : (
-                            <div className="flex flex-col gap-3">
-                              <div className="flex items-center gap-2">
-                                <span
-                                  data-no-flip
-                                  className={`grid size-8 shrink-0 place-items-center rounded-full ${isIncome ? "bg-success/10 text-success" : "bg-error/10 text-error"}`}
-                                >
-                                  <TypeIcon data-no-flip className="size-4" />
-                                </span>
-                                <input
-                                  type="text"
-                                  value={tx.title}
-                                  onChange={(e) =>
-                                    updateExtractedTransaction(doc.id, tx.id, {
-                                      title: e.target.value,
-                                    })
-                                  }
-                                  className="input input-bordered input-sm w-full flex-1 font-medium"
-                                />
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    confirm({
-                                      title: t("confirm.deleteTransactionTitle"),
-                                      message: t("confirm.deleteMessage"),
-                                      onConfirm: () =>
-                                        deleteExtractedTransaction.mutate({
-                                          documentId: doc.id,
-                                          transactionId: tx.id,
-                                        }),
-                                    })
-                                  }
-                                  className="btn btn-ghost btn-sm btn-square text-error shrink-0"
-                                  aria-label={t("actions.delete", { name: tx.title })}
-                                >
-                                  <Trash2 className="size-4" />
-                                </button>
-                              </div>
-
-                              <div className="border-base-200 flex flex-wrap items-center gap-x-4 gap-y-2 border-t ps-10 pt-3">
-                                <label className="flex items-center gap-1.5">
-                                  <span className="text-base-content/50 text-xs">
-                                    {t("data.addTransaction.category")}
-                                  </span>
-                                  <select
-                                    value={tx.category}
-                                    onChange={(e) =>
-                                      updateExtractedTransaction(doc.id, tx.id, {
-                                        category: e.target.value,
-                                      })
-                                    }
-                                    className="select select-bordered select-xs"
-                                  >
-                                    {TRANSACTION_CATEGORIES.map((c) => (
-                                      <option key={c} value={c}>
-                                        {c}
-                                      </option>
-                                    ))}
-                                  </select>
-                                </label>
-
-                                <div className="join border-base-300 rounded-lg border">
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      updateExtractedTransaction(doc.id, tx.id, {
-                                        type: "expense",
-                                      })
-                                    }
-                                    className={`btn btn-xs join-item cursor-pointer ${tx.type === "expense" ? "btn-error" : "btn-ghost"}`}
-                                  >
-                                    {t("data.filters.expense")}
-                                  </button>
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      updateExtractedTransaction(doc.id, tx.id, {
-                                        type: "income",
-                                      })
-                                    }
-                                    className={`btn btn-xs join-item cursor-pointer ${tx.type === "income" ? "btn-success" : "btn-ghost"}`}
-                                  >
-                                    {t("data.filters.income")}
-                                  </button>
-                                </div>
-
-                                <label className="ms-auto flex items-center gap-1.5">
-                                  <span className="text-base-content/50 text-xs">
-                                    {t("data.addTransaction.amount")}
-                                  </span>
-                                  <input
-                                    type="number"
-                                    min={0}
-                                    step="0.01"
-                                    value={tx.amount}
-                                    onChange={(e) =>
-                                      updateExtractedTransaction(doc.id, tx.id, {
-                                        amount: Number(e.target.value),
-                                      })
-                                    }
-                                    className="input input-bordered input-xs min-w-24"
-                                    style={{
-                                      width: `${Math.max(6, String(tx.amount).length + 3.5)}ch`,
-                                    }}
-                                  />
-                                </label>
-                              </div>
-                            </div>
-                          )}
-                        </li>
+                          </li>
+                        );
+                      }
+                      return (
+                        <ExtractedTransactionRow
+                          key={tx.id}
+                          tx={tx}
+                          onUpdate={(patch) => updateDraftTransaction(tx.id, patch)}
+                          onDelete={() => deleteDraftTransaction(tx.id)}
+                        />
                       );
                     })}
                   </ul>
@@ -363,19 +403,7 @@ export const DocumentDetailModal = forwardRef<
                 {doc.canAddTransactions && (
                   <button
                     type="button"
-                    onClick={() =>
-                      addExtractedTransaction.mutate({
-                        documentId: doc.id,
-                        body: {
-                          datetime: `${doc.uploadDate.slice(0, 10)}T00:00:00`,
-                          title: "",
-                          category: TRANSACTION_CATEGORIES[0],
-                          type: "expense",
-                          amount: 0,
-                        },
-                      })
-                    }
-                    disabled={addExtractedTransaction.isPending}
+                    onClick={addDraftTransaction}
                     className="btn btn-ghost btn-sm w-fit gap-2 self-start"
                   >
                     <Plus className="size-4" />

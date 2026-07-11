@@ -1,40 +1,46 @@
 import { useState } from "react";
-import {
-  Pencil,
-  Check,
-  X,
-  User,
-  Mail,
-  Landmark,
-  Loader2,
-  MapPin,
-  CreditCard,
-} from "lucide-react";
+import { Pencil, Check, X, User, Landmark, Loader2, CreditCard } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import "react-phone-number-input/style.css";
 import { useMe, useUpdateProfile } from "@/queries/profile";
 import { useAccounts } from "@/queries/accounts";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
+import { Tooltip } from "@/components/shared/Tooltip";
 import type { User as UserType } from "@/types/profile";
 import type { BankAccount } from "@/types/account";
 import { CardSkeleton, ErrorState } from "@/components/shared/QueryState";
 
 // ── Derived display sections from the User API shape ─────────────────────────
 
-type DisplayKey = keyof UserType | "addressLine" | "city" | "country";
+const EMPLOYMENT_OPTIONS = [
+  "employed",
+  "selfEmployed",
+  "student",
+  "unemployed",
+  "retired",
+] as const;
+
+const STEADINESS_OPTIONS = ["steady", "variable", "seasonal"] as const;
+
+type Field = {
+  key: keyof UserType;
+  labelKey: string;
+  writable: boolean;
+  currency?: boolean;
+  ltr?: boolean;
+  phone?: boolean;
+  placeholderKey?: string;
+  options?: { value: string; labelKey: string }[];
+};
 
 type Section = {
   key: string;
   icon: typeof User;
   color: string;
   titleKey: string;
-  fields: {
-    key: DisplayKey;
-    labelKey: string;
-    writable: boolean;
-    currency?: boolean;
-    ltr?: boolean;
-  }[];
+  fields: Field[];
 };
 
 const SECTIONS: Section[] = [
@@ -44,22 +50,21 @@ const SECTIONS: Section[] = [
     color: "bg-primary/10 text-primary",
     titleKey: "data.sections.profile.title",
     fields: [
-      { key: "name", labelKey: "data.sections.profile.fields.fullName", writable: true },
+      {
+        key: "name",
+        labelKey: "data.sections.profile.fields.fullName",
+        writable: true,
+        placeholderKey: "data.sections.profile.fields.fullNamePlaceholder",
+      },
       { key: "id", labelKey: "data.sections.profile.fields.id", writable: false },
-    ],
-  },
-  {
-    key: "contact",
-    icon: Mail,
-    color: "bg-secondary/10 text-secondary",
-    titleKey: "data.sections.contact.title",
-    fields: [
       { key: "email", labelKey: "data.sections.contact.fields.email", writable: false },
       {
         key: "phone",
         labelKey: "data.sections.contact.fields.phone",
         writable: true,
         ltr: true,
+        phone: true,
+        placeholderKey: "data.sections.contact.fields.phonePlaceholder",
       },
     ],
   },
@@ -73,50 +78,130 @@ const SECTIONS: Section[] = [
         key: "employment_status",
         labelKey: "data.sections.financial.fields.employmentStatus",
         writable: true,
+        options: EMPLOYMENT_OPTIONS.map((opt) => ({
+          value: opt,
+          labelKey: `onboarding.income.options.${opt}`,
+        })),
       },
       {
         key: "monthly_income",
         labelKey: "data.sections.financial.fields.monthlyIncome",
         writable: true,
         currency: true,
+        placeholderKey: "data.sections.financial.fields.monthlyIncomePlaceholder",
       },
       {
         key: "income_steadiness",
         labelKey: "data.sections.financial.fields.incomeSteadiness",
         writable: true,
-      },
-    ],
-  },
-  {
-    key: "address",
-    icon: MapPin,
-    color: "bg-accent/10 text-accent",
-    titleKey: "data.sections.address.title",
-    fields: [
-      {
-        key: "addressLine",
-        labelKey: "data.sections.address.fields.addressLine",
-        writable: false,
-      },
-      { key: "city", labelKey: "data.sections.address.fields.city", writable: false },
-      {
-        key: "country",
-        labelKey: "data.sections.address.fields.country",
-        writable: false,
+        options: STEADINESS_OPTIONS.map((opt) => ({
+          value: opt,
+          labelKey: `onboarding.income.steadinessOptions.${opt}`,
+        })),
       },
     ],
   },
 ];
 
-const AMINA_MOCK_EMAIL = "amina.elsayed@example.com";
-const AMINA_MOCK_VALUES: Record<string, string> = {
-  addressLine: "12 Nile Corniche St, Zamalek",
-  city: "Cairo",
-  country: "Egypt",
-  employment_status: "Employed",
-  monthly_income: "42000.00",
-  income_steadiness: "Fixed",
-};
+// ── Field editing/display ─────────────────────────────────────────────────────
+
+function FieldEditor({
+  field,
+  value,
+  error,
+  onChange,
+}: {
+  field: Field;
+  value: string;
+  error?: string;
+  onChange: (value: string) => void;
+}) {
+  const { t } = useTranslation();
+
+  if (field.options) {
+    return (
+      <select
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        className="select select-sm select-bordered w-full"
+      >
+        <option value="" disabled>
+          {t("onboarding.review.empty")}
+        </option>
+        {field.options.map((opt) => (
+          <option key={opt.value} value={opt.value}>
+            {t(opt.labelKey)}
+          </option>
+        ))}
+      </select>
+    );
+  }
+
+  if (field.phone) {
+    return (
+      <>
+        <PhoneInput
+          className={`input input-sm input-bordered w-full ${error ? "input-error" : ""}`}
+          defaultCountry="EG"
+          international
+          value={value}
+          onChange={(next) => onChange(next ?? "")}
+          placeholder={t(field.placeholderKey ?? field.labelKey)}
+        />
+        {error && <span className="text-error text-xs">{error}</span>}
+      </>
+    );
+  }
+
+  return (
+    <>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => onChange(e.target.value)}
+        placeholder={t(field.placeholderKey ?? field.labelKey)}
+        maxLength={field.key === "name" ? 20 : undefined}
+        className={`input input-sm input-bordered w-full ${error ? "input-error" : ""}`}
+      />
+      {error && <span className="text-error text-xs">{error}</span>}
+    </>
+  );
+}
+
+function FieldValue({ field, value }: { field: Field; value?: string }) {
+  const { t } = useTranslation();
+
+  const option = field.options?.find((opt) => opt.value === value);
+  if (option) {
+    return <span className="text-sm font-medium">{t(option.labelKey)}</span>;
+  }
+
+  if (!value) {
+    return (
+      <span className="text-base-content/30 text-sm font-medium italic">
+        {t("onboarding.review.empty")}
+      </span>
+    );
+  }
+
+  if (field.currency) {
+    return (
+      <Money className="text-sm font-medium">
+        {value} {t("currency.EGP")}
+      </Money>
+    );
+  }
+
+  if (field.ltr) {
+    return (
+      <span className="text-sm font-medium">
+        <bdi dir="ltr">{value.replace(/\s+/g, "")}</bdi>
+      </span>
+    );
+  }
+
+  return <span className="text-sm font-medium">{value}</span>;
+}
 
 // ── Section card ──────────────────────────────────────────────────────────────
 
@@ -125,6 +210,7 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
   const updateProfile = useUpdateProfile();
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<UserType>>({});
+  const [errors, setErrors] = useState<Partial<Record<keyof UserType, string>>>({});
 
   const Icon = section.icon;
 
@@ -137,10 +223,22 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
       }
     }
     setDraft(initial);
+    setErrors({});
     setEditing(true);
   }
 
   async function save() {
+    const nextErrors: Partial<Record<keyof UserType, string>> = {};
+    const phoneField = section.fields.find((f) => f.phone);
+    if (phoneField) {
+      const value = (draft[phoneField.key] as string) ?? "";
+      if (value && !isValidPhoneNumber(value)) {
+        nextErrors[phoneField.key] = t("data.sections.errors.phoneInvalid");
+      }
+    }
+    setErrors(nextErrors);
+    if (Object.keys(nextErrors).length > 0) return;
+
     try {
       await updateProfile.mutateAsync(draft);
       setEditing(false);
@@ -151,6 +249,7 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
 
   function cancel() {
     setDraft({});
+    setErrors({});
     setEditing(false);
   }
 
@@ -166,38 +265,44 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
           <h2 className="card-title flex-1 text-base">{t(section.titleKey)}</h2>
           {editing ? (
             <div dir="ltr" className="flex gap-1">
-              <button
-                type="button"
-                onClick={cancel}
-                className="btn btn-ghost btn-sm btn-square text-error"
-                aria-label={t("actions.cancel")}
-                disabled={updateProfile.isPending}
-              >
-                <X className="size-4" />
-              </button>
-              <button
-                type="button"
-                onClick={save}
-                className="btn btn-ghost btn-sm btn-square text-success"
-                aria-label={t("actions.done")}
-                disabled={updateProfile.isPending}
-              >
-                {updateProfile.isPending ? (
-                  <Loader2 className="size-4 animate-spin" />
-                ) : (
-                  <Check data-no-flip className="size-4" />
-                )}
-              </button>
+              <Tooltip content={t("actions.cancel")}>
+                <button
+                  type="button"
+                  onClick={cancel}
+                  className="btn btn-ghost btn-sm btn-square text-error"
+                  aria-label={t("actions.cancel")}
+                  disabled={updateProfile.isPending}
+                >
+                  <X className="size-4" />
+                </button>
+              </Tooltip>
+              <Tooltip content={t("actions.done")}>
+                <button
+                  type="button"
+                  onClick={save}
+                  className="btn btn-ghost btn-sm btn-square text-success"
+                  aria-label={t("actions.done")}
+                  disabled={updateProfile.isPending}
+                >
+                  {updateProfile.isPending ? (
+                    <Loader2 className="size-4 animate-spin" />
+                  ) : (
+                    <Check data-no-flip className="size-4" />
+                  )}
+                </button>
+              </Tooltip>
             </div>
           ) : (
-            <button
-              type="button"
-              onClick={startEdit}
-              className="btn btn-ghost btn-sm btn-square"
-              aria-label={t("actions.edit")}
-            >
-              <Pencil data-no-flip className="size-4" />
-            </button>
+            <Tooltip content={t("actions.edit")}>
+              <button
+                type="button"
+                onClick={startEdit}
+                className="btn btn-ghost btn-sm btn-square"
+                aria-label={t("actions.edit")}
+              >
+                <Pencil data-no-flip className="size-4" />
+              </button>
+            </Tooltip>
           )}
         </div>
 
@@ -208,44 +313,18 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
                 {t(field.labelKey)}
               </span>
               {editing && field.writable ? (
-                <input
-                  type="text"
-                  value={(draft[field.key as keyof UserType] as string) ?? ""}
-                  onChange={(e) =>
-                    setDraft({ ...draft, [field.key as keyof UserType]: e.target.value })
-                  }
-                  className="input input-sm input-bordered w-full"
+                <FieldEditor
+                  field={field}
+                  value={(draft[field.key] as string) ?? ""}
+                  error={errors[field.key]}
+                  onChange={(value) => {
+                    setDraft({ ...draft, [field.key]: value });
+                    if (errors[field.key])
+                      setErrors({ ...errors, [field.key]: undefined });
+                  }}
                 />
               ) : (
-                (() => {
-                  const value =
-                    user[field.key as keyof UserType] ||
-                    (user.email === AMINA_MOCK_EMAIL
-                      ? AMINA_MOCK_VALUES[field.key]
-                      : undefined);
-                  if (!value) {
-                    return (
-                      <span className="text-base-content/30 text-sm font-medium italic">
-                        {t("onboarding.review.empty")}
-                      </span>
-                    );
-                  }
-                  if (field.currency) {
-                    return (
-                      <Money className="text-sm font-medium">
-                        {value} {t("currency.EGP")}
-                      </Money>
-                    );
-                  }
-                  if (field.ltr) {
-                    return (
-                      <span className="text-sm font-medium">
-                        <bdi dir="ltr">{String(value).replace(/\s+/g, "")}</bdi>
-                      </span>
-                    );
-                  }
-                  return <span className="text-sm font-medium">{value}</span>;
-                })()
+                <FieldValue field={field} value={user[field.key]} />
               )}
             </label>
           ))}

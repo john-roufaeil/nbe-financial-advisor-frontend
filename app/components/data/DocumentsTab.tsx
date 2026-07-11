@@ -16,6 +16,7 @@ import { useDocuments, useDeleteDocument } from "@/queries/documents";
 import { Pagination } from "@/components/data/Pagination";
 import { DocumentDetailModal } from "@/components/data/DocumentDetailModal";
 import { DataToolbar } from "@/components/shared/DataToolbar";
+import { Tooltip } from "@/components/shared/Tooltip";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import {
   ListSkeleton,
@@ -26,6 +27,7 @@ import {
 import { useViewModeStore, type ViewMode } from "@/store/use-view-mode-store";
 import { usePageSizeStore } from "@/store/use-page-size-store";
 import { useLoadAnimation } from "@/lib/use-load-animation";
+import { useDebouncedValue } from "@/lib/use-debounced-value";
 
 /** List = single column of rows; grid = responsive cards. */
 const VIEW_CONTAINER = {
@@ -43,9 +45,19 @@ function formatSize(kb: number, t: (key: string) => string) {
 }
 
 /** The real API returns neither filename nor size (see DocumentRecord). */
-function documentSubtitle(doc: DocumentRecord, t: (key: string) => string) {
+function documentSubtitle(
+  doc: DocumentRecord,
+  t: (key: string, options?: Record<string, unknown>) => string,
+) {
   const parts = [formatDate(doc.uploadDate)];
   if (doc.sizeKb !== undefined) parts.push(formatSize(doc.sizeKb, t));
+  if (doc.extractedTransactions) {
+    parts.push(
+      t("data.documentDetail.transactionCount", {
+        count: doc.extractedTransactions.length,
+      }),
+    );
+  }
   return parts.join(" · ");
 }
 
@@ -171,7 +183,11 @@ function DocumentCard({
             <span className="block truncate">
               {doc.name || t("data.documentFallbackName")}
             </span>
-            <span className="block truncate">{formatDate(doc.uploadDate)}</span>
+            <span className="block truncate">
+              {formatDate(doc.uploadDate)}
+              {doc.extractedTransactions &&
+                ` · ${t("data.documentDetail.transactionCount", { count: doc.extractedTransactions.length })}`}
+            </span>
           </>
         ) : (
           <>
@@ -184,24 +200,28 @@ function DocumentCard({
 
   const status = <StatusBadge doc={doc} />;
 
+  const deleteLabel = t("actions.delete", {
+    name: doc.name || t("data.documentFallbackName"),
+  });
+
   const deleteButton = (
-    <button
-      type="button"
-      onClick={(e) => {
-        e.stopPropagation();
-        confirm({
-          title: t("confirm.deleteDocumentTitle"),
-          message: t("confirm.deleteMessage"),
-          onConfirm: () => deleteDocument.mutate(doc.id),
-        });
-      }}
-      className="btn btn-ghost btn-sm btn-square text-error shrink-0"
-      aria-label={t("actions.delete", {
-        name: doc.name || t("data.documentFallbackName"),
-      })}
-    >
-      <Trash2 className="size-4" />
-    </button>
+    <Tooltip content={deleteLabel} className="shrink-0">
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          confirm({
+            title: t("confirm.deleteDocumentTitle"),
+            message: t("confirm.deleteMessage"),
+            onConfirm: () => deleteDocument.mutate(doc.id),
+          });
+        }}
+        className="btn btn-ghost btn-sm btn-square text-error"
+        aria-label={deleteLabel}
+      >
+        <Trash2 className="size-4" />
+      </button>
+    </Tooltip>
   );
 
   if (isGrid) {
@@ -233,10 +253,12 @@ function DocumentCard({
 
 export function DocumentsTab() {
   const { t } = useTranslation();
-  const [search, setSearch] = useState("");
+  const [searchInput, setSearchInput] = useState("");
+  const search = useDebouncedValue(searchInput, 1000);
   const [filter, setFilter] = useState<Filter>("all");
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const [sort, setSort] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const pageSize = usePageSizeStore((s) => s.pageSize);
   const setPageSize = usePageSizeStore((s) => s.setPageSize);
@@ -249,6 +271,7 @@ export function DocumentsTab() {
     q: search.trim() || undefined,
     from: fromDate || undefined,
     to: toDate || undefined,
+    sort,
     offset: (page - 1) * pageSize,
     limit: pageSize,
   });
@@ -267,7 +290,7 @@ export function DocumentsTab() {
   }
 
   function updateSearch(value: string) {
-    setSearch(value);
+    setSearchInput(value);
     setPage(1);
   }
   function updateFilter(value: Filter) {
@@ -276,18 +299,31 @@ export function DocumentsTab() {
   }
   function updateFromDate(value: string) {
     setFromDate(value);
+    if (toDate && value > toDate) setToDate(value);
     setPage(1);
   }
   function updateToDate(value: string) {
     setToDate(value);
+    if (fromDate && value < fromDate) setFromDate(value);
+    setPage(1);
+  }
+
+  const hasActiveFilters =
+    searchInput !== "" || filter !== "all" || fromDate !== "" || toDate !== "";
+
+  function clearAllFilters() {
+    setSearchInput("");
+    setFilter("all");
+    setFromDate("");
+    setToDate("");
     setPage(1);
   }
 
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <div className="border-base-300 bg-base-100 animate-entry overflow-hidden rounded-2xl border shadow-sm">
+      <div className="border-base-300 bg-base-100 animate-entry rounded-2xl border shadow-sm">
         <DataToolbar
-          search={search}
+          search={searchInput}
           onSearchChange={updateSearch}
           fromDate={fromDate}
           onFromDateChange={updateFromDate}
@@ -297,6 +333,10 @@ export function DocumentsTab() {
           filter={filter}
           onFilterChange={updateFilter}
           filterLabel={(f) => t(`data.filters.${f}`)}
+          sort={sort}
+          onSortChange={setSort}
+          hasActiveFilters={hasActiveFilters}
+          onClearAll={clearAllFilters}
         />
         <Pagination
           attached

@@ -1,7 +1,22 @@
-import { Search, X, List, LayoutGrid } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  Search,
+  X,
+  List,
+  LayoutGrid,
+  ArrowUpNarrowWide,
+  ArrowDownNarrowWide,
+  SlidersHorizontal,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DateField } from "@/components/shared/DateField";
-import { useViewModeStore, type ViewMode } from "@/store/use-view-mode-store";
+import { Tooltip } from "@/components/shared/Tooltip";
+import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
+import { useViewModeStore } from "@/store/use-view-mode-store";
+
+/** Matches the filters panel's `w-72` class. */
+const PANEL_WIDTH = 288;
 
 interface DataToolbarProps<F extends string> {
   search: string;
@@ -14,6 +29,21 @@ interface DataToolbarProps<F extends string> {
   filter: F;
   onFilterChange: (value: F) => void;
   filterLabel: (filter: F) => string;
+  /** Optional category filter (transactions only). */
+  categories?: readonly string[];
+  category?: string;
+  onCategoryChange?: (value: string) => void;
+  categoryLabel?: (category: string) => string;
+  /** Optional preset amount-range filter (transactions only). */
+  amountRanges?: readonly { key: string; label: string }[];
+  amountRange?: string;
+  onAmountRangeChange?: (key: string) => void;
+  /** Optional date sort toggle (transactions only). */
+  sort?: "asc" | "desc";
+  onSortChange?: (value: "asc" | "desc") => void;
+  /** Whether any filter is currently active — gates showing the clear-all button. */
+  hasActiveFilters: boolean;
+  onClearAll: () => void;
 }
 
 export function DataToolbar<F extends string>({
@@ -27,18 +57,77 @@ export function DataToolbar<F extends string>({
   filter,
   onFilterChange,
   filterLabel,
+  categories,
+  category,
+  onCategoryChange,
+  categoryLabel,
+  amountRanges,
+  amountRange,
+  onAmountRangeChange,
+  sort,
+  onSortChange,
+  hasActiveFilters,
+  onClearAll,
 }: DataToolbarProps<F>) {
   const { t } = useTranslation();
   const viewMode = useViewModeStore((s) => s.mode);
   const setViewMode = useViewModeStore((s) => s.setMode);
+  const [filtersOpen, setFiltersOpen] = useState(false);
+  const [panelCoords, setPanelCoords] = useState<{ top: number; left: number } | null>(
+    null,
+  );
+  const panelRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
-  const viewOptions: { mode: ViewMode; icon: typeof List; label: string }[] = [
-    { mode: "list", icon: List, label: t("data.view.list") },
-    { mode: "grid", icon: LayoutGrid, label: t("data.view.grid") },
-  ];
+  useEffect(() => {
+    if (!filtersOpen) return;
+
+    function updateCoords() {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const rtl = document.documentElement.dir === "rtl";
+      // Anchor to the trigger's inline-end edge so the panel opens toward the
+      // reading-end direction in both LTR and RTL, instead of always growing
+      // rightward and running off-screen when the trigger sits near the right
+      // edge in RTL layouts.
+      let left = rtl ? rect.right - PANEL_WIDTH : rect.left;
+      left = Math.max(8, Math.min(left, window.innerWidth - PANEL_WIDTH - 8));
+      setPanelCoords({ top: rect.bottom + 8, left });
+    }
+
+    updateCoords();
+
+    function onKeyDown(e: KeyboardEvent) {
+      if (e.key === "Escape") {
+        setFiltersOpen(false);
+        triggerRef.current?.focus();
+      }
+    }
+
+    function onClickOutside(e: MouseEvent) {
+      if (
+        panelRef.current &&
+        !panelRef.current.contains(e.target as Node) &&
+        !triggerRef.current?.contains(e.target as Node)
+      ) {
+        setFiltersOpen(false);
+      }
+    }
+
+    document.addEventListener("keydown", onKeyDown);
+    document.addEventListener("mousedown", onClickOutside);
+    window.addEventListener("resize", updateCoords);
+    window.addEventListener("scroll", updateCoords, true);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      document.removeEventListener("mousedown", onClickOutside);
+      window.removeEventListener("resize", updateCoords);
+      window.removeEventListener("scroll", updateCoords, true);
+    };
+  }, [filtersOpen]);
 
   return (
-    <div className="flex flex-col gap-3 p-3 sm:p-4">
+    <div className="bg-base-100 flex flex-col gap-3 rounded-t-2xl p-3 sm:p-4">
       <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
         <label className="input input-bordered flex w-full min-w-0 flex-1 items-center gap-2 px-3 py-2">
           <Search className="text-base-content/40 size-4 shrink-0" />
@@ -50,56 +139,155 @@ export function DataToolbar<F extends string>({
             className="min-w-0 grow"
           />
           {search && (
-            <button
-              type="button"
-              onClick={() => onSearchChange("")}
-              aria-label={t("actions.clear")}
-              className="btn btn-ghost btn-xs btn-square shrink-0"
-            >
-              <X className="size-3.5" />
-            </button>
+            <Tooltip content={t("actions.clear")} className="shrink-0">
+              <button
+                type="button"
+                onClick={() => onSearchChange("")}
+                aria-label={t("actions.clear")}
+                className="btn btn-ghost btn-xs btn-square"
+              >
+                <X className="size-3.5" />
+              </button>
+            </Tooltip>
           )}
         </label>
       </div>
 
       <div className="flex min-w-0 flex-wrap items-center gap-3">
-        <DateField
-          label={t("data.dateFrom")}
-          value={fromDate}
-          onChange={onFromDateChange}
-        />
-        <DateField label={t("data.dateTo")} value={toDate} onChange={onToDateChange} />
-        <div className="join border-base-300 w-fit shrink-0 rounded-lg border">
-          {filters.map((f) => (
-            <button
-              key={f}
-              type="button"
-              onClick={() => onFilterChange(f)}
-              className={`btn btn-sm join-item cursor-pointer ${filter === f ? "btn-accent" : "btn-ghost"}`}
-            >
-              {filterLabel(f)}
-            </button>
-          ))}
+        <div className="relative shrink-0">
+          <button
+            ref={triggerRef}
+            type="button"
+            onClick={() => setFiltersOpen((v) => !v)}
+            aria-expanded={filtersOpen}
+            aria-haspopup="dialog"
+            className={`btn btn-sm gap-1.5 ${hasActiveFilters ? "btn-accent" : "btn-outline"}`}
+          >
+            <SlidersHorizontal className="size-4" />
+            {t("data.filtersLabel")}
+            {hasActiveFilters && (
+              <span className="bg-base-100/70 size-1.5 rounded-full" />
+            )}
+          </button>
+
+          {filtersOpen &&
+            panelCoords &&
+            typeof document !== "undefined" &&
+            createPortal(
+              <div
+                ref={panelRef}
+                role="dialog"
+                aria-label={t("data.filtersLabel")}
+                style={{ top: panelCoords.top, left: panelCoords.left }}
+                className="border-base-300 bg-base-100 animate-a11y-panel-in fixed z-50 w-72 rounded-2xl border p-4 shadow-2xl"
+              >
+                <div className="flex flex-col gap-3">
+                  <div className="join border-base-300 w-full rounded-lg border">
+                    {filters.map((f) => (
+                      <button
+                        key={f}
+                        type="button"
+                        onClick={() => onFilterChange(f)}
+                        className={`btn btn-sm join-item flex-1 cursor-pointer ${filter === f ? "btn-accent" : "btn-ghost"}`}
+                      >
+                        {filterLabel(f)}
+                      </button>
+                    ))}
+                  </div>
+
+                  {categories && onCategoryChange && (
+                    <select
+                      value={category}
+                      onChange={(e) => onCategoryChange(e.target.value)}
+                      className="select select-bordered select-sm w-full"
+                      aria-label={t("data.category")}
+                    >
+                      <option value="">{t("data.allCategories")}</option>
+                      {categories.map((c) => (
+                        <option key={c} value={c}>
+                          {categoryLabel ? categoryLabel(c) : c}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  {amountRanges && onAmountRangeChange && (
+                    <select
+                      value={amountRange}
+                      onChange={(e) => onAmountRangeChange(e.target.value)}
+                      className="select select-bordered select-sm w-full"
+                      aria-label={t("data.amountRange")}
+                    >
+                      {amountRanges.map((r) => (
+                        <option key={r.key} value={r.key}>
+                          {r.label}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+
+                  <div className="flex flex-col gap-2">
+                    <DateField
+                      label={t("data.dateFrom")}
+                      value={fromDate}
+                      onChange={onFromDateChange}
+                      max={toDate || undefined}
+                    />
+                    <DateField
+                      label={t("data.dateTo")}
+                      value={toDate}
+                      onChange={onToDateChange}
+                      min={fromDate || undefined}
+                    />
+                  </div>
+
+                  {hasActiveFilters && (
+                    <button
+                      type="button"
+                      onClick={onClearAll}
+                      className="btn btn-ghost btn-sm gap-1.5 self-start"
+                    >
+                      <X className="size-3.5" />
+                      {t("data.clearFilters")}
+                    </button>
+                  )}
+                </div>
+              </div>,
+              document.body,
+            )}
         </div>
 
-        <div className="ms-auto flex items-center gap-2">
-          <div className="join border-base-300 w-fit shrink-0 rounded-lg border">
-            {viewOptions.map(({ mode, icon: Icon, label }) => (
-              <button
-                key={mode}
-                type="button"
-                onClick={() => setViewMode(mode)}
-                aria-label={label}
-                aria-pressed={viewMode === mode}
-                title={label}
-                className={`btn btn-sm join-item btn-square cursor-pointer ${
-                  viewMode === mode ? "btn-accent" : "btn-ghost"
-                }`}
-              >
-                <Icon data-no-flip className="size-4" />
-              </button>
-            ))}
-          </div>
+        {onSortChange && (
+          <Tooltip
+            content={sort === "asc" ? t("data.sort.dateDesc") : t("data.sort.dateAsc")}
+          >
+            <button
+              type="button"
+              onClick={() => onSortChange(sort === "asc" ? "desc" : "asc")}
+              className="btn btn-ghost btn-sm shrink-0 gap-1.5"
+              aria-label={
+                sort === "asc" ? t("data.sort.dateDesc") : t("data.sort.dateAsc")
+              }
+            >
+              {sort === "asc" ? (
+                <ArrowUpNarrowWide className="size-4" />
+              ) : (
+                <ArrowDownNarrowWide className="size-4" />
+              )}
+            </button>
+          </Tooltip>
+        )}
+
+        <div className="ms-auto w-20 shrink-0">
+          <ToggleSwitch
+            value={viewMode}
+            options={["list", "grid"]}
+            labels={{ list: t("data.view.list"), grid: t("data.view.grid") }}
+            icons={{ list: List, grid: LayoutGrid }}
+            onChange={setViewMode}
+            aria-label={t("data.view.toggleLabel")}
+            showLabels={false}
+          />
         </div>
       </div>
     </div>

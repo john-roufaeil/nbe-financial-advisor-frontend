@@ -17,6 +17,7 @@ import { useUploadDocuments } from "@/queries/documents";
 import { toastError } from "@/lib/toast";
 import { Button } from "@/components/shared/Button";
 import { BaseModal } from "@/components/shared/BaseModal";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 const TYPE_ICONS: Record<DocumentType, typeof FileText> = {
   pdf: FileText,
@@ -166,14 +167,19 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
                       <Icon className="size-4" />
                     </span>
                     <span className="min-w-0 flex-1 truncate text-sm">{file.name}</span>
-                    <button
-                      type="button"
-                      onClick={() => removeStaged(i)}
-                      className="btn btn-ghost btn-xs btn-square shrink-0"
-                      aria-label={t("actions.delete", { name: file.name })}
+                    <Tooltip
+                      content={t("actions.delete", { name: file.name })}
+                      className="shrink-0"
                     >
-                      <X className="size-3.5" />
-                    </button>
+                      <button
+                        type="button"
+                        onClick={() => removeStaged(i)}
+                        className="btn btn-ghost btn-xs btn-square"
+                        aria-label={t("actions.delete", { name: file.name })}
+                      >
+                        <X className="size-3.5" />
+                      </button>
+                    </Tooltip>
                   </li>
                 );
               })}
