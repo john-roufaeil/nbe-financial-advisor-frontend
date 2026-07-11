@@ -10,6 +10,8 @@
     "documentsEmpty": "No bank statements yet. Upload one and we'll extract the transactions automatically.",
     "transactionsEmptyShort": "No transactions",
     "documentsEmptyShort": "No bank statements",
+    "transactionsEmptyCta": "Add your first transaction",
+    "documentsEmptyCta": "Upload your first statement",
     "documentFallbackName": "Bank statement",
     "loading": "Loading...",
     "loadError": "Sorry, something went wrong. Please try again.",
@@ -182,7 +184,9 @@
     },
     "sections": {
       "errors": {
-        "phoneInvalid": "Enter a valid phone number."
+        "phoneInvalid": "Enter a valid phone number.",
+        "nameRequired": "Enter your name.",
+        "incomeNegative": "Monthly income can't be negative."
       },
       "profile": {
         "title": "Profile",

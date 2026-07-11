@@ -124,11 +124,11 @@ function UserMessage() {
               {({ attachment }) => <MessageAttachmentChip attachment={attachment} />}
             </MessagePrimitive.Attachments>
           </div>
-          <div className="[overflow-wrap:anywhere] whitespace-pre-wrap">
+          <div className="wrap-anywhere whitespace-pre-wrap">
             <MessagePrimitive.Content />
           </div>
         </div>
-        <span className="text-base-content/40 mt-1 px-1 text-[11px]">
+        <span className="text-base-content/40 mt-1 px-1 text-xs">
           {formatTime(createdAt, timeFormat, t)}
         </span>
       </div>
@@ -150,12 +150,12 @@ function AssistantMessage() {
             <Bot className="size-4.5" />
           </span>
           <div className="flex max-w-[80%] min-w-0 flex-col items-start">
-            <div className="w-full min-w-0 overflow-hidden leading-relaxed [overflow-wrap:anywhere] whitespace-pre-wrap">
+            <div className="w-full min-w-0 overflow-hidden leading-relaxed wrap-anywhere whitespace-pre-wrap">
               <MessagePrimitive.Parts
                 components={{ tools: { by_name: chatToolComponents } }}
               />
             </div>
-            <span className="text-base-content/40 mt-1 px-1 text-[11px]">
+            <span className="text-base-content/40 mt-1 px-1 text-xs">
               {formatTime(createdAt, timeFormat, t)}
             </span>
             <div
@@ -318,7 +318,7 @@ export function ChatThread() {
       </div>
 
       <div className="bg-base-100 animate-entry">
-        <ComposerPrimitive.AttachmentDropzone className="data-[dragging]:border-primary mx-auto w-full max-w-3xl rounded-2xl data-[dragging]:border-2 data-[dragging]:border-dashed">
+        <ComposerPrimitive.AttachmentDropzone className="data-dragging:border-primary mx-auto w-full max-w-3xl rounded-2xl data-dragging:border-2 data-dragging:border-dashed">
           <ComposerPrimitive.Root className="flex flex-col gap-2 p-4">
             <div className="flex flex-wrap gap-2 empty:hidden">
               <ComposerPrimitive.Attachments

@@ -51,7 +51,7 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
           </span>
           {goal.onTrack !== undefined && (
             <span
-              className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-semibold ${
+              className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
                 goal.onTrack ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
               }`}
             >
@@ -74,7 +74,7 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
           {currencyLabel}
         </p>
         {goal.projectedCompletionDate && (
-          <div className="bg-base-200/60 text-base-content/60 mt-0.5 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-[11px] font-medium">
+          <div className="bg-base-200/60 text-base-content/60 mt-0.5 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
             <Calendar data-no-flip className="size-3" />
             {t("dashboard.goals.projectedCompletion", {
               date: formatDate(goal.projectedCompletionDate),
@@ -121,7 +121,7 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
                 >
                   {milestone.label}
                 </span>
-                <span className="text-base-content/40 truncate text-[11px]">
+                <span className="text-base-content/40 text-xs wrap-break-word">
                   <Money className="inline">
                     {Math.round(goal.target * (milestone.pct / 100)).toLocaleString()}
                   </Money>{" "}
@@ -131,7 +131,7 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
 
               <div className="shrink-0 text-right">
                 <span
-                  className={`rounded-md px-2 py-0.5 text-[11px] font-semibold tracking-wide uppercase ${
+                  className={`rounded-md px-2 py-0.5 text-xs font-semibold tracking-wide uppercase ${
                     isCompleted
                       ? "bg-success/10 text-success"
                       : isNextUp

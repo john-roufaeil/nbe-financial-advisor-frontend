@@ -1,5 +1,6 @@
 {
   "toast": {
+    "profileUpdated": "تم تحديث الملف الشخصي",
     "transactionCreated": "تمت إضافة المعاملة",
     "transactionUpdated": "تم تحديث المعاملة",
     "transactionDeleted": "تم حذف المعاملة",

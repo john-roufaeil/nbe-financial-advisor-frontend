@@ -90,7 +90,7 @@ export default function AppLayout() {
         <div className="drawer-side z-20">
           <label htmlFor="app-drawer" className="drawer-overlay" onClick={close} />
           <aside className="border-base-300 bg-base-200 flex h-screen w-72 flex-col border-e">
-            <div className="border-base-300 relative flex h-16 shrink-0 items-center border-b px-4">
+            <div className="border-base-300 relative flex min-h-16 shrink-0 items-center border-b px-4">
               <Tooltip
                 content={t("nav.menu")}
                 position="end"
@@ -134,7 +134,7 @@ export default function AppLayout() {
                   className={navLinkClassName}
                 >
                   <Icon className="size-5 shrink-0" />
-                  <span className="truncate">{label}</span>
+                  <span className="min-w-0 wrap-break-word">{label}</span>
                 </NavLink>
               ))}
             </nav>
@@ -148,7 +148,7 @@ export default function AppLayout() {
               <div className="flex-1" />
             )}
 
-            <div className="border-base-300 flex shrink-0 flex-col gap-4 border-t p-4">
+            <div className="flex shrink-0 flex-col gap-4 p-4">
               <div className="flex w-full items-center gap-2">
                 <div className="flex w-full flex-col gap-2">
                   <div className="flex min-w-0 items-center justify-between gap-2">
@@ -157,7 +157,7 @@ export default function AppLayout() {
                   </div>
                 </div>
               </div>
-              <div className="flex w-full items-center gap-2">
+              <div className="border-base-300 flex w-full items-center gap-2 border-t pt-2">
                 <NavLink
                   to={`/${lang}/profile`}
                   onClick={close}
@@ -171,7 +171,9 @@ export default function AppLayout() {
                     {initial}
                   </span>
                   <div className="min-w-0 flex-1 text-start">
-                    <p className="truncate text-sm font-semibold">{fullName}</p>
+                    <p className="truncate text-sm font-semibold" title={fullName}>
+                      {fullName}
+                    </p>
                     <p className="text-base-content/50 truncate text-xs">
                       {t("nav.viewProfile")}
                     </p>

@@ -150,6 +150,10 @@ html[data-a11y-font-scale] {
 }
 
 .a11y-panel {
+  /* Intentionally an absolute px value, not rem: `html[data-a11y-font-scale]` scales
+     the root font-size via --a11y-font-scale, so 1rem here would still balloon as the
+     user cranks the in-app scale slider. Browser-level zoom (WCAG 1.4.4) scales px too,
+     so this only opts out of the app's own font-scale feature, not browser zoom. */
   font-size: 16px;
 }
 

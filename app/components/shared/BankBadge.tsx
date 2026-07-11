@@ -23,7 +23,9 @@ export function BankBadge({
         className={`${size} shrink-0 rounded-full object-cover`}
       />
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{label}</p>
+        <p className="truncate text-sm font-medium" title={label ?? undefined}>
+          {label}
+        </p>
         {subtitle && <p className="text-base-content/50 truncate text-xs">{subtitle}</p>}
       </div>
     </div>

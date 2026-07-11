@@ -16,6 +16,7 @@ import "react-phone-number-input/style.css";
 import { useMe, useUpdateProfile } from "@/queries/profile";
 import { useAccounts, useDeleteAccount } from "@/queries/accounts";
 import { useConfirmStore } from "@/store/use-confirm-store";
+import { useToastStore } from "@/store/use-toast-store";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
@@ -69,8 +70,6 @@ const SECTIONS: Section[] = [
         writable: true,
         placeholderKey: "data.sections.profile.fields.fullNamePlaceholder",
       },
-      { key: "id", labelKey: "data.sections.profile.fields.id", writable: false },
-      { key: "email", labelKey: "data.sections.contact.fields.email", writable: false },
       {
         key: "phone",
         labelKey: "data.sections.contact.fields.phone",
@@ -79,6 +78,8 @@ const SECTIONS: Section[] = [
         phone: true,
         placeholderKey: "data.sections.contact.fields.phonePlaceholder",
       },
+      { key: "id", labelKey: "data.sections.profile.fields.id", writable: false },
+      { key: "email", labelKey: "data.sections.contact.fields.email", writable: false },
     ],
   },
   {
@@ -169,7 +170,8 @@ function FieldEditor({
   return (
     <>
       <input
-        type="text"
+        type={field.currency ? "number" : "text"}
+        min={field.currency ? 0 : undefined}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={t(field.placeholderKey ?? field.labelKey)}
@@ -221,6 +223,7 @@ function FieldValue({ field, value }: { field: Field; value?: string }) {
 function SectionCard({ section, user }: { section: Section; user: UserType }) {
   const { t } = useTranslation();
   const updateProfile = useUpdateProfile();
+  const showToast = useToastStore((s) => s.show);
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState<Partial<UserType>>({});
   const [errors, setErrors] = useState<Partial<Record<keyof UserType, string>>>({});
@@ -240,7 +243,9 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
     setEditing(true);
   }
 
-  async function save() {
+  async function save(e?: React.FormEvent) {
+    e?.preventDefault();
+
     const nextErrors: Partial<Record<keyof UserType, string>> = {};
     const phoneField = section.fields.find((f) => f.phone);
     if (phoneField) {
@@ -249,12 +254,30 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
         nextErrors[phoneField.key] = t("data.sections.errors.phoneInvalid");
       }
     }
+
+    const nameField = section.fields.find((f) => f.key === "name");
+    if (nameField) {
+      const value = (draft[nameField.key] as string) ?? "";
+      if (!value.trim()) {
+        nextErrors[nameField.key] = t("data.sections.errors.nameRequired");
+      }
+    }
+
+    const incomeField = section.fields.find((f) => f.key === "monthly_income");
+    if (incomeField) {
+      const value = (draft[incomeField.key] as string) ?? "";
+      if (value && Number(value) < 0) {
+        nextErrors[incomeField.key] = t("data.sections.errors.incomeNegative");
+      }
+    }
+
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
 
     try {
       await updateProfile.mutateAsync(draft);
       setEditing(false);
+      showToast(t("toast.profileUpdated"), "success");
     } catch {
       /* Error is gracefully surfaced globally via the mutation's onError toast handler */
     }
@@ -268,7 +291,7 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
 
   return (
     <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
-      <div className="card-body gap-4 p-4">
+      <form className="card-body gap-4 p-4" onSubmit={save}>
         <div className="flex items-center gap-2">
           <span
             className={`grid size-9 shrink-0 place-items-center rounded-lg ${section.color}`}
@@ -291,8 +314,7 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
               </Tooltip>
               <Tooltip content={t("actions.done")}>
                 <button
-                  type="button"
-                  onClick={save}
+                  type="submit"
                   className="btn btn-ghost btn-sm btn-square text-success"
                   aria-label={t("actions.done")}
                   disabled={updateProfile.isPending}
@@ -342,7 +364,7 @@ function SectionCard({ section, user }: { section: Section; user: UserType }) {
             </label>
           ))}
         </div>
-      </div>
+      </form>
     </div>
   );
 }

@@ -10,6 +10,8 @@
     "documentsEmpty": "لا توجد كشوف حساب بعد. ارفع واحدًا وسنستخرج المعاملات منه تلقائيًا.",
     "transactionsEmptyShort": "لا توجد معاملات",
     "documentsEmptyShort": "لا توجد كشوف حساب",
+    "transactionsEmptyCta": "أضف معاملتك الأولى",
+    "documentsEmptyCta": "ارفع كشف حسابك الأول",
     "documentFallbackName": "كشف حساب بنكي",
     "loading": "جارٍ التحميل...",
     "loadError": "نأسف، حدث خطأ ما. يرجى المحاولة مرة أخرى.",
@@ -182,7 +184,9 @@
     },
     "sections": {
       "errors": {
-        "phoneInvalid": "أدخل رقم هاتف صحيحًا."
+        "phoneInvalid": "أدخل رقم هاتف صحيحًا.",
+        "nameRequired": "أدخل اسمك.",
+        "incomeNegative": "لا يمكن أن يكون الدخل الشهري سالبًا."
       },
       "profile": {
         "title": "الملف الشخصي",

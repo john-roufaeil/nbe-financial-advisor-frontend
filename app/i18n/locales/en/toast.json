@@ -1,5 +1,6 @@
 {
   "toast": {
+    "profileUpdated": "Profile updated",
     "transactionCreated": "Transaction added",
     "transactionUpdated": "Transaction updated",
     "transactionDeleted": "Transaction deleted",

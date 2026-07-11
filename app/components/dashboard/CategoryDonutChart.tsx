@@ -114,7 +114,7 @@ export function CategoryDonutChart({
             <Money className="text-sm font-semibold tabular-nums">{centerValue}</Money>
           )}
           {centerLabel && (
-            <span className="text-base-content/50 text-[10px]">{centerLabel}</span>
+            <span className="text-base-content/50 text-xs">{centerLabel}</span>
           )}
         </div>
       )}

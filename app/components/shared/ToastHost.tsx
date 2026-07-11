@@ -50,7 +50,7 @@ function ToastItem({ toast }: { toast: Toast }) {
         <button
           type="button"
           onClick={() => dismiss(toast.id)}
-          className="btn btn-ghost btn-xs btn-square"
+          className="btn btn-ghost btn-xs btn-square text-current"
           aria-label="Dismiss"
         >
           <X data-no-flip className="size-3.5" />
@@ -79,7 +79,11 @@ export function ToastHost() {
   }, [toasts.length]);
 
   return (
-    <div ref={hostRef} popover="manual" className="toast toast-end toast-bottom z-50 m-0">
+    <div
+      ref={hostRef}
+      popover="manual"
+      className="toast toast-end toast-bottom z-9000 m-0"
+    >
       {toasts.map((toast) => (
         <ToastItem key={toast.id} toast={toast} />
       ))}

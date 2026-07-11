@@ -1,9 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 
-const MIN_SCALE = 0.85;
-const MAX_SCALE = 1.7;
-const SCALE_STEP = 0.15;
+const MIN_SCALE = 0.8;
+const MAX_SCALE = 2;
+const SCALE_STEP = 0.2;
 const DEFAULT_SCALE = 1;
 
 interface AccessibilityState {

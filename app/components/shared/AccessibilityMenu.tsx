@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Accessibility, Minus, Plus, RotateCcw, Contrast, X } from "lucide-react";
 import { Tooltip } from "@/components/shared/Tooltip";
@@ -7,9 +8,13 @@ import {
   ACCESSIBILITY_LIMITS,
 } from "@/store/use-accessibility-store";
 
+const PANEL_GAP = 8;
+const VIEWPORT_PADDING = 8;
+
 export function AccessibilityMenu() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState({ top: 0, left: 0 });
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
@@ -40,6 +45,34 @@ export function AccessibilityMenu() {
   useEffect(() => {
     if (!open) return;
 
+    function reposition() {
+      const rect = triggerRef.current?.getBoundingClientRect();
+      const panelRect = panelRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const isRtl = document.documentElement.dir === "rtl";
+      const panelWidth = panelRect?.width ?? rect.width;
+      const panelHeight = panelRect?.height ?? 0;
+
+      // Prefer opening to the "end" side of the trigger (away from the screen
+      // edge it's pinned to); clamp against both viewport edges so it can
+      // never run off-screen, even at high zoom / narrow effective viewports.
+      let left = isRtl ? rect.left - panelWidth - PANEL_GAP : rect.right + PANEL_GAP;
+      left = Math.max(
+        VIEWPORT_PADDING,
+        Math.min(left, window.innerWidth - panelWidth - VIEWPORT_PADDING),
+      );
+
+      let top = rect.top;
+      top = Math.max(
+        VIEWPORT_PADDING,
+        Math.min(top, window.innerHeight - panelHeight - VIEWPORT_PADDING),
+      );
+
+      setPosition({ top, left });
+    }
+
+    reposition();
+
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
         setOpen(false);
@@ -59,9 +92,13 @@ export function AccessibilityMenu() {
 
     document.addEventListener("keydown", onKeyDown);
     document.addEventListener("mousedown", onClickOutside);
+    window.addEventListener("resize", reposition);
+    window.addEventListener("scroll", reposition, true);
     return () => {
       document.removeEventListener("keydown", onKeyDown);
       document.removeEventListener("mousedown", onClickOutside);
+      window.removeEventListener("resize", reposition);
+      window.removeEventListener("scroll", reposition, true);
     };
   }, [open]);
 
@@ -82,104 +119,108 @@ export function AccessibilityMenu() {
           </button>
         </Tooltip>
 
-        {open && (
-          <div
-            ref={panelRef}
-            role="dialog"
-            aria-label={t("settings.accessibility.menuLabel")}
-            className="a11y-panel border-base-300 bg-base-100 animate-a11y-panel-in absolute inset-s-full top-0 ms-2 w-72 rounded-2xl border p-4 shadow-2xl"
-          >
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h2 className="flex items-center gap-2 text-sm font-semibold">
-                <Accessibility data-no-flip className="text-primary size-4" />
-                {t("settings.accessibility.title")}
-              </h2>
-              <Tooltip content={t("settings.accessibility.close")}>
+        {open &&
+          typeof document !== "undefined" &&
+          createPortal(
+            <div
+              ref={panelRef}
+              role="dialog"
+              aria-label={t("settings.accessibility.menuLabel")}
+              style={{ top: position.top, left: position.left }}
+              className="a11y-panel border-base-300 bg-base-100 animate-a11y-panel-in fixed z-60 max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-2xl border p-4 shadow-2xl"
+            >
+              <div className="mb-3 flex items-center justify-between gap-2">
+                <h2 className="flex items-center gap-2 text-sm font-semibold">
+                  <Accessibility data-no-flip className="text-primary size-4" />
+                  {t("settings.accessibility.title")}
+                </h2>
+                <Tooltip content={t("settings.accessibility.close")}>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setOpen(false);
+                      triggerRef.current?.focus();
+                    }}
+                    aria-label={t("settings.accessibility.close")}
+                    className="btn btn-ghost btn-xs btn-square"
+                  >
+                    <X data-no-flip className="size-4" />
+                  </button>
+                </Tooltip>
+              </div>
+
+              <div className="border-base-300 bg-base-200/50 rounded-xl border p-3">
+                <div className="mb-2 flex items-center justify-between">
+                  <span className="text-sm font-medium">
+                    {t("settings.accessibility.fontSize")}
+                  </span>
+                  <span className="text-base-content/60 text-xs tabular-nums">
+                    {fontPercent}%
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <Tooltip content={t("settings.accessibility.decreaseFontSize")}>
+                    <button
+                      type="button"
+                      onClick={decreaseFontSize}
+                      disabled={fontScale <= MIN_SCALE}
+                      aria-label={t("settings.accessibility.decreaseFontSize")}
+                      className="btn btn-outline btn-square btn-sm"
+                    >
+                      <Minus data-no-flip className="size-4" />
+                    </button>
+                  </Tooltip>
+                  <input
+                    type="range"
+                    min={MIN_SCALE}
+                    max={MAX_SCALE}
+                    step={0.05}
+                    value={sliderValue}
+                    onChange={(e) => setSliderValue(Number(e.target.value))}
+                    onPointerUp={(e) => setFontScale(Number(e.currentTarget.value))}
+                    onKeyUp={(e) => setFontScale(Number(e.currentTarget.value))}
+                    aria-label={t("settings.accessibility.fontSize")}
+                    className="range range-primary range-sm flex-1 cursor-grab active:cursor-grabbing"
+                  />
+                  <Tooltip content={t("settings.accessibility.increaseFontSize")}>
+                    <button
+                      type="button"
+                      onClick={increaseFontSize}
+                      disabled={fontScale >= MAX_SCALE}
+                      aria-label={t("settings.accessibility.increaseFontSize")}
+                      className="btn btn-outline btn-square btn-sm"
+                    >
+                      <Plus data-no-flip className="size-4" />
+                    </button>
+                  </Tooltip>
+                </div>
                 <button
                   type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    triggerRef.current?.focus();
-                  }}
-                  aria-label={t("settings.accessibility.close")}
-                  className="btn btn-ghost btn-xs btn-square"
+                  onClick={resetFontSize}
+                  disabled={fontScale === DEFAULT_SCALE}
+                  className="btn btn-ghost btn-xs mt-2 gap-1.5"
                 >
-                  <X data-no-flip className="size-4" />
+                  <RotateCcw data-no-flip className="size-3.5" />
+                  {t("settings.accessibility.resetFontSize")}
                 </button>
-              </Tooltip>
-            </div>
-
-            <div className="border-base-300 bg-base-200/50 rounded-xl border p-3">
-              <div className="mb-2 flex items-center justify-between">
-                <span className="text-sm font-medium">
-                  {t("settings.accessibility.fontSize")}
-                </span>
-                <span className="text-base-content/60 text-xs tabular-nums">
-                  {fontPercent}%
-                </span>
               </div>
-              <div className="flex items-center gap-2">
-                <Tooltip content={t("settings.accessibility.decreaseFontSize")}>
-                  <button
-                    type="button"
-                    onClick={decreaseFontSize}
-                    disabled={fontScale <= MIN_SCALE}
-                    aria-label={t("settings.accessibility.decreaseFontSize")}
-                    className="btn btn-outline btn-square btn-sm"
-                  >
-                    <Minus data-no-flip className="size-4" />
-                  </button>
-                </Tooltip>
+
+              <label className="border-base-300 bg-base-200/50 mt-3 flex cursor-pointer items-center justify-between rounded-xl border p-3">
+                <span className="flex items-center gap-2 text-sm font-medium">
+                  <Contrast data-no-flip className="size-4" />
+                  {t("settings.accessibility.highContrast")}
+                </span>
                 <input
-                  type="range"
-                  min={MIN_SCALE}
-                  max={MAX_SCALE}
-                  step={0.01}
-                  value={sliderValue}
-                  onChange={(e) => setSliderValue(Number(e.target.value))}
-                  onPointerUp={(e) => setFontScale(Number(e.currentTarget.value))}
-                  onKeyUp={(e) => setFontScale(Number(e.currentTarget.value))}
-                  aria-label={t("settings.accessibility.fontSize")}
-                  className="range range-primary range-sm flex-1 cursor-grab active:cursor-grabbing"
+                  type="checkbox"
+                  checked={highContrast}
+                  onChange={toggleHighContrast}
+                  className="toggle toggle-primary"
+                  aria-label={t("settings.accessibility.highContrast")}
                 />
-                <Tooltip content={t("settings.accessibility.increaseFontSize")}>
-                  <button
-                    type="button"
-                    onClick={increaseFontSize}
-                    disabled={fontScale >= MAX_SCALE}
-                    aria-label={t("settings.accessibility.increaseFontSize")}
-                    className="btn btn-outline btn-square btn-sm"
-                  >
-                    <Plus data-no-flip className="size-4" />
-                  </button>
-                </Tooltip>
-              </div>
-              <button
-                type="button"
-                onClick={resetFontSize}
-                disabled={fontScale === DEFAULT_SCALE}
-                className="btn btn-ghost btn-xs mt-2 gap-1.5"
-              >
-                <RotateCcw data-no-flip className="size-3.5" />
-                {t("settings.accessibility.resetFontSize")}
-              </button>
-            </div>
-
-            <label className="border-base-300 bg-base-200/50 mt-3 flex cursor-pointer items-center justify-between rounded-xl border p-3">
-              <span className="flex items-center gap-2 text-sm font-medium">
-                <Contrast data-no-flip className="size-4" />
-                {t("settings.accessibility.highContrast")}
-              </span>
-              <input
-                type="checkbox"
-                checked={highContrast}
-                onChange={toggleHighContrast}
-                className="toggle toggle-primary"
-                aria-label={t("settings.accessibility.highContrast")}
-              />
-            </label>
-          </div>
-        )}
+              </label>
+            </div>,
+            document.body,
+          )}
       </div>
     </div>
   );

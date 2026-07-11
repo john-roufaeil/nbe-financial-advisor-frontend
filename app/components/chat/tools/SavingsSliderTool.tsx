@@ -98,7 +98,7 @@ function ProjectionChart({
         />
         <circle cx={last.x} cy={last.y} r={4} fill="var(--color-primary)" />
       </svg>
-      <div className="text-base-content/50 mt-1.5 flex items-center justify-between text-[11px]">
+      <div className="text-base-content/50 mt-1.5 flex items-center justify-between text-xs">
         <Money>
           {start.toLocaleString()} {currencyLabel}
         </Money>
