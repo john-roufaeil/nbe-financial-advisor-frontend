@@ -95,7 +95,7 @@ function AccountConfirmStep({
                   <button
                     type="button"
                     onClick={() => onSelectAccount(account.id)}
-                    className={`border-base-300 bg-base-100 hover:border-primary flex w-full cursor-pointer items-center gap-3 rounded-xl border p-3 text-start shadow-sm ${selected ? "border-primary ring-primary/30 ring-1" : ""}`}
+                    className={`border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex w-full cursor-pointer items-center gap-3 rounded-md border p-3 text-start shadow-sm focus-visible:outline-2 focus-visible:outline-offset-2 ${selected ? "border-primary ring-primary/30 ring-1" : ""}`}
                   >
                     <BankBadge
                       bank={account.bank_name}
@@ -232,8 +232,12 @@ function ExtractedTransactionRow({
                 value={tx.amount}
                 onChange={(e) => onUpdate({ amount: Number(e.target.value) })}
                 className={`input input-bordered input-xs min-w-24 ${amountInvalid ? "input-error" : ""}`}
+                // `minWidth` (not `width`) so the field only ever grows to fit longer
+                // amounts, never shrinks — a fixed `width` recalculated on every
+                // keystroke made the box (and everything wrapping next to it in this
+                // flex-wrap row) visibly jitter while typing.
                 style={{
-                  width: `${Math.max(6, String(tx.amount).length + 3.5)}ch`,
+                  minWidth: `${Math.max(6, String(tx.amount).length + 3.5)}ch`,
                 }}
               />
             </span>
