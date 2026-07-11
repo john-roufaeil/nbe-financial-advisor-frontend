@@ -25,7 +25,7 @@ export default function Splash() {
   return (
     <AuthLayout>
       <div className="mx-auto flex w-full flex-col gap-10">
-        <img src="/logo.webp" alt={t("app.name")} className="mx-auto w-1/2" />
+        <img src="/logo.webp" alt={t("app.name")} className="mx-auto w-1/2 max-w-50" />
 
         <div className="flex flex-col gap-1.5 text-center">
           <h1 className="text-2xl font-semibold text-balance">{t("splash.welcome")}</h1>

@@ -45,7 +45,11 @@ export default function SignIn() {
   return (
     <AuthLayout>
       <div className="flex flex-col gap-4">
-        <img src="/logo.webp" alt={t("app.name")} className="mx-auto h-auto w-1/2" />
+        <img
+          src="/logo.webp"
+          alt={t("app.name")}
+          className="mx-auto h-auto w-1/2 max-w-50"
+        />
         <Link
           to={`/${lang}`}
           className="btn btn-ghost text-base-content/60 flex w-fit items-center gap-1.5 text-sm"
