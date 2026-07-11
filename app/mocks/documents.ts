@@ -169,6 +169,11 @@ export function getDocuments(filters: DocumentFilters): Promise<DocumentListResp
       (!filters.to || doc.uploadDate <= filters.to);
     return matchesType && matchesSearch && matchesDate;
   });
+  filtered.sort((a, b) =>
+    filters.sort === "asc"
+      ? a.uploadDate.localeCompare(b.uploadDate)
+      : b.uploadDate.localeCompare(a.uploadDate),
+  );
   const offset = filters.offset ?? 0;
   const limit = filters.limit ?? filtered.length;
   return delay({ items: filtered.slice(offset, offset + limit), total: filtered.length });
