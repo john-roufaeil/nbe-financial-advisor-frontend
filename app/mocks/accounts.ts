@@ -1,7 +1,11 @@
 import { delay } from "@/mocks/shared";
-import type { BankAccount } from "@/types/account";
+import type {
+  BankAccount,
+  CreateBankAccountBody,
+  UpdateBankAccountBody,
+} from "@/types/account";
 
-const accounts: BankAccount[] = [
+let accounts: BankAccount[] = [
   {
     id: "acc-nbe-1",
     bank_name: "National Bank of Egypt",
@@ -26,4 +30,36 @@ const accounts: BankAccount[] = [
 
 export function getAccounts(): Promise<BankAccount[]> {
   return delay(accounts);
+}
+
+export function createAccount(body: CreateBankAccountBody): Promise<BankAccount> {
+  const created: BankAccount = {
+    id: crypto.randomUUID(),
+    bank_name: body.bank_name,
+    account_type: body.account_type,
+    masked_account_number: `****${body.account_number.slice(-4)}`,
+    currency: body.currency,
+    is_active: true,
+    current_balance: body.initial_balance,
+    created_at: new Date().toISOString(),
+  };
+  accounts = [...accounts, created];
+  return delay(created);
+}
+
+export function updateAccount(
+  id: string,
+  patch: UpdateBankAccountBody,
+): Promise<BankAccount> {
+  accounts = accounts.map((a) =>
+    a.id === id ? { ...a, current_balance: patch.current_balance } : a,
+  );
+  const updated = accounts.find((a) => a.id === id);
+  if (!updated) throw new Error(`Account ${id} not found`);
+  return delay(updated);
+}
+
+export function deleteAccount(id: string): Promise<void> {
+  accounts = accounts.filter((a) => a.id !== id);
+  return delay(undefined);
 }
