@@ -35,7 +35,7 @@ export default function NotFound() {
               onClick={() => navigate(-1)}
               className="btn btn-outline gap-2"
             >
-              <ArrowLeft data-no-flip className="size-4" />
+              <ArrowLeft className="size-4" />
               {t("notFound.goBack")}
             </button>
             <Link to={home} className="btn btn-primary">
