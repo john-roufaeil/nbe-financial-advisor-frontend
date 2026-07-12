@@ -4,13 +4,14 @@ import * as profileMock from "@/mocks/profile";
 import type { UpdateProfileBody } from "@/types/profile";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { toastApiError } from "@/lib/toast";
+import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 
 function impl(source: DataSource) {
   return source === "mock" ? profileMock : profileApi;
 }
 
 export const profileKeys = {
-  me: (source: DataSource) => ["profile", "me", source] as const,
+  me: (source: DataSource) => [QUERY_ROOTS.profile, "me", source] as const,
 };
 
 export function useMe() {

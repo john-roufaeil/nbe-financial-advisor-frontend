@@ -10,13 +10,14 @@ import type { BankStatementFilters } from "@/api/bank-statements";
 import type { BankStatementType, ExtractedTransaction } from "@/types/bank-statement";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { toastSuccess, toastApiError } from "@/lib/toast";
+import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 
 function impl(source: DataSource) {
   return source === "mock" ? bankStatementsMock : bankStatementsApi;
 }
 
 export const bankStatementKeys = {
-  all: ["bankStatements"] as const,
+  all: [QUERY_ROOTS.bankStatements] as const,
   list: (filters: BankStatementFilters, source: DataSource) =>
     [...bankStatementKeys.all, "list", source, filters] as const,
   detail: (id: string, source: DataSource) =>
@@ -100,7 +101,7 @@ export function useApproveBankStatement() {
     }) => impl(source).approveBankStatement(id, transactions),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
-      queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.transactions] });
       toastSuccess("toast.bankStatementApproved");
     },
     onError: (error) => toastApiError(error),

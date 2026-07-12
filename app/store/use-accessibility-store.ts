@@ -1,10 +1,9 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
+import { ACCESSIBILITY_LIMITS } from "@/lib/constants/accessibility";
 
-const MIN_SCALE = 0.8;
-const MAX_SCALE = 2;
-const SCALE_STEP = 0.2;
-const DEFAULT_SCALE = 1;
+const { MIN_SCALE, MAX_SCALE, SCALE_STEP, DEFAULT_SCALE } = ACCESSIBILITY_LIMITS;
 
 interface AccessibilityState {
   fontScale: number;
@@ -34,8 +33,6 @@ export const useAccessibilityStore = create<AccessibilityState>()(
       resetFontSize: () => set({ fontScale: DEFAULT_SCALE }),
       toggleHighContrast: () => set((s) => ({ highContrast: !s.highContrast })),
     }),
-    { name: "accessibility-settings" },
+    { name: STORAGE_KEYS.accessibility },
   ),
 );
-
-export const ACCESSIBILITY_LIMITS = { MIN_SCALE, MAX_SCALE, SCALE_STEP, DEFAULT_SCALE };

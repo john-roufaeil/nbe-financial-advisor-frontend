@@ -2,9 +2,10 @@ import { useQuery } from "@tanstack/react-query";
 import * as dashboardApi from "@/api/dashboard";
 import * as dashboardMock from "@/mocks/dashboard";
 import { useDataSourceStore } from "@/store/use-data-source-store";
+import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 
 export const dashboardKeys = {
-  summary: (source: string) => ["dashboard", "summary", source] as const,
+  summary: (source: string) => [QUERY_ROOTS.dashboard, "summary", source] as const,
 };
 
 export function useDashboard() {

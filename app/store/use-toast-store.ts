@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { TOAST_DURATION_MS } from "@/lib/constants/time";
 
 export type ToastVariant = "success" | "error" | "info";
 
@@ -14,7 +15,7 @@ interface ToastState {
   dismiss: (id: string) => void;
 }
 
-export const TOAST_DURATION_MS = 3500;
+export { TOAST_DURATION_MS };
 
 export const useToastStore = create<ToastState>((set) => ({
   toasts: [],

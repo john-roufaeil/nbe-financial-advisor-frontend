@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/client";
+import { API_ENDPOINTS } from "@/lib/constants/api";
 import type { Transaction } from "@/types/transaction";
 
 export interface TransactionFilters {
@@ -113,7 +114,7 @@ function toQueryParams(filters: TransactionFilters): Record<string, string | num
 export async function getTransactions(
   filters: TransactionFilters,
 ): Promise<TransactionListResponse> {
-  const res = await apiClient.get<PaginatedTransactions>("/transactions", {
+  const res = await apiClient.get<PaginatedTransactions>(API_ENDPOINTS.transactions, {
     params: toQueryParams(filters),
   });
   return { items: res.data.results.map(toTransaction), total: res.data.count };
@@ -134,7 +135,7 @@ export async function getTransactionsByStatement(
   let total = Infinity;
 
   while (offset < total) {
-    const res = await apiClient.get<PaginatedTransactions>("/transactions", {
+    const res = await apiClient.get<PaginatedTransactions>(API_ENDPOINTS.transactions, {
       params: { limit: PAGE, offset },
     });
     total = res.data.count;
@@ -154,7 +155,7 @@ export async function createTransaction(
     throw new Error("An account must be selected to create a transaction.");
   }
 
-  const res = await apiClient.post<RawTransaction>("/transactions", {
+  const res = await apiClient.post<RawTransaction>(API_ENDPOINTS.transactions, {
     account_id: body.accountId,
     transaction_date: body.datetime.slice(0, 10),
     merchant_raw: body.title,
@@ -177,10 +178,10 @@ export async function updateTransaction(
   if (patch.amount !== undefined) body.amount = patch.amount;
   if (patch.type !== undefined) body.transaction_type = toBackendType(patch.type);
 
-  const res = await apiClient.patch<RawTransaction>(`/transactions/${id}`, body);
+  const res = await apiClient.patch<RawTransaction>(API_ENDPOINTS.transaction(id), body);
   return toTransaction(res.data);
 }
 
 export async function deleteTransaction(id: string): Promise<void> {
-  await apiClient.delete(`/transactions/${id}`);
+  await apiClient.delete(API_ENDPOINTS.transaction(id));
 }

@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/store/use-auth-store";
+import { API_ENDPOINTS } from "@/lib/constants/api";
 
 /**
  * Single axios instance for all backend calls. Auth endpoints (signup/login/refresh)
@@ -49,7 +50,7 @@ async function refreshAccessToken(): Promise<string> {
     throw new NoRefreshTokenError();
   }
   const res = await apiClient.post<{ access_token: string; refresh_token: string }>(
-    "/auth/refresh",
+    API_ENDPOINTS.authRefresh,
     { refresh_token: refreshToken },
   );
   const tokens = res.data;

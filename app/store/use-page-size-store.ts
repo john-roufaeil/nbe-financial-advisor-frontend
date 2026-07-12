@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { DEFAULT_PAGE_SIZE } from "@/lib/pagination";
+import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
 interface PageSizeState {
   pageSize: number;
@@ -14,6 +15,6 @@ export const usePageSizeStore = create<PageSizeState>()(
       pageSize: DEFAULT_PAGE_SIZE,
       setPageSize: (pageSize) => set({ pageSize }),
     }),
-    { name: "nbe_data_page_size" },
+    { name: STORAGE_KEYS.pageSize },
   ),
 );

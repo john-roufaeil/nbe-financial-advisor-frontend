@@ -1,0 +1,14 @@
+/** URL path segments (appended after the `/:lang` prefix). */
+export const ROUTE_SEGMENTS = {
+  dashboard: "dashboard",
+  chat: "chat",
+  transactions: "transactions",
+  bankStatements: "bank-statements",
+  profile: "profile",
+  onboarding: "onboarding",
+  signIn: "sign-in",
+} as const;
+
+/** Builds an in-app path for the given language. */
+export const localizedPath = (lang: string, segment?: string) =>
+  segment ? `/${lang}/${segment}` : `/${lang}`;

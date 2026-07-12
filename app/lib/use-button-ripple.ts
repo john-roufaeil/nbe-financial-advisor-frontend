@@ -1,6 +1,5 @@
 import { useEffect } from "react";
-
-const RIPPLE_DURATION_MS = 500;
+import { RIPPLE_DURATION_MS, RIPPLE_CLEANUP_EXTRA_MS } from "@/lib/constants/time";
 
 /**
  * Spawns a brief expanding ripple from the exact point the user pressed on any
@@ -28,7 +27,7 @@ export function useButtonRipple() {
       span.addEventListener("animationend", () => span.remove());
       // Belt-and-braces cleanup in case animationend never fires (e.g. the
       // button is removed from the DOM mid-animation).
-      setTimeout(() => span.remove(), RIPPLE_DURATION_MS + 100);
+      setTimeout(() => span.remove(), RIPPLE_DURATION_MS + RIPPLE_CLEANUP_EXTRA_MS);
     }
 
     document.addEventListener("pointerdown", handlePointerDown);

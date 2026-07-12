@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/client";
+import { API_ENDPOINTS } from "@/lib/constants/api";
 import type { FinancialGoal } from "@/types/goal";
 
 interface RawSavingsProgress {
@@ -14,7 +15,7 @@ interface RawSavingsProgress {
 }
 
 export async function getGoals(): Promise<FinancialGoal[]> {
-  const res = await apiClient.get<RawSavingsProgress>("/budget/savings-progress");
+  const res = await apiClient.get<RawSavingsProgress>(API_ENDPOINTS.savingsProgress);
   const data = res.data;
 
   // Make sure the inner goal object exists with a valid name
@@ -41,7 +42,7 @@ export async function getGoals(): Promise<FinancialGoal[]> {
 export async function createGoal(
   body: Omit<FinancialGoal, "id">,
 ): Promise<FinancialGoal> {
-  await apiClient.patch("/budget", {
+  await apiClient.patch(API_ENDPOINTS.budget, {
     goal: {
       name: body.name,
       target_amount: body.target,
@@ -56,7 +57,7 @@ export async function updateGoal(
   id: string,
   patch: Omit<FinancialGoal, "id">,
 ): Promise<FinancialGoal> {
-  await apiClient.patch("/budget", {
+  await apiClient.patch(API_ENDPOINTS.budget, {
     goal: {
       name: patch.name,
       target_amount: patch.target,
@@ -69,7 +70,7 @@ export async function updateGoal(
 }
 
 export async function deleteGoal(_id: string): Promise<void> {
-  await apiClient.patch("/budget", {
+  await apiClient.patch(API_ENDPOINTS.budget, {
     goal: {
       name: "",
       target_amount: 0,

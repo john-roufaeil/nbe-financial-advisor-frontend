@@ -1,9 +1,10 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
 export type Theme = "light" | "dark";
 
-export const THEME_STORAGE_KEY = "nbe_theme";
+export const THEME_STORAGE_KEY = STORAGE_KEYS.theme;
 
 export function setThemeClass(theme: Theme) {
   document.documentElement.classList.toggle("dark", theme === "dark");

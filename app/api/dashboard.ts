@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/client";
+import { API_ENDPOINTS } from "@/lib/constants/api";
 import type { DashboardSummary } from "@/types/dashboard";
 
 interface RawAllocation {
@@ -19,7 +20,7 @@ interface RawDashboard {
 }
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
-  const res = await apiClient.get<RawDashboard>("/dashboard");
+  const res = await apiClient.get<RawDashboard>(API_ENDPOINTS.dashboard);
   const data = res.data;
 
   // A planless user still gets a 200 with `has_plan: false` and null budget/goal.

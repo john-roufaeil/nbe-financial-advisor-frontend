@@ -1,6 +1,9 @@
-import type { TimeFormat } from "@/store/use-time-format-store";
-import type { DateFormat } from "@/store/use-date-format-store";
-import type { NumberFormat } from "@/store/use-number-format-store";
+import type {
+  TimeFormat,
+  DateFormat,
+  NumberFormat,
+} from "@/store/use-display-preferences-store";
+import { BYTES_PER_KB } from "@/lib/constants/limits";
 
 /**
  * Manual dd/mm/yyyy or mm/dd/yyyy formatting (no Intl/locale) so server and
@@ -51,8 +54,8 @@ export function formatDateTime(
 }
 
 export function formatSize(kb: number, t: (key: string) => string) {
-  return kb >= 1024
-    ? `${(kb / 1024).toFixed(1)} ${t("units.mb")}`
+  return kb >= BYTES_PER_KB
+    ? `${(kb / BYTES_PER_KB).toFixed(1)} ${t("units.mb")}`
     : `${kb} ${t("units.kb")}`;
 }
 

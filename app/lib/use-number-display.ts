@@ -1,7 +1,6 @@
 import { useCallback } from "react";
 import { formatNumber } from "@/lib/format";
-import { useNumberFormatStore } from "@/store/use-number-format-store";
-import { useCompactNumbersStore } from "@/store/use-compact-numbers-store";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 
 /**
  * Binds formatNumber to the user's number-format + compact-numbers
@@ -10,8 +9,8 @@ import { useCompactNumbersStore } from "@/store/use-compact-numbers-store";
  * transaction detail modal), regardless of the compact-numbers preference.
  */
 export function useNumberDisplay(disableCompact = false) {
-  const separator = useNumberFormatStore((s) => s.format);
-  const compactPreference = useCompactNumbersStore((s) => s.compact);
+  const separator = useDisplayPreferencesStore((s) => s.numberFormat);
+  const compactPreference = useDisplayPreferencesStore((s) => s.compactNumbers);
   const compact = disableCompact ? false : compactPreference;
   return useCallback(
     (value: number) => formatNumber(value, { separator, compact }),

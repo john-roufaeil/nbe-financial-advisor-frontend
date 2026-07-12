@@ -4,13 +4,14 @@ import * as accountsMock from "@/mocks/accounts";
 import type { CreateBankAccountBody, UpdateBankAccountBody } from "@/types/account";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { toastSuccess, toastApiError } from "@/lib/toast";
+import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 
 function impl(source: DataSource) {
   return source === "mock" ? accountsMock : accountsApi;
 }
 
 export const accountKeys = {
-  all: (source: DataSource) => ["accounts", source] as const,
+  all: (source: DataSource) => [QUERY_ROOTS.accounts, source] as const,
 };
 
 export function useAccounts() {
@@ -27,7 +28,8 @@ export function useCreateAccount() {
   return useMutation({
     mutationFn: (body: CreateBankAccountBody) => impl(source).createAccount(body),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.accounts] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
       toastSuccess("toast.accountCreated");
     },
     onError: (error) => toastApiError(error),
@@ -41,7 +43,8 @@ export function useUpdateAccount() {
     mutationFn: ({ id, patch }: { id: string; patch: UpdateBankAccountBody }) =>
       impl(source).updateAccount(id, patch),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.accounts] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
       toastSuccess("toast.accountUpdated");
     },
     onError: (error) => toastApiError(error),
@@ -54,7 +57,8 @@ export function useDeleteAccount() {
   return useMutation({
     mutationFn: (id: string) => impl(source).deleteAccount(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.accounts] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
       toastSuccess("toast.accountDeleted");
     },
     onError: (error) => toastApiError(error),

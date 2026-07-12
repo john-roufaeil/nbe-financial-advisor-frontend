@@ -10,13 +10,14 @@ import type { TransactionFilters } from "@/api/transactions";
 import type { Transaction } from "@/types/transaction";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { toastSuccess, toastApiError } from "@/lib/toast";
+import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 
 function impl(source: DataSource) {
   return source === "mock" ? transactionsMock : transactionsApi;
 }
 
 export const transactionKeys = {
-  all: ["transactions"] as const,
+  all: [QUERY_ROOTS.transactions] as const,
   list: (filters: TransactionFilters, source: DataSource) =>
     [...transactionKeys.all, "list", source, filters] as const,
 };
@@ -37,6 +38,7 @@ export function useCreateTransaction() {
     mutationFn: (body: Omit<Transaction, "id">) => impl(source).createTransaction(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
       toastSuccess("toast.transactionCreated");
     },
     onError: (error) => toastApiError(error),
@@ -56,6 +58,7 @@ export function useUpdateTransaction() {
     }) => impl(source).updateTransaction(id, patch),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
       toastSuccess("toast.transactionUpdated");
     },
     onError: (error) => toastApiError(error),
@@ -69,6 +72,7 @@ export function useDeleteTransaction() {
     mutationFn: (id: string) => impl(source).deleteTransaction(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
       toastSuccess("toast.transactionDeleted");
     },
     onError: (error) => toastApiError(error),

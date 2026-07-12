@@ -2,6 +2,7 @@ import { apiClient } from "@/api/client";
 import { getAccounts } from "@/api/accounts";
 import { getTransactionsByStatement } from "@/api/transactions";
 import { getBankCode } from "@/lib/banks";
+import { API_ENDPOINTS } from "@/lib/constants/api";
 import type {
   BankStatement,
   BankStatementStatus,
@@ -132,7 +133,9 @@ export async function getBankStatements(
   if (filters.offset !== undefined) params.offset = filters.offset;
   if (filters.limit !== undefined) params.limit = filters.limit;
 
-  const res = await apiClient.get<PaginatedStatements>("/statements", { params });
+  const res = await apiClient.get<PaginatedStatements>(API_ENDPOINTS.statements, {
+    params,
+  });
   const banks = await bankCodesByAccountId();
 
   return {
@@ -144,7 +147,7 @@ export async function getBankStatements(
 }
 
 export async function getBankStatement(id: string): Promise<BankStatement> {
-  const res = await apiClient.get<RawStatement>(`/statements/${id}`);
+  const res = await apiClient.get<RawStatement>(API_ENDPOINTS.statement(id));
   const banks = await bankCodesByAccountId();
   const doc = toBankStatement(
     res.data,
@@ -182,7 +185,7 @@ export async function uploadBankStatements(
     files.map((f) => {
       const formData = new FormData();
       formData.append("file", f.file, f.name);
-      return apiClient.post<RawStatement>("/statements", formData, {
+      return apiClient.post<RawStatement>(API_ENDPOINTS.statements, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
     }),
@@ -202,7 +205,7 @@ export async function uploadBankStatements(
 }
 
 export async function deleteBankStatement(id: string): Promise<void> {
-  await apiClient.delete(`/statements/${id}`);
+  await apiClient.delete(API_ENDPOINTS.statement(id));
 }
 
 // ── Not implemented server-side ───────────────────────────────────────────────
