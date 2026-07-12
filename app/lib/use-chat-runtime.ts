@@ -15,6 +15,7 @@ import {
   wantsTransactions,
   wantsSavingsPlan,
 } from "@/lib/demo-financials";
+import { MOCK_CHAT_LATENCY_MS } from "@/lib/constants/time";
 
 function pickResponse(text: string): {
   text: string;
@@ -60,7 +61,7 @@ async function sendMessage(
   });
   store.setRunning(true);
   // Loading dots show for this whole wait; the reply only appears once fully ready, fading in.
-  await new Promise((r) => setTimeout(r, 900));
+  await new Promise((r) => setTimeout(r, MOCK_CHAT_LATENCY_MS));
 
   const { text: replyText, toolCall } = pickResponse(text);
   store.appendMessage(threadId, {

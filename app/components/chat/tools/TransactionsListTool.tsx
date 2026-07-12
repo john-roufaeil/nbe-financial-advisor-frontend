@@ -6,13 +6,13 @@ import { formatDate } from "@/lib/format";
 import { Money } from "@/components/shared/Money";
 import { HighlightStatCard } from "@/components/chat/tools/HighlightStatCard";
 import { useNumberDisplay } from "@/lib/use-number-display";
-import { useDateFormatStore } from "@/store/use-date-format-store";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 
 export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) => {
   const { t } = useTranslation();
   const data = result as TransactionsListResult | undefined;
   const formatN = useNumberDisplay();
-  const dateFormat = useDateFormatStore((s) => s.format);
+  const dateFormat = useDisplayPreferencesStore((s) => s.dateFormat);
   if (!data) return null;
 
   const currencyLabel = t(`currency.${data.currency}`, data.currency);
