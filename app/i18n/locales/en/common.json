@@ -74,7 +74,7 @@
       "initialBalancePlaceholder": "0.00",
       "errors": {
         "bankRequired": "Select or add a bank.",
-        "accountNumberInvalid": "Enter exactly 8 digits.",
+        "accountNumberInvalid": "Enter exactly 4 digits.",
         "accountNumberMismatch": "Account numbers don't match.",
         "balanceInvalid": "Enter a valid balance."
       }

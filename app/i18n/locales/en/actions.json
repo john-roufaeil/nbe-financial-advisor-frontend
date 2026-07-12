@@ -12,6 +12,7 @@
     "edit": "Edit",
     "clear": "Clear",
     "remove": "Remove",
+    "viewDetails": "View details for {{name}}",
     "showPassword": "Show password",
     "hidePassword": "Hide password"
   }

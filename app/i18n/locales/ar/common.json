@@ -74,7 +74,7 @@
       "initialBalancePlaceholder": "0.00",
       "errors": {
         "bankRequired": "اختر بنكًا أو أضف واحدًا.",
-        "accountNumberInvalid": "أدخل 8 أرقام بالضبط.",
+        "accountNumberInvalid": "أدخل 4 أرقام بالضبط.",
         "accountNumberMismatch": "أرقام الحساب غير متطابقة.",
         "balanceInvalid": "أدخل رصيدًا صالحًا."
       }
