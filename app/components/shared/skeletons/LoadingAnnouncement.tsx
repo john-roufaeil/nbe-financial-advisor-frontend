@@ -10,7 +10,7 @@ export function LoadingAnnouncement() {
   const { t } = useTranslation();
   return (
     <span role="status" aria-live="polite" className="sr-only">
-      {t("data.loading")}
+      {t("common.loading")}
     </span>
   );
 }

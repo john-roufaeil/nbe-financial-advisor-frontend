@@ -25,13 +25,13 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
         <span className="bg-primary/10 text-primary grid size-8 place-items-center rounded-lg">
           <Receipt data-no-flip className="size-4" />
         </span>
-        <p className="text-sm font-semibold">{t("data.transactions")}</p>
+        <p className="text-sm font-semibold">{t("transactions.title")}</p>
       </div>
       <div className="flex flex-wrap gap-3 p-3 pb-0">
         <HighlightStatCard
           icon={ArrowUpCircle}
           colorClass="bg-success text-success-content"
-          label={t("data.filters.income")}
+          label={t("common.filters.income")}
           value={
             <Money>
               {totalIncome.toLocaleString()} {currencyLabel}
@@ -41,7 +41,7 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
         <HighlightStatCard
           icon={ArrowDownCircle}
           colorClass="bg-neutral text-neutral-content"
-          label={t("data.filters.expense")}
+          label={t("common.filters.expense")}
           value={
             <Money>
               {totalExpense.toLocaleString()} {currencyLabel}
@@ -67,7 +67,7 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{tx.title}</p>
                 <p className="text-base-content/50 text-xs">
-                  {t(`data.categories.${tx.category}`, tx.category)} ·{" "}
+                  {t(`common.categories.${tx.category}`, tx.category)} ·{" "}
                   {formatDate(tx.datetime)}
                 </p>
               </div>

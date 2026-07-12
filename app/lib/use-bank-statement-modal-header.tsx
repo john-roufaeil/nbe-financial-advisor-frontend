@@ -8,7 +8,7 @@ export function useBankStatementModalHeader(doc: BankStatement | undefined) {
   const { t } = useTranslation();
   const { label: bankLabel, logo: bankLogo } = useBankInfo(doc?.bankName);
   const fileMeta = [
-    doc?.type && t(`data.filters.${doc.type}`),
+    doc?.type && t(`common.filters.${doc.type}`),
     doc?.sizeKb !== undefined && formatSize(doc.sizeKb, t),
   ]
     .filter(Boolean)
@@ -24,7 +24,7 @@ export function useBankStatementModalHeader(doc: BankStatement | undefined) {
       <span className="flex min-w-0 flex-col">
         <span className="truncate">{bankLabel}</span>
         <span className="text-base-content/50 truncate text-xs font-normal">
-          {doc.name || t("data.bankStatementFallbackName")}
+          {doc.name || t("bankStatements.fallbackName")}
           {fileMeta && ` · ${fileMeta}`}
         </span>
       </span>

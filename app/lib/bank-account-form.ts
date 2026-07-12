@@ -43,18 +43,18 @@ export function validateBankAccountForm(
   const balanceNum = Number(values.initialBalance);
 
   if (!values.bankName.trim()) {
-    errors.bankName = t("data.addAccount.errors.bankRequired");
+    errors.bankName = t("common.addAccount.errors.bankRequired");
   }
   if (
     !isDigits(values.accountNumber) ||
     values.accountNumber.length !== ACCOUNT_NUMBER_LENGTH
   ) {
-    errors.accountNumber = t("data.addAccount.errors.accountNumberInvalid");
+    errors.accountNumber = t("common.addAccount.errors.accountNumberInvalid");
   } else if (values.accountNumber !== values.accountNumberConfirm) {
-    errors.accountNumberConfirm = t("data.addAccount.errors.accountNumberMismatch");
+    errors.accountNumberConfirm = t("common.addAccount.errors.accountNumberMismatch");
   }
   if (!values.initialBalance || !Number.isFinite(balanceNum) || balanceNum < 0) {
-    errors.initialBalance = t("data.addAccount.errors.balanceInvalid");
+    errors.initialBalance = t("common.addAccount.errors.balanceInvalid");
   }
   return errors;
 }
@@ -67,7 +67,7 @@ export function confirmMismatchError(
   if (!confirm || confirm.length !== ACCOUNT_NUMBER_LENGTH) return undefined;
   return number === confirm
     ? undefined
-    : t("data.addAccount.errors.accountNumberMismatch");
+    : t("common.addAccount.errors.accountNumberMismatch");
 }
 
 export function balanceError(
@@ -77,7 +77,7 @@ export function balanceError(
   if (value === "") return undefined;
   const num = Number(value);
   return !Number.isFinite(num) || num < 0
-    ? t("data.addAccount.errors.balanceInvalid")
+    ? t("common.addAccount.errors.balanceInvalid")
     : undefined;
 }
 

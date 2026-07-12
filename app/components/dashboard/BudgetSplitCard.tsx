@@ -26,7 +26,7 @@ function BudgetRow({
     <li className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between text-sm">
         <span className="font-medium">
-          {t(`data.categories.${category.name}`, category.name)}
+          {t(`common.categories.${category.name}`, category.name)}
         </span>
         <Money className="text-base-content/60 tabular-nums">
           {category.spent.toLocaleString()} / {category.budget.toLocaleString()}{" "}
@@ -86,7 +86,7 @@ export function BudgetSplitCard({
     .filter((c) => allocationValue(c) > 0)
     .sort((a, b) => allocationValue(b) - allocationValue(a));
   const pieSlices = sortedCategories.map((c) => ({
-    name: t(`data.categories.${c.name}`, c.name),
+    name: t(`common.categories.${c.name}`, c.name),
     value: allocationValue(c),
   }));
   const pieTotal = pieSlices.reduce((sum, s) => sum + s.value, 0);
@@ -142,7 +142,7 @@ export function BudgetSplitCard({
                         style={{ backgroundColor: colors[i % colors.length] }}
                       />
                       <span className="text-base-content/70 min-w-0 truncate">
-                        {t(`data.categories.${category.name}`, category.name)}
+                        {t(`common.categories.${category.name}`, category.name)}
                       </span>
                       <span className="text-base-content/40 ms-auto shrink-0 tabular-nums">
                         {slicePct}%

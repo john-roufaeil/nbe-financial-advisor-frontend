@@ -1,0 +1,139 @@
+{
+  "common": {
+    "search": "Search...",
+    "noResults": "No results found.",
+    "loading": "Loading...",
+    "loadError": "Sorry, something went wrong. Please try again.",
+    "retry": "Retry",
+    "replan": "Chat with advisor",
+    "dateFrom": "From",
+    "dateTo": "To",
+    "clearFilters": "Clear filters",
+    "category": "Category",
+    "allCategories": "All categories",
+    "categories": {
+      "Groceries": "Groceries",
+      "Dining": "Dining",
+      "Transport": "Transport",
+      "Utilities": "Utilities",
+      "Shopping": "Shopping",
+      "Health": "Health",
+      "Income": "Income",
+      "Rent": "Rent",
+      "Savings": "Savings",
+      "Transportation": "Transportation",
+      "Entertainment": "Entertainment"
+    },
+    "filtersLabel": "Filters",
+    "amountRange": "Amount range",
+    "amountRanges": {
+      "any": "Any amount",
+      "under500": "Under 500",
+      "500to1000": "500 – 1,000",
+      "1000to5000": "1,000 – 5,000",
+      "over5000": "Over 5,000"
+    },
+    "sort": {
+      "dateAsc": "Oldest first",
+      "dateDesc": "Newest first"
+    },
+    "filters": {
+      "all": "All",
+      "income": "Income",
+      "expense": "Expense",
+      "pdf": "PDF",
+      "image": "Image",
+      "doc": "Doc"
+    },
+    "pagination": {
+      "prev": "Previous",
+      "next": "Next",
+      "page": "Page {{page}} of {{totalPages}}",
+      "goToPage": "Go to page {{page}}",
+      "perPage": "{{count}} / page"
+    },
+    "addAccount": {
+      "title": "Add Bank Account",
+      "add": "Add Bank Account",
+      "accountType": "Account type",
+      "accountTypes": {
+        "checking": "Checking",
+        "savings": "Savings",
+        "salary": "Salary",
+        "business": "Business"
+      },
+      "currency": "Currency",
+      "bank": "Bank",
+      "bankPlaceholder": "Select a bank",
+      "bankSearchPlaceholder": "Search banks...",
+      "addCustomBank": "Add \"{{name}}\" as a new bank",
+      "accountNumber": "Last 4 digits of account number",
+      "accountNumberConfirm": "Confirm account number",
+      "accountNumberPlaceholder": "1234",
+      "initialBalance": "Initial balance",
+      "initialBalancePlaceholder": "0.00",
+      "errors": {
+        "bankRequired": "Select or add a bank.",
+        "accountNumberInvalid": "Enter exactly 8 digits.",
+        "accountNumberMismatch": "Account numbers don't match.",
+        "balanceInvalid": "Enter a valid balance."
+      }
+    },
+    "editAccount": {
+      "title": "Edit Bank Account",
+      "balance": "Current balance",
+      "errors": {
+        "balanceInvalid": "Enter a valid balance."
+      }
+    },
+    "sections": {
+      "errors": {
+        "phoneInvalid": "Enter a valid phone number.",
+        "nameRequired": "Enter your name.",
+        "incomeNegative": "Monthly income can't be negative."
+      },
+      "profile": {
+        "title": "Profile",
+        "fields": {
+          "fullName": "Full name",
+          "fullNamePlaceholder": "e.g. Amina El-Sayed",
+          "id": "User ID",
+          "dob": "Date of birth",
+          "nationalId": "National ID"
+        }
+      },
+      "contact": {
+        "title": "Contact",
+        "fields": {
+          "email": "Email",
+          "phone": "Phone",
+          "phonePlaceholder": "e.g. 01001234567"
+        }
+      },
+      "financial": {
+        "title": "Financial Profile",
+        "fields": {
+          "employmentStatus": "Employment status",
+          "monthlyIncome": "Monthly income",
+          "monthlyIncomePlaceholder": "e.g. 5000.00",
+          "incomeSteadiness": "Income steadiness",
+          "riskTolerance": "Risk tolerance"
+        }
+      },
+      "accounts": {
+        "title": "Bank accounts",
+        "empty": "No linked bank accounts yet.",
+        "error": "Couldn't load your bank accounts. Please try again.",
+        "inactive": "Inactive"
+      },
+      "preferences": {
+        "title": "Preferences"
+      }
+    },
+    "view": {
+      "toggleLabel": "View mode",
+      "list": "List view",
+      "grid": "Grid view"
+    }
+  }
+}

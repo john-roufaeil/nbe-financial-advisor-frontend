@@ -104,12 +104,12 @@ function TransactionsSummary() {
       to={`/${lang}/transactions`}
       icon={ArrowLeftRight}
       color="bg-info/10 text-info"
-      title={t("data.transactions")}
+      title={t("transactions.title")}
       count={data?.total ?? 0}
-      countLabel={t("data.pagination.totalTransactions", { count: data?.total ?? 0 })}
+      countLabel={t("transactions.pagination.total", { count: data?.total ?? 0 })}
       emptyIcon={Inbox}
-      emptyLabel={t("data.transactionsEmptyShort")}
-      emptyCtaLabel={t("data.transactionsEmptyCta")}
+      emptyLabel={t("transactions.emptyShort")}
+      emptyCtaLabel={t("transactions.emptyCta")}
     >
       {data?.items.map((tx) => {
         const isIncome = tx.type === "income";
@@ -148,12 +148,12 @@ function BankStatementsSummary() {
       to={`/${lang}/bank-statements`}
       icon={FileText}
       color="bg-secondary/10 text-secondary"
-      title={t("data.bankStatements")}
+      title={t("bankStatements.title")}
       count={data?.total ?? 0}
-      countLabel={t("data.pagination.totalBankStatements", { count: data?.total ?? 0 })}
+      countLabel={t("bankStatements.pagination.total", { count: data?.total ?? 0 })}
       emptyIcon={FileX2}
-      emptyLabel={t("data.bankStatementsEmptyShort")}
-      emptyCtaLabel={t("data.bankStatementsEmptyCta")}
+      emptyLabel={t("bankStatements.emptyShort")}
+      emptyCtaLabel={t("bankStatements.emptyCta")}
     >
       {data?.items.map((doc) => (
         <li key={doc.id}>

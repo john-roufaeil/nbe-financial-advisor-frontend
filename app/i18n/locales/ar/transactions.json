@@ -1,0 +1,48 @@
+{
+  "transactions": {
+    "title": "المعاملات",
+    "subtitle": "تتبع دخلك ومصروفاتك",
+    "empty": "لا توجد معاملات بعد. أضف واحدة يدويًا، أو ارفع كشف حساب وسنستخرجها لك تلقائيًا.",
+    "emptyShort": "لا توجد معاملات",
+    "emptyCta": "أضف معاملتك الأولى",
+    "pagination": {
+      "total_zero": "لا توجد معاملات",
+      "total_one": "معاملة واحدة",
+      "total_two": "معاملتان",
+      "total_few": "{{count}} معاملات",
+      "total_many": "{{count}} معاملة",
+      "total_other": "{{count}} معاملة"
+    },
+    "add": {
+      "title": "إضافة معاملة",
+      "editTitle": "تعديل المعاملة",
+      "add": "إضافة معاملة",
+      "name": "الاسم",
+      "namePlaceholder": "مثال: كارفور ماركت",
+      "account": "الحساب",
+      "accountPlaceholder": "اختر حسابًا",
+      "accountSearchPlaceholder": "ابحث عن حساب...",
+      "addNewAccount": "+ إضافة حساب جديد",
+      "noAccounts": "لا توجد حسابات مرتبطة بعد. أضف حسابًا لتسجيل معاملة.",
+      "category": "الفئة",
+      "amount": "المبلغ",
+      "amountPlaceholder": "0.00",
+      "date": "التاريخ",
+      "errors": {
+        "nameRequired": "أدخل اسمًا لهذه المعاملة.",
+        "nameTooLong": "يجب ألا يتجاوز الاسم 20 حرفًا.",
+        "amountInvalid": "أدخل مبلغًا أكبر من 0.",
+        "accountRequired": "اختر حسابًا."
+      }
+    },
+    "detail": {
+      "title": "المعاملة",
+      "amount": "المبلغ",
+      "category": "الفئة",
+      "date": "التاريخ",
+      "type": "النوع",
+      "account": "الحساب البنكي",
+      "accountUnknown": "لا يوجد حساب مرتبط"
+    }
+  }
+}

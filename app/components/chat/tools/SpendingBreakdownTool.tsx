@@ -24,7 +24,7 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
   }
 
   function categoryLabel(name: string) {
-    return t(`data.categories.${name}`, name);
+    return t(`common.categories.${name}`, name);
   }
 
   if (!data || status.type === "running") {

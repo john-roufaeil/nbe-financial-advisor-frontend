@@ -82,7 +82,7 @@ export function PreferencesMenu() {
             <Settings2 className="size-4.5" />
           </span>
           <h2 className="card-title flex-1 text-base">
-            {t("data.sections.preferences.title")}
+            {t("common.sections.preferences.title")}
           </h2>
         </div>
 

@@ -1,7 +1,7 @@
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { LogOut, User } from "lucide-react";
-import { PersonalDataSections } from "@/components/data/PersonalDataSections";
+import { PersonalDataSections } from "@/components/profile/PersonalDataSections";
 import { PageBanner } from "@/components/shared/PageBanner";
 import { PreferencesMenu } from "@/components/shared/PreferencesMenu";
 import { useAuthStore } from "@/store/use-auth-store";
