@@ -1,7 +1,8 @@
-import { useMemo, useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, ChevronDown, Plus, Search } from "lucide-react";
+import { Check, Plus, Search } from "lucide-react";
 import { BANK_CODES, getBankCode, getBankLogo, getBankName } from "@/lib/banks";
+import { EntityPicker } from "@/components/shared/EntityPicker";
 
 /**
  * Searchable dropdown of registered banks. `onChange` receives the bank's
@@ -21,9 +22,7 @@ export function BankPicker({
   className?: string;
 }) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
   const [query, setQuery] = useState("");
-  const containerRef = useRef<HTMLDivElement>(null);
 
   const selectedCode = getBankCode(value);
   const selectedLabel = value
@@ -53,16 +52,17 @@ export function BankPicker({
   function select(bankName: string) {
     onChange(bankName);
     setQuery("");
-    setOpen(false);
   }
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
-      <button
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        className="input input-bordered input-sm flex w-full items-center justify-between gap-2"
-      >
+    <EntityPicker
+      className={className}
+      items={results}
+      getKey={(code) => code}
+      onSelect={select}
+      listClassName="max-h-30"
+      emptyMessage={t("data.noResults")}
+      trigger={
         <span className="flex min-w-0 flex-1 items-center gap-2">
           {value && (
             <img
@@ -75,73 +75,51 @@ export function BankPicker({
             {selectedLabel || t("data.addAccount.bankPlaceholder")}
           </span>
         </span>
-        <ChevronDown className="size-4 shrink-0 opacity-50" />
-      </button>
-
-      {open && (
-        <>
-          <button
-            type="button"
-            aria-hidden
-            tabIndex={-1}
-            className="fixed inset-0 z-10 cursor-default"
-            onClick={() => setOpen(false)}
+      }
+      search={
+        <label className="input input-bordered input-sm flex items-center gap-2">
+          <Search className="size-3.5 opacity-50" />
+          <input
+            type="text"
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("data.addAccount.bankSearchPlaceholder")}
+            maxLength={20}
+            className="w-full"
           />
-          <div className="menu bg-base-100 border-base-300 absolute z-20 mt-1 w-full flex-col gap-1 rounded-lg border p-2 shadow-lg">
-            <label className="input input-bordered input-sm flex items-center gap-2">
-              <Search className="size-3.5 opacity-50" />
-              <input
-                type="text"
-                autoFocus
-                value={query}
-                onChange={(e) => setQuery(e.target.value)}
-                placeholder={t("data.addAccount.bankSearchPlaceholder")}
-                maxLength={20}
-                className="w-full"
-              />
-            </label>
-            <ul className="max-h-30 overflow-y-auto">
-              {results.map((code) => {
-                const label = t(`banks.${code}`, getBankName(code) ?? code);
-                return (
-                  <li key={code}>
-                    <button
-                      type="button"
-                      onClick={() => select(code)}
-                      className="hover:bg-base-200 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm"
-                    >
-                      <img
-                        src={getBankLogo(code)}
-                        alt=""
-                        className="size-5 shrink-0 rounded-full object-cover"
-                      />
-                      <span className="flex-1 truncate">{label}</span>
-                      {selectedCode === code && <Check className="size-4 shrink-0" />}
-                    </button>
-                  </li>
-                );
-              })}
-              {results.length === 0 && (
-                <li className="text-base-content/50 px-2 py-1.5 text-sm">
-                  {t("data.noResults")}
-                </li>
-              )}
-            </ul>
-            {query.trim() && !exactMatch && (
-              <button
-                type="button"
-                onClick={() => select(query.trim())}
-                className="border-base-300 hover:bg-base-200 flex items-center gap-2 rounded-md border border-dashed px-2 py-1.5 text-start text-sm"
-              >
-                <Plus className="size-4 shrink-0" />
-                <span className="truncate">
-                  {t("data.addAccount.addCustomBank", { name: query.trim() })}
-                </span>
-              </button>
-            )}
-          </div>
+        </label>
+      }
+      renderItem={(code) => (
+        <>
+          <img
+            src={getBankLogo(code)}
+            alt=""
+            className="size-5 shrink-0 rounded-full object-cover"
+          />
+          <span className="flex-1 truncate">
+            {t(`banks.${code}`, getBankName(code) ?? code)}
+          </span>
+          {selectedCode === code && <Check className="size-4 shrink-0" />}
         </>
       )}
-    </div>
+      footer={(close) =>
+        query.trim() && !exactMatch ? (
+          <button
+            type="button"
+            onClick={() => {
+              select(query.trim());
+              close();
+            }}
+            className="border-base-300 hover:bg-base-200 focus-visible:outline-primary/50 flex cursor-pointer items-center gap-2 rounded-md border border-dashed px-2 py-1.5 text-start text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+          >
+            <Plus className="size-4 shrink-0" />
+            <span className="truncate">
+              {t("data.addAccount.addCustomBank", { name: query.trim() })}
+            </span>
+          </button>
+        ) : null
+      }
+    />
   );
 }

@@ -12,10 +12,14 @@ export function HighlightStatCard({
   colorClass?: string;
 }) {
   return (
-    <div className={`relative flex-1 overflow-hidden rounded-2xl p-4 ${colorClass}`}>
+    <div
+      className={`relative min-w-32 flex-1 overflow-hidden rounded-xl p-4 ${colorClass}`}
+    >
       <Icon data-no-flip className="absolute -end-3 -top-3 size-20 opacity-15" />
-      <p className="relative text-xs opacity-80">{label}</p>
-      <p className="relative mt-1 text-2xl font-bold tabular-nums">{value}</p>
+      <p className="relative truncate text-xs opacity-80">{label}</p>
+      <p className="relative mt-1 truncate text-xl font-bold tabular-nums sm:text-2xl">
+        {value}
+      </p>
     </div>
   );
 }

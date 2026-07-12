@@ -83,6 +83,7 @@
       "namePlaceholder": "مثال: كارفور ماركت",
       "account": "الحساب",
       "accountPlaceholder": "اختر حسابًا",
+      "accountSearchPlaceholder": "ابحث عن حساب...",
       "addNewAccount": "+ إضافة حساب جديد",
       "noAccounts": "لا توجد حسابات مرتبطة بعد. أضف حسابًا لتسجيل معاملة.",
       "category": "الفئة",
@@ -134,8 +135,10 @@
       "title": "إضافة كشف حساب",
       "add": "إضافة كشف حساب",
       "dropzone": "اسحب وأفلت الملفات هنا، أو اضغط للاختيار",
-      "accepted": "صور أو ملفات PDF أو Word",
-      "rejected": "تم تجاهل ملفات غير مدعومة: {{names}}"
+      "accepted": "صور أو ملفات PDF أو Word، حتى {{maxMb}} ميجابايت",
+      "rejectedType": "تم تجاهل ملفات غير مدعومة: {{names}}",
+      "rejectedSize": "تم تجاهل ملفات أكبر من {{maxMb}} ميجابايت: {{names}}",
+      "rejectedExtra": "يمكن إضافة كشف حساب واحد فقط في كل مرة — تم تجاهل الملفات الإضافية: {{names}}"
     },
     "documentStatus": {
       "uploading": "جارٍ الرفع...",

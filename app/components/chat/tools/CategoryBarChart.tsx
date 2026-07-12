@@ -4,6 +4,8 @@ interface BarDatum {
   name: string;
   value: number;
   label: string;
+  /** Display text, if it differs from `name` (which stays the selection/key identity). */
+  displayName?: string;
 }
 
 export function CategoryBarChart({
@@ -26,10 +28,10 @@ export function CategoryBarChart({
             key={d.name}
             type="button"
             onClick={() => onSelectName?.(d.name)}
-            className={`group flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 rounded-lg p-1 text-start transition-opacity duration-200 ${isDimmed ? "opacity-40" : "opacity-100"}`}
+            className={`group focus-visible:outline-primary/50 flex cursor-pointer flex-wrap items-center gap-x-3 gap-y-1 rounded-md p-1 text-start transition-opacity duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 ${isDimmed ? "opacity-40" : "opacity-100"}`}
           >
             <span className="w-20 min-w-0 shrink-0 text-sm font-medium wrap-break-word">
-              {d.name}
+              {d.displayName ?? d.name}
             </span>
             <span className="bg-base-200 h-5 min-w-16 flex-1 overflow-hidden rounded-full">
               <span

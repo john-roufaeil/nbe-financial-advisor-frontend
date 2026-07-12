@@ -83,6 +83,7 @@
       "namePlaceholder": "e.g. Carrefour Market",
       "account": "Account",
       "accountPlaceholder": "Select an account",
+      "accountSearchPlaceholder": "Search accounts...",
       "addNewAccount": "+ Add new account",
       "noAccounts": "No accounts linked yet. Add one to record a transaction.",
       "category": "Category",
@@ -134,8 +135,10 @@
       "title": "Add Bank Statement",
       "add": "Add Bank Statement",
       "dropzone": "Drag & drop files here, or click to choose",
-      "accepted": "Images, PDF, or Word bank statements",
-      "rejected": "Skipped unsupported file(s): {{names}}"
+      "accepted": "Images, PDF, or Word bank statements, up to {{maxMb}}MB",
+      "rejectedType": "Skipped unsupported file(s): {{names}}",
+      "rejectedSize": "Skipped file(s) over {{maxMb}}MB: {{names}}",
+      "rejectedExtra": "Only one statement can be added at a time — skipped extra file(s): {{names}}"
     },
     "documentStatus": {
       "uploading": "Uploading...",

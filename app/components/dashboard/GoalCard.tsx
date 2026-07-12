@@ -131,7 +131,7 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
 
               <div className="shrink-0 text-right">
                 <span
-                  className={`rounded-md px-2 py-0.5 text-xs font-semibold tracking-wide uppercase ${
+                  className={`rounded-full px-2 py-0.5 text-xs font-semibold tracking-wide uppercase ${
                     isCompleted
                       ? "bg-success/10 text-success"
                       : isNextUp

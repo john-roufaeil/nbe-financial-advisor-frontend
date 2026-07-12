@@ -204,11 +204,21 @@ function DocumentCard({
     </Tooltip>
   );
 
+  function onKeyDown(e: React.KeyboardEvent<HTMLLIElement>) {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      onOpen();
+    }
+  }
+
   if (isGrid) {
     return (
       <li
         onClick={onOpen}
-        className="border-base-300 bg-base-100 hover:border-primary flex cursor-pointer flex-col gap-3 rounded-lg border p-3 transition-colors"
+        onKeyDown={onKeyDown}
+        tabIndex={0}
+        role="button"
+        className="border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer flex-col gap-3 rounded-md border p-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
       >
         {logoAndText}
         <div className="border-base-200 flex items-center gap-2 border-t pt-2">
@@ -222,7 +232,10 @@ function DocumentCard({
   return (
     <li
       onClick={onOpen}
-      className="border-base-300 bg-base-100 hover:border-primary flex cursor-pointer items-center gap-3 rounded-lg border p-3 transition-colors"
+      onKeyDown={onKeyDown}
+      tabIndex={0}
+      role="button"
+      className="border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
     >
       {logoAndText}
       {status}
@@ -301,7 +314,7 @@ export function DocumentsTab() {
 
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <div className="border-base-300 bg-base-100 animate-entry rounded-2xl border shadow-sm">
+      <div className="border-base-300 bg-base-100 animate-entry rounded-xl border shadow-sm">
         <DataToolbar
           search={searchInput}
           onSearchChange={updateSearch}

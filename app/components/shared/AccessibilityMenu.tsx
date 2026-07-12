@@ -1,8 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Accessibility, Minus, Plus, RotateCcw, Contrast, X } from "lucide-react";
 import { Tooltip } from "@/components/shared/Tooltip";
+import { useDismissablePanel } from "@/lib/use-dismissable-panel";
+import { Z_FLOATING_ACTION } from "@/lib/z-index";
 import {
   useAccessibilityStore,
   ACCESSIBILITY_LIMITS,
@@ -42,68 +44,51 @@ export function AccessibilityMenu() {
     html.classList.toggle("a11y-high-contrast", highContrast);
   }, [fontScale, highContrast]);
 
+  const reposition = useCallback(() => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    const panelRect = panelRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const isRtl = document.documentElement.dir === "rtl";
+    const panelWidth = panelRect?.width ?? rect.width;
+    const panelHeight = panelRect?.height ?? 0;
+
+    // Prefer opening to the "end" side of the trigger (away from the screen
+    // edge it's pinned to); clamp against both viewport edges so it can
+    // never run off-screen, even at high zoom / narrow effective viewports.
+    let left = isRtl ? rect.left - panelWidth - PANEL_GAP : rect.right + PANEL_GAP;
+    left = Math.max(
+      VIEWPORT_PADDING,
+      Math.min(left, window.innerWidth - panelWidth - VIEWPORT_PADDING),
+    );
+
+    let top = rect.top;
+    top = Math.max(
+      VIEWPORT_PADDING,
+      Math.min(top, window.innerHeight - panelHeight - VIEWPORT_PADDING),
+    );
+
+    setPosition({ top, left });
+  }, []);
+
+  useDismissablePanel({
+    open,
+    onClose: () => setOpen(false),
+    panelRef,
+    triggerRef,
+    reposition,
+  });
+
+  // The panel's own height changes with font scale (its text grows too), so
+  // re-clamp its position after the resulting layout settles.
   useEffect(() => {
     if (!open) return;
-
-    function reposition() {
-      const rect = triggerRef.current?.getBoundingClientRect();
-      const panelRect = panelRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const isRtl = document.documentElement.dir === "rtl";
-      const panelWidth = panelRect?.width ?? rect.width;
-      const panelHeight = panelRect?.height ?? 0;
-
-      // Prefer opening to the "end" side of the trigger (away from the screen
-      // edge it's pinned to); clamp against both viewport edges so it can
-      // never run off-screen, even at high zoom / narrow effective viewports.
-      let left = isRtl ? rect.left - panelWidth - PANEL_GAP : rect.right + PANEL_GAP;
-      left = Math.max(
-        VIEWPORT_PADDING,
-        Math.min(left, window.innerWidth - panelWidth - VIEWPORT_PADDING),
-      );
-
-      let top = rect.top;
-      top = Math.max(
-        VIEWPORT_PADDING,
-        Math.min(top, window.innerHeight - panelHeight - VIEWPORT_PADDING),
-      );
-
-      setPosition({ top, left });
-    }
-
     reposition();
-
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setOpen(false);
-        triggerRef.current?.focus();
-      }
-    }
-
-    function onClickOutside(e: MouseEvent) {
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(e.target as Node) &&
-        !triggerRef.current?.contains(e.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("mousedown", onClickOutside);
-    window.addEventListener("resize", reposition);
-    window.addEventListener("scroll", reposition, true);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("mousedown", onClickOutside);
-      window.removeEventListener("resize", reposition);
-      window.removeEventListener("scroll", reposition, true);
-    };
-  }, [open]);
+  }, [open, reposition, fontScale]);
 
   return (
-    <div className="a11y-panel fixed top-1/2 z-60 h-fit -translate-y-1/2">
+    <div
+      className={`a11y-panel fixed top-1/2 ${Z_FLOATING_ACTION} h-fit -translate-y-1/2`}
+    >
       <div className="relative">
         <Tooltip content={t("settings.accessibility.menuLabel")} position="end">
           <button
@@ -113,7 +98,7 @@ export function AccessibilityMenu() {
             aria-expanded={open}
             aria-haspopup="dialog"
             aria-label={t("settings.accessibility.menuLabel")}
-            className="btn btn-primary btn-square focus-visible:outline-primary/50 rounded-s-none rounded-e-xl shadow-lg focus-visible:outline-4 focus-visible:outline-offset-2"
+            className="btn btn-primary btn-square focus-visible:outline-primary/50 rounded-s-none rounded-e-md shadow-lg focus-visible:outline-4 focus-visible:outline-offset-2"
           >
             <Accessibility data-no-flip className="size-5" />
           </button>
@@ -127,7 +112,7 @@ export function AccessibilityMenu() {
               role="dialog"
               aria-label={t("settings.accessibility.menuLabel")}
               style={{ top: position.top, left: position.left }}
-              className="a11y-panel border-base-300 bg-base-100 animate-a11y-panel-in fixed z-60 max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-2xl border p-4 shadow-2xl"
+              className={`a11y-panel border-base-300 bg-base-100 animate-a11y-panel-in fixed ${Z_FLOATING_ACTION} max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-xl border p-4 shadow-2xl`}
             >
               <div className="mb-3 flex items-center justify-between gap-2">
                 <h2 className="flex items-center gap-2 text-sm font-semibold">
@@ -149,7 +134,7 @@ export function AccessibilityMenu() {
                 </Tooltip>
               </div>
 
-              <div className="border-base-300 bg-base-200/50 rounded-xl border p-3">
+              <div className="border-base-300 bg-base-200/50 rounded-lg border p-3">
                 <div className="mb-2 flex items-center justify-between">
                   <span className="text-sm font-medium">
                     {t("settings.accessibility.fontSize")}
@@ -174,7 +159,7 @@ export function AccessibilityMenu() {
                     type="range"
                     min={MIN_SCALE}
                     max={MAX_SCALE}
-                    step={0.05}
+                    step={0.2}
                     value={sliderValue}
                     onChange={(e) => setSliderValue(Number(e.target.value))}
                     onPointerUp={(e) => setFontScale(Number(e.currentTarget.value))}
@@ -205,7 +190,7 @@ export function AccessibilityMenu() {
                 </button>
               </div>
 
-              <label className="border-base-300 bg-base-200/50 mt-3 flex cursor-pointer items-center justify-between rounded-xl border p-3">
+              <label className="border-base-300 bg-base-200/50 mt-3 flex cursor-pointer items-center justify-between rounded-lg border p-3">
                 <span className="flex items-center gap-2 text-sm font-medium">
                   <Contrast data-no-flip className="size-4" />
                   {t("settings.accessibility.highContrast")}

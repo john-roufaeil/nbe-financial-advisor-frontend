@@ -20,14 +20,14 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
     .reduce((sum, tx) => sum + tx.amount, 0);
 
   return (
-    <div className="border-base-300 bg-base-100 animate-entry my-2 overflow-hidden rounded-2xl border shadow-sm">
+    <div className="border-base-300 bg-base-100 animate-entry my-2 overflow-hidden rounded-xl border shadow-sm">
       <div className="border-base-300 bg-base-200 flex items-center gap-2 border-b px-4 py-3">
         <span className="bg-primary/10 text-primary grid size-8 place-items-center rounded-lg">
           <Receipt data-no-flip className="size-4" />
         </span>
         <p className="text-sm font-semibold">{t("data.transactions")}</p>
       </div>
-      <div className="flex gap-3 p-3 pb-0">
+      <div className="flex flex-wrap gap-3 p-3 pb-0">
         <HighlightStatCard
           icon={ArrowUpCircle}
           colorClass="bg-success text-success-content"

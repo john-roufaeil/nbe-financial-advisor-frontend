@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useParams, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -9,6 +9,8 @@ import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i1
 import { LANGUAGE_STORAGE_KEY } from "@/routes/lang-layout";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { useToastStore } from "@/store/use-toast-store";
+import { useDismissablePanel } from "@/lib/use-dismissable-panel";
+import { Z_POPOVER } from "@/lib/z-index";
 import { Tooltip } from "./Tooltip";
 
 const PANEL_WIDTH = 288; // w-72, used only for initial JS positioning math; actual rendered width is clamped by CSS (max-w-[90vw])
@@ -88,54 +90,28 @@ export function PreferencesMenu() {
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
 
-  useEffect(() => {
-    if (!open) return;
+  const reposition = useCallback(() => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const isRtl = document.documentElement.dir === "rtl";
+    // Align the panel's trailing edge (end, per document direction) with the trigger's trailing edge.
+    const left = isRtl ? rect.left : rect.right - PANEL_WIDTH;
+    setPosition({
+      top: rect.bottom + PANEL_GAP,
+      left: Math.max(
+        PANEL_GAP,
+        Math.min(left, window.innerWidth - PANEL_WIDTH - PANEL_GAP),
+      ),
+    });
+  }, []);
 
-    function reposition() {
-      const rect = triggerRef.current?.getBoundingClientRect();
-      if (!rect) return;
-      const isRtl = document.documentElement.dir === "rtl";
-      // Align the panel's trailing edge (end, per document direction) with the trigger's trailing edge.
-      const left = isRtl ? rect.left : rect.right - PANEL_WIDTH;
-      setPosition({
-        top: rect.bottom + PANEL_GAP,
-        left: Math.max(
-          PANEL_GAP,
-          Math.min(left, window.innerWidth - PANEL_WIDTH - PANEL_GAP),
-        ),
-      });
-    }
-
-    reposition();
-
-    function onKeyDown(e: KeyboardEvent) {
-      if (e.key === "Escape") {
-        setOpen(false);
-        triggerRef.current?.focus();
-      }
-    }
-
-    function onClickOutside(e: MouseEvent) {
-      if (
-        panelRef.current &&
-        !panelRef.current.contains(e.target as Node) &&
-        !triggerRef.current?.contains(e.target as Node)
-      ) {
-        setOpen(false);
-      }
-    }
-
-    document.addEventListener("keydown", onKeyDown);
-    document.addEventListener("mousedown", onClickOutside);
-    window.addEventListener("resize", reposition);
-    window.addEventListener("scroll", reposition, true);
-    return () => {
-      document.removeEventListener("keydown", onKeyDown);
-      document.removeEventListener("mousedown", onClickOutside);
-      window.removeEventListener("resize", reposition);
-      window.removeEventListener("scroll", reposition, true);
-    };
-  }, [open]);
+  useDismissablePanel({
+    open,
+    onClose: () => setOpen(false),
+    panelRef,
+    triggerRef,
+    reposition,
+  });
 
   return (
     <div className="relative">
@@ -158,7 +134,7 @@ export function PreferencesMenu() {
             role="dialog"
             aria-label={t("data.sections.preferences.title")}
             style={{ top: position.top, left: position.left }}
-            className="border-base-300 bg-base-100 text-base-content animate-a11y-panel-in fixed z-50 max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-2xl border p-4 shadow-2xl"
+            className={`border-base-300 bg-base-100 text-base-content animate-a11y-panel-in fixed ${Z_POPOVER} max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-xl border p-4 shadow-2xl`}
           >
             <div className="mb-3 flex items-center justify-between gap-2">
               <h2 className="flex items-center gap-2 text-sm font-semibold">

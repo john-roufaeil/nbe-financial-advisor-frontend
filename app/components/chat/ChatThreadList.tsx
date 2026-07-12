@@ -4,15 +4,15 @@ import { useTranslation } from "react-i18next";
 
 function ThreadListItem() {
   return (
-    <ThreadListItemPrimitive.Root className="group/item hover:bg-base-300 data-[active]:bg-primary/10 data-[active]:hover:bg-primary/15 relative flex items-center gap-1 rounded-lg text-sm transition-colors">
+    <ThreadListItemPrimitive.Root className="group/item hover:bg-base-300 data-[active]:bg-primary/10 data-[active]:hover:bg-primary/15 relative flex items-center gap-1 rounded-md text-sm transition-colors">
       <span className="bg-primary my-1 h-5 w-1 shrink-0 rounded-full opacity-0 transition-opacity group-data-[active]/item:opacity-100" />
-      <ThreadListItemPrimitive.Trigger className="flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-2 pe-2.5 text-start">
+      <ThreadListItemPrimitive.Trigger className="focus-visible:outline-primary/50 flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-2 pe-2.5 text-start focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2">
         <MessageSquare className="text-base-content/50 group-data-[active]/item:text-primary size-4 shrink-0" />
         <span className="group-data-[active]/item:text-primary truncate group-data-[active]/item:font-medium">
           <ThreadListItemPrimitive.Title fallback="New chat" />
         </span>
       </ThreadListItemPrimitive.Trigger>
-      <ThreadListItemPrimitive.Delete className="btn btn-ghost btn-xs btn-square me-1 opacity-0 transition-opacity group-hover/item:opacity-100">
+      <ThreadListItemPrimitive.Delete className="btn btn-ghost btn-xs btn-square me-1 opacity-0 transition-opacity group-focus-within/item:opacity-100 group-hover/item:opacity-100 focus-visible:opacity-100">
         <Trash2 className="size-3.5" />
       </ThreadListItemPrimitive.Delete>
     </ThreadListItemPrimitive.Root>

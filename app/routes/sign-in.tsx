@@ -63,22 +63,38 @@ export default function SignIn() {
         </Link>
         <h1 className="text-2xl font-semibold">{t("signIn.title")}</h1>
         <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-3">
-          <input
-            type="email"
-            placeholder={t("signIn.email")}
-            className="input input-bordered w-full"
-            {...register("email")}
-          />
+          <label className="flex flex-col gap-1">
+            <span className="label-text">{t("signIn.email")}</span>
+            <input
+              type="email"
+              id="signin-email"
+              placeholder={t("signIn.email")}
+              className="input input-bordered w-full"
+              aria-invalid={!!errors.email}
+              aria-describedby={errors.email ? "signin-email-error" : undefined}
+              {...register("email")}
+            />
+          </label>
           {errors.email && (
-            <span className="text-error text-sm">{errors.email.message}</span>
+            <span id="signin-email-error" role="alert" className="text-error text-sm">
+              {errors.email.message}
+            </span>
           )}
-          <PasswordInput
-            placeholder={t("signIn.password")}
-            className="input input-bordered w-full"
-            {...register("password")}
-          />
+          <label className="flex flex-col gap-1">
+            <span className="label-text">{t("signIn.password")}</span>
+            <PasswordInput
+              id="signin-password"
+              placeholder={t("signIn.password")}
+              className="input input-bordered w-full"
+              aria-invalid={!!errors.password}
+              aria-describedby={errors.password ? "signin-password-error" : undefined}
+              {...register("password")}
+            />
+          </label>
           {errors.password && (
-            <span className="text-error text-sm">{errors.password.message}</span>
+            <span id="signin-password-error" role="alert" className="text-error text-sm">
+              {errors.password.message}
+            </span>
           )}
           <Button
             type="submit"

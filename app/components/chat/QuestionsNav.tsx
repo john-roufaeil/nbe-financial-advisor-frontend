@@ -85,7 +85,7 @@ export function QuestionsNav({
               aria-label={q.text}
               aria-current={isActive}
               onClick={() => scrollToMessage(q.id)}
-              className="hover:bg-base-300 flex cursor-pointer items-center justify-center rounded-full p-1.5 transition-colors"
+              className="hover:bg-base-300 focus-visible:outline-primary/50 flex cursor-pointer items-center justify-center rounded-full p-1.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <span
                 className={`size-2 rounded-full transition-all group-hover/dot:scale-125 ${

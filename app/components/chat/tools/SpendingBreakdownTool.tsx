@@ -23,9 +23,13 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
     return `${amount.toLocaleString()} ${t(`currency.${currency}`, currency)}`;
   }
 
+  function categoryLabel(name: string) {
+    return t(`data.categories.${name}`, name);
+  }
+
   if (!data || status.type === "running") {
     return (
-      <div className="border-base-300 bg-base-100 text-base-content/60 my-2 flex items-center gap-2 rounded-2xl border px-4 py-3 text-sm">
+      <div className="border-base-300 bg-base-100 text-base-content/60 my-2 flex items-center gap-2 rounded-xl border px-4 py-3 text-sm">
         <Loader2 data-no-flip className="size-4 animate-spin" />
         {t("chat.tools.spending.loading")}
       </div>
@@ -37,7 +41,7 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
   }
 
   return (
-    <div className="border-base-300 bg-base-100 animate-entry my-2 overflow-hidden rounded-2xl border shadow-sm">
+    <div className="border-base-300 bg-base-100 animate-entry my-2 overflow-hidden rounded-xl border shadow-sm">
       <div className="border-base-300 bg-base-200 flex items-center justify-between gap-3 border-b px-4 py-3">
         <div className="flex items-center gap-2">
           <span className="bg-primary/10 text-primary grid size-8 place-items-center rounded-lg">
@@ -56,11 +60,13 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
         </div>
       </div>
 
-      <div className="border-base-300 flex gap-1 border-b px-3 pt-2">
+      <div role="tablist" className="border-base-300 flex gap-1 border-b px-3 pt-2">
         <button
           type="button"
+          role="tab"
+          aria-selected={view === "pie"}
           onClick={() => setView("pie")}
-          className={`flex cursor-pointer items-center gap-1.5 rounded-t-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+          className={`focus-visible:outline-primary/50 flex cursor-pointer items-center gap-1.5 rounded-t-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
             view === "pie"
               ? "border-primary text-primary border-x border-t border-b-2 border-b-transparent"
               : "text-base-content/50 hover:text-base-content"
@@ -71,8 +77,10 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
         </button>
         <button
           type="button"
+          role="tab"
+          aria-selected={view === "bar"}
           onClick={() => setView("bar")}
-          className={`flex cursor-pointer items-center gap-1.5 rounded-t-lg px-3 py-1.5 text-xs font-medium transition-colors ${
+          className={`focus-visible:outline-primary/50 flex cursor-pointer items-center gap-1.5 rounded-t-md px-3 py-1.5 text-xs font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
             view === "bar"
               ? "border-primary text-primary border-x border-t border-b-2 border-b-transparent"
               : "text-base-content/50 hover:text-base-content"
@@ -88,7 +96,11 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
           <CategoryDonutChart
             size={96}
             strokeWidth={14}
-            slices={data.categories.map((c) => ({ name: c.name, value: c.amount }))}
+            slices={data.categories.map((c) => ({
+              name: c.name,
+              displayName: categoryLabel(c.name),
+              value: c.amount,
+            }))}
             selectedName={selected}
             onSelectName={toggleSelected}
           />
@@ -98,14 +110,14 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
                 <button
                   type="button"
                   onClick={() => toggleSelected(cat.name)}
-                  className={`flex w-full cursor-pointer flex-col gap-1 rounded-lg p-1 text-start transition-opacity duration-200 ${
+                  className={`focus-visible:outline-primary/50 flex w-full cursor-pointer flex-col gap-1 rounded-md p-1 text-start transition-opacity duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 ${
                     selected != null && selected !== cat.name
                       ? "opacity-40"
                       : "opacity-100"
                   }`}
                 >
                   <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{cat.name}</span>
+                    <span className="font-medium">{categoryLabel(cat.name)}</span>
                     <Money className="text-base-content/70 tabular-nums">
                       {formatAmount(cat.amount, data.currency)} · {cat.pct}%
                     </Money>
@@ -126,6 +138,7 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
           <CategoryBarChart
             data={data.categories.map((c) => ({
               name: c.name,
+              displayName: categoryLabel(c.name),
               value: c.amount,
               label: formatAmount(c.amount, data.currency),
             }))}

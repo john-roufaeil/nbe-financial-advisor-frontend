@@ -55,8 +55,8 @@ export function Pagination({
     <div
       className={
         attached
-          ? "border-base-300 bg-base-100 flex flex-wrap items-center justify-between gap-3 rounded-b-2xl border-t px-3 py-2 sm:px-4"
-          : "border-base-300 bg-base-100 animate-entry mt-auto flex flex-wrap items-center justify-between gap-3 rounded-2xl border px-3 py-2 shadow-sm sm:px-4"
+          ? "border-base-300 bg-base-100 flex flex-wrap items-center justify-between gap-3 rounded-b-xl border-t px-3 py-2 sm:px-4"
+          : "border-base-300 bg-base-100 animate-entry mt-auto flex flex-wrap items-center justify-between gap-3 rounded-xl border px-3 py-2 shadow-sm sm:px-4"
       }
     >
       <div className="flex items-center gap-2">
@@ -87,36 +87,46 @@ export function Pagination({
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
             aria-label={t("data.pagination.prev")}
-            className="btn btn-ghost btn-xs btn-square disabled:cursor-not-allowed disabled:opacity-70"
+            className="btn btn-ghost btn-sm btn-square relative before:absolute before:-inset-1.5 before:content-[''] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            <ChevronLeft className="size-3.5" />
+            <ChevronLeft className="size-4" />
           </button>
         </Tooltip>
 
-        {pageItems(page, totalPages).map((item, i) =>
-          item === "…" ? (
-            <span
-              key={`gap-${i}`}
-              aria-hidden="true"
-              className="text-base-content/40 grid size-6 place-items-center text-xs"
-            >
-              …
-            </span>
-          ) : (
-            <button
-              key={item}
-              type="button"
-              onClick={() => onPageChange(item)}
-              aria-label={t("data.pagination.goToPage", { page: item })}
-              aria-current={item === page ? "page" : undefined}
-              className={`btn btn-xs btn-square tabular-nums ${
-                item === page ? "btn-accent" : "btn-ghost"
-              }`}
-            >
-              {item}
-            </button>
-          ),
-        )}
+        {/* Numbered pages need real 40px+ tap targets and can run to ~9 buttons wide
+            (first, ellipsis, 3 neighbours, ellipsis, last, plus the arrows), which
+            doesn't fit a 320px viewport — collapse to a plain "page X of Y" readout
+            below `sm` instead of shrinking targets or letting the row overflow. */}
+        <span className="text-base-content/60 px-2 text-xs font-medium tabular-nums sm:hidden">
+          {t("data.pagination.page", { page, totalPages })}
+        </span>
+
+        <div className="hidden items-center gap-1 sm:flex">
+          {pageItems(page, totalPages).map((item, i) =>
+            item === "…" ? (
+              <span
+                key={`gap-${i}`}
+                aria-hidden="true"
+                className="text-base-content/40 grid size-8 place-items-center text-xs"
+              >
+                …
+              </span>
+            ) : (
+              <button
+                key={item}
+                type="button"
+                onClick={() => onPageChange(item)}
+                aria-label={t("data.pagination.goToPage", { page: item })}
+                aria-current={item === page ? "page" : undefined}
+                className={`btn btn-sm btn-square relative tabular-nums before:absolute before:-inset-1 before:content-[''] ${
+                  item === page ? "btn-accent" : "btn-ghost"
+                }`}
+              >
+                {item}
+              </button>
+            ),
+          )}
+        </div>
 
         <Tooltip content={t("data.pagination.next")}>
           <button
@@ -124,9 +134,9 @@ export function Pagination({
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
             aria-label={t("data.pagination.next")}
-            className="btn btn-ghost btn-xs btn-square disabled:cursor-not-allowed disabled:opacity-70"
+            className="btn btn-ghost btn-sm btn-square relative before:absolute before:-inset-1.5 before:content-[''] disabled:cursor-not-allowed disabled:opacity-70"
           >
-            <ChevronRight className="size-3.5" />
+            <ChevronRight className="size-4" />
           </button>
         </Tooltip>
       </nav>

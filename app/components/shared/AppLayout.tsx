@@ -11,6 +11,7 @@ import { ConfirmDialog } from "@/components/shared/ConfirmDialog";
 import { BalanceVisibilityToggle } from "@/components/shared/BalanceVisibilityToggle";
 import { DataSourceToggle } from "@/components/shared/DataSourceToggle";
 import { Tooltip } from "@/components/shared/Tooltip";
+import { Z_DROPDOWN } from "@/lib/z-index";
 
 export default function AppLayout() {
   const { lang } = useParams<{ lang: string }>();
@@ -30,7 +31,7 @@ export default function AppLayout() {
   ];
 
   const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
-    `flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-medium transition-colors ${
+    `flex w-full items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors ${
       isActive
         ? "bg-primary text-primary-content"
         : "text-base-content/80 hover:bg-base-300"
@@ -87,7 +88,7 @@ export default function AppLayout() {
         </div>
 
         {/* Navigation sidebar — base-200 */}
-        <div className="drawer-side z-20">
+        <div className={`drawer-side ${Z_DROPDOWN}`}>
           <label htmlFor="app-drawer" className="drawer-overlay" onClick={close} />
           <aside className="border-base-300 bg-base-200 flex h-screen w-72 flex-col border-e">
             <div className="border-base-300 relative flex min-h-16 shrink-0 items-center border-b px-4">
@@ -162,7 +163,7 @@ export default function AppLayout() {
                   to={`/${lang}/profile`}
                   onClick={close}
                   className={({ isActive }) =>
-                    `flex w-full min-w-0 items-center gap-3 rounded-lg p-2 transition-colors ${
+                    `flex w-full min-w-0 items-center gap-3 rounded-md p-2 transition-colors ${
                       isActive ? "bg-base-300" : "hover:bg-base-300"
                     }`
                   }

@@ -1,7 +1,8 @@
-import { useRef, useState } from "react";
+import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
-import { Check, ChevronDown, Plus } from "lucide-react";
-import { getBankCode, getBankLogo, getBankName } from "@/lib/banks";
+import { Check, Search } from "lucide-react";
+import { getBankCode, getBankLogo, getBankName, UNKNOWN_BANK_LOGO } from "@/lib/banks";
+import { EntityPicker } from "@/components/shared/EntityPicker";
 import type { BankAccount } from "@/types/account";
 
 /** Dropdown of the user's linked bank accounts, showing each account's bank logo. */
@@ -23,8 +24,7 @@ export function AccountPicker({
   error?: boolean;
 }) {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [query, setQuery] = useState("");
 
   const selected = accounts?.find((a) => a.id === value);
   const selectedCode = getBankCode(selected?.bank_name);
@@ -32,19 +32,45 @@ export function AccountPicker({
     ? t(`banks.${selectedCode}`, getBankName(selectedCode) ?? selected.bank_name)
     : "";
 
-  function select(accountId: string) {
-    onChange(accountId);
-    setOpen(false);
-  }
+  const results = useMemo(() => {
+    const q = query.trim().toLowerCase();
+    if (!q) return accounts ?? [];
+    return (accounts ?? []).filter((a) => {
+      const code = getBankCode(a.bank_name);
+      const label = t(`banks.${code}`, getBankName(code) ?? a.bank_name);
+      return (
+        label.toLowerCase().includes(q) ||
+        a.masked_account_number.toLowerCase().includes(q)
+      );
+    });
+  }, [accounts, query, t]);
 
   return (
-    <div ref={containerRef} className="relative">
-      <button
-        type="button"
-        onClick={() => !disabled && setOpen((v) => !v)}
-        disabled={disabled}
-        className={`input input-bordered input-sm flex w-full items-center justify-between gap-2 ${error ? "input-error" : ""} ${disabled ? "cursor-not-allowed opacity-60" : ""}`}
-      >
+    <EntityPicker
+      items={results}
+      getKey={(a) => a.id}
+      onSelect={(a) => {
+        onChange(a.id);
+        setQuery("");
+      }}
+      disabled={disabled}
+      error={error}
+      emptyMessage={t("data.noResults")}
+      search={
+        <label className="input input-bordered input-sm flex items-center gap-2">
+          <Search className="size-3.5 opacity-50" />
+          <input
+            type="text"
+            autoFocus
+            value={query}
+            onChange={(e) => setQuery(e.target.value)}
+            placeholder={t("data.addTransaction.accountSearchPlaceholder")}
+            maxLength={40}
+            className="w-full"
+          />
+        </label>
+      }
+      trigger={
         <span className="flex min-w-0 flex-1 items-center gap-2">
           {selected && (
             <img
@@ -59,58 +85,42 @@ export function AccountPicker({
               : (placeholder ?? "")}
           </span>
         </span>
-        <ChevronDown className="size-4 shrink-0 opacity-50" />
-      </button>
-
-      {open && !disabled && (
-        <>
-          <button
-            type="button"
-            aria-hidden
-            tabIndex={-1}
-            className="fixed inset-0 z-10 cursor-default"
-            onClick={() => setOpen(false)}
+      }
+      renderItem={(a) => {
+        const code = getBankCode(a.bank_name);
+        const label = t(`banks.${code}`, getBankName(code) ?? a.bank_name);
+        return (
+          <>
+            <img
+              src={getBankLogo(code)}
+              alt=""
+              className="size-5 shrink-0 rounded-full object-cover"
+            />
+            <span className="flex-1 truncate">
+              {label} {a.masked_account_number}
+            </span>
+            {value === a.id && <Check className="size-4 shrink-0" />}
+          </>
+        );
+      }}
+      footer={(close) => (
+        <button
+          type="button"
+          onClick={() => {
+            close();
+            setQuery("");
+            onAddNew();
+          }}
+          className="border-base-300 hover:bg-base-200 focus-visible:outline-primary/50 flex cursor-pointer items-center gap-2 rounded-md border border-dashed px-2 py-1.5 text-start text-sm focus-visible:outline-2 focus-visible:outline-offset-2"
+        >
+          <img
+            src={UNKNOWN_BANK_LOGO}
+            alt=""
+            className="size-5 shrink-0 rounded-full object-cover"
           />
-          <div className="menu bg-base-100 border-base-300 absolute z-20 mt-1 w-full flex-col gap-1 rounded-lg border p-2 shadow-lg">
-            <ul className="max-h-40 overflow-y-auto">
-              {accounts?.map((a) => {
-                const code = getBankCode(a.bank_name);
-                const label = t(`banks.${code}`, getBankName(code) ?? a.bank_name);
-                return (
-                  <li key={a.id}>
-                    <button
-                      type="button"
-                      onClick={() => select(a.id)}
-                      className="hover:bg-base-200 flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-start text-sm"
-                    >
-                      <img
-                        src={getBankLogo(code)}
-                        alt=""
-                        className="size-5 shrink-0 rounded-full object-cover"
-                      />
-                      <span className="flex-1 truncate">
-                        {label} {a.masked_account_number}
-                      </span>
-                      {value === a.id && <Check className="size-4 shrink-0" />}
-                    </button>
-                  </li>
-                );
-              })}
-            </ul>
-            <button
-              type="button"
-              onClick={() => {
-                setOpen(false);
-                onAddNew();
-              }}
-              className="border-base-300 hover:bg-base-200 flex items-center gap-2 rounded-md border border-dashed px-2 py-1.5 text-start text-sm"
-            >
-              <Plus className="size-4 shrink-0" />
-              <span className="truncate">{t("data.addTransaction.addNewAccount")}</span>
-            </button>
-          </div>
-        </>
+          <span className="truncate">{t("data.addTransaction.addNewAccount")}</span>
+        </button>
       )}
-    </div>
+    />
   );
 }

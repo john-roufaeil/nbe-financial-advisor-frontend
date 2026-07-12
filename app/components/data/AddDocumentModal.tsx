@@ -1,4 +1,4 @@
-import { forwardRef, useState, type Ref } from "react";
+import { forwardRef, useRef, useState, type Ref } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Upload,
@@ -9,6 +9,8 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import {
+  DOCUMENT_MAX_SIZE_BYTES,
+  DOCUMENT_MAX_SIZE_MB,
   DOCUMENT_UPLOAD_ACCEPT,
   inferDocumentType,
   type DocumentType,
@@ -39,24 +41,39 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
     const { t } = useTranslation();
     const uploadDocuments = useUploadDocuments();
     const [staged, setStaged] = useState<StagedFile[]>([]);
-    const [rejected, setRejected] = useState<string[]>([]);
+    const [rejectedType, setRejectedType] = useState<string[]>([]);
+    const [rejectedSize, setRejectedSize] = useState<string[]>([]);
+    const [rejectedExtra, setRejectedExtra] = useState<string[]>([]);
     const [isDragging, setIsDragging] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
 
     // Only one statement can be staged at a time — the first accepted file
     // wins and replaces whatever was staged before; anything else picked or
-    // dropped alongside it is reported as skipped.
+    // dropped alongside it is reported as skipped, with the specific reason
+    // (unsupported type, too large, or simply extra) called out separately.
     function handleFiles(fileList: FileList | null) {
       if (!fileList) return;
       const files = Array.from(fileList);
-      const nextRejected: string[] = [];
+      const nextRejectedType: string[] = [];
+      const nextRejectedSize: string[] = [];
+      const nextRejectedExtra: string[] = [];
       let nextStaged: StagedFile | undefined;
       for (const file of files) {
         const type = inferDocumentType(file);
-        if (type && !nextStaged) nextStaged = { file, type };
-        else nextRejected.push(file.name);
+        if (!type) {
+          nextRejectedType.push(file.name);
+        } else if (file.size > DOCUMENT_MAX_SIZE_BYTES) {
+          nextRejectedSize.push(file.name);
+        } else if (!nextStaged) {
+          nextStaged = { file, type };
+        } else {
+          nextRejectedExtra.push(file.name);
+        }
       }
       setStaged(nextStaged ? [nextStaged] : []);
-      setRejected(nextRejected);
+      setRejectedType(nextRejectedType);
+      setRejectedSize(nextRejectedSize);
+      setRejectedExtra(nextRejectedExtra);
     }
 
     function removeStaged() {
@@ -65,7 +82,9 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
 
     function reset() {
       setStaged([]);
-      setRejected([]);
+      setRejectedType([]);
+      setRejectedSize([]);
+      setRejectedExtra([]);
     }
 
     async function handleUpload() {
@@ -123,6 +142,14 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
       >
         <div className="flex flex-col gap-4">
           <label
+            tabIndex={0}
+            role="button"
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                fileInputRef.current?.click();
+              }
+            }}
             onDragOver={(e) => {
               e.preventDefault();
               setIsDragging(true);
@@ -133,16 +160,17 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
               setIsDragging(false);
               handleFiles(e.dataTransfer.files);
             }}
-            className={`hover:border-primary hover:bg-base-200 flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors ${
+            className={`hover:border-primary hover:bg-base-200 focus-visible:outline-primary/50 flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
               isDragging ? "border-primary bg-base-200" : "border-base-300"
             }`}
           >
             <Upload className="text-base-content/40 size-6" />
             <span className="text-sm font-medium">{t("data.addDocument.dropzone")}</span>
             <span className="text-base-content/50 text-xs">
-              {t("data.addDocument.accepted")}
+              {t("data.addDocument.accepted", { maxMb: DOCUMENT_MAX_SIZE_MB })}
             </span>
             <input
+              ref={fileInputRef}
               type="file"
               accept={DOCUMENT_UPLOAD_ACCEPT}
               onChange={(e) => handleFiles(e.target.files)}
@@ -150,11 +178,34 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
             />
           </label>
 
-          {rejected.length > 0 && (
-            <p className="text-warning flex items-center gap-1.5 text-xs">
-              <TriangleAlert className="size-3.5 shrink-0" />
-              {t("data.addDocument.rejected", { names: rejected.join(", ") })}
-            </p>
+          {(rejectedType.length > 0 ||
+            rejectedSize.length > 0 ||
+            rejectedExtra.length > 0) && (
+            <div role="alert" className="flex flex-col gap-1">
+              {rejectedType.length > 0 && (
+                <p className="text-warning flex items-center gap-1.5 text-xs">
+                  <TriangleAlert className="size-3.5 shrink-0" />
+                  {t("data.addDocument.rejectedType", { names: rejectedType.join(", ") })}
+                </p>
+              )}
+              {rejectedSize.length > 0 && (
+                <p className="text-warning flex items-center gap-1.5 text-xs">
+                  <TriangleAlert className="size-3.5 shrink-0" />
+                  {t("data.addDocument.rejectedSize", {
+                    maxMb: DOCUMENT_MAX_SIZE_MB,
+                    names: rejectedSize.join(", "),
+                  })}
+                </p>
+              )}
+              {rejectedExtra.length > 0 && (
+                <p className="text-warning flex items-center gap-1.5 text-xs">
+                  <TriangleAlert className="size-3.5 shrink-0" />
+                  {t("data.addDocument.rejectedExtra", {
+                    names: rejectedExtra.join(", "),
+                  })}
+                </p>
+              )}
+            </div>
           )}
 
           {staged.length > 0 && (
