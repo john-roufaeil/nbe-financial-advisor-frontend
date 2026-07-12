@@ -3,16 +3,16 @@ import { Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AMOUNT_RANGES, TRANSACTION_CATEGORIES } from "@/types/transaction";
 import { useTransactions, useDeleteTransaction } from "@/queries/transactions";
-import { Pagination } from "@/components/shared/Pagination";
+import { Pagination } from "@/components/shared/layout/Pagination";
 import { AddTransactionModal } from "@/components/transactions/AddTransactionModal";
 import { TransactionDetailModal } from "@/components/transactions/TransactionDetailModal";
 import { TransactionCard } from "@/components/transactions/TransactionCard";
-import { DataToolbar } from "@/components/shared/DataToolbar";
+import { DataToolbar } from "@/components/shared/layout/DataToolbar";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { ListSkeleton } from "@/components/shared/skeletons/ListSkeleton";
 import { CardGridSkeleton } from "@/components/shared/skeletons/CardGridSkeleton";
 import { ErrorState, EmptyState } from "@/components/shared/QueryState";
-import { useViewModeStore } from "@/store/use-view-mode-store";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 import { useLoadAnimation } from "@/lib/use-load-animation";
 import { useTransactionFilters } from "@/lib/use-transaction-filters";
 import {
@@ -30,7 +30,7 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
   function TransactionsTab(_props, ref) {
     const { t } = useTranslation();
     const confirm = useConfirmStore((s) => s.confirm);
-    const viewMode = useViewModeStore((s) => s.mode);
+    const viewMode = useDisplayPreferencesStore((s) => s.viewMode);
     const f = useTransactionFilters();
     const modals = useTransactionModals(ref);
 

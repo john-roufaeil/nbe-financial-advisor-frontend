@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Check, Search } from "lucide-react";
 import { getBankCode, getBankLogo, getBankName, UNKNOWN_BANK_LOGO } from "@/lib/banks";
-import { EntityPicker } from "@/components/shared/EntityPicker";
+import { EntityPicker } from "@/components/shared/forms/EntityPicker";
 import type { BankAccount } from "@/types/account";
 
 /** Dropdown of the user's linked bank accounts, showing each account's bank logo. */
