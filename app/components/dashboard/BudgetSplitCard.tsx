@@ -8,6 +8,7 @@ import { AllocationsEditModal } from "@/components/dashboard/AllocationsEditModa
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useBudget } from "@/queries/budget";
+import { useNumberDisplay } from "@/lib/use-number-display";
 
 function BudgetRow({
   category,
@@ -19,6 +20,7 @@ function BudgetRow({
   color: string;
 }) {
   const { t } = useTranslation();
+  const formatN = useNumberDisplay();
   const pct = Math.min(100, Math.round((category.spent / category.budget) * 100));
   const isOver = category.spent > category.budget;
 
@@ -29,7 +31,7 @@ function BudgetRow({
           {t(`common.categories.${category.name}`, category.name)}
         </span>
         <Money className="text-base-content/60 tabular-nums">
-          {category.spent.toLocaleString()} / {category.budget.toLocaleString()}{" "}
+          {formatN(category.spent)} / {formatN(category.budget)}{" "}
           {t(`currency.${currency}`, currency)}
         </Money>
       </div>
@@ -57,6 +59,7 @@ export function BudgetSplitCard({
   categories: BudgetCategory[];
 }) {
   const { t } = useTranslation();
+  const formatN = useNumberDisplay();
   const colors = useCategoryColorVars();
   const totalAllocated = categories.reduce((sum, c) => sum + c.budget, 0);
   const modalRef = useRef<HTMLDialogElement>(null);
@@ -124,7 +127,7 @@ export function BudgetSplitCard({
               <CategoryDonutChart variant="pie" slices={pieSlices} />
               <p className="text-base-content/50 text-center text-xs">
                 <Money className="text-base-content font-semibold">
-                  {totalAllocated.toLocaleString()}
+                  {formatN(totalAllocated)}
                 </Money>{" "}
                 {t(`currency.${currency}`, currency)} {t("dashboard.budget.allocated")}
               </p>

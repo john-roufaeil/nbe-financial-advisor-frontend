@@ -7,6 +7,7 @@ import { CATEGORY_BAR_COLORS } from "@/lib/category-colors";
 import { CategoryDonutChart } from "@/components/dashboard/CategoryDonutChart";
 import { CategoryBarChart } from "@/components/chat/tools/CategoryBarChart";
 import { Money } from "@/components/shared/Money";
+import { useNumberDisplay } from "@/lib/use-number-display";
 
 type View = "pie" | "bar";
 
@@ -18,9 +19,10 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
   const data = result as SpendingBreakdownResult | undefined;
   const [view, setView] = useState<View>("pie");
   const [selected, setSelected] = useState<string | null>(null);
+  const formatN = useNumberDisplay();
 
   function formatAmount(amount: number, currency: string) {
-    return `${amount.toLocaleString()} ${t(`currency.${currency}`, currency)}`;
+    return `${formatN(amount)} ${t(`currency.${currency}`, currency)}`;
   }
 
   function categoryLabel(name: string) {

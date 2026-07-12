@@ -134,6 +134,11 @@
       "toggleLabel": "View mode",
       "list": "List view",
       "grid": "Grid view"
+    },
+    "density": {
+      "toggleLabel": "List density",
+      "comfortable": "Comfortable",
+      "compact": "Compact"
     }
   }
 }

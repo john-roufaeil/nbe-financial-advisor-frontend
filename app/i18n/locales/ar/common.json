@@ -134,6 +134,11 @@
       "toggleLabel": "وضع العرض",
       "list": "عرض قائمة",
       "grid": "عرض شبكة"
+    },
+    "density": {
+      "toggleLabel": "كثافة القائمة",
+      "comfortable": "مريح",
+      "compact": "مضغوط"
     }
   }
 }

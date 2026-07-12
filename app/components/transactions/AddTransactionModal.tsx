@@ -7,6 +7,8 @@ import { Button } from "@/components/shared/Button";
 import { BaseModal } from "@/components/shared/BaseModal";
 import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
 import { AccountPicker } from "@/components/transactions/AccountPicker";
+import { MoneyInput } from "@/components/shared/MoneyInput";
+import { MAX_MONEY_VALUE } from "@/lib/format";
 
 function closeDialog(ref: Ref<HTMLDialogElement>) {
   if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
@@ -35,7 +37,7 @@ export const AddTransactionModal = forwardRef<
   const [accountId, setAccountId] = useState("");
   const [category, setCategory] = useState<string>(TRANSACTION_CATEGORIES[0]);
   const [type, setType] = useState<"income" | "expense">("expense");
-  const [amount, setAmount] = useState("");
+  const [amount, setAmount] = useState<number | "">("");
   const [date, setDate] = useState(today);
   const [errors, setErrors] = useState<{
     title?: string;
@@ -50,7 +52,7 @@ export const AddTransactionModal = forwardRef<
       setAccountId(editing.accountId ?? "");
       setCategory(editing.category);
       setType(editing.type);
-      setAmount(String(editing.amount));
+      setAmount(editing.amount);
       setDate(editing.datetime.slice(0, 10));
     } else {
       reset();
@@ -102,7 +104,7 @@ export const AddTransactionModal = forwardRef<
     selectedAccount?.currency ?? "EGP",
   );
 
-  const amountNum = Number(amount);
+  const amountNum = amount === "" ? NaN : amount;
   const isValid =
     title.trim().length > 0 &&
     accountId !== "" &&
@@ -116,10 +118,9 @@ export const AddTransactionModal = forwardRef<
     return undefined;
   }
 
-  function amountError(value: string): string | undefined {
+  function amountError(value: number | ""): string | undefined {
     if (value === "") return undefined;
-    const num = Number(value);
-    if (!Number.isFinite(num) || num <= 0) {
+    if (!Number.isFinite(value) || value <= 0) {
       return t("transactions.add.errors.amountInvalid");
     }
     return undefined;
@@ -255,14 +256,12 @@ export const AddTransactionModal = forwardRef<
             <label
               className={`input input-bordered input-sm flex w-full items-center gap-2 ${errors.amount ? "input-error" : ""}`}
             >
-              <input
-                type="number"
-                min={0.01}
-                step="0.01"
+              <MoneyInput
                 value={amount}
-                onChange={(e) => {
-                  setAmount(e.target.value);
-                  setErrors((err) => ({ ...err, amount: amountError(e.target.value) }));
+                max={MAX_MONEY_VALUE}
+                onChange={(value) => {
+                  setAmount(value);
+                  setErrors((err) => ({ ...err, amount: amountError(value) }));
                 }}
                 placeholder={t("transactions.add.amountPlaceholder")}
                 className="w-full"

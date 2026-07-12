@@ -16,6 +16,21 @@
       "12h": "12h (am/pm)",
       "24h": "24h"
     },
+    "numberFormat": {
+      "label": "Number format",
+      "comma": "1,234.56",
+      "period": "1.234,56"
+    },
+    "dateFormat": {
+      "label": "Date format",
+      "dmy": "DD/MM/YYYY",
+      "mdy": "MM/DD/YYYY"
+    },
+    "compactNumbers": {
+      "label": "Compact numbers",
+      "full": "Full digits",
+      "compact": "Abbreviated (1.2K)"
+    },
     "accessibility": {
       "menuLabel": "Accessibility options",
       "title": "Accessibility",

@@ -6,6 +6,8 @@ import {
   type Currency,
 } from "@/types/account";
 import { BankPicker } from "@/components/shared/BankPicker";
+import { MoneyInput } from "@/components/shared/MoneyInput";
+import { MAX_MONEY_VALUE } from "@/lib/format";
 import {
   ACCOUNT_NUMBER_LENGTH,
   balanceError,
@@ -138,14 +140,13 @@ export function BankAccountFields({
         <label
           className={`input input-bordered input-sm flex w-full items-center gap-2 ${errors.initialBalance ? "input-error" : ""}`}
         >
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            value={values.initialBalance}
-            onChange={(e) => {
-              onChange({ initialBalance: e.target.value });
-              onErrorsChange({ initialBalance: balanceError(e.target.value, t) });
+          <MoneyInput
+            value={values.initialBalance === "" ? "" : Number(values.initialBalance)}
+            max={MAX_MONEY_VALUE}
+            onChange={(value) => {
+              const strValue = value === "" ? "" : String(value);
+              onChange({ initialBalance: strValue });
+              onErrorsChange({ initialBalance: balanceError(strValue, t) });
             }}
             placeholder={t("common.addAccount.initialBalancePlaceholder")}
             className="w-full"

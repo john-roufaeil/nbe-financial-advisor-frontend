@@ -110,7 +110,7 @@ export function PersonalDataSections() {
   }
 
   return (
-    <div className="grid gap-4 sm:grid-cols-2">
+    <div className="grid min-w-0 gap-4 sm:grid-cols-2">
       {SECTIONS.map((s) => (
         <ProfileSectionCard key={s.key} section={s} user={user} />
       ))}

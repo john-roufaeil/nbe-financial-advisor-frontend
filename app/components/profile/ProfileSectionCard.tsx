@@ -7,6 +7,7 @@ import { useUpdateProfile } from "@/queries/profile";
 import { useToastStore } from "@/store/use-toast-store";
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
+import { MAX_MONEY_VALUE } from "@/lib/format";
 import type { User as UserType } from "@/types/profile";
 
 export type Field = {
@@ -83,6 +84,7 @@ function FieldEditor({
       <input
         type={field.currency ? "number" : "text"}
         min={field.currency ? 0 : undefined}
+        max={field.currency ? MAX_MONEY_VALUE : undefined}
         value={value}
         onChange={(e) => onChange(e.target.value)}
         placeholder={t(field.placeholderKey ?? field.labelKey)}
@@ -119,14 +121,17 @@ function FieldValue({ field, value }: { field: Field; value?: string }) {
   }
 
   if (field.ltr) {
+    // Stripped of spaces this becomes one long unbreakable token (e.g. a
+    // phone number) — break-all lets it wrap mid-string instead of forcing
+    // its grid cell (and the whole card) wider than a narrow viewport.
     return (
-      <span className="text-sm font-medium">
+      <span className="block text-sm font-medium break-all">
         <bdi dir="ltr">{value.replace(/\s+/g, "")}</bdi>
       </span>
     );
   }
 
-  return <span className="text-sm font-medium">{value}</span>;
+  return <span className="text-sm font-medium break-words">{value}</span>;
 }
 
 // ── Section card ──────────────────────────────────────────────────────────────
@@ -207,7 +212,7 @@ export function ProfileSectionCard({
   }
 
   return (
-    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
+    <div className="card border-base-300 bg-base-100 animate-entry min-w-0 border shadow-sm">
       <form className="card-body gap-4 p-4" onSubmit={save}>
         <div className="flex items-center gap-2">
           <span
@@ -258,9 +263,9 @@ export function ProfileSectionCard({
           )}
         </div>
 
-        <div className="grid gap-3 sm:grid-cols-2">
+        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
           {section.fields.map((field) => (
-            <label key={field.key} className="flex flex-col gap-1">
+            <label key={field.key} className="flex min-w-0 flex-col gap-1">
               <span className="label-text text-base-content/50 text-xs">
                 {t(field.labelKey)}
               </span>

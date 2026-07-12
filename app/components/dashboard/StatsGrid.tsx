@@ -10,6 +10,7 @@ import {
 import { useTranslation } from "react-i18next";
 import type { DashboardStat } from "@/types/dashboard";
 import { Money } from "@/components/shared/Money";
+import { useNumberDisplay } from "@/lib/use-number-display";
 
 const ICONS = {
   balance: Wallet,
@@ -20,10 +21,11 @@ const ICONS = {
 
 function StatCard({ stat, currency }: { stat: DashboardStat; currency: string }) {
   const { t } = useTranslation();
+  const formatN = useNumberDisplay();
   const formattedValue =
     stat.key === "savingsRate"
       ? `${stat.value}%`
-      : `${stat.value.toLocaleString()} ${t(`currency.${currency}`, currency)}`;
+      : `${formatN(stat.value)} ${t(`currency.${currency}`, currency)}`;
   const Icon = ICONS[stat.key];
   const isFlat = stat.deltaPct === 0;
   const isUp = stat.deltaPct >= 0;

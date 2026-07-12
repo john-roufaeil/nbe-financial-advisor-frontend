@@ -5,6 +5,8 @@ import { useUpdateAccount } from "@/queries/accounts";
 import { Button } from "@/components/shared/Button";
 import { BaseModal } from "@/components/shared/BaseModal";
 import { BankBadge } from "@/components/shared/BankBadge";
+import { MoneyInput } from "@/components/shared/MoneyInput";
+import { MAX_MONEY_VALUE } from "@/lib/format";
 
 function closeDialog(ref: Ref<HTMLDialogElement>) {
   if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
@@ -16,24 +18,23 @@ export const EditBankAccountModal = forwardRef<
 >(function EditBankAccountModal({ account }, ref) {
   const { t } = useTranslation();
   const updateAccount = useUpdateAccount();
-  const [balance, setBalance] = useState("");
+  const [balance, setBalance] = useState<number | "">("");
   const [error, setError] = useState<string | undefined>();
 
   useEffect(() => {
-    if (account) setBalance(String(account.current_balance));
+    if (account) setBalance(Number(account.current_balance));
   }, [account]);
 
   function reset() {
     setError(undefined);
   }
 
-  const balanceNum = Number(balance);
+  const balanceNum = balance === "" ? NaN : balance;
   const isValid = balance !== "" && Number.isFinite(balanceNum) && balanceNum >= 0;
 
-  function balanceError(value: string): string | undefined {
+  function balanceError(value: number | ""): string | undefined {
     if (value === "") return undefined;
-    const num = Number(value);
-    return !Number.isFinite(num) || num < 0
+    return !Number.isFinite(value) || value < 0
       ? t("common.editAccount.errors.balanceInvalid")
       : undefined;
   }
@@ -48,7 +49,7 @@ export const EditBankAccountModal = forwardRef<
     try {
       await updateAccount.mutateAsync({
         id: account.id,
-        patch: { current_balance: balance },
+        patch: { current_balance: String(balanceNum) },
       });
       reset();
       closeDialog(ref);
@@ -101,14 +102,12 @@ export const EditBankAccountModal = forwardRef<
             <label
               className={`input input-bordered input-sm flex w-full items-center gap-2 ${error ? "input-error" : ""}`}
             >
-              <input
-                type="number"
-                min={0}
-                step="0.01"
+              <MoneyInput
                 value={balance}
-                onChange={(e) => {
-                  setBalance(e.target.value);
-                  setError(balanceError(e.target.value));
+                max={MAX_MONEY_VALUE}
+                onChange={(value) => {
+                  setBalance(value);
+                  setError(balanceError(value));
                 }}
                 className="w-full"
               />
