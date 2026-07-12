@@ -1,4 +1,5 @@
 import { useAccessibilityStore } from "@/store/use-accessibility-store";
+import { useThemeStore } from "@/store/use-theme-store";
 
 /** Fixed categorical color order — never reassigned per-filter, so a category always maps to the same hue across the app. */
 export const CATEGORY_BAR_COLORS = [
@@ -18,7 +19,7 @@ export const CATEGORY_BAR_COLORS = [
 export const CATEGORY_COLOR_VARS = [
   "oklch(40% 0.05 155)", // 1. Primary
   "oklch(80% 0.15 65)", // 2. Secondary
-  "oklch(40% 0.02 250)", // 3. Accent
+  "oklch(70% 0.10 320)", // 3. Accent
   "oklch(70% 0.12 220)", // 4. Info
   "oklch(60% 0.18 25)", // 5. Error
   "oklch(65% 0.15 145)", // 6. Success
@@ -28,6 +29,29 @@ export const CATEGORY_COLOR_VARS = [
   "oklch(65% 0.15 15)", // 10. Vibrant Rose (Theme-consistent)
 ];
 
+/** Same 10 hues as CATEGORY_COLOR_VARS, relit for dark surfaces — these are
+ * plain oklch() literals (not var(--color-*) references), so unlike
+ * CATEGORY_BAR_COLORS' daisyUI classes they don't pick up html.dark's
+ * palette automatically and need their own explicit dark values. Lightness
+ * lifted and chroma bumped a bit (mirroring the same fix applied to
+ * --color-primary/--color-error in app.css) so slices read as solid,
+ * distinct colors on the dark slate surfaces instead of washing out pale. */
+export const CATEGORY_COLOR_VARS_DARK = [
+  "oklch(68% 0.15 155)", // 1. Primary
+  "oklch(72% 0.14 65)", // 2. Secondary
+  "oklch(72% 0.08 250)", // 3. Accent
+  "oklch(72% 0.12 220)", // 4. Info
+  "oklch(68% 0.2 25)", // 5. Error
+  "oklch(70% 0.14 145)", // 6. Success
+  "oklch(76% 0.14 85)", // 7. Warning
+  "oklch(68% 0.16 300)", // 8. Deep Purple
+  "oklch(78% 0.12 180)", // 9. Bright Teal
+  "oklch(70% 0.17 15)", // 10. Vibrant Rose
+];
+
+/** High-contrast mode (see html.a11y-high-contrast in app.css) always forces
+ * a white base surface regardless of light/dark theme, so this single set
+ * covers both — no separate dark+high-contrast variant needed. */
 export const CATEGORY_COLOR_VARS_HIGH_CONTRAST = [
   "oklch(25% 0.08 155)", // 1. Primary (Darkened)
   "oklch(90% 0.22 65)", // 2. Secondary (Vividly Bright)
@@ -41,11 +65,14 @@ export const CATEGORY_COLOR_VARS_HIGH_CONTRAST = [
   "oklch(55% 0.26 15)", // 10. Vibrant Rose (Max Intensity)
 ];
 
-/** Picks CATEGORY_COLOR_VARS or its high-contrast counterpart based on the
- * user's accessibility setting — the single place any chart/dot/bar using
+/** Picks the right CATEGORY_COLOR_VARS_* palette for the user's current
+ * accessibility + theme settings — the single place any chart/dot/bar using
  * these SVG-style color values should read from, so nothing needs its own
- * highContrast branching. */
+ * highContrast/theme branching. High contrast wins over theme since it
+ * forces a white surface in both light and dark mode. */
 export function useCategoryColorVars() {
   const highContrast = useAccessibilityStore((s) => s.highContrast);
-  return highContrast ? CATEGORY_COLOR_VARS_HIGH_CONTRAST : CATEGORY_COLOR_VARS;
+  const theme = useThemeStore((s) => s.theme);
+  if (highContrast) return CATEGORY_COLOR_VARS_HIGH_CONTRAST;
+  return theme === "dark" ? CATEGORY_COLOR_VARS_DARK : CATEGORY_COLOR_VARS;
 }

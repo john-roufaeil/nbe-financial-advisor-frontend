@@ -41,8 +41,8 @@
       "errors": {
         "nameRequired": "أدخل اسمًا لهذا الهدف.",
         "nameTooLong": "يجب ألا يتجاوز الاسم 20 حرفًا.",
-        "targetInvalid": "أدخل مبلغًا مستهدفًا أكبر من 0.",
-        "durationInvalid": "أدخل مدة أكبر من 0."
+        "targetInvalid": "أدخل مبلغًا مستهدفًا بين {{min}} و{{max}}.",
+        "durationInvalid": "أدخل مدة بين {{min}} و{{max}} شهرًا."
       },
       "status": {
         "reached": "تم التحقيق",

@@ -41,8 +41,8 @@
       "errors": {
         "nameRequired": "Enter a name for this goal.",
         "nameTooLong": "Name must be 20 characters or fewer.",
-        "targetInvalid": "Enter a target greater than 0.",
-        "durationInvalid": "Enter a duration greater than 0."
+        "targetInvalid": "Enter a target between {{min}} and {{max}}.",
+        "durationInvalid": "Enter a duration between {{min}} and {{max}} months."
       },
       "status": {
         "reached": "Reached",

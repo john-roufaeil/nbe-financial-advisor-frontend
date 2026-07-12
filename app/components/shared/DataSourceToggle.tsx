@@ -6,7 +6,13 @@ import { useToastStore } from "@/store/use-toast-store";
 
 const DATA_SOURCE_OPTIONS = ["mock", "backend"] as const;
 
-export function DataSourceToggle() {
+export function DataSourceToggle({
+  variant,
+  className,
+}: {
+  variant?: "link" | "btn-ghost";
+  className?: string;
+}) {
   const { t } = useTranslation();
   const source = useDataSourceStore((s) => s.source);
   const setSource = useDataSourceStore((s) => s.setSource);
@@ -28,6 +34,8 @@ export function DataSourceToggle() {
         showToast(t("toast.dataSourceChanged", { source: labels[next] }), "info");
       }}
       aria-label={t("dashboard.dataSource.mock")}
+      variant={variant}
+      className={className}
     />
   );
 }

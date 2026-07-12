@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
+import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { Z_DROPDOWN } from "@/lib/z-index";
 
 /**
@@ -25,12 +26,21 @@ export function AuthLayout({
 
   return (
     <div className="bg-base-100 relative flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
-      <div className={`absolute inset-e-8 top-8 ${Z_DROPDOWN}`}>
-        <LanguageSwitcher variant="btn-ghost" />
+      <div className={`absolute inset-e-8 top-8 flex items-center gap-2 ${Z_DROPDOWN}`}>
+        <ThemeToggle />
+        <LanguageSwitcher variant="btn-ghost" className="btn-sm" />
       </div>
 
       {/* Branded image panel — full-height column on desktop, banner on mobile. */}
-      <div className="from-primary to-primary/70 relative h-36 shrink-0 overflow-hidden bg-linear-to-br sm:h-48 lg:h-auto lg:w-1/2">
+      {/* Pinned to the light palette via data-theme regardless of the site-wide
+          dark mode toggle — daisyUI redeclares every --color-* token directly
+          on this element for [data-theme], so descendants (hero image shade,
+          title/subtitle text) inherit the light values instead of html.dark's,
+          keeping the branded panel identical in both themes. */}
+      <div
+        data-theme="nbe-financial-advisor"
+        className="from-primary to-primary/70 relative h-36 shrink-0 overflow-hidden bg-linear-to-br sm:h-48 lg:h-auto lg:w-1/2"
+      >
         <img
           src="/mobile-auth-hero.png"
           alt=""

@@ -1,10 +1,10 @@
-import { Eye, EyeOff } from "lucide-react";
+import { Moon, Sun } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@/components/shared/Tooltip";
-import { useBalanceVisibilityStore } from "@/store/use-balance-visibility-store";
+import { useThemeStore } from "@/store/use-theme-store";
 
-/** The eye icon that shows/blurs every <Money> figure across the app — one shared toggle, one shared store. */
-export function BalanceVisibilityToggle({
+/** Toggles the `dark` class on <html>, switching every base/primary/etc. color var in app.css. */
+export function ThemeToggle({
   className = "",
   showLabel = false,
 }: {
@@ -13,16 +13,16 @@ export function BalanceVisibilityToggle({
   showLabel?: boolean;
 }) {
   const { t } = useTranslation();
-  const hidden = useBalanceVisibilityStore((s) => s.hidden);
-  const toggle = useBalanceVisibilityStore((s) => s.toggle);
-  const label = hidden ? t("dashboard.showBalances") : t("dashboard.hideBalances");
-  const Icon = hidden ? EyeOff : Eye;
+  const theme = useThemeStore((s) => s.theme);
+  const toggleTheme = useThemeStore((s) => s.toggleTheme);
+  const label = theme === "dark" ? t("settings.theme.light") : t("settings.theme.dark");
+  const Icon = theme === "dark" ? Sun : Moon;
 
   if (showLabel) {
     return (
       <button
         type="button"
-        onClick={toggle}
+        onClick={toggleTheme}
         aria-label={label}
         className={`btn btn-ghost bg-base-200 justify-start gap-1.5 font-medium ${className}`}
       >
@@ -36,7 +36,7 @@ export function BalanceVisibilityToggle({
     <Tooltip content={label}>
       <button
         type="button"
-        onClick={toggle}
+        onClick={toggleTheme}
         className={`bg-base-200 btn btn-ghost btn-sm btn-square ${className}`}
         aria-label={label}
       >
