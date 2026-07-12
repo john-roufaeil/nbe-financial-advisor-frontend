@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
 import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { Z_DROPDOWN } from "@/lib/z-index";
+import { useLayoutTier } from "@/lib/use-layout-tier";
 
 /**
  * Split-screen shell for the auth/onboarding pages (splash, sign-in, onboarding).
@@ -13,6 +14,11 @@ import { Z_DROPDOWN } from "@/lib/z-index";
  * The hero image is `/auth-hero.png` on desktop (lg+) and `/mobile-auth-hero.png`
  * below that (drop both assets into `public/`); a primary-gradient fallback
  * shows through if either is absent.
+ *
+ * All `lg:` desktop-split classes below are also gated on `!isForcedMobile`
+ * (see useLayoutTier) so a user who scales the in-app font past 140% gets the
+ * stacked mobile treatment even on a wide screen — real `lg:` media queries
+ * only track viewport width, not this app's own JS-driven font-scale slider.
  */
 export function AuthLayout({
   children,
@@ -23,9 +29,14 @@ export function AuthLayout({
   align?: "center" | "start";
 }) {
   const { t } = useTranslation();
+  const tier = useLayoutTier();
+  const isForcedMobile = tier === "mobile";
+  const lg = (cls: string) => (isForcedMobile ? "" : cls);
 
   return (
-    <div className="bg-base-100 relative flex min-h-screen flex-col lg:h-screen lg:flex-row lg:overflow-hidden">
+    <div
+      className={`bg-base-100 relative flex min-h-screen flex-col ${lg("lg:h-screen lg:flex-row lg:overflow-hidden")}`}
+    >
       <div className={`absolute inset-e-8 top-8 flex items-center gap-2 ${Z_DROPDOWN}`}>
         <ThemeToggle />
         <LanguageSwitcher variant="btn-ghost" className="btn-sm" />
@@ -39,13 +50,13 @@ export function AuthLayout({
           keeping the branded panel identical in both themes. */}
       <div
         data-theme="nbe-financial-advisor"
-        className="from-primary to-primary/70 relative h-36 shrink-0 overflow-hidden bg-linear-to-br sm:h-48 lg:h-auto lg:w-1/2"
+        className={`from-primary to-primary/70 relative h-36 shrink-0 overflow-hidden bg-linear-to-br sm:h-48 ${lg("lg:h-auto lg:w-1/2")}`}
       >
         <img
           src="/mobile-auth-hero.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 size-full object-cover lg:hidden"
+          className={`absolute inset-0 size-full object-cover ${lg("lg:hidden")}`}
           onError={(e) => {
             e.currentTarget.style.display = "none";
           }}
@@ -54,7 +65,7 @@ export function AuthLayout({
           src="/auth-hero.png"
           alt=""
           aria-hidden="true"
-          className="absolute inset-0 hidden size-full object-cover lg:block"
+          className={`absolute inset-0 size-full object-cover ${isForcedMobile ? "hidden" : "hidden lg:block"}`}
           onError={(e) => {
             e.currentTarget.style.display = "none";
           }}
@@ -63,11 +74,15 @@ export function AuthLayout({
         {/* Shade behind the welcome copy so it stays legible over any hero image. */}
         <div className="from-base-content/80 absolute inset-0 bg-linear-to-t via-transparent to-transparent" />
 
-        <div className="absolute inset-s-0 bottom-0 p-4 text-start sm:p-6 lg:p-10">
-          <h1 className="text-base-100 text-lg font-semibold tracking-tight sm:text-2xl lg:text-3xl">
+        <div
+          className={`absolute inset-s-0 bottom-0 p-4 text-start sm:p-6 ${lg("lg:p-10")}`}
+        >
+          <h1
+            className={`text-base-100 text-lg font-semibold tracking-tight sm:text-2xl ${lg("lg:text-3xl")}`}
+          >
             {t("authPanel.title")}
           </h1>
-          <p className="text-base-100/80 mt-1 text-xs sm:text-sm lg:text-base">
+          <p className={`text-base-100/80 mt-1 text-xs sm:text-sm ${lg("lg:text-base")}`}>
             {t("authPanel.subtitle")}
           </p>
         </div>
@@ -76,7 +91,7 @@ export function AuthLayout({
       {/* Content panel. On mobile it scrolls with the page; on desktop (lg+) it scrolls
           independently while the image panel stays fixed. */}
       <div
-        className={`flex flex-1 justify-center p-4 lg:h-full lg:overflow-y-auto lg:p-10 ${
+        className={`flex flex-1 justify-center p-4 ${lg("lg:h-full lg:overflow-y-auto lg:p-10")} ${
           align === "start" ? "items-start" : "items-center"
         }`}
       >
