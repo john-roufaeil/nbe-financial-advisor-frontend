@@ -19,7 +19,8 @@ import { NoPlanCard } from "@/components/dashboard/NoPlanCard";
 import { AddItemFab } from "@/components/dashboard/AddItemFab";
 import { useDashboard } from "@/queries/dashboard";
 import { usePageTitle } from "@/lib/use-page-title";
-import { CardSkeleton, ErrorState } from "@/components/shared/QueryState";
+import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
+import { ErrorState } from "@/components/shared/QueryState";
 
 function DashboardSkeleton() {
   return (

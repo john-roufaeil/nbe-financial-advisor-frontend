@@ -194,10 +194,15 @@ export function AccountStep({
           </span>
         )}
       </label>
-      <div className="mt-1 flex items-start gap-3">
+      <div className="mt-1 flex flex-row flex-nowrap items-center gap-3">
+        {/* p-3 -m-3 expands the tap target to ~44px (WCAG 2.5.8) without the
+            box itself taking up 44px of layout height — a plain min-h-11
+            here made this row's own whitespace read as a much bigger gap
+            than the gap-4 between every other field, since the tiny
+            checkbox glyph sat lost in the middle of a 44px-tall box. */}
         <label
           htmlFor="consent-agree"
-          className="flex min-h-11 min-w-11 shrink-0 cursor-pointer items-center justify-center"
+          className="relative -m-3 flex shrink-0 cursor-pointer items-center justify-center p-3"
         >
           <input
             id="consent-agree"
@@ -207,7 +212,7 @@ export function AccountStep({
             onChange={(e) => onAgreedChange(e.target.checked)}
           />
         </label>
-        <p className="text-base-content/70 flex flex-wrap items-center gap-x-1 text-sm">
+        <p className="text-base-content/70 flex flex-1 flex-wrap items-center gap-x-1 text-sm">
           <label htmlFor="consent-agree" className="cursor-pointer">
             {t("consent.agreePrefix")}
           </label>

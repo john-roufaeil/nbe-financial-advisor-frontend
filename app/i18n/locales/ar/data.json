@@ -2,17 +2,17 @@
   "data": {
     "transactions": "المعاملات",
     "transactionsSubtitle": "تتبع دخلك ومصروفاتك",
-    "documents": "كشوف الحسابات",
-    "documentsSubtitle": "ارفع كشوف الحسابات لاستخراج المعاملات تلقائيًا",
+    "bankStatements": "كشوف الحسابات",
+    "bankStatementsSubtitle": "ارفع كشوف الحسابات لاستخراج المعاملات تلقائيًا",
     "search": "بحث...",
     "noResults": "لا توجد نتائج.",
     "transactionsEmpty": "لا توجد معاملات بعد. أضف واحدة يدويًا، أو ارفع كشف حساب وسنستخرجها لك تلقائيًا.",
-    "documentsEmpty": "لا توجد كشوف حساب بعد. ارفع واحدًا وسنستخرج المعاملات منه تلقائيًا.",
+    "bankStatementsEmpty": "لا توجد كشوف حساب بعد. ارفع واحدًا وسنستخرج المعاملات منه تلقائيًا.",
     "transactionsEmptyShort": "لا توجد معاملات",
-    "documentsEmptyShort": "لا توجد كشوف حساب",
+    "bankStatementsEmptyShort": "لا توجد كشوف حساب",
     "transactionsEmptyCta": "أضف معاملتك الأولى",
-    "documentsEmptyCta": "ارفع كشف حسابك الأول",
-    "documentFallbackName": "كشف حساب بنكي",
+    "bankStatementsEmptyCta": "ارفع كشف حسابك الأول",
+    "bankStatementFallbackName": "كشف حساب بنكي",
     "loading": "جارٍ التحميل...",
     "loadError": "نأسف، حدث خطأ ما. يرجى المحاولة مرة أخرى.",
     "retry": "إعادة المحاولة",
@@ -67,12 +67,12 @@
       "totalTransactions_few": "{{count}} معاملات",
       "totalTransactions_many": "{{count}} معاملة",
       "totalTransactions_other": "{{count}} معاملة",
-      "totalDocuments_zero": "لا توجد كشوف حساب",
-      "totalDocuments_one": "كشف حساب واحد",
-      "totalDocuments_two": "كشفا حساب",
-      "totalDocuments_few": "{{count}} كشوف حساب",
-      "totalDocuments_many": "{{count}} كشف حساب",
-      "totalDocuments_other": "{{count}} كشف حساب",
+      "totalBankStatements_zero": "لا توجد كشوف حساب",
+      "totalBankStatements_one": "كشف حساب واحد",
+      "totalBankStatements_two": "كشفا حساب",
+      "totalBankStatements_few": "{{count}} كشوف حساب",
+      "totalBankStatements_many": "{{count}} كشف حساب",
+      "totalBankStatements_other": "{{count}} كشف حساب",
       "perPage": "{{count}} / صفحة"
     },
     "addTransaction": {
@@ -114,7 +114,7 @@
       "addCustomBank": "إضافة \"{{name}}\" كبنك جديد",
       "accountNumber": "آخر 8 أرقام من رقم الحساب",
       "accountNumberConfirm": "تأكيد رقم الحساب",
-      "accountNumberPlaceholder": "12345678",
+      "accountNumberPlaceholder": "1234",
       "initialBalance": "الرصيد الابتدائي",
       "initialBalancePlaceholder": "0.00",
       "errors": {
@@ -131,7 +131,7 @@
         "balanceInvalid": "أدخل رصيدًا صالحًا."
       }
     },
-    "addDocument": {
+    "addBankStatement": {
       "title": "إضافة كشف حساب",
       "add": "إضافة كشف حساب",
       "dropzone": "اسحب وأفلت الملفات هنا، أو اضغط للاختيار",
@@ -140,19 +140,19 @@
       "rejectedSize": "تم تجاهل ملفات أكبر من {{maxMb}} ميجابايت: {{names}}",
       "rejectedExtra": "يمكن إضافة كشف حساب واحد فقط في كل مرة — تم تجاهل الملفات الإضافية: {{names}}"
     },
-    "documentStatus": {
+    "bankStatementStatus": {
       "uploading": "جارٍ الرفع...",
       "processing": "جارٍ المعالجة...",
       "pendingApproval": "بانتظار الموافقة",
       "processed": "تمت المعالجة",
       "failed": "فشل"
     },
-    "documentDetail": {
+    "bankStatementDetail": {
       "title": "كشف الحساب",
       "uploading": "جارٍ رفع كشف الحساب...",
       "processing": "جارٍ تحليل كشف الحساب...",
       "failedTitle": "فشلت المعالجة",
-      "documentFailedGeneric": "تعذرت معالجة هذا الملف. قد يكون غير قابل للقراءة أو بصيغة غير مدعومة.",
+      "bankStatementFailedGeneric": "تعذرت معالجة هذا الملف. قد يكون غير قابل للقراءة أو بصيغة غير مدعومة.",
       "retry": "إعادة المحاولة",
       "uploadFailedTitle": "فشل الرفع",
       "uploadFailedGeneric": "تعذر رفع هذا الملف. تحقق من اتصالك وأعد المحاولة برفع الملف.",

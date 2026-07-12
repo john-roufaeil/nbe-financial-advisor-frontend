@@ -1,3 +1,5 @@
+const THUMB_SIZE = "1.75rem";
+
 interface SliderFieldProps {
   label: string;
   value: number;
@@ -30,8 +32,15 @@ export function SliderField({
     return Math.min(max, Math.max(min, v));
   }
 
+  // Thousands-separated display (e.g. "500,000") — type="number" can't show
+  // commas at all (browsers reject non-digit characters), so this is a plain
+  // text input that strips everything but digits back out on change.
+  const formattedValue = value.toLocaleString();
+
   // Calculate dynamic character width based on length + a slight safety margin
-  const inputWidth = `${Math.max(3, String(value).length + 1)}ch`;
+  // (+2, not +1 — number inputs' spin-adjacent padding and tabular-nums
+  // digits need a bit more breathing room than a plain text field would).
+  const inputWidth = `${Math.max(3, formattedValue.length + 2)}ch`;
 
   return (
     <div className="flex flex-col gap-1.5">
@@ -55,20 +64,30 @@ export function SliderField({
           onChange={(e) => onChange(Number(e.target.value))}
           // Scoped thumb-size override (daisyUI CSS var) so only this slider
           // gets a larger touch-friendly thumb, not every `.range` in the app.
-          style={{ "--range-thumb-size": "1.75rem" } as React.CSSProperties}
+          style={{ "--range-thumb-size": THUMB_SIZE } as React.CSSProperties}
           className="range range-primary range-sm w-full flex-1 cursor-grab active:cursor-grabbing"
         />
 
-        <label className="input input-xs input-bordered flex w-max shrink-0 items-center gap-1 px-2">
+        {/* Fixed to the same height as the slider's thumb above (not a
+            daisyUI input-* size step, since none lands on 1.75rem) so the
+            number field doesn't look visually smaller than the control it's
+            paired with. */}
+        <label
+          style={{ height: THUMB_SIZE }}
+          className="input input-bordered flex w-max shrink-0 items-center gap-1 px-2"
+        >
           <input
-            type="number"
-            min={min}
-            max={max}
-            step={step}
-            value={value}
-            onChange={(e) => onChange(clamp(Number(e.target.value) || 0))}
-            /* Added the 'no-spin-buttons' class here */
-            className="no-spin-buttons text-primary w-auto shrink-0 bg-transparent text-end font-semibold tabular-nums focus:outline-none"
+            type="text"
+            inputMode="numeric"
+            aria-valuemin={min}
+            aria-valuemax={max}
+            aria-valuenow={value}
+            value={formattedValue}
+            onChange={(e) => {
+              const digits = e.target.value.replace(/[^\d]/g, "");
+              onChange(clamp(digits === "" ? 0 : Number(digits)));
+            }}
+            className="text-primary w-auto shrink-0 bg-transparent text-end font-semibold tabular-nums focus:outline-none"
             style={{ width: inputWidth }}
           />
           {unit && (

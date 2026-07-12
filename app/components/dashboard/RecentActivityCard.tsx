@@ -11,10 +11,10 @@ import {
   Plus,
 } from "lucide-react";
 import { useTransactions } from "@/queries/transactions";
-import { useDocuments } from "@/queries/documents";
+import { useBankStatements } from "@/queries/bank-statements";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
-import { CardSkeleton } from "@/components/shared/QueryState";
+import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { formatDate } from "@/lib/format";
 
 const RECENT_COUNT = 2;
@@ -136,24 +136,24 @@ function TransactionsSummary() {
   );
 }
 
-function DocumentsSummary() {
+function BankStatementsSummary() {
   const { t } = useTranslation();
   const { lang } = useParams<{ lang: string }>();
-  const { data, isPending } = useDocuments({ limit: RECENT_COUNT });
+  const { data, isPending } = useBankStatements({ limit: RECENT_COUNT });
 
   if (isPending) return <CardSkeleton icon={FileText} className="animate-entry" />;
 
   return (
     <SummaryCard
-      to={`/${lang}/documents`}
+      to={`/${lang}/bank-statements`}
       icon={FileText}
       color="bg-secondary/10 text-secondary"
-      title={t("data.documents")}
+      title={t("data.bankStatements")}
       count={data?.total ?? 0}
-      countLabel={t("data.pagination.totalDocuments", { count: data?.total ?? 0 })}
+      countLabel={t("data.pagination.totalBankStatements", { count: data?.total ?? 0 })}
       emptyIcon={FileX2}
-      emptyLabel={t("data.documentsEmptyShort")}
-      emptyCtaLabel={t("data.documentsEmptyCta")}
+      emptyLabel={t("data.bankStatementsEmptyShort")}
+      emptyCtaLabel={t("data.bankStatementsEmptyCta")}
     >
       {data?.items.map((doc) => (
         <li key={doc.id}>
@@ -169,7 +169,7 @@ function DocumentsSummary() {
 }
 
 /**
- * Dashboard-level summaries linking through to the full transactions/documents
+ * Dashboard-level summaries linking through to the full transactions/bank statements
  * pages. This column sits full-width on narrower laptops (before the goal/budget
  * row splits into a tight 12-col grid) so a container query — not a viewport
  * one — lets the two cards sit side by side whenever they actually have the
@@ -185,7 +185,7 @@ export function RecentActivityCard({ stacked = false }: { stacked?: boolean }) {
         className={`grid grid-cols-1 gap-4 ${stacked ? "" : "@sm:grid-cols-2 @sm:grid-rows-1"}`}
       >
         <TransactionsSummary />
-        <DocumentsSummary />
+        <BankStatementsSummary />
       </div>
     </div>
   );

@@ -91,7 +91,7 @@ export function GoalStep() {
         max={1_000_000}
         step={1_000}
         unit={t("currency.EGP")}
-        presets={[10_000, 25_000, 50_000, 100_000, 250_000].map((amount) => ({
+        presets={[10_000, 50_000, 100_000, 250_000, 500_000].map((amount) => ({
           value: amount,
           label: amount.toLocaleString(),
         }))}
@@ -104,6 +104,9 @@ export function GoalStep() {
         min={1}
         max={60}
         step={1}
+        unit={t("onboarding.goal.monthsUnit", {
+          count: Number(data.goal_target_months) || 1,
+        })}
         error={missing("goal_target_months") ? t("onboarding.errors.missing") : undefined}
       />
     </div>
