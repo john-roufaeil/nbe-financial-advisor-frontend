@@ -40,3 +40,13 @@ export function useLogin() {
     onError: (error) => toastApiError(error),
   });
 }
+
+export function useLogout() {
+  const source = useDataSourceStore((s) => s.source);
+  return useMutation({
+    // Best-effort: invalidate the refresh token server-side (or mock
+    // equivalent). Local state is cleared by the caller regardless of
+    // success/failure (offline, already expired, etc.).
+    mutationFn: () => impl(source).logout(),
+  });
+}

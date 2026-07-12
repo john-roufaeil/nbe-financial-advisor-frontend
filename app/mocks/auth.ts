@@ -15,3 +15,7 @@ export function signup(body: SignupBody): Promise<AuthTokens> {
 export function login(body: LoginBody): Promise<AuthTokens> {
   return delay(mockTokens(body.email));
 }
+
+export function logout(): Promise<void> {
+  return delay(undefined);
+}
