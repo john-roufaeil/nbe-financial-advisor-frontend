@@ -6,6 +6,11 @@
       "en": "English",
       "ar": "العربية"
     },
+    "theme": {
+      "label": "Theme",
+      "light": "Light mode",
+      "dark": "Dark mode"
+    },
     "timeFormat": {
       "label": "Time format",
       "12h": "12h (am/pm)",

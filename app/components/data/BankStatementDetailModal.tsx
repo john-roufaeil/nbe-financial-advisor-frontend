@@ -1,0 +1,148 @@
+import { forwardRef, useRef } from "react";
+import { inferBankStatementType } from "@/types/bank-statement";
+import { useAccountPreselect } from "@/lib/use-account-preselect";
+import { useExtractedTransactionsDraft } from "@/lib/use-extracted-transactions-draft";
+import { useBankStatementModalHeader } from "@/lib/use-bank-statement-modal-header";
+import { BaseModal } from "@/components/shared/BaseModal";
+import { toastError } from "@/lib/toast";
+import { useAccounts } from "@/queries/accounts";
+import { AddBankAccountModal } from "@/components/data/AddBankAccountModal";
+import { AccountConfirmStep } from "@/components/data/AccountConfirmStep";
+import { BankStatementStatusPanel } from "@/components/data/BankStatementStatusPanel";
+import { ExtractedTransactionsSection } from "@/components/data/ExtractedTransactionsSection";
+import { BankStatementModalActions } from "@/components/data/BankStatementModalActions";
+import {
+  useBankStatement,
+  useRetryBankStatement,
+  useUploadBankStatements,
+  useDeleteBankStatement,
+  useApproveBankStatement,
+  useConfirmBankStatementAccount,
+} from "@/queries/bank-statements";
+
+export const BankStatementDetailModal = forwardRef<
+  HTMLDialogElement,
+  { bankStatementId: string | null }
+>(function BankStatementDetailModal({ bankStatementId }, ref) {
+  const { data: doc } = useBankStatement(bankStatementId);
+  const retryBankStatement = useRetryBankStatement();
+  const uploadBankStatements = useUploadBankStatements();
+  const deleteBankStatement = useDeleteBankStatement();
+  const approveBankStatement = useApproveBankStatement();
+  const confirmBankStatementAccount = useConfirmBankStatementAccount();
+  const { data: accounts, isLoading: accountsLoading } = useAccounts();
+  const accountModalRef = useRef<HTMLDialogElement>(null);
+  const reuploadInputRef = useRef<HTMLInputElement>(null);
+  const { icon, title } = useBankStatementModalHeader(doc);
+
+  const { draft, updateDraftTransaction, deleteDraftTransaction, addDraftTransaction } =
+    useExtractedTransactionsDraft(doc);
+
+  const { selectedAccountId, setSelectedAccountId, setAwaitingNewAccount } =
+    useAccountPreselect(doc, accounts);
+
+  // Recovery for a failed *upload*: pick the file again, upload it fresh, then
+  // drop the stale failed record. Processing failures use retry instead.
+  async function handleReupload(oldId: string, file: File | undefined) {
+    if (!file) return;
+    const type = inferBankStatementType(file);
+    if (!type) {
+      toastError("toast.genericError");
+      return;
+    }
+    try {
+      await uploadBankStatements.mutateAsync([
+        {
+          name: file.name,
+          type,
+          sizeKb: Math.max(1, Math.round(file.size / 1024)),
+          file,
+        },
+      ]);
+      deleteBankStatement.mutate(oldId);
+      reuploadInputRef.current?.closest("dialog")?.close();
+    } catch {
+      // uploadBankStatements' onError already surfaced a toast; keep the modal open.
+    }
+  }
+
+  const needsAccountConfirm =
+    !!doc && doc.status === "processed" && !doc.accountConfirmed;
+  const showApprove = !!(
+    doc &&
+    doc.status === "processed" &&
+    doc.accountConfirmed &&
+    !doc.approved &&
+    draft.length > 0
+  );
+
+  return (
+    <BaseModal
+      ref={ref}
+      icon={icon}
+      title={title}
+      actions={
+        doc && (
+          <BankStatementModalActions
+            needsAccountConfirm={needsAccountConfirm}
+            showApprove={showApprove}
+            selectedAccountId={selectedAccountId}
+            draft={draft}
+            onConfirmAccount={(accountId) =>
+              confirmBankStatementAccount.mutate({ id: doc.id, accountId })
+            }
+            confirmPending={confirmBankStatementAccount.isPending}
+            onApprove={() =>
+              approveBankStatement.mutate({ id: doc.id, transactions: draft })
+            }
+            approvePending={approveBankStatement.isPending}
+          />
+        )
+      }
+    >
+      <div className="flex flex-col gap-4">
+        {doc && (
+          <>
+            {(doc.status === "uploading" ||
+              doc.status === "processing" ||
+              doc.status === "failed") && (
+              <BankStatementStatusPanel
+                doc={doc}
+                reuploadInputRef={reuploadInputRef}
+                onReupload={(file) => handleReupload(doc.id, file)}
+                uploadPending={uploadBankStatements.isPending}
+                deletePending={deleteBankStatement.isPending}
+                onRetry={() => retryBankStatement.mutate(doc.id)}
+                retryPending={retryBankStatement.isPending}
+              />
+            )}
+
+            {doc.status === "processed" && needsAccountConfirm && (
+              <AccountConfirmStep
+                accounts={accounts}
+                accountsLoading={accountsLoading}
+                selectedAccountId={selectedAccountId}
+                onSelectAccount={setSelectedAccountId}
+                onAddNewAccount={() => {
+                  setAwaitingNewAccount(true);
+                  accountModalRef.current?.showModal();
+                }}
+              />
+            )}
+
+            {doc.status === "processed" && !needsAccountConfirm && (
+              <ExtractedTransactionsSection
+                doc={doc}
+                draft={draft}
+                onUpdate={updateDraftTransaction}
+                onDelete={deleteDraftTransaction}
+                onAdd={addDraftTransaction}
+              />
+            )}
+          </>
+        )}
+      </div>
+      <AddBankAccountModal ref={accountModalRef} />
+    </BaseModal>
+  );
+});

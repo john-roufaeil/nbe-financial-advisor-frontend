@@ -1,7 +1,15 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
-import { Accessibility, Minus, Plus, RotateCcw, Contrast, X } from "lucide-react";
+import {
+  Accessibility,
+  ChevronRight,
+  Minus,
+  Plus,
+  RotateCcw,
+  Contrast,
+  X,
+} from "lucide-react";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useDismissablePanel } from "@/lib/use-dismissable-panel";
 import { Z_FLOATING_ACTION } from "@/lib/z-index";
@@ -12,13 +20,33 @@ import {
 
 const PANEL_GAP = 8;
 const VIEWPORT_PADDING = 8;
+const PEEK_DURATION_MS = 2500;
+const PEEK_SEEN_STORAGE_KEY = "nbe_a11y_peek_seen";
 
 export function AccessibilityMenu() {
   const { t } = useTranslation();
   const [open, setOpen] = useState(false);
+  const [peeking, setPeeking] = useState(false);
   const [position, setPosition] = useState({ top: 0, left: 0 });
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
+
+  // Reveal the collapsed trigger once — the very first time this browser
+  // ever visits the site — so a first-time user isn't left guessing an
+  // invisible sliver is a button. Every later navigation leaves it alone;
+  // keyboard users always get it via :focus-visible in app.css regardless
+  // (a real Tab focus expands it on any page, not just the first).
+  useEffect(() => {
+    if (localStorage.getItem(PEEK_SEEN_STORAGE_KEY)) return;
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      localStorage.setItem(PEEK_SEEN_STORAGE_KEY, "1");
+      return;
+    }
+    localStorage.setItem(PEEK_SEEN_STORAGE_KEY, "1");
+    setPeeking(true);
+    const timer = window.setTimeout(() => setPeeking(false), PEEK_DURATION_MS);
+    return () => window.clearTimeout(timer);
+  }, []);
 
   const fontScale = useAccessibilityStore((s) => s.fontScale);
   const highContrast = useAccessibilityStore((s) => s.highContrast);
@@ -98,9 +126,10 @@ export function AccessibilityMenu() {
             aria-expanded={open}
             aria-haspopup="dialog"
             aria-label={t("settings.accessibility.menuLabel")}
-            className="btn btn-primary btn-square focus-visible:outline-primary/50 rounded-s-none rounded-e-md shadow-lg focus-visible:outline-4 focus-visible:outline-offset-2"
+            className={`a11y-trigger btn btn-primary btn-square focus-visible:outline-primary/50 relative w-3 rounded-s-none rounded-e-md shadow-lg focus-visible:outline-4 focus-visible:outline-offset-2 ${peeking ? "a11y-trigger-peek" : ""}`}
           >
-            <Accessibility data-no-flip className="size-5" />
+            <ChevronRight aria-hidden="true" className="a11y-trigger-hint size-3" />
+            <Accessibility className="size-5" />
           </button>
         </Tooltip>
 
@@ -116,7 +145,7 @@ export function AccessibilityMenu() {
             >
               <div className="mb-3 flex items-center justify-between gap-2">
                 <h2 className="flex items-center gap-2 text-sm font-semibold">
-                  <Accessibility data-no-flip className="text-primary size-4" />
+                  <Accessibility className="text-primary size-4" />
                   {t("settings.accessibility.title")}
                 </h2>
                 <Tooltip content={t("settings.accessibility.close")}>

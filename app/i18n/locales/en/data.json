@@ -2,17 +2,17 @@
   "data": {
     "transactions": "Transactions",
     "transactionsSubtitle": "Track your income and expenses",
-    "documents": "Bank Statements",
-    "documentsSubtitle": "Upload statements to auto-extract transactions",
+    "bankStatements": "Bank Statements",
+    "bankStatementsSubtitle": "Upload statements to auto-extract transactions",
     "search": "Search...",
     "noResults": "No results found.",
     "transactionsEmpty": "No transactions yet. Add one manually, or upload a bank statement and we'll pull them out for you.",
-    "documentsEmpty": "No bank statements yet. Upload one and we'll extract the transactions automatically.",
+    "bankStatementsEmpty": "No bank statements yet. Upload one and we'll extract the transactions automatically.",
     "transactionsEmptyShort": "No transactions",
-    "documentsEmptyShort": "No bank statements",
+    "bankStatementsEmptyShort": "No bank statements",
     "transactionsEmptyCta": "Add your first transaction",
-    "documentsEmptyCta": "Upload your first statement",
-    "documentFallbackName": "Bank statement",
+    "bankStatementsEmptyCta": "Upload your first statement",
+    "bankStatementFallbackName": "Bank statement",
     "loading": "Loading...",
     "loadError": "Sorry, something went wrong. Please try again.",
     "retry": "Retry",
@@ -67,12 +67,12 @@
       "totalTransactions_few": "{{count}} transactions",
       "totalTransactions_many": "{{count}} transactions",
       "totalTransactions_other": "{{count}} transactions",
-      "totalDocuments_zero": "No bank statements",
-      "totalDocuments_one": "{{count}} bank statement",
-      "totalDocuments_two": "{{count}} bank statements",
-      "totalDocuments_few": "{{count}} bank statements",
-      "totalDocuments_many": "{{count}} bank statements",
-      "totalDocuments_other": "{{count}} bank statements",
+      "totalBankStatements_zero": "No bank statements",
+      "totalBankStatements_one": "{{count}} bank statement",
+      "totalBankStatements_two": "{{count}} bank statements",
+      "totalBankStatements_few": "{{count}} bank statements",
+      "totalBankStatements_many": "{{count}} bank statements",
+      "totalBankStatements_other": "{{count}} bank statements",
       "perPage": "{{count}} / page"
     },
     "addTransaction": {
@@ -112,9 +112,9 @@
       "bankPlaceholder": "Select a bank",
       "bankSearchPlaceholder": "Search banks...",
       "addCustomBank": "Add \"{{name}}\" as a new bank",
-      "accountNumber": "Last 8 digits of account number",
+      "accountNumber": "Last 4 digits of account number",
       "accountNumberConfirm": "Confirm account number",
-      "accountNumberPlaceholder": "12345678",
+      "accountNumberPlaceholder": "1234",
       "initialBalance": "Initial balance",
       "initialBalancePlaceholder": "0.00",
       "errors": {
@@ -131,7 +131,7 @@
         "balanceInvalid": "Enter a valid balance."
       }
     },
-    "addDocument": {
+    "addBankStatement": {
       "title": "Add Bank Statement",
       "add": "Add Bank Statement",
       "dropzone": "Drag & drop files here, or click to choose",
@@ -140,19 +140,19 @@
       "rejectedSize": "Skipped file(s) over {{maxMb}}MB: {{names}}",
       "rejectedExtra": "Only one statement can be added at a time — skipped extra file(s): {{names}}"
     },
-    "documentStatus": {
+    "bankStatementStatus": {
       "uploading": "Uploading...",
       "processing": "Processing...",
       "pendingApproval": "Pending approval",
       "processed": "Processed",
       "failed": "Failed"
     },
-    "documentDetail": {
+    "bankStatementDetail": {
       "title": "Bank Statement",
       "uploading": "Uploading bank statement...",
       "processing": "Analyzing bank statement...",
       "failedTitle": "Processing failed",
-      "documentFailedGeneric": "We couldn't process this file. It may be unreadable or in an unsupported format.",
+      "bankStatementFailedGeneric": "We couldn't process this file. It may be unreadable or in an unsupported format.",
       "retry": "Retry",
       "uploadFailedTitle": "Upload failed",
       "uploadFailedGeneric": "We couldn't upload this file. Check your connection and try again with the file.",

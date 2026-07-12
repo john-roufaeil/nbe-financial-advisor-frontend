@@ -157,6 +157,246 @@ html[data-a11y-font-scale] {
   font-size: 16px;
 }
 
+/* Accessibility trigger button: collapsed by default to a slim colored strip
+   so it doesn't sit as a bulky floating pill over page content, but the
+   *real* interactive box stays 24px wide (WCAG 2.2 SC 2.5.8 Target Size
+   Minimum) via the ::before below — an invisible hit zone that extends past
+   the painted strip so mouse/joystick/touch users don't need pixel-precision
+   to grab it. The button element itself never changes size/visibility/label,
+   only paint — so screen readers and keyboard nav see a normal, fully
+   described, always-focusable button regardless of this collapsed visual state.
+   No padding-inline override here: `.btn-square` already sets it to 0 so the
+   icon stays centered — re-declaring it on hover previously fought that rule
+   and squeezed the icon into a sliver of its real space. */
+.a11y-trigger {
+  overflow: visible;
+  /* Slightly slower on the way in/out than a generic UI hover, and an
+     ease-out curve, so it reads as a deliberate slide rather than a snap. */
+  transition: width 0.35s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+.a11y-trigger::before {
+  content: "";
+  position: absolute;
+  inset-block: 0;
+  inset-inline-start: 0;
+  width: 24px;
+  /* Invisible — purely an enlarged, easier-to-target hit zone layered over
+     and beyond the painted strip. */
+  background: transparent;
+}
+
+.a11y-trigger svg:not(.a11y-trigger-hint) {
+  opacity: 0;
+  /* Fades in after a beat so the icon doesn't pop in ahead of the strip
+     finishing its slide, and fades out first on the way back. */
+  transition:
+    opacity 0.2s ease 0.1s,
+    scale 0.2s ease 0.1s;
+  scale: 0.6;
+}
+
+/* A tiny chevron sits on the collapsed strip as a permanent "there's more
+   here" affordance — it's what's actually visible before any interaction,
+   unlike the full Accessibility icon above which only fades in on
+   hover/focus/peek. Swaps out for that icon the moment the trigger expands. */
+.a11y-trigger-hint {
+  position: absolute;
+  inset: 0;
+  margin: auto;
+  opacity: 1;
+  transition: opacity 0.15s ease;
+}
+
+.a11y-trigger:hover .a11y-trigger-hint,
+.a11y-trigger:focus-visible .a11y-trigger-hint,
+.a11y-trigger.a11y-trigger-peek .a11y-trigger-hint {
+  opacity: 0;
+}
+
+/* Mouse hover OR keyboard focus (Tab) both expand it to its full labeled
+   size — :focus-visible fires on real keyboard focus, not on mouse-driven
+   focus, so clicking doesn't awkwardly "stick" it open. */
+.a11y-trigger:hover,
+.a11y-trigger:focus-visible,
+.a11y-trigger.a11y-trigger-peek {
+  width: var(--size, 2.5rem);
+  min-width: var(--size, 2.5rem);
+}
+
+/* The one-time first-visit "peek" (see AccessibilityMenu.tsx) gets its own
+   explicit keyframe animation rather than relying only on the width
+   transition above — a dedicated animation guarantees a visibly eased
+   pop-open. Its removal (JS clears the class after PEEK_DURATION_MS) still
+   falls back to the plain `.a11y-trigger` width transition above for a
+   smooth slide-shut. Wrapped in `no-preference` (rather than trusting the
+   catch-all reduced-motion rule further down) so a user with motion
+   reduction enabled never sees the button move at all — the trigger effect
+   in AccessibilityMenu.tsx also checks the same media query before ever
+   setting the peek flag, so this is belt-and-suspenders. */
+@media (prefers-reduced-motion: no-preference) {
+  .a11y-trigger.a11y-trigger-peek {
+    animation: a11y-trigger-peek-in 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) both;
+  }
+}
+
+@keyframes a11y-trigger-peek-in {
+  from {
+    width: 12px;
+  }
+
+  to {
+    width: var(--size, 2.5rem);
+  }
+}
+
+.a11y-trigger:hover svg,
+.a11y-trigger:focus-visible svg,
+.a11y-trigger.a11y-trigger-peek svg {
+  opacity: 1;
+  scale: 1;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .a11y-trigger {
+    transition: none;
+  }
+}
+
+/* Crossfade the whole page between light/dark instead of an instant swap,
+   via the View Transitions API (Chromium/Safari) — see applyTheme() in
+   use-theme-store.ts, which starts the transition and falls back to a plain
+   class swap (still smooth via the html/body/.card/etc. `transition` rules
+   above) on browsers that don't support it, or when the user has reduced
+   motion enabled. */
+@media (prefers-reduced-motion: no-preference) {
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation-duration: 0.45s;
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+html.dark {
+  color-scheme: dark;
+  /* Primary: same brand hue as light mode, matched to the same lightness/chroma
+     intensity as --color-error above so every semantic accent reads with the
+     same weight instead of primary looking washed out next to a punchy red. */
+  --color-primary: oklch(65% 0.16 155);
+  --color-primary-content: oklch(97% 0.01 155);
+
+  --color-secondary: oklch(72% 0.11 65);
+  --color-secondary-content: oklch(18% 0.02 65);
+
+  --color-accent: oklch(68% 0.06 250);
+  --color-accent-content: oklch(97% 0.01 250);
+
+  --color-neutral: oklch(80% 0.02 155);
+  --color-neutral-content: oklch(18% 0.02 155);
+
+  /* Lighter slate surfaces (not near-black charcoal) so panels stay readable
+     and easy on the eyes side by side. */
+  --color-base-100: oklch(36% 0.015 255);
+  --color-base-200: oklch(41% 0.015 255);
+  --color-base-300: oklch(48% 0.015 255);
+  /* Kept high (close to white) specifically because so much UI text uses
+     opacity modifiers (text-base-content/50, /70...) for muted text — those
+     modifiers cut straight into this lightness, so a mid-grey base here would
+     make secondary text nearly invisible on the charcoal surfaces above. */
+  --color-base-content: oklch(96% 0.003 255);
+
+  --color-info: oklch(68% 0.1 220);
+  --color-info-content: oklch(18% 0.02 220);
+  --color-success: oklch(65% 0.12 145);
+  --color-success-content: oklch(18% 0.02 145);
+  --color-warning: oklch(72% 0.13 85);
+  --color-warning-content: oklch(18% 0.02 85);
+  --color-error: oklch(65% 0.2 25);
+  --color-error-content: oklch(97% 0.01 25);
+}
+
+html.dark .btn:hover:not(:disabled) {
+  box-shadow: 0 6px 16px -6px rgb(0 0 0 / 0.6);
+}
+
+/* The bank logo is a transparent PNG designed for a light background — on
+   dark slate surfaces it loses its edges, so in dark mode it sits on an
+   off-white rounded card; in light mode the background stays transparent
+   since the page behind it is already light. The padding/radius stay
+   identical across both themes (only the color changes) so toggling dark
+   mode never resizes the logo — box-sizing: border-box means padding eats
+   into the image's own width/height, so it has to be constant across themes
+   to avoid the logo visibly shrinking/growing when the theme switches. */
+img[src="/logo.webp"] {
+  background-color: transparent;
+  border-radius: 0.75rem;
+  padding: 0.5rem;
+}
+
+html.dark img[src="/logo.webp"] {
+  background-color: oklch(88.338% 0.00711 248.231);
+}
+
+/* Muted text (text-base-content/NN, used everywhere for labels/hints/timestamps)
+   is an opacity cut into --color-base-content. On the light theme's near-white
+   base that still reads fine even at 30-50%, but against dark mode's charcoal
+   surfaces the same cut becomes low-contrast, hard-to-read grey. Raise the
+   effective mix percentage per bucket so secondary text stays legible without
+   changing the visual hierarchy (still dimmer than full-strength text). */
+html.dark [class*="text-base-content/20"] {
+  color: color-mix(in oklab, var(--color-base-content) 45%, transparent);
+}
+
+html.dark [class*="text-base-content/30"] {
+  color: color-mix(in oklab, var(--color-base-content) 55%, transparent);
+}
+
+html.dark [class*="text-base-content/40"] {
+  color: color-mix(in oklab, var(--color-base-content) 62%, transparent);
+}
+
+html.dark [class*="text-base-content/50"] {
+  color: color-mix(in oklab, var(--color-base-content) 70%, transparent);
+}
+
+html.dark [class*="text-base-content/60"] {
+  color: color-mix(in oklab, var(--color-base-content) 78%, transparent);
+}
+
+html.dark [class*="text-base-content/70"] {
+  color: color-mix(in oklab, var(--color-base-content) 85%, transparent);
+}
+
+html.dark [class*="text-base-content/80"] {
+  color: color-mix(in oklab, var(--color-base-content) 90%, transparent);
+}
+
+/* Smooth, low-strain crossfade between light/dark palettes instead of an
+   instant flip — scoped to color-bearing properties only so layout/hover
+   transforms elsewhere aren't affected. Respects the reduced-motion override
+   below, same as every other animation in this file. */
+html,
+body,
+.btn,
+.card,
+.navbar,
+aside,
+header,
+.modal-box,
+.badge,
+.input,
+.select,
+.textarea,
+[class*="bg-base-"],
+[class*="text-base-"],
+[class*="border-base-"] {
+  transition:
+    background-color 0.35s ease,
+    border-color 0.35s ease,
+    color 0.35s ease,
+    box-shadow 0.35s ease;
+}
+
 html.a11y-high-contrast {
   --color-primary: oklch(0% 0 0);
   --color-primary-content: oklch(100% 0 0);
@@ -338,6 +578,7 @@ html[dir="rtl"] .animate-a11y-panel-in {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }

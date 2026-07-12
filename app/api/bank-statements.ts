@@ -3,14 +3,14 @@ import { getAccounts } from "@/api/accounts";
 import { getTransactionsByStatement } from "@/api/transactions";
 import { getBankCode } from "@/lib/banks";
 import type {
-  DocumentRecord,
-  DocumentStatus,
-  DocumentType,
+  BankStatement,
+  BankStatementStatus,
+  BankStatementType,
   ExtractedTransaction,
-} from "@/types/document";
+} from "@/types/bank-statement";
 
-export interface DocumentFilters {
-  type?: DocumentType;
+export interface BankStatementFilters {
+  type?: BankStatementType;
   q?: string;
   from?: string;
   to?: string;
@@ -19,8 +19,8 @@ export interface DocumentFilters {
   limit?: number;
 }
 
-export interface DocumentListResponse {
-  items: DocumentRecord[];
+export interface BankStatementListResponse {
+  items: BankStatement[];
   total: number;
 }
 
@@ -79,13 +79,13 @@ interface PaginatedStatements {
  * state server-side, hence `approved: true` for anything normalized: the
  * transactions are in the ledger whether the UI shows an approve button or not.
  */
-function toStatus(raw: string): DocumentStatus {
+function toStatus(raw: string): BankStatementStatus {
   if (raw === "normalized" || raw === "processed") return "processed";
   if (raw === "failed") return "failed";
   return "processing";
 }
 
-function toDocument(raw: RawStatement, bankName?: string): DocumentRecord {
+function toBankStatement(raw: RawStatement, bankName?: string): BankStatement {
   const status = toStatus(raw.status);
   const approved = status === "processed";
   return {
@@ -101,7 +101,7 @@ function toDocument(raw: RawStatement, bankName?: string): DocumentRecord {
     // already resolves account_id (or leaves it unset) by the time it responds.
     accountConfirmed: status === "processed",
     // Rows are edited/added client-side only while under review and are never
-    // sent until the (currently unsupported) approve call — see approveDocument.
+    // sent until the (currently unsupported) approve call — see approveBankStatement.
     // Since the backend has no pending-approval state, `approved` is already
     // true the moment a statement finishes processing, so editing is disabled
     // from that same moment: the transactions are already committed server-side.
@@ -125,9 +125,9 @@ async function bankCodesByAccountId(): Promise<Map<string, string | undefined>> 
  * so they are not sent — filtering client-side would desync `total` from the
  * server's unfiltered count and break pagination.
  */
-export async function getDocuments(
-  filters: DocumentFilters,
-): Promise<DocumentListResponse> {
+export async function getBankStatements(
+  filters: BankStatementFilters,
+): Promise<BankStatementListResponse> {
   const params: Record<string, string | number> = {};
   if (filters.offset !== undefined) params.offset = filters.offset;
   if (filters.limit !== undefined) params.limit = filters.limit;
@@ -137,16 +137,16 @@ export async function getDocuments(
 
   return {
     items: res.data.results.map((raw) =>
-      toDocument(raw, raw.account_id ? banks.get(raw.account_id) : undefined),
+      toBankStatement(raw, raw.account_id ? banks.get(raw.account_id) : undefined),
     ),
     total: res.data.count,
   };
 }
 
-export async function getDocument(id: string): Promise<DocumentRecord> {
+export async function getBankStatement(id: string): Promise<BankStatement> {
   const res = await apiClient.get<RawStatement>(`/statements/${id}`);
   const banks = await bankCodesByAccountId();
-  const doc = toDocument(
+  const doc = toBankStatement(
     res.data,
     res.data.account_id ? banks.get(res.data.account_id) : undefined,
   );
@@ -171,13 +171,13 @@ export async function getDocument(id: string): Promise<DocumentRecord> {
 
 /**
  * POST /statements accepts exactly ONE file per request, under the field name
- * `file` (not `files`). Uploading N documents is therefore N requests, issued
+ * `file` (not `files`). Uploading N bank statements is therefore N requests, issued
  * in parallel. A byte-identical re-upload is rejected with 422 by the backend's
  * checksum dedupe, so one file failing must not discard the others' results.
  */
-export async function uploadDocuments(
-  files: { name: string; type: DocumentType; sizeKb: number; file: File }[],
-): Promise<DocumentRecord[]> {
+export async function uploadBankStatements(
+  files: { name: string; type: BankStatementType; sizeKb: number; file: File }[],
+): Promise<BankStatement[]> {
   const results = await Promise.allSettled(
     files.map((f) => {
       const formData = new FormData();
@@ -188,9 +188,9 @@ export async function uploadDocuments(
     }),
   );
 
-  const uploaded: DocumentRecord[] = [];
+  const uploaded: BankStatement[] = [];
   for (const result of results) {
-    if (result.status === "fulfilled") uploaded.push(toDocument(result.value.data));
+    if (result.status === "fulfilled") uploaded.push(toBankStatement(result.value.data));
   }
 
   // Every file failed — surface the first error rather than reporting success.
@@ -201,7 +201,7 @@ export async function uploadDocuments(
   return uploaded;
 }
 
-export async function deleteDocument(id: string): Promise<void> {
+export async function deleteBankStatement(id: string): Promise<void> {
   await apiClient.delete(`/statements/${id}`);
 }
 
@@ -213,20 +213,20 @@ export async function deleteDocument(id: string): Promise<void> {
 
 const UNSUPPORTED = "This action isn't supported by the backend yet.";
 
-export async function retryDocument(_id: string): Promise<DocumentRecord> {
+export async function retryBankStatement(_id: string): Promise<BankStatement> {
   throw new Error(UNSUPPORTED);
 }
 
-export async function approveDocument(
+export async function approveBankStatement(
   _id: string,
   _transactions: ExtractedTransaction[],
 ): Promise<{ approvedAt: string; createdTransactionIds: string[] }> {
   throw new Error(UNSUPPORTED);
 }
 
-export async function confirmDocumentAccount(
+export async function confirmBankStatementAccount(
   _id: string,
   _accountId: string,
-): Promise<DocumentRecord> {
+): Promise<BankStatement> {
   throw new Error(UNSUPPORTED);
 }

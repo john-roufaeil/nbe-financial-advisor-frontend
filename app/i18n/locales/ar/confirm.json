@@ -1,7 +1,7 @@
 {
   "confirm": {
     "deleteTransactionTitle": "هل تريد حذف هذه المعاملة؟",
-    "deleteDocumentTitle": "هل تريد حذف كشف الحساب هذا؟",
+    "deleteBankStatementTitle": "هل تريد حذف كشف الحساب هذا؟",
     "deleteGoalTitle": "هل تريد حذف هذا الهدف؟",
     "deleteAccountTitle": "هل تريد حذف هذا الحساب البنكي؟",
     "deleteMessage": "لا يمكن التراجع عن هذا الإجراء.",

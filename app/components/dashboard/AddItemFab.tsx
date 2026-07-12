@@ -34,9 +34,9 @@ export function AddItemFab() {
           </Link>
         </li>
         <li>
-          <Link to={`/${lang}/documents`} state={{ openAdd: true }}>
+          <Link to={`/${lang}/bank-statements`} state={{ openAdd: true }}>
             <FileText className="size-4" />
-            {t("data.addDocument.add")}
+            {t("data.addBankStatement.add")}
           </Link>
         </li>
       </ul>

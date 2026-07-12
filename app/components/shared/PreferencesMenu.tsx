@@ -1,23 +1,16 @@
-import { useCallback, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import { useParams, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Settings2, Clock, Globe, Database, X } from "lucide-react";
+import { Settings2, Clock, Globe, Moon, Sun } from "lucide-react";
 import { TimeFormatSwitcher } from "@/components/shared/TimeFormatSwitcher";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
 import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 import { LANGUAGE_STORAGE_KEY } from "@/routes/lang-layout";
-import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
+import { useThemeStore, type Theme } from "@/store/use-theme-store";
 import { useToastStore } from "@/store/use-toast-store";
-import { useDismissablePanel } from "@/lib/use-dismissable-panel";
-import { Z_POPOVER } from "@/lib/z-index";
-import { Tooltip } from "./Tooltip";
 
-const PANEL_WIDTH = 288; // w-72, used only for initial JS positioning math; actual rendered width is clamped by CSS (max-w-[90vw])
-const PANEL_GAP = 8;
-const DATA_SOURCE_OPTIONS: readonly [DataSource, DataSource] = ["mock", "backend"];
+const THEME_OPTIONS: readonly [Theme, Theme] = ["light", "dark"];
 
-function LanguageToggle({ onAfterChange }: { onAfterChange?: () => void }) {
+function LanguageToggle() {
   const { t } = useTranslation();
   const { lang } = useParams<{ lang: string }>();
   const location = useLocation();
@@ -36,9 +29,6 @@ function LanguageToggle({ onAfterChange }: { onAfterChange?: () => void }) {
     localStorage.setItem(LANGUAGE_STORAGE_KEY, next);
     void i18n.changeLanguage(next);
     showToast(t("toast.languageChanged", { language: labels[next] }), "info");
-    // Navigating to the new /:lang segment reuses this route's component
-    // instance, so the panel's `open` state wouldn't otherwise reset itself.
-    onAfterChange?.();
     if (next !== lang) {
       const rest = location.pathname.replace(`/${lang}`, "");
       navigate(`/${next}${rest}${location.search}`);
@@ -57,133 +47,71 @@ function LanguageToggle({ onAfterChange }: { onAfterChange?: () => void }) {
   );
 }
 
-function DataSourceSwitch() {
+function ThemeSwitch() {
   const { t } = useTranslation();
-  const source = useDataSourceStore((s) => s.source);
-  const setSource = useDataSourceStore((s) => s.setSource);
-  const showToast = useToastStore((s) => s.show);
+  const theme = useThemeStore((s) => s.theme);
+  const setTheme = useThemeStore((s) => s.setTheme);
 
-  const labels: Record<DataSource, string> = {
-    mock: t("dashboard.dataSource.mock"),
-    backend: t("dashboard.dataSource.backend"),
+  const labels: Record<Theme, string> = {
+    light: t("settings.theme.light"),
+    dark: t("settings.theme.dark"),
   };
 
   return (
     <ToggleSwitch
-      value={source}
-      options={DATA_SOURCE_OPTIONS}
+      value={theme}
+      options={THEME_OPTIONS}
       labels={labels}
+      icons={{ light: Sun, dark: Moon }}
       forceLtrOrder
-      onChange={(next) => {
-        setSource(next);
-        showToast(t("toast.dataSourceChanged", { source: labels[next] }), "info");
-      }}
-      aria-label={t("dashboard.dataSource.title")}
+      onChange={setTheme}
+      aria-label={t("settings.theme.label")}
     />
   );
 }
 
+/** Inline settings card on the profile page — not a popover, so every preference stays visible at once. */
 export function PreferencesMenu() {
   const { t } = useTranslation();
-  const [open, setOpen] = useState(false);
-  const [position, setPosition] = useState({ top: 0, left: 0 });
-  const panelRef = useRef<HTMLDivElement>(null);
-  const triggerRef = useRef<HTMLButtonElement>(null);
-
-  const reposition = useCallback(() => {
-    const rect = triggerRef.current?.getBoundingClientRect();
-    if (!rect) return;
-    const isRtl = document.documentElement.dir === "rtl";
-    // Align the panel's trailing edge (end, per document direction) with the trigger's trailing edge.
-    const left = isRtl ? rect.left : rect.right - PANEL_WIDTH;
-    setPosition({
-      top: rect.bottom + PANEL_GAP,
-      left: Math.max(
-        PANEL_GAP,
-        Math.min(left, window.innerWidth - PANEL_WIDTH - PANEL_GAP),
-      ),
-    });
-  }, []);
-
-  useDismissablePanel({
-    open,
-    onClose: () => setOpen(false),
-    panelRef,
-    triggerRef,
-    reposition,
-  });
 
   return (
-    <div className="relative">
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => setOpen((v) => !v)}
-        aria-expanded={open}
-        aria-haspopup="dialog"
-        className="btn btn-outline btn-sm bg-base-200 gap-2"
-      >
-        <Settings2 className="size-4" />
-        {t("data.sections.preferences.title")}
-      </button>
+    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
+      <div className="card-body gap-4 p-4">
+        <div className="flex items-center gap-2">
+          <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
+            <Settings2 className="size-4.5" />
+          </span>
+          <h2 className="card-title flex-1 text-base">
+            {t("data.sections.preferences.title")}
+          </h2>
+        </div>
 
-      {open &&
-        createPortal(
-          <div
-            ref={panelRef}
-            role="dialog"
-            aria-label={t("data.sections.preferences.title")}
-            style={{ top: position.top, left: position.left }}
-            className={`border-base-300 bg-base-100 text-base-content animate-a11y-panel-in fixed ${Z_POPOVER} max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-xl border p-4 shadow-2xl`}
-          >
-            <div className="mb-3 flex items-center justify-between gap-2">
-              <h2 className="flex items-center gap-2 text-sm font-semibold">
-                <Settings2 className="size-4" />
-                {t("data.sections.preferences.title")}
-              </h2>
-              <Tooltip content={t("actions.close")}>
-                <button
-                  type="button"
-                  onClick={() => {
-                    setOpen(false);
-                    triggerRef.current?.focus();
-                  }}
-                  aria-label={t("actions.close")}
-                  className="btn btn-ghost btn-xs btn-square"
-                >
-                  <X className="size-4" />
-                </button>
-              </Tooltip>
-            </div>
+        <div className="grid gap-x-8 gap-y-4 sm:grid-cols-3">
+          <label className="flex flex-col gap-1.5">
+            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
+              <Clock className="size-3.5" />
+              {t("settings.timeFormat.label")}
+            </span>
+            <TimeFormatSwitcher />
+          </label>
 
-            <div className="flex flex-col gap-4">
-              <label className="flex flex-col gap-1.5">
-                <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
-                  <Clock className="size-3.5" />
-                  {t("settings.timeFormat.label")}
-                </span>
-                <TimeFormatSwitcher />
-              </label>
+          <label className="flex flex-col gap-1.5">
+            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
+              <Globe className="size-3.5" />
+              {t("settings.language")}
+            </span>
+            <LanguageToggle />
+          </label>
 
-              <label className="flex flex-col gap-1.5">
-                <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
-                  <Globe className="size-3.5" />
-                  {t("settings.language")}
-                </span>
-                <LanguageToggle onAfterChange={() => setOpen(false)} />
-              </label>
-
-              <label className="flex flex-col gap-1.5">
-                <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
-                  <Database className="size-3.5" />
-                  {t("dashboard.dataSource.title")}
-                </span>
-                <DataSourceSwitch />
-              </label>
-            </div>
-          </div>,
-          document.body,
-        )}
+          <label className="flex flex-col gap-1.5">
+            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
+              <Sun className="size-3.5" />
+              {t("settings.theme.label")}
+            </span>
+            <ThemeSwitch />
+          </label>
+        </div>
+      </div>
     </div>
   );
 }

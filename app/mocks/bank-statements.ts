@@ -2,12 +2,15 @@ import { delay } from "@/mocks/shared";
 import { createTransaction } from "@/mocks/transactions";
 import { getAccounts } from "@/mocks/accounts";
 import { BANK_CODES } from "@/lib/banks";
-import type { DocumentFilters, DocumentListResponse } from "@/api/documents";
 import type {
-  DocumentRecord,
-  DocumentType,
+  BankStatementFilters,
+  BankStatementListResponse,
+} from "@/api/bank-statements";
+import type {
+  BankStatement,
+  BankStatementType,
   ExtractedTransaction,
-} from "@/types/document";
+} from "@/types/bank-statement";
 
 const SAMPLE_POOL: Omit<ExtractedTransaction, "id" | "datetime">[] = [
   { title: "Grocery purchase", category: "Groceries", type: "expense", amount: 340 },
@@ -42,7 +45,7 @@ function generateExtractedTransactions(uploadDate: string): ExtractedTransaction
   }));
 }
 
-const SEED_DOCS: DocumentRecord[] = [
+const SEED_DOCS: BankStatement[] = [
   {
     id: "d1",
     name: "Bank Statement - June 2026.pdf",
@@ -120,7 +123,7 @@ const SEED_DOCS: DocumentRecord[] = [
   },
 ];
 
-let documents: DocumentRecord[] = SEED_DOCS.map((doc) => ({
+let bankStatements: BankStatement[] = SEED_DOCS.map((doc) => ({
   ...doc,
   accountConfirmed: true,
   extractedTransactions: generateExtractedTransactions(doc.uploadDate),
@@ -132,7 +135,7 @@ function runProcessing(id: string) {
     // lands, so recovery means picking the file again, not a retry.
     const uploaded = Math.random() > 0.1;
     if (!uploaded) {
-      documents = documents.map((d) =>
+      bankStatements = bankStatements.map((d) =>
         d.id === id
           ? {
               ...d,
@@ -145,16 +148,18 @@ function runProcessing(id: string) {
       return;
     }
 
-    documents = documents.map((d) => (d.id === id ? { ...d, status: "processing" } : d));
+    bankStatements = bankStatements.map((d) =>
+      d.id === id ? { ...d, status: "processing" } : d,
+    );
 
     setTimeout(async () => {
-      const doc = documents.find((d) => d.id === id);
+      const doc = bankStatements.find((d) => d.id === id);
       if (!doc) return;
       const succeeded = Math.random() > 0.15;
       const perceivedAccountNumber = succeeded
         ? await generatePerceivedAccountNumber()
         : undefined;
-      documents = documents.map((d) =>
+      bankStatements = bankStatements.map((d) =>
         d.id === id
           ? succeeded
             ? {
@@ -172,7 +177,7 @@ function runProcessing(id: string) {
                 ...d,
                 status: "failed",
                 failedStage: "processing",
-                errorMessage: "documentFailedGeneric",
+                errorMessage: "bankStatementFailedGeneric",
               }
           : d,
       );
@@ -180,8 +185,10 @@ function runProcessing(id: string) {
   }, 900);
 }
 
-export function getDocuments(filters: DocumentFilters): Promise<DocumentListResponse> {
-  const filtered = documents.filter((doc) => {
+export function getBankStatements(
+  filters: BankStatementFilters,
+): Promise<BankStatementListResponse> {
+  const filtered = bankStatements.filter((doc) => {
     const matchesType = !filters.type || doc.type === filters.type;
     const q = filters.q?.trim().toLowerCase();
     const matchesSearch = !q || (doc.name ?? "").toLowerCase().includes(q);
@@ -200,9 +207,9 @@ export function getDocuments(filters: DocumentFilters): Promise<DocumentListResp
   return delay({ items: filtered.slice(offset, offset + limit), total: filtered.length });
 }
 
-export function getDocument(id: string): Promise<DocumentRecord> {
-  const doc = documents.find((d) => d.id === id);
-  if (!doc) return Promise.reject(new Error(`Document ${id} not found`));
+export function getBankStatement(id: string): Promise<BankStatement> {
+  const doc = bankStatements.find((d) => d.id === id);
+  if (!doc) return Promise.reject(new Error(`Bank statement ${id} not found`));
   // Mock mode keeps the full review flow: rows stay editable and addable until
   // the user approves, at which point they're committed and become read-only.
   return delay(
@@ -211,11 +218,11 @@ export function getDocument(id: string): Promise<DocumentRecord> {
   );
 }
 
-export function uploadDocuments(
-  files: { name: string; type: DocumentType; sizeKb: number }[],
-): Promise<DocumentRecord[]> {
+export function uploadBankStatements(
+  files: { name: string; type: BankStatementType; sizeKb: number }[],
+): Promise<BankStatement[]> {
   const uploadDate = new Date().toISOString().slice(0, 10);
-  const created = files.map((f): DocumentRecord => ({
+  const created = files.map((f): BankStatement => ({
     id: crypto.randomUUID(),
     name: f.name,
     type: f.type,
@@ -223,46 +230,46 @@ export function uploadDocuments(
     sizeKb: f.sizeKb,
     status: "uploading",
   }));
-  documents = [...created, ...documents];
+  bankStatements = [...created, ...bankStatements];
   for (const d of created) runProcessing(d.id);
   return delay(created);
 }
 
-export function retryDocument(id: string): Promise<DocumentRecord> {
-  documents = documents.map((d) =>
+export function retryBankStatement(id: string): Promise<BankStatement> {
+  bankStatements = bankStatements.map((d) =>
     d.id === id
       ? { ...d, status: "uploading", errorMessage: undefined, failedStage: undefined }
       : d,
   );
   runProcessing(id);
-  const doc = documents.find((d) => d.id === id);
-  if (!doc) return Promise.reject(new Error(`Document ${id} not found`));
+  const doc = bankStatements.find((d) => d.id === id);
+  if (!doc) return Promise.reject(new Error(`Bank statement ${id} not found`));
   return delay(doc);
 }
 
-export function confirmDocumentAccount(
+export function confirmBankStatementAccount(
   id: string,
   accountId: string,
-): Promise<DocumentRecord> {
-  documents = documents.map((d) =>
+): Promise<BankStatement> {
+  bankStatements = bankStatements.map((d) =>
     d.id === id ? { ...d, accountId, accountConfirmed: true } : d,
   );
-  const doc = documents.find((d) => d.id === id);
-  if (!doc) return Promise.reject(new Error(`Document ${id} not found`));
+  const doc = bankStatements.find((d) => d.id === id);
+  if (!doc) return Promise.reject(new Error(`Bank statement ${id} not found`));
   return delay(doc);
 }
 
 /**
  * Rows are edited/added/removed purely client-side while under review (see
- * DocumentDetailModal) — the edited list only reaches the mock store here,
+ * BankStatementDetailModal) — the edited list only reaches the mock store here,
  * in one shot, when the user approves.
  */
-export async function approveDocument(
+export async function approveBankStatement(
   id: string,
   transactions: ExtractedTransaction[],
 ): Promise<{ approvedAt: string; createdTransactionIds: string[] }> {
-  const doc = documents.find((d) => d.id === id);
-  if (!doc) throw new Error(`Document ${id} not found`);
+  const doc = bankStatements.find((d) => d.id === id);
+  if (!doc) throw new Error(`Bank statement ${id} not found`);
   const created = await Promise.all(
     transactions.map((tx) =>
       createTransaction({
@@ -275,7 +282,7 @@ export async function approveDocument(
     ),
   );
   const approvedAt = new Date().toISOString();
-  documents = documents.map((d) =>
+  bankStatements = bankStatements.map((d) =>
     d.id === id
       ? {
           ...d,
@@ -288,7 +295,7 @@ export async function approveDocument(
   return delay({ approvedAt, createdTransactionIds: created.map((c) => c.id) });
 }
 
-export function deleteDocument(id: string): Promise<void> {
-  documents = documents.filter((d) => d.id !== id);
+export function deleteBankStatement(id: string): Promise<void> {
+  bankStatements = bankStatements.filter((d) => d.id !== id);
   return delay(undefined);
 }

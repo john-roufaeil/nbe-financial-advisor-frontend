@@ -9,19 +9,19 @@ import {
   TriangleAlert,
 } from "lucide-react";
 import {
-  DOCUMENT_MAX_SIZE_BYTES,
-  DOCUMENT_MAX_SIZE_MB,
-  DOCUMENT_UPLOAD_ACCEPT,
-  inferDocumentType,
-  type DocumentType,
-} from "@/types/document";
-import { useUploadDocuments } from "@/queries/documents";
+  BANK_STATEMENT_MAX_SIZE_BYTES,
+  BANK_STATEMENT_MAX_SIZE_MB,
+  BANK_STATEMENT_UPLOAD_ACCEPT,
+  inferBankStatementType,
+  type BankStatementType,
+} from "@/types/bank-statement";
+import { useUploadBankStatements } from "@/queries/bank-statements";
 import { toastError } from "@/lib/toast";
 import { Button } from "@/components/shared/Button";
 import { BaseModal } from "@/components/shared/BaseModal";
 import { Tooltip } from "@/components/shared/Tooltip";
 
-const TYPE_ICONS: Record<DocumentType, typeof FileText> = {
+const TYPE_ICONS: Record<BankStatementType, typeof FileText> = {
   pdf: FileText,
   image: ImageIcon,
   doc: FileIcon,
@@ -33,13 +33,13 @@ function closeDialog(ref: Ref<HTMLDialogElement>) {
 
 interface StagedFile {
   file: File;
-  type: DocumentType;
+  type: BankStatementType;
 }
 
-export const AddDocumentModal = forwardRef<HTMLDialogElement>(
-  function AddDocumentModal(_props, ref) {
+export const AddBankStatementModal = forwardRef<HTMLDialogElement>(
+  function AddBankStatementModal(_props, ref) {
     const { t } = useTranslation();
-    const uploadDocuments = useUploadDocuments();
+    const uploadBankStatements = useUploadBankStatements();
     const [staged, setStaged] = useState<StagedFile[]>([]);
     const [rejectedType, setRejectedType] = useState<string[]>([]);
     const [rejectedSize, setRejectedSize] = useState<string[]>([]);
@@ -59,10 +59,10 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
       const nextRejectedExtra: string[] = [];
       let nextStaged: StagedFile | undefined;
       for (const file of files) {
-        const type = inferDocumentType(file);
+        const type = inferBankStatementType(file);
         if (!type) {
           nextRejectedType.push(file.name);
-        } else if (file.size > DOCUMENT_MAX_SIZE_BYTES) {
+        } else if (file.size > BANK_STATEMENT_MAX_SIZE_BYTES) {
           nextRejectedSize.push(file.name);
         } else if (!nextStaged) {
           nextStaged = { file, type };
@@ -89,7 +89,7 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
 
     async function handleUpload() {
       if (staged.length === 0) return;
-      const documents = staged.map(({ file, type }) => ({
+      const bankStatements = staged.map(({ file, type }) => ({
         name: file.name,
         type,
         sizeKb: Math.max(1, Math.round(file.size / 1024)),
@@ -99,9 +99,9 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
       try {
         // Each file is its own request, so a batch can partially succeed —
         // a byte-identical re-upload is rejected while its siblings land.
-        const uploaded = await uploadDocuments.mutateAsync(documents);
-        if (uploaded.length < documents.length) {
-          toastError("toast.documentsPartiallyUploaded");
+        const uploaded = await uploadBankStatements.mutateAsync(bankStatements);
+        if (uploaded.length < bankStatements.length) {
+          toastError("toast.bankStatementsPartiallyUploaded");
         }
         reset();
         closeDialog(ref);
@@ -115,13 +115,13 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
       <BaseModal
         ref={ref}
         onClose={reset}
-        title={t("data.addDocument.title")}
+        title={t("data.addBankStatement.title")}
         actions={
           <>
             <Button
               type="button"
-              disabled={staged.length === 0 || uploadDocuments.isPending}
-              loading={uploadDocuments.isPending}
+              disabled={staged.length === 0 || uploadBankStatements.isPending}
+              loading={uploadBankStatements.isPending}
               onClick={handleUpload}
               className="btn btn-primary"
             >
@@ -165,14 +165,16 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
             }`}
           >
             <Upload className="text-base-content/40 size-6" />
-            <span className="text-sm font-medium">{t("data.addDocument.dropzone")}</span>
+            <span className="text-sm font-medium">
+              {t("data.addBankStatement.dropzone")}
+            </span>
             <span className="text-base-content/50 text-xs">
-              {t("data.addDocument.accepted", { maxMb: DOCUMENT_MAX_SIZE_MB })}
+              {t("data.addBankStatement.accepted", { maxMb: BANK_STATEMENT_MAX_SIZE_MB })}
             </span>
             <input
               ref={fileInputRef}
               type="file"
-              accept={DOCUMENT_UPLOAD_ACCEPT}
+              accept={BANK_STATEMENT_UPLOAD_ACCEPT}
               onChange={(e) => handleFiles(e.target.files)}
               className="hidden"
             />
@@ -185,14 +187,16 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
               {rejectedType.length > 0 && (
                 <p className="text-warning flex items-center gap-1.5 text-xs">
                   <TriangleAlert className="size-3.5 shrink-0" />
-                  {t("data.addDocument.rejectedType", { names: rejectedType.join(", ") })}
+                  {t("data.addBankStatement.rejectedType", {
+                    names: rejectedType.join(", "),
+                  })}
                 </p>
               )}
               {rejectedSize.length > 0 && (
                 <p className="text-warning flex items-center gap-1.5 text-xs">
                   <TriangleAlert className="size-3.5 shrink-0" />
-                  {t("data.addDocument.rejectedSize", {
-                    maxMb: DOCUMENT_MAX_SIZE_MB,
+                  {t("data.addBankStatement.rejectedSize", {
+                    maxMb: BANK_STATEMENT_MAX_SIZE_MB,
                     names: rejectedSize.join(", "),
                   })}
                 </p>
@@ -200,7 +204,7 @@ export const AddDocumentModal = forwardRef<HTMLDialogElement>(
               {rejectedExtra.length > 0 && (
                 <p className="text-warning flex items-center gap-1.5 text-xs">
                   <TriangleAlert className="size-3.5 shrink-0" />
-                  {t("data.addDocument.rejectedExtra", {
+                  {t("data.addBankStatement.rejectedExtra", {
                     names: rejectedExtra.join(", "),
                   })}
                 </p>

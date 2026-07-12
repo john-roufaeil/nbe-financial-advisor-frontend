@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { Tooltip } from "@/components/shared/Tooltip";
 
 interface BaseModalProps {
-  /** Modal heading. Optional so content-driven modals (e.g. document detail) can render without one, but the close button always shows. */
+  /** Modal heading. Optional so content-driven modals (e.g. bank statement detail) can render without one, but the close button always shows. */
   title?: ReactNode;
   /** Small icon shown before the title (e.g. a warning glyph on confirm dialogs). */
   icon?: ReactNode;

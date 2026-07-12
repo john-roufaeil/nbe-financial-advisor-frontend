@@ -1,6 +1,6 @@
-export type DocumentType = "pdf" | "image" | "doc";
+export type BankStatementType = "pdf" | "image" | "doc";
 
-export type DocumentStatus = "uploading" | "processing" | "failed" | "processed";
+export type BankStatementStatus = "uploading" | "processing" | "failed" | "processed";
 
 export interface ExtractedTransaction {
   id: string;
@@ -11,7 +11,7 @@ export interface ExtractedTransaction {
   amount: number;
 }
 
-export interface DocumentRecord {
+export interface BankStatement {
   id: string;
   /**
    * Optional: StatementFileSerializer carries no original filename, MIME type or
@@ -19,10 +19,10 @@ export interface DocumentRecord {
    * `original_filename` / `mime_type` / `file_size` before the real API can.
    */
   name?: string;
-  type?: DocumentType;
+  type?: BankStatementType;
   sizeKb?: number;
   uploadDate: string;
-  status: DocumentStatus;
+  status: BankStatementStatus;
   errorMessage?: string;
   /**
    * When `status` is "failed", which phase failed: an "upload" failure means the
@@ -47,14 +47,14 @@ export interface DocumentRecord {
 }
 
 /** Same accept rules as the chat composer's attachment adapter — images and office/pdf docs only. */
-export const DOCUMENT_UPLOAD_ACCEPT =
+export const BANK_STATEMENT_UPLOAD_ACCEPT =
   "image/*,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";
 
 /** Client-side cap for a single statement upload, enforced before it ever reaches the network. */
-export const DOCUMENT_MAX_SIZE_MB = 10;
-export const DOCUMENT_MAX_SIZE_BYTES = DOCUMENT_MAX_SIZE_MB * 1024 * 1024;
+export const BANK_STATEMENT_MAX_SIZE_MB = 10;
+export const BANK_STATEMENT_MAX_SIZE_BYTES = BANK_STATEMENT_MAX_SIZE_MB * 1024 * 1024;
 
-export function inferDocumentType(file: File): DocumentType | null {
+export function inferBankStatementType(file: File): BankStatementType | null {
   if (file.type.startsWith("image/")) return "image";
   if (file.type === "application/pdf" || /\.pdf$/i.test(file.name)) return "pdf";
   if (

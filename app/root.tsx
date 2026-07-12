@@ -35,6 +35,12 @@ export function Layout({ children }: { children: React.ReactNode }) {
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <Meta />
         <Links />
+        <script
+          // Applied synchronously before paint so the dark surface never flashes light first.
+          dangerouslySetInnerHTML={{
+            __html: `(function(){try{var s=localStorage.getItem("nbe_theme");var t=s?JSON.parse(s).state.theme:"light";if(t==="dark"){document.documentElement.classList.add("dark");document.documentElement.style.colorScheme="dark";}}catch(e){}})();`,
+          }}
+        />
       </head>
       <body suppressHydrationWarning>
         <title>{t("app.name")}</title>

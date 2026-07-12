@@ -18,7 +18,7 @@ export default [
         route(":lang/dashboard", "routes/dashboard.tsx"),
         route(":lang/chat", "routes/chat.tsx"),
         route(":lang/transactions", "routes/transactions.tsx"),
-        route(":lang/documents", "routes/documents.tsx"),
+        route(":lang/bank-statements", "routes/bank-statements.tsx"),
         route(":lang/profile", "routes/profile.tsx"),
       ]),
     ]),

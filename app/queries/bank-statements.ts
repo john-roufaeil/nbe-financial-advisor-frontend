@@ -4,30 +4,30 @@ import {
   useQueryClient,
   keepPreviousData,
 } from "@tanstack/react-query";
-import * as documentsApi from "@/api/documents";
-import * as documentsMock from "@/mocks/documents";
-import type { DocumentFilters } from "@/api/documents";
-import type { DocumentType, ExtractedTransaction } from "@/types/document";
+import * as bankStatementsApi from "@/api/bank-statements";
+import * as bankStatementsMock from "@/mocks/bank-statements";
+import type { BankStatementFilters } from "@/api/bank-statements";
+import type { BankStatementType, ExtractedTransaction } from "@/types/bank-statement";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { toastSuccess, toastApiError } from "@/lib/toast";
 
 function impl(source: DataSource) {
-  return source === "mock" ? documentsMock : documentsApi;
+  return source === "mock" ? bankStatementsMock : bankStatementsApi;
 }
 
-export const documentKeys = {
-  all: ["documents"] as const,
-  list: (filters: DocumentFilters, source: DataSource) =>
-    [...documentKeys.all, "list", source, filters] as const,
+export const bankStatementKeys = {
+  all: ["bankStatements"] as const,
+  list: (filters: BankStatementFilters, source: DataSource) =>
+    [...bankStatementKeys.all, "list", source, filters] as const,
   detail: (id: string, source: DataSource) =>
-    [...documentKeys.all, "detail", source, id] as const,
+    [...bankStatementKeys.all, "detail", source, id] as const,
 };
 
-export function useDocuments(filters: DocumentFilters) {
+export function useBankStatements(filters: BankStatementFilters) {
   const source = useDataSourceStore((s) => s.source);
   return useQuery({
-    queryKey: documentKeys.list(filters, source),
-    queryFn: () => impl(source).getDocuments(filters),
+    queryKey: bankStatementKeys.list(filters, source),
+    queryFn: () => impl(source).getBankStatements(filters),
     placeholderData: keepPreviousData,
     refetchInterval: (query) => {
       const hasInFlight = query.state.data?.items?.some(
@@ -38,11 +38,11 @@ export function useDocuments(filters: DocumentFilters) {
   });
 }
 
-export function useDocument(id: string | null) {
+export function useBankStatement(id: string | null) {
   const source = useDataSourceStore((s) => s.source);
   return useQuery({
-    queryKey: documentKeys.detail(id ?? "", source),
-    queryFn: () => impl(source).getDocument(id as string),
+    queryKey: bankStatementKeys.detail(id ?? "", source),
+    queryFn: () => impl(source).getBankStatement(id as string),
     enabled: id !== null,
     refetchInterval: (query) => {
       const status = query.state.data?.status;
@@ -51,32 +51,32 @@ export function useDocument(id: string | null) {
   });
 }
 
-export function useUploadDocuments() {
+export function useUploadBankStatements() {
   const queryClient = useQueryClient();
   const source = useDataSourceStore((s) => s.source);
   return useMutation({
     mutationFn: (
-      files: { name: string; type: DocumentType; sizeKb: number; file: File }[],
+      files: { name: string; type: BankStatementType; sizeKb: number; file: File }[],
     ) =>
       source === "mock"
-        ? documentsMock.uploadDocuments(files)
-        : documentsApi.uploadDocuments(files),
+        ? bankStatementsMock.uploadBankStatements(files)
+        : bankStatementsApi.uploadBankStatements(files),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: documentKeys.all });
-      toastSuccess("toast.documentUploaded");
+      queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
+      toastSuccess("toast.bankStatementUploaded");
     },
     onError: (error) => toastApiError(error),
   });
 }
 
-export function useRetryDocument() {
+export function useRetryBankStatement() {
   const queryClient = useQueryClient();
   const source = useDataSourceStore((s) => s.source);
   return useMutation({
-    mutationFn: (id: string) => impl(source).retryDocument(id),
+    mutationFn: (id: string) => impl(source).retryBankStatement(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: documentKeys.all });
-      toastSuccess("toast.documentRetried");
+      queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
+      toastSuccess("toast.bankStatementRetried");
     },
     onError: (error) => toastApiError(error),
   });
@@ -84,10 +84,10 @@ export function useRetryDocument() {
 
 /**
  * Extracted-row edits are kept purely client-side while a statement is under
- * review (see DocumentDetailModal) — the only request this screen ever sends
+ * review (see BankStatementDetailModal) — the only request this screen ever sends
  * is the approve call below, with the user's final edited rows attached.
  */
-export function useApproveDocument() {
+export function useApproveBankStatement() {
   const queryClient = useQueryClient();
   const source = useDataSourceStore((s) => s.source);
   return useMutation({
@@ -97,37 +97,37 @@ export function useApproveDocument() {
     }: {
       id: string;
       transactions: ExtractedTransaction[];
-    }) => impl(source).approveDocument(id, transactions),
+    }) => impl(source).approveBankStatement(id, transactions),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: documentKeys.all });
+      queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
-      toastSuccess("toast.documentApproved");
+      toastSuccess("toast.bankStatementApproved");
     },
     onError: (error) => toastApiError(error),
   });
 }
 
-export function useConfirmDocumentAccount() {
+export function useConfirmBankStatementAccount() {
   const queryClient = useQueryClient();
   const source = useDataSourceStore((s) => s.source);
   return useMutation({
     mutationFn: ({ id, accountId }: { id: string; accountId: string }) =>
-      impl(source).confirmDocumentAccount(id, accountId),
+      impl(source).confirmBankStatementAccount(id, accountId),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: documentKeys.all });
+      queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
     },
     onError: (error) => toastApiError(error),
   });
 }
 
-export function useDeleteDocument() {
+export function useDeleteBankStatement() {
   const queryClient = useQueryClient();
   const source = useDataSourceStore((s) => s.source);
   return useMutation({
-    mutationFn: (id: string) => impl(source).deleteDocument(id),
+    mutationFn: (id: string) => impl(source).deleteBankStatement(id),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: documentKeys.all });
-      toastSuccess("toast.documentDeleted");
+      queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
+      toastSuccess("toast.bankStatementDeleted");
     },
     onError: (error) => toastApiError(error),
   });

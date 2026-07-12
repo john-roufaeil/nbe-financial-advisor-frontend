@@ -30,20 +30,18 @@ export default function Profile() {
         subtitle={t("nav.profileSubtitle")}
         icon={User}
         actions={
-          <>
-            <PreferencesMenu />
-            <button
-              type="button"
-              onClick={handleSignOut}
-              className="btn btn-outline btn-error btn-sm bg-base-200 hover:bg-error gap-2"
-            >
-              <LogOut className="size-4" />
-              {t("settings.signOut")}
-            </button>
-          </>
+          <button
+            type="button"
+            onClick={handleSignOut}
+            className="btn btn-outline btn-error btn-sm bg-base-200 hover:bg-error gap-2"
+          >
+            <LogOut className="size-4" />
+            {t("settings.signOut")}
+          </button>
         }
       />
 
+      <PreferencesMenu />
       <PersonalDataSections />
     </div>
   );

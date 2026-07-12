@@ -5,7 +5,7 @@ import {
   type Currency,
 } from "@/types/account";
 
-export const ACCOUNT_NUMBER_LENGTH = 8;
+export const ACCOUNT_NUMBER_LENGTH = 4;
 
 export interface BankAccountFormValues {
   accountType: AccountType;

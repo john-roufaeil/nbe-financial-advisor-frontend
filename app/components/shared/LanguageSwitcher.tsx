@@ -8,9 +8,11 @@ import { useToastStore } from "@/store/use-toast-store";
 export function LanguageSwitcher({
   onSelect,
   variant,
+  className,
 }: {
   onSelect?: () => void;
   variant?: "link" | "btn-ghost";
+  className?: string;
 }) {
   const { lang } = useParams<{ lang: string }>();
   const location = useLocation();
@@ -44,6 +46,7 @@ export function LanguageSwitcher({
       onChange={switchTo}
       aria-label={t("settings.language")}
       variant={variant}
+      className={className}
     />
   );
 }

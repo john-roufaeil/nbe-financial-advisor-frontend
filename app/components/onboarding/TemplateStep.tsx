@@ -3,7 +3,8 @@ import { useTranslation } from "react-i18next";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { OptionCard } from "@/components/onboarding/OptionCard";
 import { useStarterTemplates } from "@/queries/budget";
-import { ListSkeleton, ErrorState } from "@/components/shared/QueryState";
+import { ListSkeleton } from "@/components/shared/skeletons/ListSkeleton";
+import { ErrorState } from "@/components/shared/QueryState";
 
 export function TemplateStep() {
   const { t } = useTranslation();

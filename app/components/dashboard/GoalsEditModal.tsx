@@ -11,6 +11,11 @@ type Draft = { name: string; target: string; duration: string };
 
 const EMPTY_DRAFT: Draft = { name: "", target: "", duration: "" };
 
+const TARGET_MIN = 1_000;
+const TARGET_MAX = 1_000_000;
+const DURATION_MIN = 1;
+const DURATION_MAX = 60;
+
 function toDraft(goal: FinancialGoal): Draft {
   return {
     name: goal.name,
@@ -47,10 +52,20 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
       }
       if (value === "") return undefined;
       const num = Number(value);
-      if (!Number.isFinite(num) || num <= 0) {
-        return field === "target"
-          ? t("dashboard.goals.errors.targetInvalid")
-          : t("dashboard.goals.errors.durationInvalid");
+      if (field === "target") {
+        if (!Number.isFinite(num) || num < TARGET_MIN || num > TARGET_MAX) {
+          return t("dashboard.goals.errors.targetInvalid", {
+            min: TARGET_MIN.toLocaleString(),
+            max: TARGET_MAX.toLocaleString(),
+          });
+        }
+        return undefined;
+      }
+      if (!Number.isFinite(num) || num < DURATION_MIN || num > DURATION_MAX) {
+        return t("dashboard.goals.errors.durationInvalid", {
+          min: DURATION_MIN,
+          max: DURATION_MAX,
+        });
       }
       return undefined;
     }
@@ -61,10 +76,12 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
       draft.name.trim().length > 0 &&
       draft.target !== "" &&
       Number.isFinite(targetNum) &&
-      targetNum > 0 &&
+      targetNum >= TARGET_MIN &&
+      targetNum <= TARGET_MAX &&
       draft.duration !== "" &&
       Number.isFinite(durationNum) &&
-      durationNum > 0;
+      durationNum >= DURATION_MIN &&
+      durationNum <= DURATION_MAX;
 
     // Programmatically dismisses the native dialog container reference elements safely
     function closeModal() {
@@ -79,11 +96,17 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
       if (!draft.name.trim()) nextErrors.name = t("dashboard.goals.errors.nameRequired");
       else if (draft.name.trim().length > 20)
         nextErrors.name = t("dashboard.goals.errors.nameTooLong");
-      if (!draft.target || !(targetNum > 0)) {
-        nextErrors.target = t("dashboard.goals.errors.targetInvalid");
+      if (!draft.target || targetNum < TARGET_MIN || targetNum > TARGET_MAX) {
+        nextErrors.target = t("dashboard.goals.errors.targetInvalid", {
+          min: TARGET_MIN.toLocaleString(),
+          max: TARGET_MAX.toLocaleString(),
+        });
       }
-      if (!draft.duration || !(durationNum > 0)) {
-        nextErrors.duration = t("dashboard.goals.errors.durationInvalid");
+      if (!draft.duration || durationNum < DURATION_MIN || durationNum > DURATION_MAX) {
+        nextErrors.duration = t("dashboard.goals.errors.durationInvalid", {
+          min: DURATION_MIN,
+          max: DURATION_MAX,
+        });
       }
       setErrors(nextErrors);
       if (Object.keys(nextErrors).length > 0) return;
@@ -167,10 +190,14 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
             <label className="flex min-w-0 flex-col gap-1">
               <span className="label-text text-xs">{t("dashboard.goals.target")}</span>
               <input
-                type="number"
-                min={1}
-                value={draft.target}
-                onChange={(e) => setDraftField("target", e.target.value)}
+                type="text"
+                inputMode="numeric"
+                aria-valuemin={TARGET_MIN}
+                aria-valuemax={TARGET_MAX}
+                value={draft.target === "" ? "" : Number(draft.target).toLocaleString()}
+                onChange={(e) =>
+                  setDraftField("target", e.target.value.replace(/[^\d]/g, ""))
+                }
                 placeholder="0"
                 className={`input input-bordered w-full ${errors.target ? "input-error" : ""}`}
               />
@@ -183,7 +210,8 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
               <span className="label-text text-xs">{t("dashboard.goals.duration")}</span>
               <input
                 type="number"
-                min={1}
+                min={DURATION_MIN}
+                max={DURATION_MAX}
                 value={draft.duration}
                 onChange={(e) => setDraftField("duration", e.target.value)}
                 placeholder={t("dashboard.goals.monthsPlaceholder", "Months")}

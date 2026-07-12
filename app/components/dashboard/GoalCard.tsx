@@ -13,11 +13,8 @@ import type { FinancialGoal } from "@/types/goal";
 import { useGoals } from "@/queries/goals";
 import { formatDate } from "@/lib/format";
 import { GoalsEditModal } from "@/components/dashboard/GoalsEditModal";
-import {
-  ErrorState,
-  GoalEmptyState,
-  SkeletonTimelineRow,
-} from "@/components/shared/QueryState";
+import { ErrorState, GoalEmptyState } from "@/components/shared/QueryState";
+import { SkeletonTimelineRow } from "@/components/shared/skeletons/SkeletonRows";
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
 
