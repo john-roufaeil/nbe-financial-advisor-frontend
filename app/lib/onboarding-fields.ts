@@ -19,13 +19,29 @@ export const STEP_FIELDS = {
 
 export type OptionalStepKey = keyof typeof STEP_FIELDS;
 
-// goal_target_amount's minimum (0) is the one slider value that still reads as
-// "didn't answer" rather than a legitimate goal — a zero-amount goal isn't
-// meaningful, unlike zero income/dependents or a 1-month goal (all legitimate
-// answers, and all already detected as filled the moment the slider is
-// touched, since their stored value moves away from the initial "" string).
+/**
+ * Whether a step's "Skip" button is offered.
+ *
+ * The income step is NOT skippable: the plan's per-category budget is derived
+ * from monthly income (allocated_amount = monthly_income x percentage), so a
+ * plan built without it stores zero against every category and then reads back
+ * as "you don't have a plan yet". The template step has never been skippable —
+ * a plan needs allocations to be a plan at all. That leaves the goal step, which
+ * is genuinely optional: a budget stands on its own without one.
+ */
+export function isStepSkippable(step: OptionalStepKey): boolean {
+  return step === "goal";
+}
+
+// Slider values that still read as "didn't answer" rather than a legitimate
+// answer. A zero-amount goal isn't a goal, and zero income can't fund a plan —
+// both leave the thing they configure meaningless. Zero dependents and a
+// 1-month goal, by contrast, are real answers, and every field is otherwise
+// detected as filled the moment the slider is touched (its stored value moves
+// away from the initial "" string).
 export const SLIDER_MIN_VALUES: Partial<Record<keyof OnboardingData, number>> = {
   goal_target_amount: 0,
+  monthly_income: 0,
 };
 
 export function isFieldUnset(field: keyof OnboardingData, value: string): boolean {

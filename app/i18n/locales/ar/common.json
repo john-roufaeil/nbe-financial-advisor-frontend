@@ -12,17 +12,12 @@
     "category": "الفئة",
     "allCategories": "كل الفئات",
     "categories": {
-      "Groceries": "البقالة",
-      "Dining": "المطاعم",
-      "Transport": "المواصلات",
-      "Utilities": "الفواتير",
-      "Shopping": "التسوق",
-      "Health": "الصحة",
-      "Income": "الدخل",
-      "Rent": "الإيجار",
-      "Savings": "المدخرات",
-      "Transportation": "النقل",
-      "Entertainment": "الترفيه"
+      "housing": "السكن والإيجار",
+      "food": "الطعام والبقالة",
+      "transport": "المواصلات",
+      "savings": "المدخرات",
+      "lifestyle": "نمط الحياة",
+      "other": "أخرى"
     },
     "filtersLabel": "الفلاتر",
     "amountRange": "نطاق المبلغ",
@@ -70,20 +65,10 @@
       "accountNumber": "آخر 4 أرقام من رقم الحساب",
       "accountNumberConfirm": "تأكيد رقم الحساب",
       "accountNumberPlaceholder": "1234",
-      "initialBalance": "الرصيد الابتدائي",
-      "initialBalancePlaceholder": "0.00",
       "errors": {
         "bankRequired": "اختر بنكًا أو أضف واحدًا.",
         "accountNumberInvalid": "أدخل 8 أرقام بالضبط.",
-        "accountNumberMismatch": "أرقام الحساب غير متطابقة.",
-        "balanceInvalid": "أدخل رصيدًا صالحًا."
-      }
-    },
-    "editAccount": {
-      "title": "تعديل الحساب البنكي",
-      "balance": "الرصيد الحالي",
-      "errors": {
-        "balanceInvalid": "أدخل رصيدًا صالحًا."
+        "accountNumberMismatch": "أرقام الحساب غير متطابقة."
       }
     },
     "sections": {

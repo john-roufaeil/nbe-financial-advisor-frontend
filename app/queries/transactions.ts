@@ -37,6 +37,10 @@ export function useCreateTransaction() {
     mutationFn: (body: Omit<Transaction, "id">) => impl(source).createTransaction(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      // Every dashboard number is computed from the ledger — spend, inflow, the
+      // month-over-month deltas, the savings rate, and each category's
+      // percentage_used. A changed transaction restates all of them.
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toastSuccess("toast.transactionCreated");
     },
     onError: (error) => toastApiError(error),
@@ -56,6 +60,7 @@ export function useUpdateTransaction() {
     }) => impl(source).updateTransaction(id, patch),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toastSuccess("toast.transactionUpdated");
     },
     onError: (error) => toastApiError(error),
@@ -69,6 +74,7 @@ export function useDeleteTransaction() {
     mutationFn: (id: string) => impl(source).deleteTransaction(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toastSuccess("toast.transactionDeleted");
     },
     onError: (error) => toastApiError(error),

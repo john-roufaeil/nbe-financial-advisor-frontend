@@ -13,7 +13,6 @@
     "goalUpdated": "Goal updated",
     "goalDeleted": "Goal deleted",
     "accountCreated": "Bank account added",
-    "accountUpdated": "Bank account updated",
     "accountDeleted": "Bank account deleted",
     "genericError": "Something went wrong. Please try again.",
     "emailTaken": "This email is already registered.",

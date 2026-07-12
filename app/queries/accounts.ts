@@ -1,7 +1,7 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as accountsApi from "@/api/accounts";
 import * as accountsMock from "@/mocks/accounts";
-import type { CreateBankAccountBody, UpdateBankAccountBody } from "@/types/account";
+import type { CreateBankAccountBody } from "@/types/account";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { toastSuccess, toastApiError } from "@/lib/toast";
 
@@ -28,21 +28,9 @@ export function useCreateAccount() {
     mutationFn: (body: CreateBankAccountBody) => impl(source).createAccount(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      // Net worth (the dashboard's balance stat) is the sum of the accounts.
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toastSuccess("toast.accountCreated");
-    },
-    onError: (error) => toastApiError(error),
-  });
-}
-
-export function useUpdateAccount() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: UpdateBankAccountBody }) =>
-      impl(source).updateAccount(id, patch),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["accounts"] });
-      toastSuccess("toast.accountUpdated");
     },
     onError: (error) => toastApiError(error),
   });
@@ -55,6 +43,7 @@ export function useDeleteAccount() {
     mutationFn: (id: string) => impl(source).deleteAccount(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["accounts"] });
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toastSuccess("toast.accountDeleted");
     },
     onError: (error) => toastApiError(error),

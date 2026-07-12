@@ -46,7 +46,6 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
           account_type: values.accountType,
           currency: values.currency,
           account_number: values.accountNumber,
-          initial_balance: values.initialBalance,
         });
         reset();
         closeDialog(ref);
