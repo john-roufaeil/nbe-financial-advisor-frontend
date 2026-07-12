@@ -3,11 +3,14 @@ import { useTranslation } from "react-i18next";
 import type { BankStatement } from "@/types/bank-statement";
 import { formatDateTime } from "@/lib/format";
 import type { TimeFormat } from "@/store/use-time-format-store";
+import type { DateFormat } from "@/store/use-date-format-store";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { useDeleteBankStatement } from "@/queries/bank-statements";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { useTimeFormatStore } from "@/store/use-time-format-store";
+import { useDateFormatStore } from "@/store/use-date-format-store";
+import { useDensityStore } from "@/store/use-density-store";
 import type { ViewMode } from "@/store/use-view-mode-store";
 import { BankStatementStatusBadge } from "@/components/bank-statements/BankStatementStatusBadge";
 
@@ -16,8 +19,9 @@ function bankStatementSubtitle(
   doc: BankStatement,
   t: (key: string, options?: Record<string, unknown>) => string,
   timeFormat: TimeFormat,
+  dateFormat: DateFormat,
 ) {
-  const parts = [formatDateTime(doc.uploadDate, timeFormat, t)];
+  const parts = [formatDateTime(doc.uploadDate, timeFormat, t, dateFormat)];
   if (doc.extractedTransactions) {
     parts.push(
       t("bankStatements.detail.transactionCount", {
@@ -41,13 +45,18 @@ export function BankStatementCard({
   const deleteBankStatement = useDeleteBankStatement();
   const confirm = useConfirmStore((s) => s.confirm);
   const timeFormat = useTimeFormatStore((s) => s.format);
+  const dateFormat = useDateFormatStore((s) => s.format);
+  const density = useDensityStore((s) => s.density);
+  const isCompact = density === "compact";
   const isGrid = view === "grid";
 
   const logoAndText = (
     <BankBadge
       bank={doc.bankName}
       className="flex-1"
-      subtitle={bankStatementSubtitle(doc, t, timeFormat)}
+      subtitle={
+        isCompact ? undefined : bankStatementSubtitle(doc, t, timeFormat, dateFormat)
+      }
     />
   );
 
@@ -91,7 +100,7 @@ export function BankStatementCard({
         onKeyDown={onKeyDown}
         tabIndex={0}
         role="button"
-        className="border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer flex-col gap-3 rounded-md border p-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+        className={`border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer flex-col rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${isCompact ? "gap-2 p-2" : "gap-3 p-3"}`}
       >
         {logoAndText}
         <div className="border-base-200 flex items-center gap-2 border-t pt-2">
@@ -108,7 +117,7 @@ export function BankStatementCard({
       onKeyDown={onKeyDown}
       tabIndex={0}
       role="button"
-      className="border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+      className={`border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer items-center rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${isCompact ? "gap-2 p-2" : "gap-3 p-3"}`}
     >
       {logoAndText}
       {status}

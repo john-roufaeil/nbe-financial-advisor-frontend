@@ -20,6 +20,9 @@
     "budgetCreated": "Registration successful",
     "budgetUpdated": "Plan updated",
     "timeFormatChanged": "Time format set to {{format}}",
+    "numberFormatChanged": "Number format set to {{format}}",
+    "dateFormatChanged": "Date format set to {{format}}",
+    "compactNumbersChanged": "Number display set to {{format}}",
     "languageChanged": "Language set to {{language}}",
     "dataSourceChanged": "Data source set to {{source}}"
   }

@@ -8,12 +8,15 @@ import {
   ArrowUpNarrowWide,
   ArrowDownNarrowWide,
   SlidersHorizontal,
+  Rows3,
+  Rows2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DateField } from "@/components/shared/DateField";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
 import { useViewModeStore } from "@/store/use-view-mode-store";
+import { useDensityStore } from "@/store/use-density-store";
 import { useDismissablePanel } from "@/lib/use-dismissable-panel";
 import { Z_POPOVER } from "@/lib/z-index";
 
@@ -74,6 +77,8 @@ export function DataToolbar<F extends string>({
   const { t } = useTranslation();
   const viewMode = useViewModeStore((s) => s.mode);
   const setViewMode = useViewModeStore((s) => s.setMode);
+  const density = useDensityStore((s) => s.density);
+  const setDensity = useDensityStore((s) => s.setDensity);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [panelCoords, setPanelCoords] = useState<{ top: number; left: number } | null>(
     null,
@@ -255,6 +260,21 @@ export function DataToolbar<F extends string>({
             </button>
           </Tooltip>
         )}
+
+        <div className="w-20 shrink-0">
+          <ToggleSwitch
+            value={density}
+            options={["comfortable", "compact"]}
+            labels={{
+              comfortable: t("common.density.comfortable"),
+              compact: t("common.density.compact"),
+            }}
+            icons={{ comfortable: Rows2, compact: Rows3 }}
+            onChange={setDensity}
+            aria-label={t("common.density.toggleLabel")}
+            showLabels={false}
+          />
+        </div>
 
         <div className="ms-auto w-20 shrink-0">
           <ToggleSwitch

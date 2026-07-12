@@ -3,8 +3,10 @@ import { useTranslation } from "react-i18next";
 import { ArrowDownCircle, ArrowUpCircle, Loader2 } from "lucide-react";
 import type { Transaction } from "@/types/transaction";
 import { formatDateTime } from "@/lib/format";
+import { useNumberDisplay } from "@/lib/use-number-display";
 import { useAccounts } from "@/queries/accounts";
 import { useTimeFormatStore } from "@/store/use-time-format-store";
+import { useDateFormatStore } from "@/store/use-date-format-store";
 import { BaseModal } from "@/components/shared/BaseModal";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
@@ -24,6 +26,8 @@ export const TransactionDetailModal = forwardRef<
 >(function TransactionDetailModal({ transaction }, ref) {
   const { t } = useTranslation();
   const timeFormat = useTimeFormatStore((s) => s.format);
+  const dateFormat = useDateFormatStore((s) => s.format);
+  const formatN = useNumberDisplay(true);
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const account = accounts?.find((a) => a.id === transaction?.accountId);
 
@@ -53,7 +57,7 @@ export const TransactionDetailModal = forwardRef<
             <Money className={isIncome ? "text-success" : "text-base-content"}>
               <span dir="ltr">
                 {isIncome ? "+" : "-"}
-                {transaction.amount.toLocaleString()}
+                {formatN(transaction.amount)}
               </span>{" "}
               {t("currency.EGP")}
             </Money>
@@ -62,7 +66,7 @@ export const TransactionDetailModal = forwardRef<
             {t(`common.categories.${transaction.category}`, transaction.category)}
           </DetailRow>
           <DetailRow label={t("transactions.detail.date")}>
-            {formatDateTime(transaction.datetime, timeFormat, t)}
+            {formatDateTime(transaction.datetime, timeFormat, t, dateFormat)}
           </DetailRow>
           <DetailRow label={t("transactions.detail.type")}>
             {t(`common.filters.${transaction.type}`)}

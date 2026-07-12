@@ -1,7 +1,19 @@
 import { useParams, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Settings2, Clock, Globe, Moon, Sun } from "lucide-react";
+import {
+  Settings2,
+  Clock,
+  Globe,
+  Moon,
+  Sun,
+  Hash,
+  CalendarDays,
+  Minimize2,
+} from "lucide-react";
 import { TimeFormatSwitcher } from "@/components/shared/TimeFormatSwitcher";
+import { NumberFormatSwitcher } from "@/components/shared/NumberFormatSwitcher";
+import { DateFormatSwitcher } from "@/components/shared/DateFormatSwitcher";
+import { CompactNumbersSwitcher } from "@/components/shared/CompactNumbersSwitcher";
 import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
 import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 import { LANGUAGE_STORAGE_KEY } from "@/routes/lang-layout";
@@ -109,6 +121,30 @@ export function PreferencesMenu() {
               {t("settings.theme.label")}
             </span>
             <ThemeSwitch />
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
+              <Hash className="size-3.5" />
+              {t("settings.numberFormat.label")}
+            </span>
+            <NumberFormatSwitcher />
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
+              <CalendarDays className="size-3.5" />
+              {t("settings.dateFormat.label")}
+            </span>
+            <DateFormatSwitcher />
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
+              <Minimize2 className="size-3.5" />
+              {t("settings.compactNumbers.label")}
+            </span>
+            <CompactNumbersSwitcher />
           </label>
         </div>
       </div>
