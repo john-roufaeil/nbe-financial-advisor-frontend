@@ -11,8 +11,8 @@
   --spacing-app-inline: 1.5rem;
 
   --font-sans:
-    "Inter", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji", "Segoe UI Emoji",
-    "Segoe UI Symbol", "Noto Color Emoji";
+    "Inter Variable", ui-sans-serif, system-ui, sans-serif, "Apple Color Emoji",
+    "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
   --font-arabic: "Tajawal Fixed", ui-sans-serif, system-ui, sans-serif;
 }
 
@@ -21,7 +21,7 @@
   font-style: normal;
   font-weight: 400;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/tajawal/v12/Iura6YBj_oCad4k1nzSBC45I.woff2)
+  src: url(../node_modules/@fontsource/tajawal/files/tajawal-arabic-400-normal.woff2)
     format("woff2");
   unicode-range:
     U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF,
@@ -42,7 +42,7 @@
   font-style: normal;
   font-weight: 500;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/tajawal/v12/Iurf6YBj_oCad4k1l8KiHrRpiYlJ.woff2)
+  src: url(../node_modules/@fontsource/tajawal/files/tajawal-arabic-500-normal.woff2)
     format("woff2");
   unicode-range:
     U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF,
@@ -63,7 +63,7 @@
   font-style: normal;
   font-weight: 700;
   font-display: swap;
-  src: url(https://fonts.gstatic.com/s/tajawal/v12/Iurf6YBj_oCad4k1l4qkHrRpiYlJ.woff2)
+  src: url(../node_modules/@fontsource/tajawal/files/tajawal-arabic-700-normal.woff2)
     format("woff2");
   unicode-range:
     U+0600-06FF, U+0750-077F, U+0870-088E, U+0890-0891, U+0897-08E1, U+08E3-08FF,
@@ -506,7 +506,7 @@ html[dir="rtl"] svg.lucide:not([data-no-flip]) {
 }
 
 .numerals {
-  font-family: "Inter", ui-sans-serif, system-ui, sans-serif;
+  font-family: "Inter Variable", ui-sans-serif, system-ui, sans-serif;
   font-variant-numeric: lining-nums tabular-nums;
   unicode-bidi: isolate;
 }

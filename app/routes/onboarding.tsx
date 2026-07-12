@@ -6,7 +6,7 @@ import {
   useOnboardingStore,
   INITIAL_ONBOARDING_DATA,
 } from "@/store/use-onboarding-store";
-import { AuthLayout } from "@/components/shared/AuthLayout";
+import { AuthLayout } from "@/components/shared/layout/AuthLayout";
 import { Button } from "@/components/shared/Button";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { AccountStep } from "@/components/onboarding/AccountStep";
@@ -18,6 +18,7 @@ import { useSignup } from "@/queries/auth";
 import { useUpdateProfile } from "@/queries/profile";
 import { useStarterTemplates, useCreateBudget } from "@/queries/budget";
 import { usePageTitle } from "@/lib/use-page-title";
+import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 import { isEmailTakenError } from "@/lib/toast";
 import {
   STEP_FIELDS,
@@ -183,7 +184,7 @@ export default function Onboarding() {
       setPassword("");
       setAgreed(false);
       completedRef.current = { signup: false, profile: false };
-      navigate(`/${lang}/sign-in`);
+      navigate(localizedPath(lang!, ROUTE_SEGMENTS.signIn));
     } catch (error) {
       // Writes (signup, profile, budget) must NOT fake success. The mutation's
       // onError already surfaced a toast; stay on the current step, don't advance.
@@ -212,14 +213,16 @@ export default function Onboarding() {
           <div className="card-body gap-5 p-5 sm:p-6">
             <div
               className="flex gap-1.5"
-              role="progressbar"
-              aria-valuenow={step + 1}
-              aria-valuemax={totalSteps}
+              role="tablist"
+              aria-label={t("onboarding.progressLabel")}
             >
               {Array.from({ length: totalSteps }, (_, i) => (
                 <button
                   key={i}
                   type="button"
+                  role="tab"
+                  aria-selected={i === step}
+                  aria-current={i === step ? "step" : undefined}
                   onClick={() => handleStepClick(i)}
                   disabled={isStepLocked(i)}
                   aria-label={t(`onboarding.${STEP_KEYS[i]}.title`)}
@@ -282,7 +285,7 @@ export default function Onboarding() {
               <button
                 className="btn btn-ghost gap-1.5"
                 disabled={isSubmitting}
-                onClick={() => (step === 0 ? navigate(`/${lang}`) : back())}
+                onClick={() => (step === 0 ? navigate(localizedPath(lang!)) : back())}
               >
                 <ArrowLeft className="size-4" />
                 {t("actions.back")}
@@ -332,7 +335,7 @@ export default function Onboarding() {
 
         {stepKey === "account" && (
           <Link
-            to={`/${lang}/sign-in`}
+            to={localizedPath(lang!, ROUTE_SEGMENTS.signIn)}
             className="text-base-content/60 btn btn-ghost text-center text-sm"
           >
             {t("onboarding.login")}

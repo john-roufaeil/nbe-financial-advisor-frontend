@@ -1,6 +1,6 @@
 import { Database, Cloud } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { LinkToggle } from "@/components/shared/LinkToggle";
+import { LinkToggle } from "@/components/shared/forms/LinkToggle";
 import { useDataSourceStore } from "@/store/use-data-source-store";
 import { useToastStore } from "@/store/use-toast-store";
 

@@ -1,14 +1,17 @@
 import { useTranslation } from "react-i18next";
-import { useTimeFormatStore, type TimeFormat } from "@/store/use-time-format-store";
+import {
+  useDisplayPreferencesStore,
+  type TimeFormat,
+} from "@/store/use-display-preferences-store";
 import { useToastStore } from "@/store/use-toast-store";
-import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
+import { ToggleSwitch } from "@/components/shared/forms/ToggleSwitch";
 
 const OPTIONS: readonly [TimeFormat, TimeFormat] = ["12h", "24h"];
 
 export function TimeFormatSwitcher() {
   const { t } = useTranslation();
-  const format = useTimeFormatStore((s) => s.format);
-  const setFormat = useTimeFormatStore((s) => s.setFormat);
+  const format = useDisplayPreferencesStore((s) => s.timeFormat);
+  const setFormat = useDisplayPreferencesStore((s) => s.setTimeFormat);
   const showToast = useToastStore((s) => s.show);
 
   const labels: Record<TimeFormat, string> = {

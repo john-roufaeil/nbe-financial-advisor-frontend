@@ -1,25 +1,21 @@
 import { useState } from "react";
 import { Pencil, Check, X, type User, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useUpdateProfile } from "@/queries/profile";
 import { useToastStore } from "@/store/use-toast-store";
-import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
-import { MAX_MONEY_VALUE } from "@/lib/format";
-import type { User as UserType } from "@/types/profile";
+import { FieldEditor, type FormFieldConfig } from "@/components/shared/forms/FieldEditor";
+import { FieldValue } from "@/components/shared/forms/FieldValue";
+import type { UpdateProfileBody, User as UserType } from "@/types/profile";
 
-export type Field = {
-  key: keyof UserType;
-  labelKey: string;
-  writable: boolean;
-  currency?: boolean;
-  ltr?: boolean;
-  phone?: boolean;
-  placeholderKey?: string;
-  options?: { value: string; labelKey: string }[];
-};
+export type Field = FormFieldConfig<keyof UserType>;
+
+type Draft = Record<string, string>;
 
 export type Section = {
   key: string;
@@ -28,111 +24,6 @@ export type Section = {
   titleKey: string;
   fields: Field[];
 };
-
-// ── Field editing/display ─────────────────────────────────────────────────────
-
-function FieldEditor({
-  field,
-  value,
-  error,
-  onChange,
-}: {
-  field: Field;
-  value: string;
-  error?: string;
-  onChange: (value: string) => void;
-}) {
-  const { t } = useTranslation();
-
-  if (field.options) {
-    return (
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className="select select-sm select-bordered w-full"
-      >
-        <option value="" disabled>
-          {t("onboarding.review.empty")}
-        </option>
-        {field.options.map((opt) => (
-          <option key={opt.value} value={opt.value}>
-            {t(opt.labelKey)}
-          </option>
-        ))}
-      </select>
-    );
-  }
-
-  if (field.phone) {
-    return (
-      <>
-        <PhoneInput
-          className={`input input-sm input-bordered w-full ${error ? "input-error" : ""}`}
-          defaultCountry="EG"
-          international
-          value={value}
-          onChange={(next) => onChange(next ?? "")}
-          placeholder={t(field.placeholderKey ?? field.labelKey)}
-        />
-        {error && <span className="text-error text-xs">{error}</span>}
-      </>
-    );
-  }
-
-  return (
-    <>
-      <input
-        type={field.currency ? "number" : "text"}
-        min={field.currency ? 0 : undefined}
-        max={field.currency ? MAX_MONEY_VALUE : undefined}
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        placeholder={t(field.placeholderKey ?? field.labelKey)}
-        maxLength={field.key === "name" ? 20 : undefined}
-        className={`input input-sm input-bordered w-full ${error ? "input-error" : ""}`}
-      />
-      {error && <span className="text-error text-xs">{error}</span>}
-    </>
-  );
-}
-
-function FieldValue({ field, value }: { field: Field; value?: string }) {
-  const { t } = useTranslation();
-
-  const option = field.options?.find((opt) => opt.value === value);
-  if (option) {
-    return <span className="text-sm font-medium">{t(option.labelKey)}</span>;
-  }
-
-  if (!value) {
-    return (
-      <span className="text-base-content/30 text-sm font-medium italic">
-        {t("onboarding.review.empty")}
-      </span>
-    );
-  }
-
-  if (field.currency) {
-    return (
-      <Money className="text-sm font-medium">
-        {value} {t("currency.EGP")}
-      </Money>
-    );
-  }
-
-  if (field.ltr) {
-    // Stripped of spaces this becomes one long unbreakable token (e.g. a
-    // phone number) — break-all lets it wrap mid-string instead of forcing
-    // its grid cell (and the whole card) wider than a narrow viewport.
-    return (
-      <span className="block text-sm font-medium break-all">
-        <bdi dir="ltr">{value.replace(/\s+/g, "")}</bdi>
-      </span>
-    );
-  }
-
-  return <span className="text-sm font-medium break-words">{value}</span>;
-}
 
 // ── Section card ──────────────────────────────────────────────────────────────
 
@@ -147,57 +38,73 @@ export function ProfileSectionCard({
   const updateProfile = useUpdateProfile();
   const showToast = useToastStore((s) => s.show);
   const [editing, setEditing] = useState(false);
-  const [draft, setDraft] = useState<Partial<UserType>>({});
-  const [errors, setErrors] = useState<Partial<Record<keyof UserType, string>>>({});
 
-  const Icon = section.icon;
-
-  function startEdit() {
-    const initial: Partial<UserType> = {};
-    for (const f of section.fields) {
-      if (f.writable) {
-        const key = f.key as keyof UserType;
-        initial[key] = user[key] ?? "";
-      }
-    }
-    setDraft(initial);
-    setErrors({});
-    setEditing(true);
-  }
-
-  async function save(e?: React.FormEvent) {
-    e?.preventDefault();
-
-    const nextErrors: Partial<Record<keyof UserType, string>> = {};
+  const schema = z.record(z.string(), z.string()).superRefine((draft, ctx) => {
     const phoneField = section.fields.find((f) => f.phone);
     if (phoneField) {
-      const value = (draft[phoneField.key] as string) ?? "";
+      const value = draft[phoneField.key] ?? "";
       if (value && !isValidPhoneNumber(value)) {
-        nextErrors[phoneField.key] = t("common.sections.errors.phoneInvalid");
+        ctx.addIssue({
+          code: "custom",
+          path: [phoneField.key],
+          message: t("common.sections.errors.phoneInvalid"),
+        });
       }
     }
 
     const nameField = section.fields.find((f) => f.key === "name");
     if (nameField) {
-      const value = (draft[nameField.key] as string) ?? "";
+      const value = draft[nameField.key] ?? "";
       if (!value.trim()) {
-        nextErrors[nameField.key] = t("common.sections.errors.nameRequired");
+        ctx.addIssue({
+          code: "custom",
+          path: [nameField.key],
+          message: t("common.sections.errors.nameRequired"),
+        });
       }
     }
 
     const incomeField = section.fields.find((f) => f.key === "monthly_income");
     if (incomeField) {
-      const value = (draft[incomeField.key] as string) ?? "";
+      const value = draft[incomeField.key] ?? "";
       if (value && Number(value) < 0) {
-        nextErrors[incomeField.key] = t("common.sections.errors.incomeNegative");
+        ctx.addIssue({
+          code: "custom",
+          path: [incomeField.key],
+          message: t("common.sections.errors.incomeNegative"),
+        });
       }
     }
+  });
 
-    setErrors(nextErrors);
-    if (Object.keys(nextErrors).length > 0) return;
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+  } = useForm<Draft>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: {},
+  });
 
+  const Icon = section.icon;
+
+  function startEdit() {
+    const initial: Draft = {};
+    for (const f of section.fields) {
+      if (f.writable) {
+        initial[f.key as string] = (user[f.key] as string) ?? "";
+      }
+    }
+    reset(initial);
+    setEditing(true);
+  }
+
+  async function onSubmit(draft: Draft) {
     try {
-      await updateProfile.mutateAsync(draft);
+      await updateProfile.mutateAsync(draft as UpdateProfileBody);
       setEditing(false);
       showToast(t("toast.profileUpdated"), "success");
     } catch {
@@ -206,14 +113,13 @@ export function ProfileSectionCard({
   }
 
   function cancel() {
-    setDraft({});
-    setErrors({});
+    reset({});
     setEditing(false);
   }
 
   return (
     <div className="card border-base-300 bg-base-100 animate-entry min-w-0 border shadow-sm">
-      <form className="card-body gap-4 p-4" onSubmit={save}>
+      <form className="card-body gap-4 p-4" onSubmit={handleSubmit(onSubmit)}>
         <div className="flex items-center gap-2">
           <span
             className={`grid size-9 shrink-0 place-items-center rounded-lg ${section.color}`}
@@ -272,13 +178,9 @@ export function ProfileSectionCard({
               {editing && field.writable ? (
                 <FieldEditor
                   field={field}
-                  value={(draft[field.key] as string) ?? ""}
-                  error={errors[field.key]}
-                  onChange={(value) => {
-                    setDraft({ ...draft, [field.key]: value });
-                    if (errors[field.key])
-                      setErrors({ ...errors, [field.key]: undefined });
-                  }}
+                  control={control}
+                  register={register}
+                  errors={errors}
                 />
               ) : (
                 <FieldValue field={field} value={user[field.key]} />

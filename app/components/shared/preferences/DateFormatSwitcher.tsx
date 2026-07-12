@@ -1,14 +1,17 @@
 import { useTranslation } from "react-i18next";
-import { useDateFormatStore, type DateFormat } from "@/store/use-date-format-store";
+import {
+  useDisplayPreferencesStore,
+  type DateFormat,
+} from "@/store/use-display-preferences-store";
 import { useToastStore } from "@/store/use-toast-store";
-import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
+import { ToggleSwitch } from "@/components/shared/forms/ToggleSwitch";
 
 const OPTIONS: readonly [DateFormat, DateFormat] = ["dmy", "mdy"];
 
 export function DateFormatSwitcher() {
   const { t } = useTranslation();
-  const format = useDateFormatStore((s) => s.format);
-  const setFormat = useDateFormatStore((s) => s.setFormat);
+  const format = useDisplayPreferencesStore((s) => s.dateFormat);
+  const setFormat = useDisplayPreferencesStore((s) => s.setDateFormat);
   const showToast = useToastStore((s) => s.show);
 
   const labels: Record<DateFormat, string> = {

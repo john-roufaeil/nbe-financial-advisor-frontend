@@ -1,18 +1,22 @@
-import { forwardRef, useEffect, useState } from "react";
+import { forwardRef, useEffect } from "react";
 import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import type { FinancialGoal } from "@/types/goal";
 import { useCreateGoal, useUpdateGoal, useDeleteGoal } from "@/queries/goals";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { Button } from "@/components/shared/Button";
-import { BaseModal } from "@/components/shared/BaseModal";
+import { BaseModal } from "@/components/shared/modals/BaseModal";
+import {
+  GOAL_TARGET_MIN as TARGET_MIN,
+  GOAL_TARGET_MAX as TARGET_MAX,
+} from "@/lib/constants/limits";
 
 type Draft = { name: string; target: string; duration: string };
 
 const EMPTY_DRAFT: Draft = { name: "", target: "", duration: "" };
-
-const TARGET_MIN = 1_000;
-const TARGET_MAX = 1_000_000;
 const DURATION_MIN = 1;
 const DURATION_MAX = 60;
 
@@ -31,95 +35,64 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
     const updateGoal = useUpdateGoal();
     const deleteGoal = useDeleteGoal();
     const confirm = useConfirmStore((s) => s.confirm);
-    const [draft, setDraft] = useState<Draft>(EMPTY_DRAFT);
-    const [errors, setErrors] = useState<Partial<Draft>>({});
+
+    const targetInvalid = t("dashboard.goals.errors.targetInvalid", {
+      min: TARGET_MIN.toLocaleString(),
+      max: TARGET_MAX.toLocaleString(),
+    });
+    const durationInvalid = t("dashboard.goals.errors.durationInvalid", {
+      min: DURATION_MIN,
+      max: DURATION_MAX,
+    });
+
+    const schema = z.object({
+      name: z
+        .string()
+        .trim()
+        .min(1, t("dashboard.goals.errors.nameRequired"))
+        .max(20, t("dashboard.goals.errors.nameTooLong")),
+      target: z.string().refine((v) => {
+        const n = Number(v);
+        return v !== "" && Number.isFinite(n) && n >= TARGET_MIN && n <= TARGET_MAX;
+      }, targetInvalid),
+      duration: z.string().refine((v) => {
+        const n = Number(v);
+        return v !== "" && Number.isFinite(n) && n >= DURATION_MIN && n <= DURATION_MAX;
+      }, durationInvalid),
+    });
+
+    const {
+      control,
+      register,
+      handleSubmit,
+      reset,
+      formState: { errors, isValid },
+    } = useForm<Draft>({
+      resolver: zodResolver(schema),
+      mode: "onChange",
+      defaultValues: EMPTY_DRAFT,
+    });
 
     useEffect(() => {
-      setDraft(goal ? toDraft(goal) : EMPTY_DRAFT);
-      setErrors({});
-    }, [goal]);
+      reset(goal ? toDraft(goal) : EMPTY_DRAFT);
+    }, [goal, reset]);
 
-    function setDraftField(field: keyof Draft, value: string) {
-      setDraft((d) => ({ ...d, [field]: value }));
-      setErrors((e) => ({ ...e, [field]: fieldError(field, value) }));
-    }
-
-    function fieldError(field: keyof Draft, value: string): string | undefined {
-      if (field === "name") {
-        if (!value.trim()) return undefined;
-        if (value.trim().length > 20) return t("dashboard.goals.errors.nameTooLong");
-        return undefined;
-      }
-      if (value === "") return undefined;
-      const num = Number(value);
-      if (field === "target") {
-        if (!Number.isFinite(num) || num < TARGET_MIN || num > TARGET_MAX) {
-          return t("dashboard.goals.errors.targetInvalid", {
-            min: TARGET_MIN.toLocaleString(),
-            max: TARGET_MAX.toLocaleString(),
-          });
-        }
-        return undefined;
-      }
-      if (!Number.isFinite(num) || num < DURATION_MIN || num > DURATION_MAX) {
-        return t("dashboard.goals.errors.durationInvalid", {
-          min: DURATION_MIN,
-          max: DURATION_MAX,
-        });
-      }
-      return undefined;
-    }
-
-    const targetNum = Number(draft.target);
-    const durationNum = Number(draft.duration);
-    const isValid =
-      draft.name.trim().length > 0 &&
-      draft.target !== "" &&
-      Number.isFinite(targetNum) &&
-      targetNum >= TARGET_MIN &&
-      targetNum <= TARGET_MAX &&
-      draft.duration !== "" &&
-      Number.isFinite(durationNum) &&
-      durationNum >= DURATION_MIN &&
-      durationNum <= DURATION_MAX;
-
-    // Programmatically dismisses the native dialog container reference elements safely
     function closeModal() {
       if (ref && "current" in ref && ref.current) {
         ref.current.close();
       }
     }
 
-    function handleSave(e: React.FormEvent) {
-      e.preventDefault();
-      const nextErrors: Partial<Draft> = {};
-      if (!draft.name.trim()) nextErrors.name = t("dashboard.goals.errors.nameRequired");
-      else if (draft.name.trim().length > 20)
-        nextErrors.name = t("dashboard.goals.errors.nameTooLong");
-      if (!draft.target || targetNum < TARGET_MIN || targetNum > TARGET_MAX) {
-        nextErrors.target = t("dashboard.goals.errors.targetInvalid", {
-          min: TARGET_MIN.toLocaleString(),
-          max: TARGET_MAX.toLocaleString(),
-        });
-      }
-      if (!draft.duration || durationNum < DURATION_MIN || durationNum > DURATION_MAX) {
-        nextErrors.duration = t("dashboard.goals.errors.durationInvalid", {
-          min: DURATION_MIN,
-          max: DURATION_MAX,
-        });
-      }
-      setErrors(nextErrors);
-      if (Object.keys(nextErrors).length > 0) return;
-
+    function onSubmit(draft: Draft) {
       const patch = {
         name: draft.name.trim(),
-        target: targetNum,
-        duration: durationNum,
+        target: Number(draft.target),
+        duration: Number(draft.duration),
         current: goal?.current ?? 0,
       };
 
       const options = {
-        onSuccess: () => closeModal(), // Closes the modal immediately when mutation finishes successfully
+        onSuccess: () => closeModal(),
       };
 
       if (goal) {
@@ -172,37 +145,46 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
           </>
         }
       >
-        <form id="goal-form" onSubmit={handleSave} className="flex flex-col gap-4">
+        <form
+          id="goal-form"
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col gap-4"
+        >
           <label className="flex flex-col gap-1">
             <span className="label-text text-xs">{t("dashboard.goals.name")}</span>
             <input
               type="text"
-              value={draft.name}
-              onChange={(e) => setDraftField("name", e.target.value)}
               placeholder={t("dashboard.goals.newNamePlaceholder")}
               maxLength={20}
               className={`input input-bordered w-full ${errors.name ? "input-error" : ""}`}
+              {...register("name")}
             />
-            {errors.name && <span className="text-error text-xs">{errors.name}</span>}
+            {errors.name && (
+              <span className="text-error text-xs">{errors.name.message}</span>
+            )}
           </label>
 
           <div className="grid w-full grid-cols-2 gap-3">
             <label className="flex min-w-0 flex-col gap-1">
               <span className="label-text text-xs">{t("dashboard.goals.target")}</span>
-              <input
-                type="text"
-                inputMode="numeric"
-                aria-valuemin={TARGET_MIN}
-                aria-valuemax={TARGET_MAX}
-                value={draft.target === "" ? "" : Number(draft.target).toLocaleString()}
-                onChange={(e) =>
-                  setDraftField("target", e.target.value.replace(/[^\d]/g, ""))
-                }
-                placeholder="0"
-                className={`input input-bordered w-full ${errors.target ? "input-error" : ""}`}
+              <Controller
+                name="target"
+                control={control}
+                render={({ field }) => (
+                  <input
+                    type="text"
+                    inputMode="numeric"
+                    aria-valuemin={TARGET_MIN}
+                    aria-valuemax={TARGET_MAX}
+                    value={field.value === "" ? "" : Number(field.value).toLocaleString()}
+                    onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                    placeholder="0"
+                    className={`input input-bordered w-full ${errors.target ? "input-error" : ""}`}
+                  />
+                )}
               />
               {errors.target && (
-                <span className="text-error text-xs">{errors.target}</span>
+                <span className="text-error text-xs">{errors.target.message}</span>
               )}
             </label>
 
@@ -212,13 +194,12 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
                 type="number"
                 min={DURATION_MIN}
                 max={DURATION_MAX}
-                value={draft.duration}
-                onChange={(e) => setDraftField("duration", e.target.value)}
                 placeholder={t("dashboard.goals.monthsPlaceholder", "Months")}
                 className={`input input-bordered w-full ${errors.duration ? "input-error" : ""}`}
+                {...register("duration")}
               />
               {errors.duration && (
-                <span className="text-error text-xs">{errors.duration}</span>
+                <span className="text-error text-xs">{errors.duration.message}</span>
               )}
             </label>
           </div>

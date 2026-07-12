@@ -15,10 +15,11 @@ import {
   inferBankStatementType,
   type BankStatementType,
 } from "@/types/bank-statement";
+import { BYTES_PER_KB } from "@/lib/constants/limits";
 import { useUploadBankStatements } from "@/queries/bank-statements";
 import { toastError } from "@/lib/toast";
 import { Button } from "@/components/shared/Button";
-import { BaseModal } from "@/components/shared/BaseModal";
+import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { Tooltip } from "@/components/shared/Tooltip";
 
 const TYPE_ICONS: Record<BankStatementType, typeof FileText> = {
@@ -92,7 +93,7 @@ export const AddBankStatementModal = forwardRef<HTMLDialogElement>(
       const bankStatements = staged.map(({ file, type }) => ({
         name: file.name,
         type,
-        sizeKb: Math.max(1, Math.round(file.size / 1024)),
+        sizeKb: Math.max(1, Math.round(file.size / BYTES_PER_KB)),
         file,
       }));
 

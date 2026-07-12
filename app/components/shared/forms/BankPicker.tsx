@@ -2,7 +2,7 @@ import { useMemo, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { Check, Plus, Search } from "lucide-react";
 import { BANK_CODES, getBankCode, getBankLogo, getBankName } from "@/lib/banks";
-import { EntityPicker } from "@/components/shared/EntityPicker";
+import { EntityPicker } from "@/components/shared/forms/EntityPicker";
 
 /**
  * Searchable dropdown of registered banks. `onChange` receives the bank's

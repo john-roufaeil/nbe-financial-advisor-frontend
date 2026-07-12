@@ -1,6 +1,6 @@
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
-import { BaseModal } from "@/components/shared/BaseModal";
+import { BaseModal } from "@/components/shared/modals/BaseModal";
 
 /** Terms & privacy policy content, shown from the onboarding consent step. */
 export const PrivacyPolicyModal = forwardRef<HTMLDialogElement>(

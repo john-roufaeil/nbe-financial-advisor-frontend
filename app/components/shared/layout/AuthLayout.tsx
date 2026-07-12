@@ -1,8 +1,9 @@
 import { useTranslation } from "react-i18next";
-import { LanguageSwitcher } from "@/components/shared/LanguageSwitcher";
-import { ThemeToggle } from "@/components/shared/ThemeToggle";
+import { LanguageSwitcher } from "@/components/shared/preferences/LanguageSwitcher";
+import { ThemeToggle } from "@/components/shared/preferences/ThemeToggle";
 import { Z_DROPDOWN } from "@/lib/z-index";
 import { useLayoutTier } from "@/lib/use-layout-tier";
+import { useThemeStore } from "@/store/use-theme-store";
 
 /**
  * Split-screen shell for the auth/onboarding pages (splash, sign-in, onboarding).
@@ -13,7 +14,9 @@ import { useLayoutTier } from "@/lib/use-layout-tier";
  *
  * The hero image is `/auth-hero.png` on desktop (lg+) and `/mobile-auth-hero.png`
  * below that (drop both assets into `public/`); a primary-gradient fallback
- * shows through if either is absent.
+ * shows through if either is absent. On desktop, `/auth-hero-dark.png` is
+ * cross-faded in over the light image when the site is in dark mode (and
+ * back out on switch to light).
  *
  * All `lg:` desktop-split classes below are also gated on `!isForcedMobile`
  * (see useLayoutTier) so a user who scales the in-app font past 140% gets the
@@ -29,6 +32,7 @@ export function AuthLayout({
   align?: "center" | "start";
 }) {
   const { t } = useTranslation();
+  const isDark = useThemeStore((state) => state.theme === "dark");
   const tier = useLayoutTier();
   const isForcedMobile = tier === "mobile";
   const lg = (cls: string) => (isForcedMobile ? "" : cls);
@@ -70,6 +74,17 @@ export function AuthLayout({
             e.currentTarget.style.display = "none";
           }}
         />
+        <img
+          src="/auth-hero-dark.png"
+          alt=""
+          aria-hidden="true"
+          className={`absolute inset-0 size-full object-cover transition-opacity duration-500 ${
+            isForcedMobile ? "hidden" : "hidden lg:block"
+          } ${isDark ? "opacity-100" : "opacity-0"}`}
+          onError={(e) => {
+            e.currentTarget.style.display = "none";
+          }}
+        />
 
         {/* Shade behind the welcome copy so it stays legible over any hero image. */}
         <div className="from-base-content/80 absolute inset-0 bg-linear-to-t via-transparent to-transparent" />
@@ -91,7 +106,9 @@ export function AuthLayout({
       {/* Content panel. On mobile it scrolls with the page; on desktop (lg+) it scrolls
           independently while the image panel stays fixed. */}
       <div
-        className={`flex flex-1 justify-center p-4 ${lg("lg:h-full lg:overflow-y-auto lg:p-10")} ${
+        id="main-content"
+        tabIndex={-1}
+        className={`flex flex-1 justify-center p-4 focus:outline-none ${lg("lg:h-full lg:overflow-y-auto lg:p-10")} ${
           align === "start" ? "items-start" : "items-center"
         }`}
       >

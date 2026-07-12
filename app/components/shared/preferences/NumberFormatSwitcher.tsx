@@ -1,14 +1,17 @@
 import { useTranslation } from "react-i18next";
-import { useNumberFormatStore, type NumberFormat } from "@/store/use-number-format-store";
+import {
+  useDisplayPreferencesStore,
+  type NumberFormat,
+} from "@/store/use-display-preferences-store";
 import { useToastStore } from "@/store/use-toast-store";
-import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
+import { ToggleSwitch } from "@/components/shared/forms/ToggleSwitch";
 
 const OPTIONS: readonly [NumberFormat, NumberFormat] = ["comma", "period"];
 
 export function NumberFormatSwitcher() {
   const { t } = useTranslation();
-  const format = useNumberFormatStore((s) => s.format);
-  const setFormat = useNumberFormatStore((s) => s.setFormat);
+  const format = useDisplayPreferencesStore((s) => s.numberFormat);
+  const setFormat = useDisplayPreferencesStore((s) => s.setNumberFormat);
   const showToast = useToastStore((s) => s.show);
 
   const labels: Record<NumberFormat, string> = {

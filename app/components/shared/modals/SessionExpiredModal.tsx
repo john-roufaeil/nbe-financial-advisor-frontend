@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useNavigate, useParams } from "react-router";
 import { TriangleAlert } from "lucide-react";
 import { useAuthStore } from "@/store/use-auth-store";
-import { BaseModal } from "@/components/shared/BaseModal";
+import { BaseModal } from "@/components/shared/modals/BaseModal";
 
 /** Global modal: prompts the user to sign in again once a refresh-on-401 fails. */
 export function SessionExpiredModal() {

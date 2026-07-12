@@ -1,7 +1,7 @@
 import { Eye, EyeOff } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@/components/shared/Tooltip";
-import { useBalanceVisibilityStore } from "@/store/use-balance-visibility-store";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 
 /** The eye icon that shows/blurs every <Money> figure across the app — one shared toggle, one shared store. */
 export function BalanceVisibilityToggle({
@@ -13,8 +13,8 @@ export function BalanceVisibilityToggle({
   showLabel?: boolean;
 }) {
   const { t } = useTranslation();
-  const hidden = useBalanceVisibilityStore((s) => s.hidden);
-  const toggle = useBalanceVisibilityStore((s) => s.toggle);
+  const hidden = useDisplayPreferencesStore((s) => s.balanceHidden);
+  const toggle = useDisplayPreferencesStore((s) => s.toggleBalanceHidden);
   const label = hidden ? t("dashboard.showBalances") : t("dashboard.hideBalances");
   const Icon = hidden ? EyeOff : Eye;
 

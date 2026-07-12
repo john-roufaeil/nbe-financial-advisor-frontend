@@ -2,6 +2,14 @@ export type BankStatementType = "pdf" | "image" | "doc";
 
 export type BankStatementStatus = "uploading" | "processing" | "failed" | "processed";
 
+/** Non-translated status literals, deduplicated across bank-statement components. */
+export const BANK_STATEMENT_STATUS = {
+  uploading: "uploading",
+  processing: "processing",
+  failed: "failed",
+  processed: "processed",
+} as const;
+
 export interface ExtractedTransaction {
   id: string;
   datetime: string;

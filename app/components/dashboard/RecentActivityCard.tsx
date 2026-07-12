@@ -17,7 +17,7 @@ import { Money } from "@/components/shared/Money";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { formatDate } from "@/lib/format";
 import { useNumberDisplay } from "@/lib/use-number-display";
-import { useDateFormatStore } from "@/store/use-date-format-store";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 
 const RECENT_COUNT = 2;
 
@@ -143,7 +143,7 @@ function BankStatementsSummary() {
   const { t } = useTranslation();
   const { lang } = useParams<{ lang: string }>();
   const { data, isPending } = useBankStatements({ limit: RECENT_COUNT });
-  const dateFormat = useDateFormatStore((s) => s.format);
+  const dateFormat = useDisplayPreferencesStore((s) => s.dateFormat);
 
   if (isPending) return <CardSkeleton icon={FileText} className="animate-entry" />;
 

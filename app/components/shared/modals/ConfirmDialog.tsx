@@ -2,7 +2,7 @@ import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { TriangleAlert } from "lucide-react";
 import { useConfirmStore } from "@/store/use-confirm-store";
-import { BaseModal } from "@/components/shared/BaseModal";
+import { BaseModal } from "@/components/shared/modals/BaseModal";
 
 export function ConfirmDialog() {
   const { t } = useTranslation();

@@ -1,8 +1,8 @@
 import { useParams, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
-import { LANGUAGE_STORAGE_KEY } from "@/routes/lang-layout";
-import { LinkToggle } from "@/components/shared/LinkToggle";
+import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
+import { LinkToggle } from "@/components/shared/forms/LinkToggle";
 import { useToastStore } from "@/store/use-toast-store";
 
 export function LanguageSwitcher({
@@ -29,7 +29,7 @@ export function LanguageSwitcher({
     onSelect?.();
     document.documentElement.lang = next;
     document.documentElement.dir = RTL_LANGUAGES.includes(next) ? "rtl" : "ltr";
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, next);
+    localStorage.setItem(STORAGE_KEYS.lang, next);
     void i18n.changeLanguage(next);
     showToast(t("toast.languageChanged", { language: labels[next] }), "info");
     if (next !== lang) {

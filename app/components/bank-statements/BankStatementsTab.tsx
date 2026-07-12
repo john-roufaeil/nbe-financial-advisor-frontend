@@ -2,14 +2,14 @@ import { useRef, useState } from "react";
 import { FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useBankStatements } from "@/queries/bank-statements";
-import { Pagination } from "@/components/shared/Pagination";
+import { Pagination } from "@/components/shared/layout/Pagination";
 import { BankStatementDetailModal } from "@/components/bank-statements/BankStatementDetailModal";
 import { BankStatementCard } from "@/components/bank-statements/BankStatementCard";
-import { DataToolbar } from "@/components/shared/DataToolbar";
+import { DataToolbar } from "@/components/shared/layout/DataToolbar";
 import { ListSkeleton } from "@/components/shared/skeletons/ListSkeleton";
 import { CardGridSkeleton } from "@/components/shared/skeletons/CardGridSkeleton";
 import { ErrorState, EmptyState } from "@/components/shared/QueryState";
-import { useViewModeStore } from "@/store/use-view-mode-store";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 import { useLoadAnimation } from "@/lib/use-load-animation";
 import { useBankStatementFilters } from "@/lib/use-bank-statement-filters";
 
@@ -24,7 +24,7 @@ export function BankStatementsTab() {
   const f = useBankStatementFilters();
   const detailModalRef = useRef<HTMLDialogElement>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const viewMode = useViewModeStore((s) => s.mode);
+  const viewMode = useDisplayPreferencesStore((s) => s.viewMode);
 
   const { data, isPending, isError, refetch } = useBankStatements({
     type: f.filter === "all" ? undefined : f.filter,

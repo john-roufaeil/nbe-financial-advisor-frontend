@@ -4,7 +4,7 @@ import { TRANSACTION_CATEGORIES } from "@/types/transaction";
 import type { ExtractedTransaction } from "@/types/bank-statement";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useConfirmStore } from "@/store/use-confirm-store";
-import { MoneyInput } from "@/components/shared/MoneyInput";
+import { MoneyInput } from "@/components/shared/forms/MoneyInput";
 import { MAX_MONEY_VALUE } from "@/lib/format";
 
 /** Rows here are edited purely in local state (see `draft` in the parent) —

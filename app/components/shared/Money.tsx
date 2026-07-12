@@ -1,4 +1,4 @@
-import { useBalanceVisibilityStore } from "@/store/use-balance-visibility-store";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 
 /** Wraps any monetary figure so it blurs app-wide when the user toggles balance visibility off. */
 export function Money({
@@ -8,7 +8,7 @@ export function Money({
   children: React.ReactNode;
   className?: string;
 }) {
-  const hidden = useBalanceVisibilityStore((s) => s.hidden);
+  const hidden = useDisplayPreferencesStore((s) => s.balanceHidden);
   return (
     <span
       className={`${className} inline-block transition-[filter] duration-200 ${hidden ? "blur-sm select-none" : ""}`}

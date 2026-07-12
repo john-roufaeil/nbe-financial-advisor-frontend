@@ -13,14 +13,7 @@ export interface BankAccountFormValues {
   currency: Currency;
   accountNumber: string;
   accountNumberConfirm: string;
-  initialBalance: string;
-}
-
-export interface BankAccountFormErrors {
-  bankName?: string;
-  accountNumber?: string;
-  accountNumberConfirm?: string;
-  initialBalance?: string;
+  initialBalance: number | "";
 }
 
 export function emptyBankAccountForm(): BankAccountFormValues {
@@ -32,65 +25,4 @@ export function emptyBankAccountForm(): BankAccountFormValues {
     accountNumberConfirm: "",
     initialBalance: "",
   };
-}
-
-export function validateBankAccountForm(
-  values: BankAccountFormValues,
-  t: (key: string) => string,
-): BankAccountFormErrors {
-  const errors: BankAccountFormErrors = {};
-  const isDigits = (v: string) => /^\d+$/.test(v);
-  const balanceNum = Number(values.initialBalance);
-
-  if (!values.bankName.trim()) {
-    errors.bankName = t("common.addAccount.errors.bankRequired");
-  }
-  if (
-    !isDigits(values.accountNumber) ||
-    values.accountNumber.length !== ACCOUNT_NUMBER_LENGTH
-  ) {
-    errors.accountNumber = t("common.addAccount.errors.accountNumberInvalid");
-  } else if (values.accountNumber !== values.accountNumberConfirm) {
-    errors.accountNumberConfirm = t("common.addAccount.errors.accountNumberMismatch");
-  }
-  if (!values.initialBalance || !Number.isFinite(balanceNum) || balanceNum < 0) {
-    errors.initialBalance = t("common.addAccount.errors.balanceInvalid");
-  }
-  return errors;
-}
-
-export function confirmMismatchError(
-  number: string,
-  confirm: string,
-  t: (key: string) => string,
-): string | undefined {
-  if (!confirm || confirm.length !== ACCOUNT_NUMBER_LENGTH) return undefined;
-  return number === confirm
-    ? undefined
-    : t("common.addAccount.errors.accountNumberMismatch");
-}
-
-export function balanceError(
-  value: string,
-  t: (key: string) => string,
-): string | undefined {
-  if (value === "") return undefined;
-  const num = Number(value);
-  return !Number.isFinite(num) || num < 0
-    ? t("common.addAccount.errors.balanceInvalid")
-    : undefined;
-}
-
-export function isBankAccountFormValid(values: BankAccountFormValues): boolean {
-  const balanceNum = Number(values.initialBalance);
-  const isDigits = (v: string) => /^\d+$/.test(v);
-  return (
-    values.bankName.trim().length > 0 &&
-    isDigits(values.accountNumber) &&
-    values.accountNumber.length === ACCOUNT_NUMBER_LENGTH &&
-    values.accountNumber === values.accountNumberConfirm &&
-    values.initialBalance !== "" &&
-    Number.isFinite(balanceNum) &&
-    balanceNum >= 0
-  );
 }

@@ -13,7 +13,7 @@ import type { FinancialGoal } from "@/types/goal";
 import { useGoals } from "@/queries/goals";
 import { formatDate } from "@/lib/format";
 import { useNumberDisplay } from "@/lib/use-number-display";
-import { useDateFormatStore } from "@/store/use-date-format-store";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 import { GoalsEditModal } from "@/components/dashboard/GoalsEditModal";
 import { ErrorState, GoalEmptyState } from "@/components/shared/QueryState";
 import { SkeletonTimelineRow } from "@/components/shared/skeletons/SkeletonRows";
@@ -23,7 +23,7 @@ import { Tooltip } from "@/components/shared/Tooltip";
 function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: string }) {
   const { t } = useTranslation();
   const formatN = useNumberDisplay();
-  const dateFormat = useDateFormatStore((s) => s.format);
+  const dateFormat = useDisplayPreferencesStore((s) => s.dateFormat);
   const currentPct = Math.min(100, Math.round((goal.current / goal.target) * 100));
   const currencyLabel = t(`currency.${currency}`, currency);
 

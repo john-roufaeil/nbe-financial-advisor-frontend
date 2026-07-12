@@ -10,13 +10,13 @@ import {
   CalendarDays,
   Minimize2,
 } from "lucide-react";
-import { TimeFormatSwitcher } from "@/components/shared/TimeFormatSwitcher";
-import { NumberFormatSwitcher } from "@/components/shared/NumberFormatSwitcher";
-import { DateFormatSwitcher } from "@/components/shared/DateFormatSwitcher";
-import { CompactNumbersSwitcher } from "@/components/shared/CompactNumbersSwitcher";
-import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
+import { TimeFormatSwitcher } from "@/components/shared/preferences/TimeFormatSwitcher";
+import { NumberFormatSwitcher } from "@/components/shared/preferences/NumberFormatSwitcher";
+import { DateFormatSwitcher } from "@/components/shared/preferences/DateFormatSwitcher";
+import { CompactNumbersSwitcher } from "@/components/shared/preferences/CompactNumbersSwitcher";
+import { ToggleSwitch } from "@/components/shared/forms/ToggleSwitch";
 import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
-import { LANGUAGE_STORAGE_KEY } from "@/routes/lang-layout";
+import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 import { useThemeStore, type Theme } from "@/store/use-theme-store";
 import { useToastStore } from "@/store/use-toast-store";
 
@@ -38,7 +38,7 @@ function LanguageToggle() {
   function switchTo(next: SupportedLanguage) {
     document.documentElement.lang = next;
     document.documentElement.dir = RTL_LANGUAGES.includes(next) ? "rtl" : "ltr";
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, next);
+    localStorage.setItem(STORAGE_KEYS.lang, next);
     void i18n.changeLanguage(next);
     showToast(t("toast.languageChanged", { language: labels[next] }), "info");
     if (next !== lang) {

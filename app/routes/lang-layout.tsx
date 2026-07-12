@@ -7,8 +7,7 @@ import {
   SUPPORTED_LANGUAGES,
   type SupportedLanguage,
 } from "@/i18n";
-
-export const LANGUAGE_STORAGE_KEY = "nbe_lang";
+import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
 export default function LangLayout() {
   const { lang } = useParams<{ lang: string }>();
@@ -22,7 +21,7 @@ export default function LangLayout() {
       ? "rtl"
       : "ltr";
     if (i18n.language !== lang) void i18n.changeLanguage(lang);
-    localStorage.setItem(LANGUAGE_STORAGE_KEY, lang as string);
+    localStorage.setItem(STORAGE_KEYS.lang, lang as string);
   }, [lang, isValid, i18n]);
 
   if (!isValid) return <Navigate to={`/${DEFAULT_LANGUAGE}`} replace />;

@@ -1,8 +1,5 @@
 import { useCallback, useRef, useState } from "react";
-import { createPortal } from "react-dom";
 import {
-  Search,
-  X,
   List,
   LayoutGrid,
   ArrowUpNarrowWide,
@@ -12,13 +9,12 @@ import {
   Rows2,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { DateField } from "@/components/shared/DateField";
 import { Tooltip } from "@/components/shared/Tooltip";
-import { ToggleSwitch } from "@/components/shared/ToggleSwitch";
-import { useViewModeStore } from "@/store/use-view-mode-store";
-import { useDensityStore } from "@/store/use-density-store";
+import { ToggleSwitch } from "@/components/shared/forms/ToggleSwitch";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 import { useDismissablePanel } from "@/lib/use-dismissable-panel";
-import { Z_POPOVER } from "@/lib/z-index";
+import { ToolbarSearchInput } from "@/components/shared/layout/ToolbarSearchInput";
+import { DataToolbarFiltersPanel } from "@/components/shared/layout/DataToolbarFiltersPanel";
 
 /** Matches the filters panel's `w-72` class. */
 const PANEL_WIDTH = 288;
@@ -75,10 +71,10 @@ export function DataToolbar<F extends string>({
   onClearAll,
 }: DataToolbarProps<F>) {
   const { t } = useTranslation();
-  const viewMode = useViewModeStore((s) => s.mode);
-  const setViewMode = useViewModeStore((s) => s.setMode);
-  const density = useDensityStore((s) => s.density);
-  const setDensity = useDensityStore((s) => s.setDensity);
+  const viewMode = useDisplayPreferencesStore((s) => s.viewMode);
+  const setViewMode = useDisplayPreferencesStore((s) => s.setViewMode);
+  const density = useDisplayPreferencesStore((s) => s.density);
+  const setDensity = useDisplayPreferencesStore((s) => s.setDensity);
   const [filtersOpen, setFiltersOpen] = useState(false);
   const [panelCoords, setPanelCoords] = useState<{ top: number; left: number } | null>(
     null,
@@ -109,30 +105,7 @@ export function DataToolbar<F extends string>({
 
   return (
     <div className="bg-base-100 flex flex-col gap-3 rounded-t-xl p-3 sm:p-4">
-      <div className="flex min-w-0 flex-col gap-3 sm:flex-row sm:items-center">
-        <label className="input input-bordered flex w-full min-w-0 flex-1 items-center gap-2 px-3 py-2">
-          <Search className="text-base-content/40 size-4 shrink-0" />
-          <input
-            type="text"
-            value={search}
-            onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={t("common.search")}
-            className="min-w-0 grow"
-          />
-          {search && (
-            <Tooltip content={t("actions.clear")} className="shrink-0">
-              <button
-                type="button"
-                onClick={() => onSearchChange("")}
-                aria-label={t("actions.clear")}
-                className="btn btn-ghost btn-sm btn-square relative before:absolute before:-inset-2 before:content-['']"
-              >
-                <X className="size-3.5" />
-              </button>
-            </Tooltip>
-          )}
-        </label>
-      </div>
+      <ToolbarSearchInput value={search} onChange={onSearchChange} />
 
       <div className="flex min-w-0 flex-wrap items-center gap-3">
         <div className="relative shrink-0">
@@ -151,91 +124,29 @@ export function DataToolbar<F extends string>({
             )}
           </button>
 
-          {filtersOpen &&
-            panelCoords &&
-            typeof document !== "undefined" &&
-            createPortal(
-              <div
-                ref={panelRef}
-                role="dialog"
-                aria-label={t("common.filtersLabel")}
-                style={{ top: panelCoords.top, left: panelCoords.left }}
-                className={`border-base-300 bg-base-100 animate-a11y-panel-in fixed ${Z_POPOVER} max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-xl border p-4 shadow-2xl`}
-              >
-                <div className="flex flex-col gap-3">
-                  <div className="join border-base-300 w-full rounded-lg border">
-                    {filters.map((f) => (
-                      <button
-                        key={f}
-                        type="button"
-                        onClick={() => onFilterChange(f)}
-                        className={`btn btn-sm join-item flex-1 cursor-pointer ${filter === f ? "btn-accent" : "btn-ghost"}`}
-                      >
-                        {filterLabel(f)}
-                      </button>
-                    ))}
-                  </div>
-
-                  {categories && onCategoryChange && (
-                    <select
-                      value={category}
-                      onChange={(e) => onCategoryChange(e.target.value)}
-                      className="select select-bordered select-sm w-full"
-                      aria-label={t("common.category")}
-                    >
-                      <option value="">{t("common.allCategories")}</option>
-                      {categories.map((c) => (
-                        <option key={c} value={c}>
-                          {categoryLabel ? categoryLabel(c) : c}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-
-                  {amountRanges && onAmountRangeChange && (
-                    <select
-                      value={amountRange}
-                      onChange={(e) => onAmountRangeChange(e.target.value)}
-                      className="select select-bordered select-sm w-full"
-                      aria-label={t("common.amountRange")}
-                    >
-                      {amountRanges.map((r) => (
-                        <option key={r.key} value={r.key}>
-                          {r.label}
-                        </option>
-                      ))}
-                    </select>
-                  )}
-
-                  <div className="flex flex-col gap-2">
-                    <DateField
-                      label={t("common.dateFrom")}
-                      value={fromDate}
-                      onChange={onFromDateChange}
-                      max={toDate || undefined}
-                    />
-                    <DateField
-                      label={t("common.dateTo")}
-                      value={toDate}
-                      onChange={onToDateChange}
-                      min={fromDate || undefined}
-                    />
-                  </div>
-
-                  {hasActiveFilters && (
-                    <button
-                      type="button"
-                      onClick={onClearAll}
-                      className="btn btn-ghost btn-sm gap-1.5 self-start"
-                    >
-                      <X className="size-3.5" />
-                      {t("common.clearFilters")}
-                    </button>
-                  )}
-                </div>
-              </div>,
-              document.body,
-            )}
+          {filtersOpen && panelCoords && (
+            <DataToolbarFiltersPanel
+              ref={panelRef}
+              coords={panelCoords}
+              fromDate={fromDate}
+              onFromDateChange={onFromDateChange}
+              toDate={toDate}
+              onToDateChange={onToDateChange}
+              filters={filters}
+              filter={filter}
+              onFilterChange={onFilterChange}
+              filterLabel={filterLabel}
+              categories={categories}
+              category={category}
+              onCategoryChange={onCategoryChange}
+              categoryLabel={categoryLabel}
+              amountRanges={amountRanges}
+              amountRange={amountRange}
+              onAmountRangeChange={onAmountRangeChange}
+              hasActiveFilters={hasActiveFilters}
+              onClearAll={onClearAll}
+            />
+          )}
         </div>
 
         {onSortChange && (

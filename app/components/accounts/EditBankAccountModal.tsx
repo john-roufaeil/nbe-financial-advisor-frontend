@@ -1,15 +1,22 @@
-import { forwardRef, useEffect, useState, type Ref } from "react";
+import { forwardRef, useEffect, type Ref } from "react";
 import { useTranslation } from "react-i18next";
+import { useForm, Controller } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import type { BankAccount } from "@/types/account";
 import { useUpdateAccount } from "@/queries/accounts";
 import { Button } from "@/components/shared/Button";
-import { BaseModal } from "@/components/shared/BaseModal";
+import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { BankBadge } from "@/components/shared/BankBadge";
-import { MoneyInput } from "@/components/shared/MoneyInput";
+import { MoneyInput } from "@/components/shared/forms/MoneyInput";
 import { MAX_MONEY_VALUE } from "@/lib/format";
 
 function closeDialog(ref: Ref<HTMLDialogElement>) {
   if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
+}
+
+interface FormValues {
+  balance: number | "";
 }
 
 export const EditBankAccountModal = forwardRef<
@@ -18,40 +25,37 @@ export const EditBankAccountModal = forwardRef<
 >(function EditBankAccountModal({ account }, ref) {
   const { t } = useTranslation();
   const updateAccount = useUpdateAccount();
-  const [balance, setBalance] = useState<number | "">("");
-  const [error, setError] = useState<string | undefined>();
+
+  const schema = z.object({
+    balance: z
+      .union([z.number(), z.literal("")])
+      .refine((v) => v !== "" && Number.isFinite(v) && v >= 0, {
+        message: t("common.editAccount.errors.balanceInvalid"),
+      }),
+  });
+
+  const {
+    control,
+    handleSubmit,
+    reset,
+    formState: { errors, isValid },
+  } = useForm<FormValues>({
+    resolver: zodResolver(schema),
+    mode: "onChange",
+    defaultValues: { balance: "" },
+  });
 
   useEffect(() => {
-    if (account) setBalance(Number(account.current_balance));
-  }, [account]);
+    if (account) reset({ balance: Number(account.current_balance) });
+  }, [account, reset]);
 
-  function reset() {
-    setError(undefined);
-  }
-
-  const balanceNum = balance === "" ? NaN : balance;
-  const isValid = balance !== "" && Number.isFinite(balanceNum) && balanceNum >= 0;
-
-  function balanceError(value: number | ""): string | undefined {
-    if (value === "") return undefined;
-    return !Number.isFinite(value) || value < 0
-      ? t("common.editAccount.errors.balanceInvalid")
-      : undefined;
-  }
-
-  async function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
+  async function onSubmit(values: FormValues) {
     if (!account) return;
-    if (!balance || !Number.isFinite(balanceNum) || balanceNum < 0) {
-      setError(t("common.editAccount.errors.balanceInvalid"));
-      return;
-    }
     try {
       await updateAccount.mutateAsync({
         id: account.id,
-        patch: { current_balance: String(balanceNum) },
+        patch: { current_balance: String(values.balance) },
       });
-      reset();
       closeDialog(ref);
     } catch {
       // onError already toasted; keep the modal open with the entered value.
@@ -61,7 +65,7 @@ export const EditBankAccountModal = forwardRef<
   return (
     <BaseModal
       ref={ref}
-      onClose={reset}
+      onClose={() => account && reset({ balance: Number(account.current_balance) })}
       title={t("common.editAccount.title")}
       actions={
         <>
@@ -76,10 +80,7 @@ export const EditBankAccountModal = forwardRef<
           </Button>
           <button
             type="button"
-            onClick={() => {
-              reset();
-              closeDialog(ref);
-            }}
+            onClick={() => closeDialog(ref)}
             className="btn btn-ghost"
           >
             {t("actions.cancel")}
@@ -90,7 +91,7 @@ export const EditBankAccountModal = forwardRef<
       {account && (
         <form
           id="edit-account-form"
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-3"
         >
           <BankBadge
@@ -100,22 +101,27 @@ export const EditBankAccountModal = forwardRef<
           <label className="flex flex-col gap-1">
             <span className="label-text text-xs">{t("common.editAccount.balance")}</span>
             <label
-              className={`input input-bordered input-sm flex w-full items-center gap-2 ${error ? "input-error" : ""}`}
+              className={`input input-bordered input-sm flex w-full items-center gap-2 ${errors.balance ? "input-error" : ""}`}
             >
-              <MoneyInput
-                value={balance}
-                max={MAX_MONEY_VALUE}
-                onChange={(value) => {
-                  setBalance(value);
-                  setError(balanceError(value));
-                }}
-                className="w-full"
+              <Controller
+                name="balance"
+                control={control}
+                render={({ field }) => (
+                  <MoneyInput
+                    value={field.value}
+                    max={MAX_MONEY_VALUE}
+                    onChange={field.onChange}
+                    className="w-full"
+                  />
+                )}
               />
               <span className="text-base-content/50 shrink-0 text-xs">
                 {t(`currency.${account.currency}`, account.currency)}
               </span>
             </label>
-            {error && <span className="text-error text-xs">{error}</span>}
+            {errors.balance && (
+              <span className="text-error text-xs">{errors.balance.message}</span>
+            )}
           </label>
         </form>
       )}

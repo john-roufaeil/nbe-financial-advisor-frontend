@@ -1,15 +1,16 @@
 import { forwardRef, useRef } from "react";
-import { inferBankStatementType } from "@/types/bank-statement";
+import { inferBankStatementType, BANK_STATEMENT_STATUS } from "@/types/bank-statement";
 import { useAccountPreselect } from "@/lib/use-account-preselect";
 import { useExtractedTransactionsDraft } from "@/lib/use-extracted-transactions-draft";
 import { useBankStatementModalHeader } from "@/lib/use-bank-statement-modal-header";
-import { BaseModal } from "@/components/shared/BaseModal";
+import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { toastError } from "@/lib/toast";
 import { useAccounts } from "@/queries/accounts";
 import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
 import { AccountConfirmStep } from "@/components/bank-statements/AccountConfirmStep";
 import { BankStatementStatusPanel } from "@/components/bank-statements/BankStatementStatusPanel";
 import { ExtractedTransactionsSection } from "@/components/bank-statements/ExtractedTransactionsSection";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { BankStatementModalActions } from "@/components/bank-statements/BankStatementModalActions";
 import {
   useBankStatement,
@@ -67,10 +68,10 @@ export const BankStatementDetailModal = forwardRef<
   }
 
   const needsAccountConfirm =
-    !!doc && doc.status === "processed" && !doc.accountConfirmed;
+    !!doc && doc.status === BANK_STATEMENT_STATUS.processed && !doc.accountConfirmed;
   const showApprove = !!(
     doc &&
-    doc.status === "processed" &&
+    doc.status === BANK_STATEMENT_STATUS.processed &&
     doc.accountConfirmed &&
     !doc.approved &&
     draft.length > 0
@@ -103,9 +104,9 @@ export const BankStatementDetailModal = forwardRef<
       <div className="flex flex-col gap-4">
         {doc && (
           <>
-            {(doc.status === "uploading" ||
-              doc.status === "processing" ||
-              doc.status === "failed") && (
+            {(doc.status === BANK_STATEMENT_STATUS.uploading ||
+              doc.status === BANK_STATEMENT_STATUS.processing ||
+              doc.status === BANK_STATEMENT_STATUS.failed) && (
               <BankStatementStatusPanel
                 doc={doc}
                 reuploadInputRef={reuploadInputRef}
@@ -117,7 +118,7 @@ export const BankStatementDetailModal = forwardRef<
               />
             )}
 
-            {doc.status === "processed" && needsAccountConfirm && (
+            {doc.status === BANK_STATEMENT_STATUS.processed && needsAccountConfirm && (
               <AccountConfirmStep
                 accounts={accounts}
                 accountsLoading={accountsLoading}
@@ -130,14 +131,16 @@ export const BankStatementDetailModal = forwardRef<
               />
             )}
 
-            {doc.status === "processed" && !needsAccountConfirm && (
-              <ExtractedTransactionsSection
-                doc={doc}
-                draft={draft}
-                onUpdate={updateDraftTransaction}
-                onDelete={deleteDraftTransaction}
-                onAdd={addDraftTransaction}
-              />
+            {doc.status === BANK_STATEMENT_STATUS.processed && !needsAccountConfirm && (
+              <ErrorBoundary>
+                <ExtractedTransactionsSection
+                  doc={doc}
+                  draft={draft}
+                  onUpdate={updateDraftTransaction}
+                  onDelete={deleteDraftTransaction}
+                  onAdd={addDraftTransaction}
+                />
+              </ErrorBoundary>
             )}
           </>
         )}

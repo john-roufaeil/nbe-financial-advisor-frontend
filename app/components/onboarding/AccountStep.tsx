@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
-import { PrivacyPolicyModal } from "@/components/shared/PrivacyPolicyModal";
-import { PasswordInput } from "@/components/shared/PasswordInput";
+import { PrivacyPolicyModal } from "@/components/shared/modals/PrivacyPolicyModal";
+import { PasswordInput } from "@/components/shared/forms/PasswordInput";
 import { RequiredMark } from "@/components/onboarding/RequiredMark";
 
 interface AccountFormValues {
