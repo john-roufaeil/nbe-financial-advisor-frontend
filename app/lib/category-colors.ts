@@ -17,16 +17,14 @@ export const CATEGORY_BAR_COLORS = [
  * (via inline style, not the Tailwind classes above) anywhere a bar or dot
  * needs to match a pie slice exactly, e.g. the budget allocations widget. */
 export const CATEGORY_COLOR_VARS = [
-  "oklch(40% 0.05 155)", // 1. Primary
-  "oklch(80% 0.15 65)", // 2. Secondary
-  "oklch(70% 0.10 320)", // 3. Accent
-  "oklch(70% 0.12 220)", // 4. Info
-  "oklch(60% 0.18 25)", // 5. Error
-  "oklch(65% 0.15 145)", // 6. Success
-  "oklch(80% 0.15 85)", // 7. Warning
-  "oklch(50% 0.12 300)", // 8. Deep Purple (Theme-consistent)
-  "oklch(75% 0.10 180)", // 9. Bright Teal (Theme-consistent)
-  "oklch(65% 0.15 15)", // 10. Vibrant Rose (Theme-consistent)
+  "oklch(65% 0.13 300)", // 1. Deep Amethyst (Light theme variant of Deep Purple)
+  "oklch(65% 0.10 180)", // 2. Ocean Teal (Light theme variant of Bright Teal)
+  "oklch(60% 0.14 15)", // 3. Crimson Rose (Light theme variant of Vibrant Rose)
+  "oklch(70% 0.14 75)", // 4. Burnt Gold
+  "oklch(65% 0.13 40)", // 5. Deep Coral
+  "oklch(60% 0.11 260)", // 6. Cobalt Blue
+  "oklch(65% 0.11 135)", // 7. Jade Green
+  "oklch(70% 0.13 340)", // 8. Berry Magenta
 ];
 
 /** Same 10 hues as CATEGORY_COLOR_VARS, relit for dark surfaces — these are
@@ -37,16 +35,14 @@ export const CATEGORY_COLOR_VARS = [
  * --color-primary/--color-error in app.css) so slices read as solid,
  * distinct colors on the dark slate surfaces instead of washing out pale. */
 export const CATEGORY_COLOR_VARS_DARK = [
-  "oklch(68% 0.15 155)", // 1. Primary
-  "oklch(72% 0.14 65)", // 2. Secondary
-  "oklch(72% 0.08 250)", // 3. Accent
-  "oklch(72% 0.12 220)", // 4. Info
-  "oklch(68% 0.2 25)", // 5. Error
-  "oklch(70% 0.14 145)", // 6. Success
-  "oklch(76% 0.14 85)", // 7. Warning
-  "oklch(68% 0.16 300)", // 8. Deep Purple
-  "oklch(78% 0.12 180)", // 9. Bright Teal
-  "oklch(70% 0.17 15)", // 10. Vibrant Rose
+  "oklch(75% 0.10 300)", // 1. Soft Amethyst (Dark theme variant of Deep Purple)
+  "oklch(80% 0.08 180)", // 2. Muted Teal (Dark theme variant of Bright Teal)
+  "oklch(75% 0.12 15)", // 3. Dusky Rose (Dark theme variant of Vibrant Rose)
+  "oklch(82% 0.12 85)", // 4. Warm Gold (Dark theme variant of Warning/Amber)
+  "oklch(76% 0.12 45)", // 5. Soft Coral
+  "oklch(78% 0.10 260)", // 6. Periwinkle Blue
+  "oklch(82% 0.09 130)", // 7. Pale Mint
+  "oklch(78% 0.10 340)", // 8. Magenta Haze
 ];
 
 /** High-contrast mode (see html.a11y-high-contrast in app.css) always forces
