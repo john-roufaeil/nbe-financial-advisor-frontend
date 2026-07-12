@@ -48,10 +48,7 @@
         "reached": "تم التحقيق",
         "next": "القادم",
         "locked": "مقفل"
-      },
-      "onTrack": "على المسار الصحيح",
-      "offTrack": "خارج المسار",
-      "projectedCompletion": "الإتمام المتوقع: {{date}}"
+      }
     },
     "budget": {
       "title": "توزيع خطة الميزانية",

@@ -23,6 +23,7 @@ import { ThemeToggle } from "@/components/shared/ThemeToggle";
 import { DataSourceToggle } from "@/components/shared/DataSourceToggle";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { Z_DROPDOWN } from "@/lib/z-index";
+import { useLayoutTier } from "@/lib/use-layout-tier";
 
 export default function AppLayout() {
   const { lang } = useParams<{ lang: string }>();
@@ -36,10 +37,20 @@ export default function AppLayout() {
 
   // State for desktop sidebar dragging & collapsing
   const MIN_SIDEBAR_WIDTH = 240;
-  const MAX_SIDEBAR_WIDTH = 280; // w-70
+  const MAX_SIDEBAR_WIDTH = 340;
   const [sidebarWidth, setSidebarWidth] = useState(MAX_SIDEBAR_WIDTH);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
+
+  // Font-scale-aware layout tier (see useLayoutTier): "mobile" forces the
+  // off-canvas drawer even on a wide screen once the user's in-app font
+  // scale crosses 160%. At 140%+ ("laptop" tier) the sidebar stays exactly
+  // as the user last set it — it no longer auto-collapses.
+  const tier = useLayoutTier();
+  const isForcedMobile = tier === "mobile";
+  // Forced-mobile has no collapse toggle to un-collapse it with, so a stale
+  // manual collapse from a prior desktop session must never carry over here.
+  const effectiveCollapsed = !isForcedMobile && isCollapsed;
 
   const startResizing = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -86,7 +97,7 @@ export default function AppLayout() {
 
   const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
     `flex w-full items-center rounded-md py-2.5 text-sm font-medium transition-colors ${
-      isCollapsed ? "lg:justify-center px-3 gap-3 lg:gap-0" : "gap-3 px-3"
+      effectiveCollapsed ? "lg:justify-center px-3 gap-3 lg:gap-0" : "gap-3 px-3"
     } ${
       isActive
         ? "bg-primary text-primary-content"
@@ -101,12 +112,15 @@ export default function AppLayout() {
       <style>{`
         @media (min-width: 1024px) {
           .responsive-sidebar {
-            width: ${isCollapsed ? 84 : sidebarWidth}px !important;
+            width: ${effectiveCollapsed ? 84 : sidebarWidth}px !important;
           }
         }
       `}</style>
 
-      <div className="drawer lg:drawer-open">
+      {/* `lg:drawer-open` is a real (px) media query, which only tracks
+          viewport width — it can't see the font-scale forcing above, so it's
+          only applied when tier isn't already forced to "mobile" by scale. */}
+      <div className={`drawer ${isForcedMobile ? "" : "lg:drawer-open"}`}>
         <input
           id="app-drawer"
           type="checkbox"
@@ -117,37 +131,24 @@ export default function AppLayout() {
 
         {/* Main content surface — base-100 */}
         <div className="drawer-content bg-base-100 flex h-screen min-w-0 flex-col">
-          <header className="navbar border-base-300 bg-base-200 min-h-14 shrink-0 border-b px-2 lg:hidden">
+          {/* No bar chrome on mobile — just a floating hamburger button over
+              the page content, so the header row's height/background/logo
+              don't eat screen space on small viewports. */}
+          <div
+            className={`fixed inset-s-2 top-2 ${Z_DROPDOWN} ${isForcedMobile ? "" : "lg:hidden"}`}
+          >
             <Tooltip content={t("nav.menu")} position="bottom">
               <button
-                className="btn btn-square btn-ghost"
+                className="btn btn-square btn-ghost bg-base-200/80 shadow-sm backdrop-blur-sm"
                 onClick={toggle}
                 aria-label={t("nav.menu")}
               >
                 <Menu className="size-5" />
               </button>
             </Tooltip>
-            <Tooltip
-              content={t("nav.dashboard")}
-              position="bottom"
-              className="mx-auto w-1/2 sm:w-1/3"
-            >
-              <Link
-                to={`/${lang}/dashboard`}
-                onClick={close}
-                className="w-full px-2"
-                aria-label={t("nav.dashboard")}
-              >
-                <img
-                  src="/logo.webp"
-                  alt={t("app.name")}
-                  className="h-auto w-full max-w-40"
-                />
-              </Link>
-            </Tooltip>
-          </header>
+          </div>
 
-          <main className="min-h-0 flex-1 overflow-y-auto pt-3">
+          <main className="min-h-0 min-w-0 flex-1 overflow-x-hidden overflow-y-auto pt-3">
             <Outlet />
           </main>
         </div>
@@ -163,15 +164,24 @@ export default function AppLayout() {
           >
             {/* Inner scrollable container so absolute drag-handle doesn't break */}
             <div className="flex h-full w-full flex-col overflow-x-hidden overflow-y-auto">
-              <div className="border-base-300 relative flex min-h-16 shrink-0 items-center border-b px-4">
-                {/* Mobile Menu Close Button — centered vertically using flex + absolute positioning */}
+              <div
+                className={`border-base-300 relative flex min-h-16 shrink-0 items-center border-b px-4 ${
+                  effectiveCollapsed
+                    ? "lg:min-h-24 lg:flex-col lg:justify-center lg:gap-2 lg:py-3"
+                    : ""
+                }`}
+              >
+                {/* Mobile Menu Close Button — fixed at the exact same viewport
+                    position as the floating hamburger button above (same
+                    `top-2 inset-s-2` + button classes), so the icon reads as
+                    staying in place rather than jumping when the drawer opens. */}
                 <Tooltip
                   content={t("nav.menu")}
                   position="end"
-                  className="absolute inset-y-0 start-2 my-auto flex items-center lg:hidden"
+                  className={`fixed inset-s-2 top-2 ${Z_DROPDOWN} ${isForcedMobile ? "" : "lg:hidden"}`}
                 >
                   <button
-                    className="btn btn-square btn-ghost btn-sm"
+                    className="btn btn-square btn-ghost bg-base-200/80 shadow-sm backdrop-blur-sm"
                     onClick={close}
                     aria-label={t("nav.menu")}
                   >
@@ -183,7 +193,7 @@ export default function AppLayout() {
                 <Tooltip
                   content={t("nav.dashboard")}
                   position="bottom"
-                  className={isCollapsed ? "mx-auto" : "mx-auto w-1/2 lg:w-auto"}
+                  className={effectiveCollapsed ? "mx-auto" : "mx-auto w-1/2 lg:w-auto"}
                 >
                   <Link
                     to={`/${lang}/dashboard`}
@@ -193,41 +203,46 @@ export default function AppLayout() {
                   >
                     {/* Condensed View Logo (Desktop Only) */}
                     <img
-                      src="/favicon.ico"
+                      src="/logo-collapsed.webp"
                       alt={t("app.name")}
-                      className={`hidden size-8 object-contain ${isCollapsed ? "lg:block" : ""}`}
+                      className={`hidden size-8 object-contain ${effectiveCollapsed ? "lg:block" : ""}`}
                     />
-                    {/* Standard View Logo (Mobile & Desktop Expanded) */}
+                    {/* Standard View Logo (Mobile & Desktop Expanded) — fixed size, doesn't scale with sidebar width */}
                     <img
                       src="/logo.webp"
                       alt={t("app.name")}
-                      className={`h-auto w-full max-w-50 ${isCollapsed ? "lg:hidden" : ""}`}
+                      className={`h-auto w-36 ${effectiveCollapsed ? "lg:hidden" : ""}`}
                     />
                   </Link>
                 </Tooltip>
 
-                {/* Collapse/Expand Toggle (Desktop Only) */}
-                <button
-                  className="btn btn-square btn-ghost btn-sm hidden shrink-0 lg:flex"
-                  onClick={() => setIsCollapsed(!isCollapsed)}
-                  aria-label="Toggle Sidebar"
-                >
-                  {isCollapsed ? (
-                    <PanelLeftOpen className="size-5" />
-                  ) : (
-                    <PanelLeftClose className="size-5" />
-                  )}
-                </button>
+                {/* Collapse/Expand Toggle (Desktop Only) — stacks beneath the minimized
+                    logo when collapsed. Hidden once font-scale forces the mobile
+                    (off-canvas drawer, hamburger-openable) treatment — that layout has
+                    no persistent sidebar to collapse/expand in the first place. */}
+                {!isForcedMobile && (
+                  <button
+                    className="btn btn-square btn-ghost btn-sm hidden shrink-0 lg:flex"
+                    onClick={() => setIsCollapsed(!isCollapsed)}
+                    aria-label="Toggle Sidebar"
+                  >
+                    {effectiveCollapsed ? (
+                      <PanelLeftOpen className="size-5" />
+                    ) : (
+                      <PanelLeftClose className="size-5" />
+                    )}
+                  </button>
+                )}
               </div>
 
               <nav className="flex flex-col gap-2 p-3">
                 {navItems.map(({ to, label, icon: Icon }) => (
                   <Tooltip
                     key={to}
-                    content={isCollapsed ? label : ""}
+                    content={effectiveCollapsed ? label : ""}
                     position="end"
                     className="w-full"
-                    disabled={!isCollapsed}
+                    disabled={!effectiveCollapsed}
                   >
                     <NavLink
                       to={to}
@@ -236,8 +251,12 @@ export default function AppLayout() {
                       className={navLinkClassName}
                     >
                       <Icon className="size-5 shrink-0" />
+                      {/* whitespace-nowrap + overflow-hidden (not wrap-break-word) so the
+                          label clips flat while the sidebar's own width is mid-transition
+                          instead of wrapping letter-by-letter into a vertical column at
+                          the narrower intermediate widths. */}
                       <span
-                        className={`min-w-0 wrap-break-word ${isCollapsed ? "lg:hidden" : ""}`}
+                        className={`min-w-0 overflow-hidden text-nowrap ${effectiveCollapsed ? "lg:hidden" : ""}`}
                       >
                         {label}
                       </span>
@@ -249,7 +268,7 @@ export default function AppLayout() {
               {/* Chat threads */}
               {onChat ? (
                 <div
-                  className={`border-base-300 bg-base-100 m-2 mt-1 flex min-h-32 flex-1 flex-col rounded-xl border p-2 shadow-sm ${isCollapsed ? "lg:hidden" : ""}`}
+                  className={`border-base-300 bg-base-100 m-2 mt-1 flex min-h-32 flex-1 flex-col rounded-xl border p-2 shadow-sm ${effectiveCollapsed ? "lg:hidden" : ""}`}
                 >
                   <ChatThreadList />
                 </div>
@@ -257,20 +276,20 @@ export default function AppLayout() {
                 <div className="flex-1" />
               )}
               {/* Ensure spacing remains when chat is collapsed */}
-              {onChat && isCollapsed && <div className="hidden flex-1 lg:block" />}
+              {onChat && effectiveCollapsed && <div className="hidden flex-1 lg:block" />}
 
               <div
-                className={`flex shrink-0 p-4 ${isCollapsed ? "flex-col gap-1 lg:flex-col lg:items-center lg:gap-4" : "flex-col gap-1"}`}
+                className={`flex shrink-0 p-4 ${effectiveCollapsed ? "flex-col gap-1 lg:flex-col lg:items-center lg:gap-4" : "flex-col gap-1"}`}
               >
                 <div
-                  className={`flex min-w-0 items-center justify-between gap-2 ${isCollapsed ? "w-full lg:flex-col lg:justify-center" : "w-full"}`}
+                  className={`flex min-w-0 items-center justify-between gap-2 ${effectiveCollapsed ? "w-full lg:flex-col lg:justify-center" : "w-full"}`}
                 >
                   <ThemeToggle className="shrink-0" />
                   <BalanceVisibilityToggle className="btn-square shrink-0" />
                 </div>
 
                 <div
-                  className={`flex w-full items-center gap-2 ${isCollapsed ? "lg:hidden" : ""}`}
+                  className={`flex w-full items-center gap-2 ${effectiveCollapsed ? "lg:hidden" : ""}`}
                 >
                   <div className="flex w-full flex-col gap-2">
                     <div className="flex min-w-0 items-center justify-between gap-2">
@@ -281,14 +300,16 @@ export default function AppLayout() {
                 </div>
 
                 <div
-                  className={`border-base-300 flex w-full items-center gap-2 border-t pt-2 ${isCollapsed ? "lg:justify-center" : ""}`}
+                  className={`border-base-300 flex w-full items-center gap-2 border-t pt-2 ${effectiveCollapsed ? "lg:justify-center" : ""}`}
                 >
                   <NavLink
                     to={`/${lang}/profile`}
                     onClick={close}
                     className={({ isActive }) =>
                       `flex w-full min-w-0 items-center rounded-md transition-colors ${
-                        isCollapsed ? "gap-3 p-2 lg:justify-center lg:p-1" : "gap-3 p-2"
+                        effectiveCollapsed
+                          ? "gap-3 p-2 lg:justify-center lg:p-1"
+                          : "gap-3 p-2"
                       } ${isActive ? "bg-base-300" : "hover:bg-base-300"}`
                     }
                   >
@@ -296,7 +317,7 @@ export default function AppLayout() {
                       {initial}
                     </span>
                     <div
-                      className={`min-w-0 flex-1 text-start ${isCollapsed ? "lg:hidden" : ""}`}
+                      className={`min-w-0 flex-1 text-start ${effectiveCollapsed ? "lg:hidden" : ""}`}
                     >
                       <p className="truncate text-sm font-semibold" title={fullName}>
                         {fullName}
@@ -315,7 +336,7 @@ export default function AppLayout() {
                 while the visible bar itself stays a thin, unobtrusive line that
                 only lights up on hover/drag. */}
             <div
-              className="group absolute inset-y-0 -inset-e-1.5 z-50 hidden w-3 cursor-col-resize touch-none lg:flex lg:items-center lg:justify-center"
+              className={`group absolute inset-y-0 -inset-e-1.5 z-50 hidden w-3 cursor-col-resize touch-none ${isForcedMobile ? "" : "lg:flex lg:items-center lg:justify-center"}`}
               onMouseDown={startResizing}
             >
               <div

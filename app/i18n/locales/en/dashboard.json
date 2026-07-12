@@ -48,10 +48,7 @@
         "reached": "Reached",
         "next": "Next Up",
         "locked": "Locked"
-      },
-      "onTrack": "On track",
-      "offTrack": "Off track",
-      "projectedCompletion": "Projected completion: {{date}}"
+      }
     },
     "budget": {
       "title": "Budget Plan Split",
