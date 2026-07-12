@@ -115,7 +115,7 @@ export const AddBankStatementModal = forwardRef<HTMLDialogElement>(
       <BaseModal
         ref={ref}
         onClose={reset}
-        title={t("data.addBankStatement.title")}
+        title={t("bankStatements.add.title")}
         actions={
           <>
             <Button
@@ -166,10 +166,10 @@ export const AddBankStatementModal = forwardRef<HTMLDialogElement>(
           >
             <Upload className="text-base-content/40 size-6" />
             <span className="text-sm font-medium">
-              {t("data.addBankStatement.dropzone")}
+              {t("bankStatements.add.dropzone")}
             </span>
             <span className="text-base-content/50 text-xs">
-              {t("data.addBankStatement.accepted", { maxMb: BANK_STATEMENT_MAX_SIZE_MB })}
+              {t("bankStatements.add.accepted", { maxMb: BANK_STATEMENT_MAX_SIZE_MB })}
             </span>
             <input
               ref={fileInputRef}
@@ -187,7 +187,7 @@ export const AddBankStatementModal = forwardRef<HTMLDialogElement>(
               {rejectedType.length > 0 && (
                 <p className="text-warning flex items-center gap-1.5 text-xs">
                   <TriangleAlert className="size-3.5 shrink-0" />
-                  {t("data.addBankStatement.rejectedType", {
+                  {t("bankStatements.add.rejectedType", {
                     names: rejectedType.join(", "),
                   })}
                 </p>
@@ -195,7 +195,7 @@ export const AddBankStatementModal = forwardRef<HTMLDialogElement>(
               {rejectedSize.length > 0 && (
                 <p className="text-warning flex items-center gap-1.5 text-xs">
                   <TriangleAlert className="size-3.5 shrink-0" />
-                  {t("data.addBankStatement.rejectedSize", {
+                  {t("bankStatements.add.rejectedSize", {
                     maxMb: BANK_STATEMENT_MAX_SIZE_MB,
                     names: rejectedSize.join(", "),
                   })}
@@ -204,7 +204,7 @@ export const AddBankStatementModal = forwardRef<HTMLDialogElement>(
               {rejectedExtra.length > 0 && (
                 <p className="text-warning flex items-center gap-1.5 text-xs">
                   <TriangleAlert className="size-3.5 shrink-0" />
-                  {t("data.addBankStatement.rejectedExtra", {
+                  {t("bankStatements.add.rejectedExtra", {
                     names: rejectedExtra.join(", "),
                   })}
                 </p>

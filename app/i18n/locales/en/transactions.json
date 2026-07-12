@@ -1,0 +1,48 @@
+{
+  "transactions": {
+    "title": "Transactions",
+    "subtitle": "Track your income and expenses",
+    "empty": "No transactions yet. Add one manually, or upload a bank statement and we'll pull them out for you.",
+    "emptyShort": "No transactions",
+    "emptyCta": "Add your first transaction",
+    "pagination": {
+      "total_zero": "No transactions",
+      "total_one": "{{count}} transaction",
+      "total_two": "{{count}} transactions",
+      "total_few": "{{count}} transactions",
+      "total_many": "{{count}} transactions",
+      "total_other": "{{count}} transactions"
+    },
+    "add": {
+      "title": "Add Transaction",
+      "editTitle": "Edit Transaction",
+      "add": "Add Transaction",
+      "name": "Name",
+      "namePlaceholder": "e.g. Carrefour Market",
+      "account": "Account",
+      "accountPlaceholder": "Select an account",
+      "accountSearchPlaceholder": "Search accounts...",
+      "addNewAccount": "+ Add new account",
+      "noAccounts": "No accounts linked yet. Add one to record a transaction.",
+      "category": "Category",
+      "amount": "Amount",
+      "amountPlaceholder": "0.00",
+      "date": "Date",
+      "errors": {
+        "nameRequired": "Enter a name for this transaction.",
+        "nameTooLong": "Name must be 20 characters or fewer.",
+        "amountInvalid": "Enter an amount greater than 0.",
+        "accountRequired": "Select an account."
+      }
+    },
+    "detail": {
+      "title": "Transaction",
+      "amount": "Amount",
+      "category": "Category",
+      "date": "Date",
+      "type": "Type",
+      "account": "Bank account",
+      "accountUnknown": "No linked account"
+    }
+  }
+}

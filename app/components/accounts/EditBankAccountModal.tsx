@@ -34,7 +34,7 @@ export const EditBankAccountModal = forwardRef<
     if (value === "") return undefined;
     const num = Number(value);
     return !Number.isFinite(num) || num < 0
-      ? t("data.editAccount.errors.balanceInvalid")
+      ? t("common.editAccount.errors.balanceInvalid")
       : undefined;
   }
 
@@ -42,7 +42,7 @@ export const EditBankAccountModal = forwardRef<
     e.preventDefault();
     if (!account) return;
     if (!balance || !Number.isFinite(balanceNum) || balanceNum < 0) {
-      setError(t("data.editAccount.errors.balanceInvalid"));
+      setError(t("common.editAccount.errors.balanceInvalid"));
       return;
     }
     try {
@@ -61,7 +61,7 @@ export const EditBankAccountModal = forwardRef<
     <BaseModal
       ref={ref}
       onClose={reset}
-      title={t("data.editAccount.title")}
+      title={t("common.editAccount.title")}
       actions={
         <>
           <Button
@@ -97,7 +97,7 @@ export const EditBankAccountModal = forwardRef<
             subtitle={<span dir="ltr">{account.masked_account_number}</span>}
           />
           <label className="flex flex-col gap-1">
-            <span className="label-text text-xs">{t("data.editAccount.balance")}</span>
+            <span className="label-text text-xs">{t("common.editAccount.balance")}</span>
             <label
               className={`input input-bordered input-sm flex w-full items-center gap-2 ${error ? "input-error" : ""}`}
             >

@@ -12,7 +12,9 @@ import enFinance from "./locales/en/finance.json";
 import enAuth from "./locales/en/auth.json";
 import enDashboard from "./locales/en/dashboard.json";
 import enChat from "./locales/en/chat.json";
-import enData from "./locales/en/data.json";
+import enTransactions from "./locales/en/transactions.json";
+import enBankStatements from "./locales/en/bankStatements.json";
+import enShared from "./locales/en/common.json";
 import enSettings from "./locales/en/settings.json";
 import enNotFound from "./locales/en/notFound.json";
 
@@ -26,7 +28,9 @@ import arFinance from "./locales/ar/finance.json";
 import arAuth from "./locales/ar/auth.json";
 import arDashboard from "./locales/ar/dashboard.json";
 import arChat from "./locales/ar/chat.json";
-import arData from "./locales/ar/data.json";
+import arTransactions from "./locales/ar/transactions.json";
+import arBankStatements from "./locales/ar/bankStatements.json";
+import arShared from "./locales/ar/common.json";
 import arSettings from "./locales/ar/settings.json";
 import arNotFound from "./locales/ar/notFound.json";
 
@@ -51,7 +55,9 @@ const enCommon = {
   ...enAuth,
   ...enDashboard,
   ...enChat,
-  ...enData,
+  ...enTransactions,
+  ...enBankStatements,
+  ...enShared,
   ...enSettings,
   ...enNotFound,
 };
@@ -67,7 +73,9 @@ const arCommon = {
   ...arAuth,
   ...arDashboard,
   ...arChat,
-  ...arData,
+  ...arTransactions,
+  ...arBankStatements,
+  ...arShared,
   ...arSettings,
   ...arNotFound,
 };

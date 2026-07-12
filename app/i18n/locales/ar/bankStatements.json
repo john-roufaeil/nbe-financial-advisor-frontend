@@ -1,0 +1,63 @@
+{
+  "bankStatements": {
+    "title": "كشوف الحسابات",
+    "subtitle": "ارفع كشوف الحسابات لاستخراج المعاملات تلقائيًا",
+    "empty": "لا توجد كشوف حساب بعد. ارفع واحدًا وسنستخرج المعاملات منه تلقائيًا.",
+    "emptyShort": "لا توجد كشوف حساب",
+    "emptyCta": "ارفع كشف حسابك الأول",
+    "fallbackName": "كشف حساب بنكي",
+    "pagination": {
+      "total_zero": "لا توجد كشوف حساب",
+      "total_one": "كشف حساب واحد",
+      "total_two": "كشفا حساب",
+      "total_few": "{{count}} كشوف حساب",
+      "total_many": "{{count}} كشف حساب",
+      "total_other": "{{count}} كشف حساب"
+    },
+    "add": {
+      "title": "إضافة كشف حساب",
+      "add": "إضافة كشف حساب",
+      "dropzone": "اسحب وأفلت الملفات هنا، أو اضغط للاختيار",
+      "accepted": "صور أو ملفات PDF أو Word، حتى {{maxMb}} ميجابايت",
+      "rejectedType": "تم تجاهل ملفات غير مدعومة: {{names}}",
+      "rejectedSize": "تم تجاهل ملفات أكبر من {{maxMb}} ميجابايت: {{names}}",
+      "rejectedExtra": "يمكن إضافة كشف حساب واحد فقط في كل مرة — تم تجاهل الملفات الإضافية: {{names}}"
+    },
+    "status": {
+      "uploading": "جارٍ الرفع...",
+      "processing": "جارٍ المعالجة...",
+      "pendingApproval": "بانتظار الموافقة",
+      "processed": "تمت المعالجة",
+      "failed": "فشل"
+    },
+    "detail": {
+      "title": "كشف الحساب",
+      "uploading": "جارٍ رفع كشف الحساب...",
+      "processing": "جارٍ تحليل كشف الحساب...",
+      "failedTitle": "فشلت المعالجة",
+      "bankStatementFailedGeneric": "تعذرت معالجة هذا الملف. قد يكون غير قابل للقراءة أو بصيغة غير مدعومة.",
+      "retry": "إعادة المحاولة",
+      "uploadFailedTitle": "فشل الرفع",
+      "uploadFailedGeneric": "تعذر رفع هذا الملف. تحقق من اتصالك وأعد المحاولة برفع الملف.",
+      "uploadAgain": "إعادة الرفع",
+      "stepOf": "الخطوة {{current}} من {{total}}",
+      "confirmAccountTitle": "تأكيد الحساب البنكي",
+      "confirmAccountSubtitle": "اختر الحساب الذي يخص هذا الكشف، أو أضف حسابًا جديدًا.",
+      "noAccountsYet": "ليس لديك أي حسابات بنكية مرتبطة بعد.",
+      "addNewAccount": "إضافة حساب بنكي جديد",
+      "confirmAccount": "متابعة",
+      "reviewTitle": "مراجعة المعاملات المستخرجة",
+      "reviewSubtitle": "عدّل أي شيء غير دقيق، ثم وافق لإضافتها إلى معاملاتك.",
+      "approve": "الموافقة والإضافة إلى المعاملات",
+      "approved": "تمت الإضافة إلى معاملاتك",
+      "noTransactions": "لم يتم العثور على معاملات في كشف الحساب هذا.",
+      "addTransaction": "إضافة معاملة",
+      "transactionCount_zero": "لا توجد معاملات",
+      "transactionCount_one": "معاملة واحدة",
+      "transactionCount_two": "معاملتان",
+      "transactionCount_few": "{{count}} معاملات",
+      "transactionCount_many": "{{count}} معاملة",
+      "transactionCount_other": "{{count}} معاملة"
+    }
+  }
+}

@@ -3,10 +3,10 @@ import { Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AMOUNT_RANGES, TRANSACTION_CATEGORIES } from "@/types/transaction";
 import { useTransactions, useDeleteTransaction } from "@/queries/transactions";
-import { Pagination } from "@/components/data/Pagination";
-import { AddTransactionModal } from "@/components/data/AddTransactionModal";
-import { TransactionDetailModal } from "@/components/data/TransactionDetailModal";
-import { TransactionCard } from "@/components/data/TransactionCard";
+import { Pagination } from "@/components/shared/Pagination";
+import { AddTransactionModal } from "@/components/transactions/AddTransactionModal";
+import { TransactionDetailModal } from "@/components/transactions/TransactionDetailModal";
+import { TransactionCard } from "@/components/transactions/TransactionCard";
 import { DataToolbar } from "@/components/shared/DataToolbar";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { ListSkeleton } from "@/components/shared/skeletons/ListSkeleton";
@@ -64,14 +64,14 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
             filters={f.FILTERS}
             filter={f.filter}
             onFilterChange={f.updateFilter}
-            filterLabel={(value) => t(`data.filters.${value}`)}
+            filterLabel={(value) => t(`common.filters.${value}`)}
             categories={TRANSACTION_CATEGORIES}
             category={f.category}
             onCategoryChange={f.updateCategory}
-            categoryLabel={(c) => t(`data.categories.${c}`, c)}
+            categoryLabel={(c) => t(`common.categories.${c}`, c)}
             amountRanges={AMOUNT_RANGES.map((r) => ({
               key: r.key,
-              label: t(`data.amountRanges.${r.key}`),
+              label: t(`common.amountRanges.${r.key}`),
             }))}
             amountRange={f.amountRange}
             onAmountRangeChange={f.updateAmountRange}
@@ -88,7 +88,7 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
             pageSize={f.pageSize}
             onPageChange={f.setPage}
             onPageSizeChange={f.updatePageSize}
-            totalLabelKey="data.pagination.totalTransactions"
+            totalLabelKey="transactions.pagination.total"
           />
         </div>
 
@@ -122,7 +122,7 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
         ) : (
           <EmptyState
             icon={Receipt}
-            label={t("data.transactionsEmpty")}
+            label={t("transactions.empty")}
             className={loadAnimation}
           />
         )}
@@ -134,7 +134,7 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
           pageSize={f.pageSize}
           onPageChange={f.setPage}
           onPageSizeChange={f.updatePageSize}
-          totalLabelKey="data.pagination.totalTransactions"
+          totalLabelKey="transactions.pagination.total"
         />
 
         <AddTransactionModal

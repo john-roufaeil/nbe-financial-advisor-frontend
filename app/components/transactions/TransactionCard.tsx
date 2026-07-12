@@ -46,7 +46,7 @@ export function TransactionCard({
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{transaction.title}</p>
         <p className="text-base-content/50 text-xs">
-          {t(`data.categories.${transaction.category}`, transaction.category)} ·{" "}
+          {t(`common.categories.${transaction.category}`, transaction.category)} ·{" "}
           {formatDateTime(transaction.datetime, timeFormat, t)}
         </p>
       </div>

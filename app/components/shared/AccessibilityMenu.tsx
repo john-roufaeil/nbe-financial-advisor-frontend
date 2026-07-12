@@ -115,7 +115,7 @@ export function AccessibilityMenu() {
 
   return (
     <div
-      className={`a11y-panel fixed top-1/2 ${Z_FLOATING_ACTION} h-fit -translate-y-1/2`}
+      className={`a11y-panel fixed top-3/4 ${Z_FLOATING_ACTION} h-fit -translate-y-1/2`}
     >
       <div className="relative">
         <Tooltip content={t("settings.accessibility.menuLabel")} position="end">

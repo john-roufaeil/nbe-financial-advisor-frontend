@@ -6,8 +6,8 @@ import { useConfirmStore } from "@/store/use-confirm-store";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
-import { AddBankAccountModal } from "@/components/data/AddBankAccountModal";
-import { EditBankAccountModal } from "@/components/data/EditBankAccountModal";
+import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
+import { EditBankAccountModal } from "@/components/accounts/EditBankAccountModal";
 import type { BankAccount } from "@/types/account";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 
@@ -32,9 +32,9 @@ function AccountRow({
           <>
             <span dir="ltr">{account.masked_account_number}</span>
             {account.account_type
-              ? ` · ${t(`data.addAccount.accountTypes.${account.account_type}`, account.account_type)}`
+              ? ` · ${t(`common.addAccount.accountTypes.${account.account_type}`, account.account_type)}`
               : ""}
-            {account.is_active ? "" : ` · ${t("data.sections.accounts.inactive")}`}
+            {account.is_active ? "" : ` · ${t("common.sections.accounts.inactive")}`}
           </>
         }
       />
@@ -103,7 +103,7 @@ export function BankAccountsCard() {
     return (
       <div className="card border-base-300 bg-base-100 border shadow-sm sm:col-span-2">
         <div className="card-body p-4">
-          <p className="text-error text-sm">{t("data.sections.accounts.error")}</p>
+          <p className="text-error text-sm">{t("common.sections.accounts.error")}</p>
         </div>
       </div>
     );
@@ -117,14 +117,14 @@ export function BankAccountsCard() {
             <CreditCard className="size-4.5" />
           </span>
           <h2 className="card-title flex-1 text-base">
-            {t("data.sections.accounts.title")}
+            {t("common.sections.accounts.title")}
           </h2>
-          <Tooltip content={t("data.addAccount.add")}>
+          <Tooltip content={t("common.addAccount.add")}>
             <button
               type="button"
               onClick={() => addRef.current?.showModal()}
               className="btn btn-ghost btn-sm btn-square"
-              aria-label={t("data.addAccount.add")}
+              aria-label={t("common.addAccount.add")}
             >
               <Plus data-no-flip className="size-4" />
             </button>
@@ -144,7 +144,7 @@ export function BankAccountsCard() {
           </ul>
         ) : (
           <p className="text-base-content/50 text-sm">
-            {t("data.sections.accounts.empty")}
+            {t("common.sections.accounts.empty")}
           </p>
         )}
       </div>

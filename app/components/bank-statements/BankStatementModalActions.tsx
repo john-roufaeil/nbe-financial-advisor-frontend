@@ -37,7 +37,7 @@ export function BankStatementModalActions({
         disabled={!selectedAccountId}
         className="btn btn-primary btn-sm"
       >
-        {t("data.bankStatementDetail.confirmAccount")}
+        {t("bankStatements.detail.confirmAccount")}
       </Button>
     );
   }
@@ -51,7 +51,7 @@ export function BankStatementModalActions({
         disabled={draftHasInvalidTransaction}
         className="btn btn-primary btn-sm"
       >
-        {t("data.bankStatementDetail.approve")}
+        {t("bankStatements.detail.approve")}
       </Button>
     );
   }

@@ -4,7 +4,7 @@ import { useCreateAccount } from "@/queries/accounts";
 import { getBankCode } from "@/lib/banks";
 import { Button } from "@/components/shared/Button";
 import { BaseModal } from "@/components/shared/BaseModal";
-import { BankAccountFields } from "@/components/data/BankAccountFields";
+import { BankAccountFields } from "@/components/accounts/BankAccountFields";
 import {
   emptyBankAccountForm,
   isBankAccountFormValid,
@@ -59,7 +59,7 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
       <BaseModal
         ref={ref}
         onClose={reset}
-        title={t("data.addAccount.title")}
+        title={t("common.addAccount.title")}
         actions={
           <>
             <Button
@@ -69,7 +69,7 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
               disabled={!isValid}
               className="btn btn-primary"
             >
-              {t("data.addAccount.add")}
+              {t("common.addAccount.add")}
             </Button>
             <button
               type="button"

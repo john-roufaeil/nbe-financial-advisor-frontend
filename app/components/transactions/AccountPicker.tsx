@@ -55,7 +55,7 @@ export function AccountPicker({
       }}
       disabled={disabled}
       error={error}
-      emptyMessage={t("data.noResults")}
+      emptyMessage={t("common.noResults")}
       search={
         <label className="input input-bordered input-sm flex items-center gap-2">
           <Search className="size-3.5 opacity-50" />
@@ -64,7 +64,7 @@ export function AccountPicker({
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("data.addTransaction.accountSearchPlaceholder")}
+            placeholder={t("transactions.add.accountSearchPlaceholder")}
             maxLength={40}
             className="w-full"
           />
@@ -118,7 +118,7 @@ export function AccountPicker({
             alt=""
             className="size-5 shrink-0 rounded-full object-cover"
           />
-          <span className="truncate">{t("data.addTransaction.addNewAccount")}</span>
+          <span className="truncate">{t("transactions.add.addNewAccount")}</span>
         </button>
       )}
     />

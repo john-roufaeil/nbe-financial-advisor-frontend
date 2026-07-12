@@ -1,0 +1,139 @@
+{
+  "common": {
+    "search": "بحث...",
+    "noResults": "لا توجد نتائج.",
+    "loading": "جارٍ التحميل...",
+    "loadError": "نأسف، حدث خطأ ما. يرجى المحاولة مرة أخرى.",
+    "retry": "إعادة المحاولة",
+    "replan": "تحدث مع المستشار",
+    "dateFrom": "من",
+    "dateTo": "إلى",
+    "clearFilters": "مسح الفلاتر",
+    "category": "الفئة",
+    "allCategories": "كل الفئات",
+    "categories": {
+      "Groceries": "البقالة",
+      "Dining": "المطاعم",
+      "Transport": "المواصلات",
+      "Utilities": "الفواتير",
+      "Shopping": "التسوق",
+      "Health": "الصحة",
+      "Income": "الدخل",
+      "Rent": "الإيجار",
+      "Savings": "المدخرات",
+      "Transportation": "النقل",
+      "Entertainment": "الترفيه"
+    },
+    "filtersLabel": "الفلاتر",
+    "amountRange": "نطاق المبلغ",
+    "amountRanges": {
+      "any": "أي مبلغ",
+      "under500": "أقل من 500",
+      "500to1000": "500 – 1,000",
+      "1000to5000": "1,000 – 5,000",
+      "over5000": "أكثر من 5,000"
+    },
+    "sort": {
+      "dateAsc": "الأقدم أولاً",
+      "dateDesc": "الأحدث أولاً"
+    },
+    "filters": {
+      "all": "الكل",
+      "income": "دخل",
+      "expense": "مصروف",
+      "pdf": "PDF",
+      "image": "صورة",
+      "doc": "مستند"
+    },
+    "pagination": {
+      "prev": "السابق",
+      "next": "التالي",
+      "page": "صفحة {{page}} من {{totalPages}}",
+      "goToPage": "الانتقال إلى صفحة {{page}}",
+      "perPage": "{{count}} / صفحة"
+    },
+    "addAccount": {
+      "title": "إضافة حساب بنكي",
+      "add": "إضافة حساب بنكي",
+      "accountType": "نوع الحساب",
+      "accountTypes": {
+        "checking": "حساب جاري",
+        "savings": "حساب توفير",
+        "salary": "حساب راتب",
+        "business": "حساب أعمال"
+      },
+      "currency": "العملة",
+      "bank": "البنك",
+      "bankPlaceholder": "اختر بنكًا",
+      "bankSearchPlaceholder": "ابحث عن بنك...",
+      "addCustomBank": "إضافة \"{{name}}\" كبنك جديد",
+      "accountNumber": "آخر 4 أرقام من رقم الحساب",
+      "accountNumberConfirm": "تأكيد رقم الحساب",
+      "accountNumberPlaceholder": "1234",
+      "initialBalance": "الرصيد الابتدائي",
+      "initialBalancePlaceholder": "0.00",
+      "errors": {
+        "bankRequired": "اختر بنكًا أو أضف واحدًا.",
+        "accountNumberInvalid": "أدخل 8 أرقام بالضبط.",
+        "accountNumberMismatch": "أرقام الحساب غير متطابقة.",
+        "balanceInvalid": "أدخل رصيدًا صالحًا."
+      }
+    },
+    "editAccount": {
+      "title": "تعديل الحساب البنكي",
+      "balance": "الرصيد الحالي",
+      "errors": {
+        "balanceInvalid": "أدخل رصيدًا صالحًا."
+      }
+    },
+    "sections": {
+      "errors": {
+        "phoneInvalid": "أدخل رقم هاتف صحيحًا.",
+        "nameRequired": "أدخل اسمك.",
+        "incomeNegative": "لا يمكن أن يكون الدخل الشهري سالبًا."
+      },
+      "profile": {
+        "title": "الملف الشخصي",
+        "fields": {
+          "fullName": "الاسم الكامل",
+          "fullNamePlaceholder": "مثال: أمينة السيد",
+          "id": "معرف المستخدم",
+          "dob": "تاريخ الميلاد",
+          "nationalId": "الرقم القومي"
+        }
+      },
+      "contact": {
+        "title": "التواصل",
+        "fields": {
+          "email": "البريد الإلكتروني",
+          "phone": "الهاتف",
+          "phonePlaceholder": "مثال: 01001234567"
+        }
+      },
+      "financial": {
+        "title": "الملف المالي",
+        "fields": {
+          "employmentStatus": "الحالة الوظيفية",
+          "monthlyIncome": "الدخل الشهري",
+          "monthlyIncomePlaceholder": "مثال: 5000.00",
+          "incomeSteadiness": "استقرار الدخل",
+          "riskTolerance": "تحمل المخاطر"
+        }
+      },
+      "accounts": {
+        "title": "الحسابات البنكية",
+        "empty": "لا توجد حسابات بنكية مرتبطة بعد.",
+        "error": "تعذّر تحميل حساباتك البنكية. حاول مرة أخرى.",
+        "inactive": "غير نشط"
+      },
+      "preferences": {
+        "title": "التفضيلات"
+      }
+    },
+    "view": {
+      "toggleLabel": "وضع العرض",
+      "list": "عرض قائمة",
+      "grid": "عرض شبكة"
+    }
+  }
+}

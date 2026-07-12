@@ -111,7 +111,7 @@ export function DataToolbar<F extends string>({
             type="text"
             value={search}
             onChange={(e) => onSearchChange(e.target.value)}
-            placeholder={t("data.search")}
+            placeholder={t("common.search")}
             className="min-w-0 grow"
           />
           {search && (
@@ -140,7 +140,7 @@ export function DataToolbar<F extends string>({
             className={`btn btn-sm gap-1.5 ${hasActiveFilters ? "btn-accent" : "btn-outline"}`}
           >
             <SlidersHorizontal className="size-4" />
-            {t("data.filtersLabel")}
+            {t("common.filtersLabel")}
             {hasActiveFilters && (
               <span className="bg-base-100/70 size-1.5 rounded-full" />
             )}
@@ -153,7 +153,7 @@ export function DataToolbar<F extends string>({
               <div
                 ref={panelRef}
                 role="dialog"
-                aria-label={t("data.filtersLabel")}
+                aria-label={t("common.filtersLabel")}
                 style={{ top: panelCoords.top, left: panelCoords.left }}
                 className={`border-base-300 bg-base-100 animate-a11y-panel-in fixed ${Z_POPOVER} max-h-[80vh] w-72 max-w-[90vw] overflow-y-auto rounded-xl border p-4 shadow-2xl`}
               >
@@ -176,9 +176,9 @@ export function DataToolbar<F extends string>({
                       value={category}
                       onChange={(e) => onCategoryChange(e.target.value)}
                       className="select select-bordered select-sm w-full"
-                      aria-label={t("data.category")}
+                      aria-label={t("common.category")}
                     >
-                      <option value="">{t("data.allCategories")}</option>
+                      <option value="">{t("common.allCategories")}</option>
                       {categories.map((c) => (
                         <option key={c} value={c}>
                           {categoryLabel ? categoryLabel(c) : c}
@@ -192,7 +192,7 @@ export function DataToolbar<F extends string>({
                       value={amountRange}
                       onChange={(e) => onAmountRangeChange(e.target.value)}
                       className="select select-bordered select-sm w-full"
-                      aria-label={t("data.amountRange")}
+                      aria-label={t("common.amountRange")}
                     >
                       {amountRanges.map((r) => (
                         <option key={r.key} value={r.key}>
@@ -204,13 +204,13 @@ export function DataToolbar<F extends string>({
 
                   <div className="flex flex-col gap-2">
                     <DateField
-                      label={t("data.dateFrom")}
+                      label={t("common.dateFrom")}
                       value={fromDate}
                       onChange={onFromDateChange}
                       max={toDate || undefined}
                     />
                     <DateField
-                      label={t("data.dateTo")}
+                      label={t("common.dateTo")}
                       value={toDate}
                       onChange={onToDateChange}
                       min={fromDate || undefined}
@@ -224,7 +224,7 @@ export function DataToolbar<F extends string>({
                       className="btn btn-ghost btn-sm gap-1.5 self-start"
                     >
                       <X className="size-3.5" />
-                      {t("data.clearFilters")}
+                      {t("common.clearFilters")}
                     </button>
                   )}
                 </div>
@@ -235,14 +235,16 @@ export function DataToolbar<F extends string>({
 
         {onSortChange && (
           <Tooltip
-            content={sort === "asc" ? t("data.sort.dateDesc") : t("data.sort.dateAsc")}
+            content={
+              sort === "asc" ? t("common.sort.dateDesc") : t("common.sort.dateAsc")
+            }
           >
             <button
               type="button"
               onClick={() => onSortChange(sort === "asc" ? "desc" : "asc")}
               className="btn btn-ghost btn-sm shrink-0 gap-1.5"
               aria-label={
-                sort === "asc" ? t("data.sort.dateDesc") : t("data.sort.dateAsc")
+                sort === "asc" ? t("common.sort.dateDesc") : t("common.sort.dateAsc")
               }
             >
               {sort === "asc" ? (
@@ -258,10 +260,10 @@ export function DataToolbar<F extends string>({
           <ToggleSwitch
             value={viewMode}
             options={["list", "grid"]}
-            labels={{ list: t("data.view.list"), grid: t("data.view.grid") }}
+            labels={{ list: t("common.view.list"), grid: t("common.view.grid") }}
             icons={{ list: List, grid: LayoutGrid }}
             onChange={setViewMode}
-            aria-label={t("data.view.toggleLabel")}
+            aria-label={t("common.view.toggleLabel")}
             showLabels={false}
           />
         </div>

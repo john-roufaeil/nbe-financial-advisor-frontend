@@ -38,7 +38,7 @@ export function ExtractedTransactionRow({
             value={tx.title}
             maxLength={20}
             onChange={(e) => onUpdate({ title: e.target.value })}
-            placeholder={t("data.addTransaction.namePlaceholder")}
+            placeholder={t("transactions.add.namePlaceholder")}
             className="input input-bordered input-sm w-full flex-1 font-medium"
           />
           <Tooltip content={t("actions.delete", { name: tx.title })} className="shrink-0">
@@ -62,7 +62,7 @@ export function ExtractedTransactionRow({
         <div className="border-base-200 flex flex-wrap items-center gap-x-4 gap-y-2 border-t ps-10 pt-3">
           <label className="flex items-center gap-1.5">
             <span className="text-base-content/50 text-xs">
-              {t("data.addTransaction.category")}
+              {t("transactions.add.category")}
             </span>
             <select
               value={tx.category}
@@ -71,7 +71,7 @@ export function ExtractedTransactionRow({
             >
               {TRANSACTION_CATEGORIES.map((c) => (
                 <option key={c} value={c}>
-                  {t(`data.categories.${c}`, c)}
+                  {t(`common.categories.${c}`, c)}
                 </option>
               ))}
             </select>
@@ -83,21 +83,21 @@ export function ExtractedTransactionRow({
               onClick={() => onUpdate({ type: "expense" })}
               className={`btn btn-xs join-item cursor-pointer ${tx.type === "expense" ? "btn-error" : "btn-ghost"}`}
             >
-              {t("data.filters.expense")}
+              {t("common.filters.expense")}
             </button>
             <button
               type="button"
               onClick={() => onUpdate({ type: "income" })}
               className={`btn btn-xs join-item cursor-pointer ${tx.type === "income" ? "btn-success" : "btn-ghost"}`}
             >
-              {t("data.filters.income")}
+              {t("common.filters.income")}
             </button>
           </div>
 
           <label className="ms-auto flex flex-col items-end gap-1">
             <span className="flex items-center gap-1.5">
               <span className="text-base-content/50 text-xs">
-                {t("data.addTransaction.amount")}
+                {t("transactions.add.amount")}
               </span>
               <input
                 type="number"
@@ -117,7 +117,7 @@ export function ExtractedTransactionRow({
             </span>
             {amountInvalid && (
               <span className="text-error text-xs">
-                {t("data.addTransaction.errors.amountInvalid")}
+                {t("transactions.add.errors.amountInvalid")}
               </span>
             )}
           </label>

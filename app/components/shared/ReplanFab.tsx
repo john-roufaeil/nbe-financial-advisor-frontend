@@ -9,10 +9,10 @@ export function ReplanFab() {
     <Link
       to={`/${lang}/chat`}
       className="btn btn-sm btn-secondary gap-2 shadow-sm"
-      aria-label={t("data.replan")}
+      aria-label={t("common.replan")}
     >
       <Bot className="size-4" />
-      <span>{t("data.replan")}</span>
+      <span>{t("common.replan")}</span>
     </Link>
   );
 }

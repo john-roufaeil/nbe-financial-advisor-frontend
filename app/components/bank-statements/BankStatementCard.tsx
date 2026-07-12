@@ -9,7 +9,7 @@ import { Tooltip } from "@/components/shared/Tooltip";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { useTimeFormatStore } from "@/store/use-time-format-store";
 import type { ViewMode } from "@/store/use-view-mode-store";
-import { BankStatementStatusBadge } from "@/components/data/BankStatementStatusBadge";
+import { BankStatementStatusBadge } from "@/components/bank-statements/BankStatementStatusBadge";
 
 /** Bank name + logo are shown by BankBadge itself; the subtitle is just date + count. */
 function bankStatementSubtitle(
@@ -20,7 +20,7 @@ function bankStatementSubtitle(
   const parts = [formatDateTime(doc.uploadDate, timeFormat, t)];
   if (doc.extractedTransactions) {
     parts.push(
-      t("data.bankStatementDetail.transactionCount", {
+      t("bankStatements.detail.transactionCount", {
         count: doc.extractedTransactions.length,
       }),
     );
@@ -54,7 +54,7 @@ export function BankStatementCard({
   const status = <BankStatementStatusBadge doc={doc} />;
 
   const deleteLabel = t("actions.delete", {
-    name: doc.name || t("data.bankStatementFallbackName"),
+    name: doc.name || t("bankStatements.fallbackName"),
   });
 
   const deleteButton = (

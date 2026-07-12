@@ -35,13 +35,19 @@ export default function AppLayout() {
   const initial = user?.name ? user.name.trim().charAt(0).toUpperCase() : "?";
 
   // State for desktop sidebar dragging & collapsing
-  const [sidebarWidth, setSidebarWidth] = useState(288); // 288px = w-72 (Tailwind default)
+  const MIN_SIDEBAR_WIDTH = 240;
+  const MAX_SIDEBAR_WIDTH = 280; // w-70
+  const [sidebarWidth, setSidebarWidth] = useState(MAX_SIDEBAR_WIDTH);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [isDragging, setIsDragging] = useState(false);
 
   const startResizing = (e: React.MouseEvent) => {
     e.preventDefault();
     setIsDragging(true);
+    // Prevent text-selection and show a consistent cursor over the whole page
+    // while dragging, not just while the pointer is over the thin handle.
+    document.body.style.cursor = "col-resize";
+    document.body.style.userSelect = "none";
     const startX = e.clientX;
     const startWidth = sidebarWidth;
 
@@ -50,15 +56,19 @@ export default function AppLayout() {
       const delta = dragEvent.clientX - startX;
       // Reverse drag math if document is Right-to-Left
       const newWidth = isRtl ? startWidth - delta : startWidth + delta;
+      const clampedWidth = Math.min(
+        MAX_SIDEBAR_WIDTH,
+        Math.max(MIN_SIDEBAR_WIDTH, newWidth),
+      );
 
-      if (newWidth >= 200 && newWidth <= 550) {
-        setSidebarWidth(newWidth);
-        if (isCollapsed) setIsCollapsed(false);
-      }
+      setSidebarWidth(clampedWidth);
+      if (isCollapsed) setIsCollapsed(false);
     };
 
     const stopDrag = () => {
       setIsDragging(false);
+      document.body.style.cursor = "";
+      document.body.style.userSelect = "";
       document.removeEventListener("mousemove", doDrag);
       document.removeEventListener("mouseup", stopDrag);
     };
@@ -70,8 +80,8 @@ export default function AppLayout() {
   const navItems = [
     { to: `/${lang}/dashboard`, label: t("nav.dashboard"), icon: LayoutDashboard },
     { to: `/${lang}/chat`, label: t("nav.chat"), icon: Bot },
-    { to: `/${lang}/transactions`, label: t("data.transactions"), icon: ArrowLeftRight },
-    { to: `/${lang}/bank-statements`, label: t("data.bankStatements"), icon: FileText },
+    { to: `/${lang}/transactions`, label: t("transactions.title"), icon: ArrowLeftRight },
+    { to: `/${lang}/bank-statements`, label: t("bankStatements.title"), icon: FileText },
   ];
 
   const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
@@ -300,11 +310,20 @@ export default function AppLayout() {
               </div>
             </div>
 
-            {/* Drag Resize Handle (Desktop Only) */}
+            {/* Drag Resize Handle (Desktop Only) — the clickable zone is wider
+                than what's painted so it's easy to grab without pixel-precision,
+                while the visible bar itself stays a thin, unobtrusive line that
+                only lights up on hover/drag. */}
             <div
-              className="hover:bg-primary absolute inset-y-0 -inset-e-0.75 z-50 hidden w-1.5 cursor-col-resize lg:block"
+              className="group absolute inset-y-0 -inset-e-1.5 z-50 hidden w-3 cursor-col-resize touch-none lg:flex lg:items-center lg:justify-center"
               onMouseDown={startResizing}
-            />
+            >
+              <div
+                className={`h-full w-1 rounded-full transition-colors ${
+                  isDragging ? "bg-primary" : "group-hover:bg-primary/50 bg-transparent"
+                }`}
+              />
+            </div>
           </aside>
         </div>
       </div>

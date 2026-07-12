@@ -6,11 +6,11 @@ import { useBankStatementModalHeader } from "@/lib/use-bank-statement-modal-head
 import { BaseModal } from "@/components/shared/BaseModal";
 import { toastError } from "@/lib/toast";
 import { useAccounts } from "@/queries/accounts";
-import { AddBankAccountModal } from "@/components/data/AddBankAccountModal";
-import { AccountConfirmStep } from "@/components/data/AccountConfirmStep";
-import { BankStatementStatusPanel } from "@/components/data/BankStatementStatusPanel";
-import { ExtractedTransactionsSection } from "@/components/data/ExtractedTransactionsSection";
-import { BankStatementModalActions } from "@/components/data/BankStatementModalActions";
+import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
+import { AccountConfirmStep } from "@/components/bank-statements/AccountConfirmStep";
+import { BankStatementStatusPanel } from "@/components/bank-statements/BankStatementStatusPanel";
+import { ExtractedTransactionsSection } from "@/components/bank-statements/ExtractedTransactionsSection";
+import { BankStatementModalActions } from "@/components/bank-statements/BankStatementModalActions";
 import {
   useBankStatement,
   useRetryBankStatement,

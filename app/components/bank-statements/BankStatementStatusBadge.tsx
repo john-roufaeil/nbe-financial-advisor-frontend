@@ -68,7 +68,7 @@ export function BankStatementStatusBadge({ doc }: { doc: BankStatement }) {
         tone="bg-info/10 text-info"
         icon={Loader2}
         spin
-        label={t(`data.bankStatementStatus.${doc.status}`)}
+        label={t(`bankStatements.status.${doc.status}`)}
       />
     );
   }
@@ -77,7 +77,7 @@ export function BankStatementStatusBadge({ doc }: { doc: BankStatement }) {
       <StatusPill
         tone="bg-error/10 text-error"
         icon={TriangleAlert}
-        label={t("data.bankStatementStatus.failed")}
+        label={t("bankStatements.status.failed")}
       />
     );
   }
@@ -86,7 +86,7 @@ export function BankStatementStatusBadge({ doc }: { doc: BankStatement }) {
       <StatusPill
         tone="bg-warning/10 text-warning"
         icon={ClockCheck}
-        label={t("data.bankStatementStatus.pendingApproval")}
+        label={t("bankStatements.status.pendingApproval")}
       />
     );
   }
@@ -95,7 +95,7 @@ export function BankStatementStatusBadge({ doc }: { doc: BankStatement }) {
     <StatusPill
       tone="bg-success/10 text-success"
       icon={CircleCheck}
-      label={t("data.bankStatementStatus.processed")}
+      label={t("bankStatements.status.processed")}
       style={{ transitionDuration: `${PROCESSED_BADGE_FADE_MS}ms` }}
       className={`transition-opacity ${fading ? "opacity-0" : "opacity-100"}`}
     />

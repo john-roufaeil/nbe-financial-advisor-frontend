@@ -19,14 +19,14 @@ export function ErrorState({
         <TriangleAlert className="size-5" />
       </span>
       <p className="text-base-content/70 max-w-xs text-sm">
-        {message ?? t("data.loadError")}
+        {message ?? t("common.loadError")}
       </p>
       <button
         type="button"
         onClick={onRetry}
         className="btn btn-error btn-outline btn-sm"
       >
-        {t("data.retry")}
+        {t("common.retry")}
       </button>
     </div>
   );
@@ -52,7 +52,7 @@ export function EmptyState({
         </span>
       )}
       <p className="text-base-content/50 w-full text-sm text-balance sm:w-1/2">
-        {label ?? t("data.noResults")}
+        {label ?? t("common.noResults")}
       </p>
     </div>
   );

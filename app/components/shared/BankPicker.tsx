@@ -61,7 +61,7 @@ export function BankPicker({
       getKey={(code) => code}
       onSelect={select}
       listClassName="max-h-30"
-      emptyMessage={t("data.noResults")}
+      emptyMessage={t("common.noResults")}
       trigger={
         <span className="flex min-w-0 flex-1 items-center gap-2">
           {value && (
@@ -72,7 +72,7 @@ export function BankPicker({
             />
           )}
           <span className={`truncate ${selectedLabel ? "" : "text-base-content/40"}`}>
-            {selectedLabel || t("data.addAccount.bankPlaceholder")}
+            {selectedLabel || t("common.addAccount.bankPlaceholder")}
           </span>
         </span>
       }
@@ -84,7 +84,7 @@ export function BankPicker({
             autoFocus
             value={query}
             onChange={(e) => setQuery(e.target.value)}
-            placeholder={t("data.addAccount.bankSearchPlaceholder")}
+            placeholder={t("common.addAccount.bankSearchPlaceholder")}
             maxLength={20}
             className="w-full"
           />
@@ -115,7 +115,7 @@ export function BankPicker({
           >
             <Plus className="size-4 shrink-0" />
             <span className="truncate">
-              {t("data.addAccount.addCustomBank", { name: query.trim() })}
+              {t("common.addAccount.addCustomBank", { name: query.trim() })}
             </span>
           </button>
         ) : null

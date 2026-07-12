@@ -45,11 +45,11 @@ export const TransactionDetailModal = forwardRef<
           </span>
         )
       }
-      title={transaction?.title || t("data.transactionDetail.title")}
+      title={transaction?.title || t("transactions.detail.title")}
     >
       {transaction && (
         <div className="flex flex-col">
-          <DetailRow label={t("data.transactionDetail.amount")}>
+          <DetailRow label={t("transactions.detail.amount")}>
             <Money className={isIncome ? "text-success" : "text-base-content"}>
               <span dir="ltr">
                 {isIncome ? "+" : "-"}
@@ -58,18 +58,18 @@ export const TransactionDetailModal = forwardRef<
               {t("currency.EGP")}
             </Money>
           </DetailRow>
-          <DetailRow label={t("data.transactionDetail.category")}>
-            {t(`data.categories.${transaction.category}`, transaction.category)}
+          <DetailRow label={t("transactions.detail.category")}>
+            {t(`common.categories.${transaction.category}`, transaction.category)}
           </DetailRow>
-          <DetailRow label={t("data.transactionDetail.date")}>
+          <DetailRow label={t("transactions.detail.date")}>
             {formatDateTime(transaction.datetime, timeFormat, t)}
           </DetailRow>
-          <DetailRow label={t("data.transactionDetail.type")}>
-            {t(`data.filters.${transaction.type}`)}
+          <DetailRow label={t("transactions.detail.type")}>
+            {t(`common.filters.${transaction.type}`)}
           </DetailRow>
           <div className="flex items-center justify-between gap-3 py-2.5">
             <span className="text-base-content/50 text-sm">
-              {t("data.transactionDetail.account")}
+              {t("transactions.detail.account")}
             </span>
             {accountsLoading ? (
               <Loader2 data-no-flip className="text-primary size-4 animate-spin" />
@@ -82,7 +82,7 @@ export const TransactionDetailModal = forwardRef<
               />
             ) : (
               <span className="text-base-content/50 text-sm">
-                {t("data.transactionDetail.accountUnknown")}
+                {t("transactions.detail.accountUnknown")}
               </span>
             )}
           </div>

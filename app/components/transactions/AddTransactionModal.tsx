@@ -5,8 +5,8 @@ import { useCreateTransaction, useUpdateTransaction } from "@/queries/transactio
 import { useAccounts } from "@/queries/accounts";
 import { Button } from "@/components/shared/Button";
 import { BaseModal } from "@/components/shared/BaseModal";
-import { AddBankAccountModal } from "@/components/data/AddBankAccountModal";
-import { AccountPicker } from "@/components/data/AccountPicker";
+import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
+import { AccountPicker } from "@/components/transactions/AccountPicker";
 
 function closeDialog(ref: Ref<HTMLDialogElement>) {
   if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
@@ -112,7 +112,7 @@ export const AddTransactionModal = forwardRef<
 
   function titleError(value: string): string | undefined {
     if (!value.trim()) return undefined;
-    if (value.trim().length > 20) return t("data.addTransaction.errors.nameTooLong");
+    if (value.trim().length > 20) return t("transactions.add.errors.nameTooLong");
     return undefined;
   }
 
@@ -120,7 +120,7 @@ export const AddTransactionModal = forwardRef<
     if (value === "") return undefined;
     const num = Number(value);
     if (!Number.isFinite(num) || num <= 0) {
-      return t("data.addTransaction.errors.amountInvalid");
+      return t("transactions.add.errors.amountInvalid");
     }
     return undefined;
   }
@@ -128,14 +128,14 @@ export const AddTransactionModal = forwardRef<
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const nextErrors: typeof errors = {};
-    if (!title.trim()) nextErrors.title = t("data.addTransaction.errors.nameRequired");
+    if (!title.trim()) nextErrors.title = t("transactions.add.errors.nameRequired");
     else if (title.trim().length > 20)
-      nextErrors.title = t("data.addTransaction.errors.nameTooLong");
+      nextErrors.title = t("transactions.add.errors.nameTooLong");
     if (!amount || !Number.isFinite(amountNum) || amountNum <= 0) {
-      nextErrors.amount = t("data.addTransaction.errors.amountInvalid");
+      nextErrors.amount = t("transactions.add.errors.amountInvalid");
     }
     if (!editing && !accountId) {
-      nextErrors.accountId = t("data.addTransaction.errors.accountRequired");
+      nextErrors.accountId = t("transactions.add.errors.accountRequired");
     }
     setErrors(nextErrors);
     if (Object.keys(nextErrors).length > 0) return;
@@ -167,9 +167,7 @@ export const AddTransactionModal = forwardRef<
     <BaseModal
       ref={ref}
       onClose={reset}
-      title={
-        editing ? t("data.addTransaction.editTitle") : t("data.addTransaction.title")
-      }
+      title={editing ? t("transactions.add.editTitle") : t("transactions.add.title")}
       actions={
         <>
           <Button
@@ -179,7 +177,7 @@ export const AddTransactionModal = forwardRef<
             disabled={!isValid}
             className="btn btn-primary"
           >
-            {editing ? t("actions.done") : t("data.addTransaction.add")}
+            {editing ? t("actions.done") : t("transactions.add.add")}
           </Button>
           <button
             type="button"
@@ -200,7 +198,7 @@ export const AddTransactionModal = forwardRef<
         className="flex flex-col gap-3"
       >
         <label className="flex flex-col gap-1">
-          <span className="label-text text-xs">{t("data.addTransaction.name")}</span>
+          <span className="label-text text-xs">{t("transactions.add.name")}</span>
           <input
             type="text"
             value={title}
@@ -208,7 +206,7 @@ export const AddTransactionModal = forwardRef<
               setTitle(e.target.value);
               setErrors((err) => ({ ...err, title: titleError(e.target.value) }));
             }}
-            placeholder={t("data.addTransaction.namePlaceholder")}
+            placeholder={t("transactions.add.namePlaceholder")}
             maxLength={20}
             className={`input input-bordered input-sm w-full ${errors.title ? "input-error" : ""}`}
           />
@@ -216,14 +214,14 @@ export const AddTransactionModal = forwardRef<
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="label-text text-xs">{t("data.addTransaction.account")}</span>
+          <span className="label-text text-xs">{t("transactions.add.account")}</span>
           <AccountPicker
             accounts={accounts}
             value={accountId}
             onChange={handleAccountChange}
             onAddNew={handleAddNewAccount}
             disabled={!!editing}
-            placeholder={t("data.addTransaction.accountPlaceholder")}
+            placeholder={t("transactions.add.accountPlaceholder")}
             error={!!errors.accountId}
           />
           {errors.accountId && (
@@ -231,13 +229,13 @@ export const AddTransactionModal = forwardRef<
           )}
           {!editing && accounts && accounts.length === 0 && (
             <span className="text-base-content/50 text-xs">
-              {t("data.addTransaction.noAccounts")}
+              {t("transactions.add.noAccounts")}
             </span>
           )}
         </label>
 
         <label className="flex flex-col gap-1">
-          <span className="label-text text-xs">{t("data.addTransaction.category")}</span>
+          <span className="label-text text-xs">{t("transactions.add.category")}</span>
           <select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
@@ -245,7 +243,7 @@ export const AddTransactionModal = forwardRef<
           >
             {TRANSACTION_CATEGORIES.map((c) => (
               <option key={c} value={c}>
-                {t(`data.categories.${c}`, c)}
+                {t(`common.categories.${c}`, c)}
               </option>
             ))}
           </select>
@@ -253,7 +251,7 @@ export const AddTransactionModal = forwardRef<
 
         <div className="flex items-end gap-3">
           <label className="flex flex-1 flex-col gap-1">
-            <span className="label-text text-xs">{t("data.addTransaction.amount")}</span>
+            <span className="label-text text-xs">{t("transactions.add.amount")}</span>
             <label
               className={`input input-bordered input-sm flex w-full items-center gap-2 ${errors.amount ? "input-error" : ""}`}
             >
@@ -266,7 +264,7 @@ export const AddTransactionModal = forwardRef<
                   setAmount(e.target.value);
                   setErrors((err) => ({ ...err, amount: amountError(e.target.value) }));
                 }}
-                placeholder={t("data.addTransaction.amountPlaceholder")}
+                placeholder={t("transactions.add.amountPlaceholder")}
                 className="w-full"
               />
               <span className="text-base-content/50 shrink-0 text-xs">
@@ -283,21 +281,21 @@ export const AddTransactionModal = forwardRef<
                 onClick={() => setType("expense")}
                 className={`btn btn-sm join-item cursor-pointer ${type === "expense" ? "btn-error" : "btn-ghost"}`}
               >
-                {t("data.filters.expense")}
+                {t("common.filters.expense")}
               </button>
               <button
                 type="button"
                 onClick={() => setType("income")}
                 className={`btn btn-sm join-item cursor-pointer ${type === "income" ? "btn-success" : "btn-ghost"}`}
               >
-                {t("data.filters.income")}
+                {t("common.filters.income")}
               </button>
             </div>
           </div>
         </div>
 
         <label className="flex w-full flex-col gap-1">
-          <span className="label-text text-xs">{t("data.addTransaction.date")}</span>
+          <span className="label-text text-xs">{t("transactions.add.date")}</span>
           <input
             type="date"
             value={date}

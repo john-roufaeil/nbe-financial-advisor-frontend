@@ -23,13 +23,13 @@ export function AccountConfirmStep({
     <div className="flex flex-col gap-3">
       <div>
         <p className="text-base-content/50 text-xs">
-          {t("data.bankStatementDetail.stepOf", { current: 1, total: 2 })}
+          {t("bankStatements.detail.stepOf", { current: 1, total: 2 })}
         </p>
         <p className="text-sm font-medium">
-          {t("data.bankStatementDetail.confirmAccountTitle")}
+          {t("bankStatements.detail.confirmAccountTitle")}
         </p>
         <p className="text-base-content/60 text-xs">
-          {t("data.bankStatementDetail.confirmAccountSubtitle")}
+          {t("bankStatements.detail.confirmAccountSubtitle")}
         </p>
       </div>
 
@@ -68,7 +68,7 @@ export function AccountConfirmStep({
 
       {!accountsLoading && accounts?.length === 0 && (
         <p className="text-base-content/50 py-2 text-sm">
-          {t("data.bankStatementDetail.noAccountsYet")}
+          {t("bankStatements.detail.noAccountsYet")}
         </p>
       )}
 
@@ -78,7 +78,7 @@ export function AccountConfirmStep({
         className="btn btn-ghost btn-sm w-fit gap-2 self-start"
       >
         <Plus className="size-4" />
-        {t("data.bankStatementDetail.addNewAccount")}
+        {t("bankStatements.detail.addNewAccount")}
       </button>
     </div>
   );

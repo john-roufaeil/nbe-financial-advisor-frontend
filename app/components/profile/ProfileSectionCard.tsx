@@ -168,7 +168,7 @@ export function ProfileSectionCard({
     if (phoneField) {
       const value = (draft[phoneField.key] as string) ?? "";
       if (value && !isValidPhoneNumber(value)) {
-        nextErrors[phoneField.key] = t("data.sections.errors.phoneInvalid");
+        nextErrors[phoneField.key] = t("common.sections.errors.phoneInvalid");
       }
     }
 
@@ -176,7 +176,7 @@ export function ProfileSectionCard({
     if (nameField) {
       const value = (draft[nameField.key] as string) ?? "";
       if (!value.trim()) {
-        nextErrors[nameField.key] = t("data.sections.errors.nameRequired");
+        nextErrors[nameField.key] = t("common.sections.errors.nameRequired");
       }
     }
 
@@ -184,7 +184,7 @@ export function ProfileSectionCard({
     if (incomeField) {
       const value = (draft[incomeField.key] as string) ?? "";
       if (value && Number(value) < 0) {
-        nextErrors[incomeField.key] = t("data.sections.errors.incomeNegative");
+        nextErrors[incomeField.key] = t("common.sections.errors.incomeNegative");
       }
     }
 

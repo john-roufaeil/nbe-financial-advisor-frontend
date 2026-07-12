@@ -2,7 +2,7 @@ import { ArrowDownCircle, ArrowUpCircle, CircleCheck, Plus } from "lucide-react"
 import { useTranslation } from "react-i18next";
 import type { BankStatement, ExtractedTransaction } from "@/types/bank-statement";
 import { Money } from "@/components/shared/Money";
-import { ExtractedTransactionRow } from "@/components/data/ExtractedTransactionRow";
+import { ExtractedTransactionRow } from "@/components/bank-statements/ExtractedTransactionRow";
 
 /** Step 2 of the review flow: the (possibly editable) list of transactions
  * extracted from an already-processed statement, plus the approved banner. */
@@ -26,7 +26,7 @@ export function ExtractedTransactionsSection({
       {!doc.approved && (
         <div>
           <p className="text-base-content/50 text-xs">
-            {t("data.bankStatementDetail.stepOf", { current: 2, total: 2 })}
+            {t("bankStatements.detail.stepOf", { current: 2, total: 2 })}
           </p>
         </div>
       )}
@@ -34,20 +34,20 @@ export function ExtractedTransactionsSection({
         {doc.approved ? (
           <p className="text-success flex items-center gap-1.5 text-sm font-medium">
             <CircleCheck data-no-flip className="size-4" />
-            {t("data.bankStatementDetail.approved")}
+            {t("bankStatements.detail.approved")}
           </p>
         ) : (
           <div>
             <p className="text-sm font-medium">
-              {t("data.bankStatementDetail.reviewTitle")}
+              {t("bankStatements.detail.reviewTitle")}
             </p>
             <p className="text-base-content/60 text-xs">
-              {t("data.bankStatementDetail.reviewSubtitle")}
+              {t("bankStatements.detail.reviewSubtitle")}
             </p>
           </div>
         )}
         <span className="text-base-content/50 shrink-0 text-xs">
-          {t("data.bankStatementDetail.transactionCount", { count: draft.length })}
+          {t("bankStatements.detail.transactionCount", { count: draft.length })}
         </span>
       </div>
 
@@ -72,7 +72,7 @@ export function ExtractedTransactionsSection({
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-medium">{tx.title}</p>
                       <p className="text-base-content/50 text-xs">
-                        {t(`data.categories.${tx.category}`, tx.category)}
+                        {t(`common.categories.${tx.category}`, tx.category)}
                       </p>
                     </div>
                     <Money
@@ -100,7 +100,7 @@ export function ExtractedTransactionsSection({
         </ul>
       ) : (
         <p className="text-base-content/50 py-4 text-center text-sm">
-          {t("data.bankStatementDetail.noTransactions")}
+          {t("bankStatements.detail.noTransactions")}
         </p>
       )}
 
@@ -111,7 +111,7 @@ export function ExtractedTransactionsSection({
           className="btn btn-ghost btn-sm w-fit gap-2 self-start"
         >
           <Plus className="size-4" />
-          {t("data.bankStatementDetail.addTransaction")}
+          {t("bankStatements.detail.addTransaction")}
         </button>
       )}
     </div>

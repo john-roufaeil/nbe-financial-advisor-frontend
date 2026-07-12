@@ -31,8 +31,8 @@ export function BankStatementStatusPanel({
         <Loader2 data-no-flip className="text-primary size-8 animate-spin" />
         <p className="text-base-content/60 text-sm">
           {doc.status === "uploading"
-            ? t("data.bankStatementDetail.uploading")
-            : t("data.bankStatementDetail.processing")}
+            ? t("bankStatements.detail.uploading")
+            : t("bankStatements.detail.processing")}
         </p>
       </div>
     );
@@ -44,9 +44,9 @@ export function BankStatementStatusPanel({
     return (
       <div className="flex flex-col items-center gap-3 py-8 text-center">
         <TriangleAlert className="text-error size-8" />
-        <p className="font-medium">{t("data.bankStatementDetail.uploadFailedTitle")}</p>
+        <p className="font-medium">{t("bankStatements.detail.uploadFailedTitle")}</p>
         <p className="text-base-content/60 mx-auto w-2/3 text-sm text-balance">
-          {t(`data.bankStatementDetail.${doc.errorMessage ?? "uploadFailedGeneric"}`)}
+          {t(`bankStatements.detail.${doc.errorMessage ?? "uploadFailedGeneric"}`)}
         </p>
         <input
           ref={reuploadInputRef}
@@ -62,7 +62,7 @@ export function BankStatementStatusPanel({
           className="btn btn-primary btn-sm gap-2"
         >
           <Upload className="size-4" />
-          {t("data.bankStatementDetail.uploadAgain")}
+          {t("bankStatements.detail.uploadAgain")}
         </Button>
       </div>
     );
@@ -71,11 +71,9 @@ export function BankStatementStatusPanel({
   return (
     <div className="flex flex-col items-center gap-3 py-8 text-center">
       <TriangleAlert className="text-error size-8" />
-      <p className="font-medium">{t("data.bankStatementDetail.failedTitle")}</p>
+      <p className="font-medium">{t("bankStatements.detail.failedTitle")}</p>
       <p className="text-base-content/60 mx-auto w-2/3 text-sm text-balance">
-        {t(
-          `data.bankStatementDetail.${doc.errorMessage ?? "bankStatementFailedGeneric"}`,
-        )}
+        {t(`bankStatements.detail.${doc.errorMessage ?? "bankStatementFailedGeneric"}`)}
       </p>
       <Button
         type="button"
@@ -84,7 +82,7 @@ export function BankStatementStatusPanel({
         className="btn btn-primary btn-sm gap-2"
       >
         <RotateCcw className="size-4" />
-        {t("data.bankStatementDetail.retry")}
+        {t("bankStatements.detail.retry")}
       </Button>
     </div>
   );

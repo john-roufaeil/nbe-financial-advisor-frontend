@@ -1,7 +1,10 @@
 import { User, Landmark, CreditCard } from "lucide-react";
 import { useMe } from "@/queries/profile";
-import { ProfileSectionCard, type Section } from "@/components/data/ProfileSectionCard";
-import { BankAccountsCard } from "@/components/data/BankAccountsCard";
+import {
+  ProfileSectionCard,
+  type Section,
+} from "@/components/profile/ProfileSectionCard";
+import { BankAccountsCard } from "@/components/accounts/BankAccountsCard";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { ErrorState } from "@/components/shared/QueryState";
 
@@ -22,35 +25,35 @@ const SECTIONS: Section[] = [
     key: "profile",
     icon: User,
     color: "bg-primary/10 text-primary",
-    titleKey: "data.sections.profile.title",
+    titleKey: "common.sections.profile.title",
     fields: [
       {
         key: "name",
-        labelKey: "data.sections.profile.fields.fullName",
+        labelKey: "common.sections.profile.fields.fullName",
         writable: true,
-        placeholderKey: "data.sections.profile.fields.fullNamePlaceholder",
+        placeholderKey: "common.sections.profile.fields.fullNamePlaceholder",
       },
       {
         key: "phone",
-        labelKey: "data.sections.contact.fields.phone",
+        labelKey: "common.sections.contact.fields.phone",
         writable: true,
         ltr: true,
         phone: true,
-        placeholderKey: "data.sections.contact.fields.phonePlaceholder",
+        placeholderKey: "common.sections.contact.fields.phonePlaceholder",
       },
-      { key: "id", labelKey: "data.sections.profile.fields.id", writable: false },
-      { key: "email", labelKey: "data.sections.contact.fields.email", writable: false },
+      { key: "id", labelKey: "common.sections.profile.fields.id", writable: false },
+      { key: "email", labelKey: "common.sections.contact.fields.email", writable: false },
     ],
   },
   {
     key: "financial",
     icon: Landmark,
     color: "bg-info/10 text-info",
-    titleKey: "data.sections.financial.title",
+    titleKey: "common.sections.financial.title",
     fields: [
       {
         key: "employment_status",
-        labelKey: "data.sections.financial.fields.employmentStatus",
+        labelKey: "common.sections.financial.fields.employmentStatus",
         writable: true,
         options: EMPLOYMENT_OPTIONS.map((opt) => ({
           value: opt,
@@ -59,14 +62,14 @@ const SECTIONS: Section[] = [
       },
       {
         key: "monthly_income",
-        labelKey: "data.sections.financial.fields.monthlyIncome",
+        labelKey: "common.sections.financial.fields.monthlyIncome",
         writable: true,
         currency: true,
-        placeholderKey: "data.sections.financial.fields.monthlyIncomePlaceholder",
+        placeholderKey: "common.sections.financial.fields.monthlyIncomePlaceholder",
       },
       {
         key: "income_steadiness",
-        labelKey: "data.sections.financial.fields.incomeSteadiness",
+        labelKey: "common.sections.financial.fields.incomeSteadiness",
         writable: true,
         options: STEADINESS_OPTIONS.map((opt) => ({
           value: opt,

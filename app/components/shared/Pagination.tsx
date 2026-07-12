@@ -10,7 +10,7 @@ interface PaginationProps {
   pageSize: number;
   onPageChange: (page: number) => void;
   onPageSizeChange: (size: number) => void;
-  /** i18n key (e.g. "data.pagination.totalTransactions") pluralized via {{count}}. */
+  /** i18n key (e.g. "transactions.pagination.total") pluralized via {{count}}. */
   totalLabelKey: string;
   /** True when rendered directly beneath DataToolbar inside the same card (top); false for the standalone bar at the bottom of the page. */
   attached?: boolean;
@@ -66,27 +66,27 @@ export function Pagination({
         <select
           value={pageSize}
           onChange={(e) => onPageSizeChange(Number(e.target.value))}
-          aria-label={t("data.pagination.perPage", { count: pageSize })}
+          aria-label={t("common.pagination.perPage", { count: pageSize })}
           className="select select-bordered select-xs w-fit tabular-nums"
         >
           {PAGE_SIZE_OPTIONS.map((size) => (
             <option key={size} value={size}>
-              {t("data.pagination.perPage", { count: size })}
+              {t("common.pagination.perPage", { count: size })}
             </option>
           ))}
         </select>
       </div>
 
       <nav
-        aria-label={t("data.pagination.page", { page, totalPages })}
+        aria-label={t("common.pagination.page", { page, totalPages })}
         className="flex items-center gap-1"
       >
-        <Tooltip content={t("data.pagination.prev")}>
+        <Tooltip content={t("common.pagination.prev")}>
           <button
             type="button"
             disabled={page <= 1}
             onClick={() => onPageChange(page - 1)}
-            aria-label={t("data.pagination.prev")}
+            aria-label={t("common.pagination.prev")}
             className="btn btn-ghost btn-sm btn-square relative before:absolute before:-inset-1.5 before:content-[''] disabled:cursor-not-allowed disabled:opacity-70"
           >
             <ChevronLeft className="size-4" />
@@ -98,7 +98,7 @@ export function Pagination({
             doesn't fit a 320px viewport — collapse to a plain "page X of Y" readout
             below `sm` instead of shrinking targets or letting the row overflow. */}
         <span className="text-base-content/60 px-2 text-xs font-medium tabular-nums sm:hidden">
-          {t("data.pagination.page", { page, totalPages })}
+          {t("common.pagination.page", { page, totalPages })}
         </span>
 
         <div className="hidden items-center gap-1 sm:flex">
@@ -116,7 +116,7 @@ export function Pagination({
                 key={item}
                 type="button"
                 onClick={() => onPageChange(item)}
-                aria-label={t("data.pagination.goToPage", { page: item })}
+                aria-label={t("common.pagination.goToPage", { page: item })}
                 aria-current={item === page ? "page" : undefined}
                 className={`btn btn-sm btn-square relative tabular-nums before:absolute before:-inset-1 before:content-[''] ${
                   item === page ? "btn-accent" : "btn-ghost"
@@ -128,12 +128,12 @@ export function Pagination({
           )}
         </div>
 
-        <Tooltip content={t("data.pagination.next")}>
+        <Tooltip content={t("common.pagination.next")}>
           <button
             type="button"
             disabled={page >= totalPages}
             onClick={() => onPageChange(page + 1)}
-            aria-label={t("data.pagination.next")}
+            aria-label={t("common.pagination.next")}
             className="btn btn-ghost btn-sm btn-square relative before:absolute before:-inset-1.5 before:content-[''] disabled:cursor-not-allowed disabled:opacity-70"
           >
             <ChevronRight className="size-4" />

@@ -32,7 +32,7 @@ export function BankAccountFields({
     <div className="flex flex-col gap-3">
       <div className="flex gap-3">
         <label className="flex flex-1 flex-col gap-1">
-          <span className="label-text text-xs">{t("data.addAccount.accountType")}</span>
+          <span className="label-text text-xs">{t("common.addAccount.accountType")}</span>
           <select
             value={values.accountType}
             onChange={(e) => onChange({ accountType: e.target.value as AccountType })}
@@ -40,14 +40,14 @@ export function BankAccountFields({
           >
             {ACCOUNT_TYPES.map((type) => (
               <option key={type} value={type}>
-                {t(`data.addAccount.accountTypes.${type}`)}
+                {t(`common.addAccount.accountTypes.${type}`)}
               </option>
             ))}
           </select>
         </label>
 
         <label className="flex flex-1 flex-col gap-1">
-          <span className="label-text text-xs">{t("data.addAccount.currency")}</span>
+          <span className="label-text text-xs">{t("common.addAccount.currency")}</span>
           <select
             value={values.currency}
             onChange={(e) => onChange({ currency: e.target.value as Currency })}
@@ -63,7 +63,7 @@ export function BankAccountFields({
       </div>
 
       <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">{t("data.addAccount.bank")}</span>
+        <span className="label-text text-xs">{t("common.addAccount.bank")}</span>
         <BankPicker
           value={values.bankName}
           onChange={(name) => {
@@ -75,7 +75,7 @@ export function BankAccountFields({
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">{t("data.addAccount.accountNumber")}</span>
+        <span className="label-text text-xs">{t("common.addAccount.accountNumber")}</span>
         <input
           type="text"
           inputMode="numeric"
@@ -95,7 +95,7 @@ export function BankAccountFields({
               ),
             });
           }}
-          placeholder={t("data.addAccount.accountNumberPlaceholder")}
+          placeholder={t("common.addAccount.accountNumberPlaceholder")}
           maxLength={ACCOUNT_NUMBER_LENGTH}
           className={`input input-bordered input-sm w-full ${errors.accountNumber ? "input-error" : ""}`}
         />
@@ -106,7 +106,7 @@ export function BankAccountFields({
 
       <label className="flex flex-col gap-1">
         <span className="label-text text-xs">
-          {t("data.addAccount.accountNumberConfirm")}
+          {t("common.addAccount.accountNumberConfirm")}
         </span>
         <input
           type="text"
@@ -122,7 +122,7 @@ export function BankAccountFields({
               accountNumberConfirm: confirmMismatchError(values.accountNumber, digits, t),
             });
           }}
-          placeholder={t("data.addAccount.accountNumberPlaceholder")}
+          placeholder={t("common.addAccount.accountNumberPlaceholder")}
           maxLength={ACCOUNT_NUMBER_LENGTH}
           className={`input input-bordered input-sm w-full ${errors.accountNumberConfirm ? "input-error" : ""}`}
         />
@@ -132,7 +132,9 @@ export function BankAccountFields({
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">{t("data.addAccount.initialBalance")}</span>
+        <span className="label-text text-xs">
+          {t("common.addAccount.initialBalance")}
+        </span>
         <label
           className={`input input-bordered input-sm flex w-full items-center gap-2 ${errors.initialBalance ? "input-error" : ""}`}
         >
@@ -145,7 +147,7 @@ export function BankAccountFields({
               onChange({ initialBalance: e.target.value });
               onErrorsChange({ initialBalance: balanceError(e.target.value, t) });
             }}
-            placeholder={t("data.addAccount.initialBalancePlaceholder")}
+            placeholder={t("common.addAccount.initialBalancePlaceholder")}
             className="w-full"
           />
           <span className="text-base-content/50 shrink-0 text-xs">

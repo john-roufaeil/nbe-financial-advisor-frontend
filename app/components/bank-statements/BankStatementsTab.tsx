@@ -2,9 +2,9 @@ import { useRef, useState } from "react";
 import { FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useBankStatements } from "@/queries/bank-statements";
-import { Pagination } from "@/components/data/Pagination";
-import { BankStatementDetailModal } from "@/components/data/BankStatementDetailModal";
-import { BankStatementCard } from "@/components/data/BankStatementCard";
+import { Pagination } from "@/components/shared/Pagination";
+import { BankStatementDetailModal } from "@/components/bank-statements/BankStatementDetailModal";
+import { BankStatementCard } from "@/components/bank-statements/BankStatementCard";
 import { DataToolbar } from "@/components/shared/DataToolbar";
 import { ListSkeleton } from "@/components/shared/skeletons/ListSkeleton";
 import { CardGridSkeleton } from "@/components/shared/skeletons/CardGridSkeleton";
@@ -57,7 +57,7 @@ export function BankStatementsTab() {
           filters={f.FILTERS}
           filter={f.filter}
           onFilterChange={f.updateFilter}
-          filterLabel={(value) => t(`data.filters.${value}`)}
+          filterLabel={(value) => t(`common.filters.${value}`)}
           sort={f.sort}
           onSortChange={f.setSort}
           hasActiveFilters={f.hasActiveFilters}
@@ -71,7 +71,7 @@ export function BankStatementsTab() {
           pageSize={f.pageSize}
           onPageChange={f.setPage}
           onPageSizeChange={f.updatePageSize}
-          totalLabelKey="data.pagination.totalBankStatements"
+          totalLabelKey="bankStatements.pagination.total"
         />
       </div>
 
@@ -97,7 +97,7 @@ export function BankStatementsTab() {
       ) : (
         <EmptyState
           icon={FileText}
-          label={t("data.bankStatementsEmpty")}
+          label={t("bankStatements.empty")}
           className={loadAnimation}
         />
       )}
@@ -109,7 +109,7 @@ export function BankStatementsTab() {
         pageSize={f.pageSize}
         onPageChange={f.setPage}
         onPageSizeChange={f.updatePageSize}
-        totalLabelKey="data.pagination.totalBankStatements"
+        totalLabelKey="bankStatements.pagination.total"
       />
 
       <BankStatementDetailModal ref={detailModalRef} bankStatementId={selectedId} />

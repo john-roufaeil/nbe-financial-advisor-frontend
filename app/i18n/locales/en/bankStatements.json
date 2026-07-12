@@ -1,0 +1,63 @@
+{
+  "bankStatements": {
+    "title": "Bank Statements",
+    "subtitle": "Upload statements to auto-extract transactions",
+    "empty": "No bank statements yet. Upload one and we'll extract the transactions automatically.",
+    "emptyShort": "No bank statements",
+    "emptyCta": "Upload your first statement",
+    "fallbackName": "Bank statement",
+    "pagination": {
+      "total_zero": "No bank statements",
+      "total_one": "{{count}} bank statement",
+      "total_two": "{{count}} bank statements",
+      "total_few": "{{count}} bank statements",
+      "total_many": "{{count}} bank statements",
+      "total_other": "{{count}} bank statements"
+    },
+    "add": {
+      "title": "Add Bank Statement",
+      "add": "Add Bank Statement",
+      "dropzone": "Drag & drop files here, or click to choose",
+      "accepted": "Images, PDF, or Word bank statements, up to {{maxMb}}MB",
+      "rejectedType": "Skipped unsupported file(s): {{names}}",
+      "rejectedSize": "Skipped file(s) over {{maxMb}}MB: {{names}}",
+      "rejectedExtra": "Only one statement can be added at a time — skipped extra file(s): {{names}}"
+    },
+    "status": {
+      "uploading": "Uploading...",
+      "processing": "Processing...",
+      "pendingApproval": "Pending approval",
+      "processed": "Processed",
+      "failed": "Failed"
+    },
+    "detail": {
+      "title": "Bank Statement",
+      "uploading": "Uploading bank statement...",
+      "processing": "Analyzing bank statement...",
+      "failedTitle": "Processing failed",
+      "bankStatementFailedGeneric": "We couldn't process this file. It may be unreadable or in an unsupported format.",
+      "retry": "Retry",
+      "uploadFailedTitle": "Upload failed",
+      "uploadFailedGeneric": "We couldn't upload this file. Check your connection and try again with the file.",
+      "uploadAgain": "Upload again",
+      "stepOf": "Step {{current}} of {{total}}",
+      "confirmAccountTitle": "Confirm the bank account",
+      "confirmAccountSubtitle": "Select which account this statement belongs to, or add a new one.",
+      "noAccountsYet": "You don't have any linked bank accounts yet.",
+      "addNewAccount": "Add a new bank account",
+      "confirmAccount": "Continue",
+      "reviewTitle": "Review extracted transactions",
+      "reviewSubtitle": "Edit anything that looks off, then approve to add these to your transactions.",
+      "approve": "Approve & add to transactions",
+      "approved": "Added to your transactions",
+      "noTransactions": "No transactions found in this bank statement.",
+      "addTransaction": "Add a transaction",
+      "transactionCount_zero": "No transactions",
+      "transactionCount_one": "{{count}} transaction",
+      "transactionCount_two": "{{count}} transactions",
+      "transactionCount_few": "{{count}} transactions",
+      "transactionCount_many": "{{count}} transactions",
+      "transactionCount_other": "{{count}} transactions"
+    }
+  }
+}
