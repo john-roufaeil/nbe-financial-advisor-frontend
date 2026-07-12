@@ -27,6 +27,7 @@ export function Tooltip({
   children: ReactNode;
   position?: Position;
   className?: string;
+  disabled?: boolean;
 }) {
   const triggerRef = useRef<HTMLSpanElement>(null);
   const tooltipRef = useRef<HTMLSpanElement>(null);

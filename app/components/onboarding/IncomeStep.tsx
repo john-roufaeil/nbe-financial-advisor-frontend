@@ -72,6 +72,9 @@ export function IncomeStep() {
         min={0}
         max={10}
         step={1}
+        unit={t("onboarding.income.personUnit", {
+          count: Number(data.dependents_count) || 0,
+        })}
         error={missing("dependents_count")}
       />
     </div>
