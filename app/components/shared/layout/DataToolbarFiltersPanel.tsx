@@ -5,8 +5,9 @@ import { useTranslation } from "react-i18next";
 import { DateField } from "@/components/shared/forms/DateField";
 import { Z_POPOVER } from "@/lib/z-index";
 
-interface DataToolbarFiltersPanelProps<F extends string> {
-  coords: { top: number; left: number };
+/** The filter controls shared by DataToolbar (which collects them) and this
+ * popover panel (which renders them). */
+export interface ToolbarFiltersProps<F extends string> {
   fromDate: string;
   onFromDateChange: (value: string) => void;
   toDate: string;
@@ -15,15 +16,22 @@ interface DataToolbarFiltersPanelProps<F extends string> {
   filter: F;
   onFilterChange: (value: F) => void;
   filterLabel: (filter: F) => string;
+  /** Optional category filter (transactions only). */
   categories?: readonly string[];
   category?: string;
   onCategoryChange?: (value: string) => void;
   categoryLabel?: (category: string) => string;
+  /** Optional preset amount-range filter (transactions only). */
   amountRanges?: readonly { key: string; label: string }[];
   amountRange?: string;
   onAmountRangeChange?: (key: string) => void;
+  /** Whether any filter is currently active — gates showing the clear-all button. */
   hasActiveFilters: boolean;
   onClearAll: () => void;
+}
+
+interface DataToolbarFiltersPanelProps<F extends string> extends ToolbarFiltersProps<F> {
+  coords: { top: number; left: number };
 }
 
 function DataToolbarFiltersPanelInner<F extends string>(

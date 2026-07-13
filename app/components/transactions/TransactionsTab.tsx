@@ -3,34 +3,22 @@ import { Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { AMOUNT_RANGES, TRANSACTION_CATEGORIES } from "@/types/transaction";
 import { useTransactions, useDeleteTransaction } from "@/queries/transactions";
-import { Pagination } from "@/components/shared/layout/Pagination";
 import { AddTransactionModal } from "@/components/transactions/AddTransactionModal";
 import { TransactionDetailModal } from "@/components/transactions/TransactionDetailModal";
 import { TransactionCard } from "@/components/transactions/TransactionCard";
 import { DataToolbar } from "@/components/shared/layout/DataToolbar";
+import { PagedListSection } from "@/components/shared/layout/PagedListSection";
 import { useConfirmStore } from "@/store/use-confirm-store";
-import { ListSkeleton } from "@/components/shared/skeletons/ListSkeleton";
-import { CardGridSkeleton } from "@/components/shared/skeletons/CardGridSkeleton";
-import { ErrorState, EmptyState } from "@/components/shared/QueryState";
-import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
-import { useLoadAnimation } from "@/lib/use-load-animation";
 import { useTransactionFilters } from "@/lib/use-transaction-filters";
 import {
   useTransactionModals,
   type TransactionsTabHandle,
 } from "@/lib/use-transaction-modals";
 
-/** List = single column of rows; grid = responsive cards. */
-const VIEW_CONTAINER = {
-  list: "flex flex-col gap-2",
-  grid: "grid gap-2 sm:grid-cols-2 xl:grid-cols-3",
-} as const;
-
 export const TransactionsTab = forwardRef<TransactionsTabHandle>(
   function TransactionsTab(_props, ref) {
     const { t } = useTranslation();
     const confirm = useConfirmStore((s) => s.confirm);
-    const viewMode = useDisplayPreferencesStore((s) => s.viewMode);
     const f = useTransactionFilters();
     const modals = useTransactionModals(ref);
 
@@ -46,14 +34,11 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
       offset: (f.page - 1) * f.pageSize,
       limit: f.pageSize,
     });
-    const loadAnimation = useLoadAnimation(isPending);
     const deleteTransaction = useDeleteTransaction();
 
-    const totalPages = Math.max(1, Math.ceil((data?.total ?? 0) / f.pageSize));
-
     return (
-      <div className="flex flex-1 flex-col gap-4">
-        <div className="border-base-300 bg-base-100 animate-entry rounded-xl border shadow-sm">
+      <PagedListSection
+        toolbar={
           <DataToolbar
             search={f.searchInput}
             onSearchChange={f.updateSearch}
@@ -80,63 +65,36 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
             hasActiveFilters={f.hasActiveFilters}
             onClearAll={f.clearAllFilters}
           />
-          <Pagination
-            attached
-            page={f.page}
-            totalPages={totalPages}
-            total={data?.total ?? 0}
-            pageSize={f.pageSize}
-            onPageChange={f.setPage}
-            onPageSizeChange={f.updatePageSize}
-            totalLabelKey="transactions.pagination.total"
-          />
-        </div>
-
-        {isPending ? (
-          viewMode === "grid" ? (
-            <CardGridSkeleton />
-          ) : (
-            <ListSkeleton />
-          )
-        ) : isError ? (
-          <ErrorState onRetry={() => refetch()} />
-        ) : data.items.length > 0 ? (
-          <ul className={`${loadAnimation} ${VIEW_CONTAINER[viewMode]}`}>
-            {data.items.map((tr) => (
-              <TransactionCard
-                key={tr.id}
-                transaction={tr}
-                view={viewMode}
-                onOpen={() => modals.openDetail(tr)}
-                onEdit={() => modals.openEdit(tr)}
-                onDelete={() =>
-                  confirm({
-                    title: t("confirm.deleteTransactionTitle"),
-                    message: t("confirm.deleteMessage"),
-                    onConfirm: () => deleteTransaction.mutate(tr.id),
-                  })
-                }
-              />
-            ))}
-          </ul>
-        ) : (
-          <EmptyState
-            icon={Receipt}
-            label={t("transactions.empty")}
-            className={loadAnimation}
+        }
+        isPending={isPending}
+        isError={isError}
+        onRetry={() => refetch()}
+        items={data?.items}
+        total={data?.total}
+        renderItem={(tr, viewMode) => (
+          <TransactionCard
+            key={tr.id}
+            transaction={tr}
+            view={viewMode}
+            onOpen={() => modals.openDetail(tr)}
+            onEdit={() => modals.openEdit(tr)}
+            onDelete={() =>
+              confirm({
+                title: t("confirm.deleteTransactionTitle"),
+                message: t("confirm.deleteMessage"),
+                onConfirm: () => deleteTransaction.mutate(tr.id),
+              })
+            }
           />
         )}
-
-        <Pagination
-          page={f.page}
-          totalPages={totalPages}
-          total={data?.total ?? 0}
-          pageSize={f.pageSize}
-          onPageChange={f.setPage}
-          onPageSizeChange={f.updatePageSize}
-          totalLabelKey="transactions.pagination.total"
-        />
-
+        emptyIcon={Receipt}
+        emptyLabel={t("transactions.empty")}
+        page={f.page}
+        pageSize={f.pageSize}
+        onPageChange={f.setPage}
+        onPageSizeChange={f.updatePageSize}
+        totalLabelKey="transactions.pagination.total"
+      >
         <AddTransactionModal
           key={modals.modalKey ?? 0}
           ref={modals.modalRef}
@@ -147,7 +105,7 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
           ref={modals.detailModalRef}
           transaction={modals.viewing}
         />
-      </div>
+      </PagedListSection>
     );
   },
 );

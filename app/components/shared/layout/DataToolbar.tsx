@@ -14,62 +14,30 @@ import { ToggleSwitch } from "@/components/shared/forms/ToggleSwitch";
 import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 import { useDismissablePanel } from "@/lib/use-dismissable-panel";
 import { ToolbarSearchInput } from "@/components/shared/layout/ToolbarSearchInput";
-import { DataToolbarFiltersPanel } from "@/components/shared/layout/DataToolbarFiltersPanel";
+import {
+  DataToolbarFiltersPanel,
+  type ToolbarFiltersProps,
+} from "@/components/shared/layout/DataToolbarFiltersPanel";
 
 /** Matches the filters panel's `w-72` class. */
 const PANEL_WIDTH = 288;
 
-interface DataToolbarProps<F extends string> {
+interface DataToolbarProps<F extends string> extends ToolbarFiltersProps<F> {
   search: string;
   onSearchChange: (value: string) => void;
-  fromDate: string;
-  onFromDateChange: (value: string) => void;
-  toDate: string;
-  onToDateChange: (value: string) => void;
-  filters: readonly F[];
-  filter: F;
-  onFilterChange: (value: F) => void;
-  filterLabel: (filter: F) => string;
-  /** Optional category filter (transactions only). */
-  categories?: readonly string[];
-  category?: string;
-  onCategoryChange?: (value: string) => void;
-  categoryLabel?: (category: string) => string;
-  /** Optional preset amount-range filter (transactions only). */
-  amountRanges?: readonly { key: string; label: string }[];
-  amountRange?: string;
-  onAmountRangeChange?: (key: string) => void;
   /** Optional date sort toggle (transactions only). */
   sort?: "asc" | "desc";
   onSortChange?: (value: "asc" | "desc") => void;
-  /** Whether any filter is currently active — gates showing the clear-all button. */
-  hasActiveFilters: boolean;
-  onClearAll: () => void;
 }
 
 export function DataToolbar<F extends string>({
   search,
   onSearchChange,
-  fromDate,
-  onFromDateChange,
-  toDate,
-  onToDateChange,
-  filters,
-  filter,
-  onFilterChange,
-  filterLabel,
-  categories,
-  category,
-  onCategoryChange,
-  categoryLabel,
-  amountRanges,
-  amountRange,
-  onAmountRangeChange,
   sort,
   onSortChange,
-  hasActiveFilters,
-  onClearAll,
+  ...filterProps
 }: DataToolbarProps<F>) {
+  const { hasActiveFilters } = filterProps;
   const { t } = useTranslation();
   const viewMode = useDisplayPreferencesStore((s) => s.viewMode);
   const setViewMode = useDisplayPreferencesStore((s) => s.setViewMode);
@@ -128,23 +96,7 @@ export function DataToolbar<F extends string>({
             <DataToolbarFiltersPanel
               ref={panelRef}
               coords={panelCoords}
-              fromDate={fromDate}
-              onFromDateChange={onFromDateChange}
-              toDate={toDate}
-              onToDateChange={onToDateChange}
-              filters={filters}
-              filter={filter}
-              onFilterChange={onFilterChange}
-              filterLabel={filterLabel}
-              categories={categories}
-              category={category}
-              onCategoryChange={onCategoryChange}
-              categoryLabel={categoryLabel}
-              amountRanges={amountRanges}
-              amountRange={amountRange}
-              onAmountRangeChange={onAmountRangeChange}
-              hasActiveFilters={hasActiveFilters}
-              onClearAll={onClearAll}
+              {...filterProps}
             />
           )}
         </div>

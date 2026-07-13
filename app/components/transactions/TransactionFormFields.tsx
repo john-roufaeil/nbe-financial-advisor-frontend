@@ -1,12 +1,14 @@
 import {
   Controller,
+  useWatch,
   type Control,
   type FieldErrors,
   type UseFormRegister,
+  type UseFormSetValue,
 } from "react-hook-form";
 import { useTranslation } from "react-i18next";
-import { TRANSACTION_CATEGORIES } from "@/types/transaction";
 import { AccountPicker } from "@/components/transactions/AccountPicker";
+import { TypeCategoryField } from "@/components/transactions/TypeCategoryField";
 import { MoneyInput } from "@/components/shared/forms/MoneyInput";
 import { MAX_MONEY_VALUE } from "@/lib/format";
 import type { TransactionFormValues } from "@/lib/use-transaction-form";
@@ -17,6 +19,7 @@ export function TransactionFormFields({
   onSubmit,
   control,
   register,
+  setValue,
   errors,
   accounts,
   editing,
@@ -29,6 +32,7 @@ export function TransactionFormFields({
   onSubmit: () => void;
   control: Control<TransactionFormValues>;
   register: UseFormRegister<TransactionFormValues>;
+  setValue: UseFormSetValue<TransactionFormValues>;
   errors: FieldErrors<TransactionFormValues>;
   accounts: BankAccount[] | undefined;
   editing: boolean;
@@ -38,6 +42,8 @@ export function TransactionFormFields({
   minDate: () => string;
 }) {
   const { t } = useTranslation();
+  const type = useWatch({ control, name: "type" });
+  const category = useWatch({ control, name: "category" });
 
   return (
     <form id={formId} onSubmit={onSubmit} className="flex flex-col gap-3">
@@ -83,69 +89,38 @@ export function TransactionFormFields({
       </label>
 
       <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">{t("transactions.add.category")}</span>
-        <select
-          className="select select-bordered select-sm w-full"
-          {...register("category")}
-        >
-          {TRANSACTION_CATEGORIES.map((c) => (
-            <option key={c} value={c}>
-              {t(`common.categories.${c}`, c)}
-            </option>
-          ))}
-        </select>
+        <span className="label-text text-xs">{t("transactions.add.amount")}</span>
+        <Controller
+          name="amount"
+          control={control}
+          render={({ field }) => (
+            <MoneyInput
+              value={field.value}
+              max={MAX_MONEY_VALUE}
+              onChange={field.onChange}
+              placeholder={t("transactions.add.amountPlaceholder")}
+              unit={currencyLabel}
+              aria-label={t("transactions.add.amount")}
+              className={`w-full ${errors.amount ? "input-error" : ""}`}
+            />
+          )}
+        />
+        {errors.amount && (
+          <span className="text-error text-xs">{errors.amount.message}</span>
+        )}
       </label>
 
-      <div className="flex items-end gap-3">
-        <label className="flex flex-1 flex-col gap-1">
-          <span className="label-text text-xs">{t("transactions.add.amount")}</span>
-          <label
-            className={`input input-bordered input-sm flex w-full items-center gap-2 ${errors.amount ? "input-error" : ""}`}
-          >
-            <Controller
-              name="amount"
-              control={control}
-              render={({ field }) => (
-                <MoneyInput
-                  value={field.value}
-                  max={MAX_MONEY_VALUE}
-                  onChange={field.onChange}
-                  placeholder={t("transactions.add.amountPlaceholder")}
-                  className="w-full"
-                />
-              )}
-            />
-            <span className="text-base-content/50 shrink-0 text-xs">{currencyLabel}</span>
-          </label>
-          {errors.amount && (
-            <span className="text-error text-xs">{errors.amount.message}</span>
-          )}
-        </label>
-        <div className="flex flex-col gap-1">
-          <span className="label-text text-xs">&nbsp;</span>
-          <Controller
-            name="type"
-            control={control}
-            render={({ field }) => (
-              <div className="join border-base-300 w-fit rounded-lg border">
-                <button
-                  type="button"
-                  onClick={() => field.onChange("expense")}
-                  className={`btn btn-sm join-item cursor-pointer ${field.value === "expense" ? "btn-error" : "btn-ghost"}`}
-                >
-                  {t("common.filters.expense")}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => field.onChange("income")}
-                  className={`btn btn-sm join-item cursor-pointer ${field.value === "income" ? "btn-success" : "btn-ghost"}`}
-                >
-                  {t("common.filters.income")}
-                </button>
-              </div>
-            )}
-          />
-        </div>
+      <div className="flex flex-col gap-1">
+        <span className="label-text text-xs">{t("transactions.add.category")}</span>
+        <TypeCategoryField
+          type={type}
+          category={category}
+          onTypeChange={(next, fallback) => {
+            setValue("type", next, { shouldValidate: true });
+            if (fallback) setValue("category", fallback, { shouldValidate: true });
+          }}
+          onCategoryChange={(c) => setValue("category", c, { shouldValidate: true })}
+        />
       </div>
 
       <label className="flex w-full flex-col gap-1">

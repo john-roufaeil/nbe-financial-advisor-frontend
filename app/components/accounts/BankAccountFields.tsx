@@ -12,6 +12,49 @@ import {
   type BankAccountFormValues,
 } from "@/lib/bank-account-form";
 
+/** The account-number field and its confirmation twin: digits-only input
+ * capped at ACCOUNT_NUMBER_LENGTH, with the field's own error underneath. */
+function AccountNumberField({
+  name,
+  label,
+  control,
+  error,
+}: {
+  name: "accountNumber" | "accountNumberConfirm";
+  label: string;
+  control: Control<BankAccountFormValues>;
+  error?: { message?: string };
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="label-text text-xs">{label}</span>
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => (
+          <input
+            type="text"
+            inputMode="numeric"
+            dir="ltr"
+            value={field.value}
+            onChange={(e) =>
+              field.onChange(
+                e.target.value.replace(/\D/g, "").slice(0, ACCOUNT_NUMBER_LENGTH),
+              )
+            }
+            placeholder={t("common.addAccount.accountNumberPlaceholder")}
+            maxLength={ACCOUNT_NUMBER_LENGTH}
+            className={`input input-bordered input-sm w-full ${error ? "input-error" : ""}`}
+          />
+        )}
+      />
+      {error && <span className="text-error text-xs">{error.message}</span>}
+    </label>
+  );
+}
+
 /** Shared bank-account form fields, used both by the standalone AddBankAccountModal and inline in the statement-review flow's "add a new account" step. */
 export function BankAccountFields({
   control,
@@ -82,63 +125,19 @@ export function BankAccountFields({
         )}
       </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">{t("common.addAccount.accountNumber")}</span>
-        <Controller
-          name="accountNumber"
-          control={control}
-          render={({ field }) => (
-            <input
-              type="text"
-              inputMode="numeric"
-              dir="ltr"
-              value={field.value}
-              onChange={(e) =>
-                field.onChange(
-                  e.target.value.replace(/\D/g, "").slice(0, ACCOUNT_NUMBER_LENGTH),
-                )
-              }
-              placeholder={t("common.addAccount.accountNumberPlaceholder")}
-              maxLength={ACCOUNT_NUMBER_LENGTH}
-              className={`input input-bordered input-sm w-full ${errors.accountNumber ? "input-error" : ""}`}
-            />
-          )}
-        />
-        {errors.accountNumber && (
-          <span className="text-error text-xs">{errors.accountNumber.message}</span>
-        )}
-      </label>
+      <AccountNumberField
+        name="accountNumber"
+        label={t("common.addAccount.accountNumber")}
+        control={control}
+        error={errors.accountNumber}
+      />
 
-      <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">
-          {t("common.addAccount.accountNumberConfirm")}
-        </span>
-        <Controller
-          name="accountNumberConfirm"
-          control={control}
-          render={({ field }) => (
-            <input
-              type="text"
-              inputMode="numeric"
-              dir="ltr"
-              value={field.value}
-              onChange={(e) =>
-                field.onChange(
-                  e.target.value.replace(/\D/g, "").slice(0, ACCOUNT_NUMBER_LENGTH),
-                )
-              }
-              placeholder={t("common.addAccount.accountNumberPlaceholder")}
-              maxLength={ACCOUNT_NUMBER_LENGTH}
-              className={`input input-bordered input-sm w-full ${errors.accountNumberConfirm ? "input-error" : ""}`}
-            />
-          )}
-        />
-        {errors.accountNumberConfirm && (
-          <span className="text-error text-xs">
-            {errors.accountNumberConfirm.message}
-          </span>
-        )}
-      </label>
+      <AccountNumberField
+        name="accountNumberConfirm"
+        label={t("common.addAccount.accountNumberConfirm")}
+        control={control}
+        error={errors.accountNumberConfirm}
+      />
     </div>
   );
 }
