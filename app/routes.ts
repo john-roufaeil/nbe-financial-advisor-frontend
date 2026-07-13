@@ -1,5 +1,5 @@
 import { type RouteConfig, index, layout, route } from "@react-router/dev/routes";
-import { ROUTE_SEGMENTS } from "@/lib/constants/routes";
+import { ROUTE_SEGMENTS } from "./lib/constants/routes";
 
 export default [
   index("routes/root-redirect.tsx"),
