@@ -1,4 +1,3 @@
-import { useParams, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
   Settings2,
@@ -15,46 +14,25 @@ import { NumberFormatSwitcher } from "@/components/shared/preferences/NumberForm
 import { DateFormatSwitcher } from "@/components/shared/preferences/DateFormatSwitcher";
 import { CompactNumbersSwitcher } from "@/components/shared/preferences/CompactNumbersSwitcher";
 import { ToggleSwitch } from "@/components/shared/forms/ToggleSwitch";
-import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
-import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
+import { SUPPORTED_LANGUAGES } from "@/i18n";
+import { useLanguageSwitch } from "@/lib/use-language-switch";
 import { useThemeStore, type Theme } from "@/store/use-theme-store";
-import { useToastStore } from "@/store/use-toast-store";
 
 const THEME_OPTIONS: readonly [Theme, Theme] = ["light", "dark"];
 
 function LanguageToggle() {
   const { t } = useTranslation();
-  const { lang } = useParams<{ lang: string }>();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { i18n } = useTranslation();
-  const showToast = useToastStore((s) => s.show);
-
-  const labels: Record<SupportedLanguage, string> = {
-    en: t("settings.languageNames.en"),
-    ar: t("settings.languageNames.ar"),
-  };
-
-  function switchTo(next: SupportedLanguage) {
-    document.documentElement.lang = next;
-    document.documentElement.dir = RTL_LANGUAGES.includes(next) ? "rtl" : "ltr";
-    localStorage.setItem(STORAGE_KEYS.lang, next);
-    void i18n.changeLanguage(next);
-    showToast(t("toast.languageChanged", { language: labels[next] }), "info");
-    if (next !== lang) {
-      const rest = location.pathname.replace(`/${lang}`, "");
-      navigate(`/${next}${rest}${location.search}`);
-    }
-  }
+  const { current, labels, switchTo, isSwitching } = useLanguageSwitch();
 
   return (
     <ToggleSwitch
-      value={(lang as SupportedLanguage) ?? SUPPORTED_LANGUAGES[0]}
+      value={current}
       options={SUPPORTED_LANGUAGES}
       labels={labels}
       forceLtrOrder
-      onChange={switchTo}
+      onChange={(next) => void switchTo(next)}
       aria-label={t("settings.language")}
+      loading={isSwitching}
     />
   );
 }

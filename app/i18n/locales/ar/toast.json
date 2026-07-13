@@ -22,7 +22,7 @@
     "numberFormatChanged": "تم ضبط صيغة الأرقام على {{format}}",
     "dateFormatChanged": "تم ضبط صيغة التاريخ على {{format}}",
     "compactNumbersChanged": "تم ضبط عرض الأرقام على {{format}}",
-    "languageChanged": "تم ضبط اللغة على {{language}}",
+    "languageChanged": "Language set to English",
     "dataSourceChanged": "تم ضبط مصدر البيانات على {{source}}"
   }
 }

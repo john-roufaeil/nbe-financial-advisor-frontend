@@ -13,6 +13,11 @@ interface LinkToggleProps<T extends string> {
   className?: string;
   /** `link` (default) is a plain text toggle; `btn-ghost` renders it as a ghost button. */
   variant?: "link" | "btn-ghost";
+  disabled?: boolean;
+  /** Disables the toggle and swaps its icon/label for a spinner — same
+   * app-wide pattern as `Button`'s `loading` prop, for an async switch that
+   * can't be double-submitted and needs a visible in-flight cue. */
+  loading?: boolean;
 }
 
 /**
@@ -29,6 +34,8 @@ export function LinkToggle<T extends string>({
   "aria-label": ariaLabel,
   className = "",
   variant = "link",
+  disabled = false,
+  loading = false,
 }: LinkToggleProps<T>) {
   const next = value === options[0] ? options[1] : options[0];
   const Icon: IconComponent | undefined = icons?.[next];
@@ -42,11 +49,19 @@ export function LinkToggle<T extends string>({
     <button
       type="button"
       onClick={() => onChange(next)}
+      disabled={disabled || loading}
       aria-label={ariaLabel ?? labels[next]}
-      className={`${variantClassName} ${className}`}
+      aria-busy={disabled || loading}
+      className={`${variantClassName} ${className} disabled:cursor-not-allowed disabled:opacity-50`}
     >
-      {Icon && <Icon className="size-3.5 shrink-0" />}
-      <span>{labels[next]}</span>
+      {loading ? (
+        <span className="loading loading-spinner loading-xs" />
+      ) : (
+        <>
+          {Icon && <Icon className="size-3.5 shrink-0" />}
+          <span>{labels[next]}</span>
+        </>
+      )}
     </button>
   );
 }

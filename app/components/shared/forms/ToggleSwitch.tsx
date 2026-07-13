@@ -15,6 +15,11 @@ interface ToggleSwitchProps<T extends string> {
   /** When false, each option shows only its icon (requires `icons`) and its
    * label becomes a hover/focus tooltip instead of visible text. */
   showLabels?: boolean;
+  disabled?: boolean;
+  /** Disables the toggle and overlays a spinner — same app-wide pattern as
+   * `Button`'s `loading` prop, for an async switch that can't be
+   * double-submitted and needs a visible in-flight cue. */
+  loading?: boolean;
 }
 
 export function ToggleSwitch<T extends string>({
@@ -26,6 +31,8 @@ export function ToggleSwitch<T extends string>({
   "aria-label": ariaLabel,
   forceLtrOrder,
   showLabels = true,
+  disabled = false,
+  loading = false,
 }: ToggleSwitchProps<T>) {
   const active = value === options[0] ? 0 : 1;
 
@@ -37,11 +44,18 @@ export function ToggleSwitch<T extends string>({
     <button
       type="button"
       onClick={toggle}
+      disabled={disabled || loading}
       aria-label={ariaLabel}
-      className={`border-base-300 bg-base-200 focus-visible:outline-primary/50 relative flex w-full min-w-0 cursor-pointer items-center rounded-md border p-1 focus-visible:outline-2 focus-visible:outline-offset-2 ${
+      aria-busy={disabled || loading}
+      className={`border-base-300 bg-base-200 focus-visible:outline-primary/50 relative flex w-full min-w-0 cursor-pointer items-center rounded-md border p-1 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
         forceLtrOrder ? "rtl:flex-row-reverse" : ""
       }`}
     >
+      {loading && (
+        <span className="bg-base-200/70 absolute inset-0 z-20 grid place-items-center rounded-md">
+          <span className="loading loading-spinner loading-xs" />
+        </span>
+      )}
       <span
         className={`bg-primary absolute inset-y-1 ${forceLtrOrder ? "left-1" : "inset-s-1"} w-[calc(50%-0.375rem)] rounded-lg shadow-sm transition-transform duration-200 ease-out ${
           active === 1

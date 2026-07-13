@@ -52,10 +52,12 @@ import { ToastHost } from "@/components/shared/ToastHost";
 import { SessionExpiredModal } from "@/components/shared/modals/SessionExpiredModal";
 import { useStackedModals } from "@/lib/use-stacked-modals";
 import { useButtonRipple } from "@/lib/use-button-ripple";
+import { useLanguageSwitchWatcher } from "@/lib/use-language-switch-watcher";
 
 export default function App() {
   useStackedModals();
   useButtonRipple();
+  useLanguageSwitchWatcher();
   return (
     <QueryClientProvider client={queryClient}>
       <NavigationProgressBar />

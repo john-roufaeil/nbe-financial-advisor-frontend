@@ -1,9 +1,7 @@
-import { useParams, useLocation, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
-import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 import { LinkToggle } from "@/components/shared/forms/LinkToggle";
-import { useToastStore } from "@/store/use-toast-store";
+import { SUPPORTED_LANGUAGES } from "@/i18n";
+import { useLanguageSwitch } from "@/lib/use-language-switch";
 
 export function LanguageSwitcher({
   onSelect,
@@ -14,39 +12,22 @@ export function LanguageSwitcher({
   variant?: "link" | "btn-ghost";
   className?: string;
 }) {
-  const { lang } = useParams<{ lang: string }>();
-  const location = useLocation();
-  const navigate = useNavigate();
-  const { i18n, t } = useTranslation();
-  const showToast = useToastStore((s) => s.show);
-
-  const labels: Record<SupportedLanguage, string> = {
-    en: t("settings.languageNames.en"),
-    ar: t("settings.languageNames.ar"),
-  };
-
-  function switchTo(next: SupportedLanguage) {
-    onSelect?.();
-    document.documentElement.lang = next;
-    document.documentElement.dir = RTL_LANGUAGES.includes(next) ? "rtl" : "ltr";
-    localStorage.setItem(STORAGE_KEYS.lang, next);
-    void i18n.changeLanguage(next);
-    showToast(t("toast.languageChanged", { language: labels[next] }), "info");
-    if (next !== lang) {
-      const rest = location.pathname.replace(`/${lang}`, "");
-      navigate(`/${next}${rest}${location.search}`);
-    }
-  }
+  const { t } = useTranslation();
+  const { current, labels, switchTo, isSwitching } = useLanguageSwitch();
 
   return (
     <LinkToggle
-      value={(lang as SupportedLanguage) ?? SUPPORTED_LANGUAGES[0]}
+      value={current}
       options={SUPPORTED_LANGUAGES}
       labels={labels}
-      onChange={switchTo}
+      onChange={(next) => {
+        onSelect?.();
+        void switchTo(next);
+      }}
       aria-label={t("settings.language")}
       variant={variant}
       className={className}
+      loading={isSwitching}
     />
   );
 }
