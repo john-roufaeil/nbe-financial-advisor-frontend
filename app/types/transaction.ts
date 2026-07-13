@@ -20,13 +20,36 @@ export interface Transaction {
  * six values are ever stored.
  */
 export const TRANSACTION_CATEGORIES = [
-  "housing",
-  "food",
-  "transport",
-  "savings",
-  "lifestyle",
-  "other",
+  "Housing",
+  "Rent",
+  "Groceries",
+  "Entertainment",
+  "Utilities",
+  "Food",
+  "Transportation",
+  "Savings",
+  "Lifestyle",
+  "Other",
 ] as const;
+
+/**
+ * Income has its own category vocabulary — these are NOT budget buckets like
+ * TRANSACTION_CATEGORIES above (income doesn't consume a spending allocation),
+ * so they aren't matched against the plan's categories server-side today.
+ * TODO(backend): the backend needs to recognize these values — as of now an
+ * income transaction's category is stored but not matched to anything.
+ */
+export const INCOME_CATEGORIES = [
+  "salary",
+  "freelance",
+  "investment",
+  "gift",
+  "other_income",
+] as const;
+
+export function categoriesForType(type: "income" | "expense"): readonly string[] {
+  return type === "income" ? INCOME_CATEGORIES : TRANSACTION_CATEGORIES;
+}
 
 export interface AmountRange {
   key: string;

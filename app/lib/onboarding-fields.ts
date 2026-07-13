@@ -7,17 +7,20 @@ import { INITIAL_ONBOARDING_DATA } from "@/store/use-onboarding-store";
 // by the route (for the Continue/Skip buttons) and by each step's own
 // component (for the individual field borders/messages).
 export const STEP_FIELDS = {
-  income: [
-    "employment_status",
-    "monthly_income",
-    "income_steadiness",
-    "dependents_count",
-  ],
+  income: ["employment_status"],
   goal: ["goal_name", "goal_target_amount", "goal_target_months"],
   template: ["selected_template_key"],
 } as const satisfies Record<string, readonly (keyof OnboardingData)[]>;
 
 export type OptionalStepKey = keyof typeof STEP_FIELDS;
+
+/** Props every optional onboarding step receives from onboarding.tsx. */
+export interface OnboardingStepProps {
+  /** True once the user has tried to move on while this step is incomplete —
+   * shows "missing" state immediately rather than waiting for the step to
+   * become dirty on its own. */
+  attempted: boolean;
+}
 
 /**
  * Whether a step's "Skip" button is offered.
