@@ -79,31 +79,28 @@ function toTransaction(raw: RawTransaction): Transaction {
 }
 
 /**
- * `q` is deliberately NOT sent: GET /transactions supports no free-text
- * search. Filtering it client-side would desync `total` (the server counts
- * unfiltered rows), silently breaking pagination — so that control is a
- * no-op against the real backend until it grows the filter. See
- * docs/frontend-wiring-gaps.md.
+ * All of these are real, server-side django-filter params — see the backend's
+ * TransactionFilterSet. The sort param is `sort` (NOT `ordering`) and free-text
+ * search is `search` (NOT `q`); using the wrong name makes the filter a silent
+ * no-op, because an unrecognized query param is ignored rather than rejected.
  *
- * `min_amount`/`max_amount` have the same problem (GET /transactions has no
- * documented amount filter) but are sent anyway, best-effort, on the same
- * reasoning as `ordering` below: an unrecognized param is harmless, and if
- * the backend ever grows the filter this starts working for free. Until
- * then, expect `total` to undercount when an amount range is active.
+ * `filters.type` is deliberately NOT sent. The backend's transaction_type filter
+ * is exact-match on a SINGLE value, but the UI's "expense" means debit OR fee OR
+ * transfer. Sending transaction_type=debit would silently hide the user's bank
+ * fees from an "expenses" list. Verified: a seeded user with 40 transactions has
+ * 32 debit + 2 fee + 6 credit; filtering on `debit` returns 32, hiding 2 real
+ * outgoing charges. Restore this only once the backend supports an `in` lookup.
  */
 function toQueryParams(filters: TransactionFilters): Record<string, string | number> {
   const params: Record<string, string | number> = {};
-  if (filters.type) params.transaction_type = toBackendType(filters.type);
   if (filters.category) params.category = filters.category;
   if (filters.from) params.from = filters.from;
   if (filters.to) params.to = filters.to;
   if (filters.minAmount !== undefined) params.min_amount = filters.minAmount;
   if (filters.maxAmount !== undefined) params.max_amount = filters.maxAmount;
-  // Best-effort: GET /transactions' sort support isn't confirmed, but an
-  // unrecognized param is harmless. No client-side re-sort fallback — all
-  // sorting is strictly server-side, per product decision.
+  if (filters.q) params.search = filters.q;
   if (filters.sort)
-    params.ordering = filters.sort === "asc" ? "transaction_date" : "-transaction_date";
+    params.sort = filters.sort === "asc" ? "transaction_date" : "-transaction_date";
   if (filters.offset !== undefined) params.offset = filters.offset;
   if (filters.limit !== undefined) params.limit = filters.limit;
   return params;

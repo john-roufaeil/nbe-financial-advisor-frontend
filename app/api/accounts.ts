@@ -1,10 +1,6 @@
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/lib/constants/api";
-import type {
-  BankAccount,
-  CreateBankAccountBody,
-  UpdateBankAccountBody,
-} from "@/types/account";
+import type { BankAccount, CreateBankAccountBody } from "@/types/account";
 
 /**
  * GET /accounts returns a plain array, NOT the {count,next,previous,results}
@@ -24,14 +20,6 @@ export async function createAccount(body: CreateBankAccountBody): Promise<BankAc
     ...rest,
     masked_account_number: account_number,
   });
-  return res.data;
-}
-
-export async function updateAccount(
-  id: string,
-  patch: UpdateBankAccountBody,
-): Promise<BankAccount> {
-  const res = await apiClient.patch<BankAccount>(API_ENDPOINTS.account(id), patch);
   return res.data;
 }
 

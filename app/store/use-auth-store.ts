@@ -5,23 +5,21 @@ import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
 interface AuthTokens {
   accessToken: string;
-  refreshToken: string;
 }
 
 interface AuthState {
   isAuthenticated: boolean;
   /**
-   * Tokens are held IN MEMORY ONLY — never persisted (see `partialize`). Writing
-   * JWTs to localStorage exposes them to XSS exfiltration, unacceptable for a
-   * bank-adjacent app. Trade-off: tokens do not survive a full page reload; the
-   * real POST /auth/refresh flow will re-establish them (out of scope for now).
+   * Held IN MEMORY ONLY — never persisted (see `partialize`). Writing JWTs to
+   * localStorage exposes them to XSS exfiltration, unacceptable for a
+   * bank-adjacent app. It does not survive a reload; POST /auth/refresh
+   * re-establishes it from the httpOnly cookie, which JS cannot read or steal.
    */
   accessToken: string | null;
-  refreshToken: string | null;
-  /** Set when a 401 survives a refresh attempt — prompts a "session expired" modal. */
   sessionExpired: boolean;
-  /** Stores tokens WITHOUT flipping isAuthenticated (signup happens mid-onboarding). */
+  /** Stores the token WITHOUT flipping isAuthenticated (signup happens mid-onboarding). */
   setTokens: (tokens: AuthTokens) => void;
+  setAccessToken: (accessToken: string) => void;
   login: () => void;
   logout: () => void;
   /** Like logout(), but flags the UI to explain why (refresh failed after a 401). */
@@ -36,51 +34,28 @@ export const useAuthStore = create<AuthState>()(
     (set) => ({
       isAuthenticated: false,
       accessToken: null,
-      refreshToken: null,
       sessionExpired: false,
-      setTokens: (tokens) =>
-        set({ accessToken: tokens.accessToken, refreshToken: tokens.refreshToken }),
+      setTokens: (tokens) => set({ accessToken: tokens.accessToken }),
+      setAccessToken: (accessToken) => set({ accessToken }),
       login: () => set({ isAuthenticated: true }),
       logout: () => {
         useDataSourceStore.getState().setSource("backend");
-        // Explicit sign-out; clear sessionExpired too so a stray earlier flag
-        // (or a late-arriving 401 from the logout request itself) can't pop
-        // the "session expired" modal right after the user chose to leave.
-        set({
-          isAuthenticated: false,
-          accessToken: null,
-          refreshToken: null,
-          sessionExpired: false,
-        });
+        set({ isAuthenticated: false, accessToken: null, sessionExpired: false });
       },
       expireSession: () => {
         useDataSourceStore.getState().setSource("backend");
-        set({
-          isAuthenticated: false,
-          accessToken: null,
-          refreshToken: null,
-          sessionExpired: true,
-        });
+        set({ isAuthenticated: false, accessToken: null, sessionExpired: true });
       },
       clearStaleAuth: () => {
         useDataSourceStore.getState().setSource("backend");
-        set({ isAuthenticated: false, accessToken: null, refreshToken: null });
+        set({ isAuthenticated: false, accessToken: null });
       },
       clearSessionExpired: () => set({ sessionExpired: false }),
     }),
-    // {
-    //   name: "nbe_auth",
-    //   // Persist ONLY the auth flag — never the tokens (see accessToken note).
-    //   partialize: (state) => ({ isAuthenticated: state.isAuthenticated }),
-    // },
     {
       name: STORAGE_KEYS.auth,
-      // WARNING: Exposes tokens to XSS. TEMPORARY
-      partialize: (state) => ({
-        isAuthenticated: state.isAuthenticated,
-        accessToken: state.accessToken,
-        refreshToken: state.refreshToken,
-      }),
+      // Persist ONLY the auth flag — never the token (see accessToken note).
+      partialize: (state) => ({ isAuthenticated: state.isAuthenticated }),
     },
   ),
 );

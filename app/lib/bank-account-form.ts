@@ -13,7 +13,6 @@ export interface BankAccountFormValues {
   currency: Currency;
   accountNumber: string;
   accountNumberConfirm: string;
-  initialBalance: number | "";
 }
 
 export function emptyBankAccountForm(): BankAccountFormValues {
@@ -23,6 +22,5 @@ export function emptyBankAccountForm(): BankAccountFormValues {
     currency: CURRENCIES[0],
     accountNumber: "",
     accountNumberConfirm: "",
-    initialBalance: "",
   };
 }

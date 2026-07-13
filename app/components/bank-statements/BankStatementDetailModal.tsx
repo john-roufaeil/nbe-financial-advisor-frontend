@@ -1,4 +1,4 @@
-import { forwardRef, useRef } from "react";
+import { forwardRef, useEffect, useRef, useState } from "react";
 import { inferBankStatementType, BANK_STATEMENT_STATUS } from "@/types/bank-statement";
 import { useAccountPreselect } from "@/lib/use-account-preselect";
 import { useExtractedTransactionsDraft } from "@/lib/use-extracted-transactions-draft";
@@ -18,7 +18,6 @@ import {
   useUploadBankStatements,
   useDeleteBankStatement,
   useApproveBankStatement,
-  useConfirmBankStatementAccount,
 } from "@/queries/bank-statements";
 
 export const BankStatementDetailModal = forwardRef<
@@ -30,7 +29,6 @@ export const BankStatementDetailModal = forwardRef<
   const uploadBankStatements = useUploadBankStatements();
   const deleteBankStatement = useDeleteBankStatement();
   const approveBankStatement = useApproveBankStatement();
-  const confirmBankStatementAccount = useConfirmBankStatementAccount();
   const { data: accounts, isLoading: accountsLoading } = useAccounts();
   const accountModalRef = useRef<HTMLDialogElement>(null);
   const reuploadInputRef = useRef<HTMLInputElement>(null);
@@ -67,12 +65,22 @@ export const BankStatementDetailModal = forwardRef<
     }
   }
 
+  // Confirming the account is a CLIENT-SIDE review step: no endpoint accepts an
+  // account on its own, so nothing about the statement changes server-side until
+  // approve carries the chosen `accountId` along with the rows. Waiting on the
+  // server to flip a flag here would leave the user stuck on step 1 forever.
+  const [accountConfirmed, setAccountConfirmed] = useState(false);
+  useEffect(() => {
+    setAccountConfirmed(false);
+  }, [bankStatementId]);
+
+  const isConfirmed = !!doc && (doc.accountConfirmed || accountConfirmed);
   const needsAccountConfirm =
-    !!doc && doc.status === BANK_STATEMENT_STATUS.processed && !doc.accountConfirmed;
+    !!doc && doc.status === BANK_STATEMENT_STATUS.processed && !isConfirmed;
   const showApprove = !!(
     doc &&
     doc.status === BANK_STATEMENT_STATUS.processed &&
-    doc.accountConfirmed &&
+    isConfirmed &&
     !doc.approved &&
     draft.length > 0
   );
@@ -89,12 +97,16 @@ export const BankStatementDetailModal = forwardRef<
             showApprove={showApprove}
             selectedAccountId={selectedAccountId}
             draft={draft}
-            onConfirmAccount={(accountId) =>
-              confirmBankStatementAccount.mutate({ id: doc.id, accountId })
-            }
-            confirmPending={confirmBankStatementAccount.isPending}
+            onConfirmAccount={(accountId) => {
+              setSelectedAccountId(accountId);
+              setAccountConfirmed(true);
+            }}
             onApprove={() =>
-              approveBankStatement.mutate({ id: doc.id, transactions: draft })
+              approveBankStatement.mutate({
+                id: doc.id,
+                transactions: draft,
+                accountId: selectedAccountId ?? undefined,
+              })
             }
             approvePending={approveBankStatement.isPending}
           />

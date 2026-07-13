@@ -7,8 +7,6 @@ import {
   type Currency,
 } from "@/types/account";
 import { BankPicker } from "@/components/shared/forms/BankPicker";
-import { MoneyInput } from "@/components/shared/forms/MoneyInput";
-import { MAX_MONEY_VALUE } from "@/lib/format";
 import {
   ACCOUNT_NUMBER_LENGTH,
   type BankAccountFormValues,
@@ -139,41 +137,6 @@ export function BankAccountFields({
           <span className="text-error text-xs">
             {errors.accountNumberConfirm.message}
           </span>
-        )}
-      </label>
-
-      <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">
-          {t("common.addAccount.initialBalance")}
-        </span>
-        <label
-          className={`input input-bordered input-sm flex w-full items-center gap-2 ${errors.initialBalance ? "input-error" : ""}`}
-        >
-          <Controller
-            name="initialBalance"
-            control={control}
-            render={({ field }) => (
-              <MoneyInput
-                value={field.value}
-                max={MAX_MONEY_VALUE}
-                onChange={field.onChange}
-                placeholder={t("common.addAccount.initialBalancePlaceholder")}
-                className="w-full"
-              />
-            )}
-          />
-          <Controller
-            name="currency"
-            control={control}
-            render={({ field }) => (
-              <span className="text-base-content/50 shrink-0 text-xs">
-                {t(`currency.${field.value}`, field.value)}
-              </span>
-            )}
-          />
-        </label>
-        {errors.initialBalance && (
-          <span className="text-error text-xs">{errors.initialBalance.message}</span>
         )}
       </label>
     </div>

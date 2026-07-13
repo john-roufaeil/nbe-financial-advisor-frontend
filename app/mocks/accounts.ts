@@ -1,9 +1,5 @@
 import { delay } from "@/mocks/shared";
-import type {
-  BankAccount,
-  CreateBankAccountBody,
-  UpdateBankAccountBody,
-} from "@/types/account";
+import type { BankAccount, CreateBankAccountBody } from "@/types/account";
 
 let accounts: BankAccount[] = [
   {
@@ -40,23 +36,12 @@ export function createAccount(body: CreateBankAccountBody): Promise<BankAccount>
     masked_account_number: `****${body.account_number.slice(-4)}`,
     currency: body.currency,
     is_active: true,
-    current_balance: body.initial_balance,
+    // Derived server-side from the latest transaction; a new account has none.
+    current_balance: "0.00",
     created_at: new Date().toISOString(),
   };
   accounts = [...accounts, created];
   return delay(created);
-}
-
-export function updateAccount(
-  id: string,
-  patch: UpdateBankAccountBody,
-): Promise<BankAccount> {
-  accounts = accounts.map((a) =>
-    a.id === id ? { ...a, current_balance: patch.current_balance } : a,
-  );
-  const updated = accounts.find((a) => a.id === id);
-  if (!updated) throw new Error(`Account ${id} not found`);
-  return delay(updated);
 }
 
 export function deleteAccount(id: string): Promise<void> {

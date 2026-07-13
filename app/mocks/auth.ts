@@ -4,7 +4,7 @@ import type { AuthTokens, SignupBody, LoginBody } from "@/types/auth";
 function mockTokens(subject: string): AuthTokens {
   return {
     access_token: `mock-access-token.${subject}`,
-    refresh_token: `mock-refresh-token.${subject}`,
+    user_id: `mock-user.${subject}`,
   };
 }
 
@@ -14,6 +14,10 @@ export function signup(body: SignupBody): Promise<AuthTokens> {
 
 export function login(body: LoginBody): Promise<AuthTokens> {
   return delay(mockTokens(body.email));
+}
+
+export function refresh(): Promise<{ access_token: string }> {
+  return delay({ access_token: "mock-access-token.refreshed" });
 }
 
 export function logout(): Promise<void> {

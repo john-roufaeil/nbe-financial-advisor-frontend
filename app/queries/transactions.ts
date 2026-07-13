@@ -38,6 +38,9 @@ export function useCreateTransaction() {
     mutationFn: (body: Omit<Transaction, "id">) => impl(source).createTransaction(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
+      // Every dashboard number is computed from the ledger — spend, inflow, the
+      // month-over-month deltas, the savings rate, and each category's
+      // percentage_used. A changed transaction restates all of them.
       queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
       toastSuccess("toast.transactionCreated");
     },

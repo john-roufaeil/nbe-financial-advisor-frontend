@@ -1,7 +1,4 @@
 import { apiClient } from "@/api/client";
-import { getAccounts } from "@/api/accounts";
-import { getTransactionsByStatement } from "@/api/transactions";
-import { getBankCode } from "@/lib/banks";
 import { API_ENDPOINTS } from "@/lib/constants/api";
 import type {
   BankStatement,
@@ -25,39 +22,33 @@ export interface BankStatementListResponse {
   total: number;
 }
 
-/** A row exactly as GET /statements returns it (StatementFileSerializer). */
+/** A statement exactly as the backend returns it (StatementFile / StatementDetail). */
 interface RawStatement {
   id: string;
   account_id: string | null;
-  /** "pending" | "normalized" today. No DB-level `choices`, so treat as open. */
+  /** "uploaded" | "extracted" | "normalized" | "approved". There is NO "failed". */
   status: string;
+  /** The real "still working" signal — status alone cannot tell you this. */
+  is_processing: boolean;
+  failure_reason: string | null;
+  failed_phase: string | null;
+  file_size: number | null;
+  file_type: string | null;
+  bank_name: string | null;
+  account_hint: string | null;
   start_transaction_date: string | null;
   last_transaction_date: string | null;
   upload_date: string;
-  /** Always null — the column doesn't exist yet, the serializer hardcodes it. */
-  failure_reason: string | null;
+  /** Present once normalized/approved: the proposed batch, then the committed rows. */
+  transactions: RawStatementTransaction[] | null;
 }
 
-/** One row of `normalized_json.transactions` from GET /statements/{id}/normalized. */
-interface RawNormalizedTransaction {
+interface RawStatementTransaction {
   transaction_date: string;
-  merchant_raw: string;
+  merchant_raw: string | null;
   category: string | null;
-  amount: number;
+  amount: string | number;
   transaction_type: string | null;
-  duplicate_of: string | null;
-}
-
-interface RawNormalizedResponse {
-  statement_id: string;
-  model_used: string | null;
-  adjusted_at: string;
-  transaction_count: number;
-  normalized_json: {
-    bank_name?: string;
-    account_hint?: string;
-    transactions?: RawNormalizedTransaction[];
-  };
 }
 
 interface PaginatedStatements {
@@ -67,64 +58,80 @@ interface PaginatedStatements {
   results: RawStatement[];
 }
 
-// ── Field mapping ─────────────────────────────────────────────────────────────
-// StatementFileSerializer exposes only id/account_id/status/dates/failure_reason.
-// It carries no original filename, MIME type or byte size, so `name`, `type` and
-// `sizeKb` are unavailable in backend mode and stay undefined — the UI falls
-// back rather than inventing values. See docs/frontend-wiring-gaps.md.
+// ── Mapping ───────────────────────────────────────────────────────────────────
 
 /**
- * The backend's mock pipeline runs synchronously inside POST /statements and
- * commits transactions straight to the ledger, so a statement is already
- * "normalized" by the time the response lands. There is no pending-approval
- * state server-side, hence `approved: true` for anything normalized: the
- * transactions are in the ledger whether the UI shows an approve button or not.
+ * The backend has four stages and no "failed" status. We collapse them onto the
+ * UI's vocabulary:
+ *   is_processing        -> "processing"  (a phase is actively running)
+ *   failure_reason set   -> "failed"      (a phase stopped; status stayed put)
+ *   normalized|approved  -> "processed"   (rows exist and are viewable)
+ *   uploaded|extracted   -> "processing"  (nothing to show the user yet)
  */
-function toStatus(raw: string): BankStatementStatus {
-  if (raw === "normalized" || raw === "processed") return "processed";
-  if (raw === "failed") return "failed";
+function toStatus(raw: RawStatement): BankStatementStatus {
+  if (raw.is_processing) return "processing";
+  if (raw.failure_reason) return "failed";
+  if (raw.status === "normalized" || raw.status === "approved") return "processed";
   return "processing";
 }
 
-function toBankStatement(raw: RawStatement, bankName?: string): BankStatement {
-  const status = toStatus(raw.status);
-  const approved = status === "processed";
+function toExtractedTransaction(
+  raw: RawStatementTransaction,
+  index: number,
+): ExtractedTransaction {
   return {
-    id: raw.id,
-    accountId: raw.account_id ?? undefined,
-    uploadDate: raw.upload_date,
-    status,
-    // A stored failed statement got uploaded fine (upload errors surface as HTTP
-    // failures at POST time), so recovery is a processing retry, not a re-upload.
-    failedStage: status === "failed" ? "processing" : undefined,
-    approved,
-    // No pending-account-confirmation concept server-side either; the backend
-    // already resolves account_id (or leaves it unset) by the time it responds.
-    accountConfirmed: status === "processed",
-    // Rows are edited/added client-side only while under review and are never
-    // sent until the (currently unsupported) approve call — see approveBankStatement.
-    // Since the backend has no pending-approval state, `approved` is already
-    // true the moment a statement finishes processing, so editing is disabled
-    // from that same moment: the transactions are already committed server-side.
-    canEditTransactions: !approved,
-    canAddTransactions: !approved,
-    bankName,
+    // The proposed batch has no per-row id and approval doesn't match on one, so
+    // this is a client-side key for the review draft only — never sent back.
+    id: String(index),
+    datetime: `${raw.transaction_date}T00:00:00`,
+    title: raw.merchant_raw ?? "",
+    category: raw.category ?? "",
+    type: raw.transaction_type === "credit" ? "income" : "expense",
+    amount: Math.abs(Number(raw.amount)),
   };
 }
 
-/** Resolve account_id -> bank code so the list can show a logo. One extra call. */
-async function bankCodesByAccountId(): Promise<Map<string, string | undefined>> {
-  const accounts = await getAccounts();
-  return new Map(accounts.map((a) => [a.id, getBankCode(a.bank_name)]));
+function toBankStatement(raw: RawStatement): BankStatement {
+  const status = toStatus(raw);
+  // "approved" is the ONLY terminal, committed state. "normalized" means the rows
+  // are a PROPOSAL awaiting the user's review — that is when editing is allowed.
+  const approved = raw.status === "approved";
+  const isAwaitingReview = raw.status === "normalized";
+
+  return {
+    id: raw.id,
+    sizeKb: raw.file_size ? Math.max(1, Math.round(raw.file_size / 1024)) : undefined,
+    uploadDate: raw.upload_date,
+    status,
+    // The file uploaded fine (an upload error would have failed the POST), so any
+    // failure here is a processing failure and a retry can re-run the pipeline.
+    failedStage: status === "failed" ? "processing" : undefined,
+    errorMessage: raw.failure_reason ?? undefined,
+    approved,
+    accountId: raw.account_id ?? undefined,
+    // bank_name/account_hint come straight off the statement — no extra lookups.
+    bankName: raw.bank_name ?? undefined,
+    perceivedAccountNumber: raw.account_hint ?? undefined,
+    // There is no "confirm the account" call: the account reaches the server only
+    // as the optional `account_id` on approve. Confirming is therefore a purely
+    // client-side review step, tracked in the modal — all this flag says is that
+    // an approved statement has nothing left to confirm.
+    accountConfirmed: approved,
+    // Rows are editable ONLY while awaiting review: approval commits whatever the
+    // draft holds, so a row can be edited, dropped, or added right up until then.
+    canEditTransactions: isAwaitingReview,
+    canAddTransactions: isAwaitingReview,
+    extractedTransactions: raw.transactions?.map(toExtractedTransaction),
+  };
 }
 
 // ── Calls ─────────────────────────────────────────────────────────────────────
 
 /**
- * GET /statements supports only `status`, `account_id`, `limit` and `offset`.
- * The tab's type / search / date-range controls have no server-side equivalent,
- * so they are not sent — filtering client-side would desync `total` from the
- * server's unfiltered count and break pagination.
+ * GET /statements supports ONLY account_id, status, limit, offset. The tab's
+ * type/search/date controls have no server-side equivalent, so they are not sent
+ * — filtering client-side would desync `total` from the server's unfiltered count
+ * and silently break pagination.
  */
 export async function getBankStatements(
   filters: BankStatementFilters,
@@ -136,47 +143,22 @@ export async function getBankStatements(
   const res = await apiClient.get<PaginatedStatements>(API_ENDPOINTS.statements, {
     params,
   });
-  const banks = await bankCodesByAccountId();
-
   return {
-    items: res.data.results.map((raw) =>
-      toBankStatement(raw, raw.account_id ? banks.get(raw.account_id) : undefined),
-    ),
+    items: res.data.results.map(toBankStatement),
     total: res.data.count,
   };
 }
 
 export async function getBankStatement(id: string): Promise<BankStatement> {
   const res = await apiClient.get<RawStatement>(API_ENDPOINTS.statement(id));
-  const banks = await bankCodesByAccountId();
-  const doc = toBankStatement(
-    res.data,
-    res.data.account_id ? banks.get(res.data.account_id) : undefined,
-  );
-
-  if (doc.status !== "processed") return doc;
-
-  // The extracted rows are already in the ledger (with real UUIDs), which is what
-  // makes them editable. /normalized/ is still worth a look for the bank name,
-  // which the statement row itself doesn't carry when no account was supplied.
-  const [transactions, bankName] = await Promise.all([
-    getTransactionsByStatement(id),
-    doc.bankName
-      ? Promise.resolve(doc.bankName)
-      : apiClient
-          .get<RawNormalizedResponse>(`/statements/${id}/normalized`)
-          .then((r) => getBankCode(r.data.normalized_json.bank_name))
-          .catch(() => undefined),
-  ]);
-
-  return { ...doc, bankName, extractedTransactions: transactions };
+  return toBankStatement(res.data);
 }
 
 /**
- * POST /statements accepts exactly ONE file per request, under the field name
- * `file` (not `files`). Uploading N bank statements is therefore N requests, issued
- * in parallel. A byte-identical re-upload is rejected with 422 by the backend's
- * checksum dedupe, so one file failing must not discard the others' results.
+ * POST /statements takes exactly ONE file per request, under the field name
+ * `file` (singular). Uploading N statements is therefore N parallel requests.
+ * A byte-identical re-upload is rejected as a duplicate, so one file failing
+ * must not discard the others' results.
  */
 export async function uploadBankStatements(
   files: { name: string; type: BankStatementType; sizeKb: number; file: File }[],
@@ -196,7 +178,6 @@ export async function uploadBankStatements(
     if (result.status === "fulfilled") uploaded.push(toBankStatement(result.value.data));
   }
 
-  // Every file failed — surface the first error rather than reporting success.
   const firstRejection = results.find((r) => r.status === "rejected");
   if (uploaded.length === 0 && firstRejection) {
     throw firstRejection.reason;
@@ -208,28 +189,53 @@ export async function deleteBankStatement(id: string): Promise<void> {
   await apiClient.delete(API_ENDPOINTS.statement(id));
 }
 
-// ── Not implemented server-side ───────────────────────────────────────────────
-// POST /statements/{id}/retry and POST /statements/{id}/approve do not exist in
-// core/urls.py. The mock pipeline never fails and commits transactions itself,
-// so there is nothing to retry or approve. Throwing surfaces an honest error
-// instead of an opaque 404.
-
-const UNSUPPORTED = "This action isn't supported by the backend yet.";
-
-export async function retryBankStatement(_id: string): Promise<BankStatement> {
-  throw new Error(UNSUPPORTED);
+/**
+ * Retry/resume a stalled pipeline. Targeting a stage further out cascades through
+ * the intermediate ones. 422 with error.code `already_approved`,
+ * `already_processing`, or `invalid_status_transition` if the retry is invalid.
+ */
+export async function retryBankStatement(id: string): Promise<BankStatement> {
+  const res = await apiClient.patch<RawStatement>(`/statements/${id}`, {
+    status: "normalized",
+  });
+  return toBankStatement(res.data);
 }
 
+/**
+ * Approve the reviewed batch — this is what actually commits the rows to the
+ * ledger. Each row is committed from its own submitted data, so the array is the
+ * user's final say: it need not match the proposed one in length or order, and
+ * rows edited/added/dropped during review carry through as-is. Send the whole
+ * draft, including the untouched rows — anything omitted is simply not created.
+ *
+ * `accountId` is optional and is the ONE place the account can be corrected —
+ * there is no separate "confirm account" endpoint.
+ */
 export async function approveBankStatement(
-  _id: string,
-  _transactions: ExtractedTransaction[],
+  id: string,
+  transactions: ExtractedTransaction[],
+  accountId?: string,
 ): Promise<{ approvedAt: string; createdTransactionIds: string[] }> {
-  throw new Error(UNSUPPORTED);
-}
+  const body: Record<string, unknown> = {
+    transactions: transactions.map((tx) => ({
+      transaction_date: tx.datetime.slice(0, 10),
+      merchant_raw: tx.title,
+      category: tx.category,
+      amount: tx.amount,
+      transaction_type: tx.type === "income" ? "credit" : "debit",
+    })),
+  };
+  if (accountId) body.account_id = accountId;
 
-export async function confirmBankStatementAccount(
-  _id: string,
-  _accountId: string,
-): Promise<BankStatement> {
-  throw new Error(UNSUPPORTED);
+  const res = await apiClient.post<{
+    statement_status: string;
+    resolved: { transaction_id: string | null }[];
+  }>(`/statements/${id}/transactions`, body);
+
+  return {
+    approvedAt: new Date().toISOString(),
+    createdTransactionIds: res.data.resolved
+      .map((r) => r.transaction_id)
+      .filter((txId): txId is string => txId !== null),
+  };
 }

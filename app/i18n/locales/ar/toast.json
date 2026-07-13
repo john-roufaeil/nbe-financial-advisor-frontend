@@ -13,7 +13,6 @@
     "goalUpdated": "تم تحديث الهدف",
     "goalDeleted": "تم حذف الهدف",
     "accountCreated": "تمت إضافة الحساب البنكي",
-    "accountUpdated": "تم تحديث الحساب البنكي",
     "accountDeleted": "تم حذف الحساب البنكي",
     "genericError": "حدث خطأ ما. يرجى المحاولة مرة أخرى.",
     "emailTaken": "هذا البريد الإلكتروني مسجل بالفعل.",

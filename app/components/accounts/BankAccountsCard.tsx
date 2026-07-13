@@ -1,5 +1,5 @@
-import { useRef, useState } from "react";
-import { Pencil, Trash2, CreditCard, Plus } from "lucide-react";
+import { useRef } from "react";
+import { Trash2, CreditCard, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAccounts, useDeleteAccount } from "@/queries/accounts";
 import { useConfirmStore } from "@/store/use-confirm-store";
@@ -7,18 +7,17 @@ import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
-import { EditBankAccountModal } from "@/components/accounts/EditBankAccountModal";
 import type { BankAccount } from "@/types/account";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { useNumberDisplay } from "@/lib/use-number-display";
 
+// `current_balance` is derived server-side from the account's latest transaction
+// and is read-only, so there is no edit action here — only add and remove.
 function AccountRow({
   account,
-  onEdit,
   onDelete,
 }: {
   account: BankAccount;
-  onEdit: () => void;
   onDelete: () => void;
 }) {
   const { t } = useTranslation();
@@ -44,16 +43,6 @@ function AccountRow({
         {formatN(Number(account.current_balance))} {currencyLabel}
       </Money>
       <div className="flex shrink-0 gap-1">
-        <Tooltip content={t("actions.edit")}>
-          <button
-            type="button"
-            onClick={onEdit}
-            className="btn btn-ghost btn-sm btn-square"
-            aria-label={t("actions.edit")}
-          >
-            <Pencil data-no-flip className="size-4" />
-          </button>
-        </Tooltip>
         <Tooltip content={t("actions.remove")}>
           <button
             type="button"
@@ -75,13 +64,6 @@ export function BankAccountsCard() {
   const deleteAccount = useDeleteAccount();
   const confirm = useConfirmStore((s) => s.confirm);
   const addRef = useRef<HTMLDialogElement>(null);
-  const editRef = useRef<HTMLDialogElement>(null);
-  const [editing, setEditing] = useState<BankAccount | null>(null);
-
-  function openEdit(account: BankAccount) {
-    setEditing(account);
-    editRef.current?.showModal();
-  }
 
   function confirmDelete(account: BankAccount) {
     confirm({
@@ -139,7 +121,6 @@ export function BankAccountsCard() {
               <AccountRow
                 key={account.id}
                 account={account}
-                onEdit={() => openEdit(account)}
                 onDelete={() => confirmDelete(account)}
               />
             ))}
@@ -152,7 +133,6 @@ export function BankAccountsCard() {
       </div>
 
       <AddBankAccountModal ref={addRef} />
-      <EditBankAccountModal ref={editRef} account={editing} />
     </div>
   );
 }

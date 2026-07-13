@@ -15,20 +15,20 @@ export interface Allocation extends AllocationInput {
 
 export interface StarterTemplate {
   template_key: string;
+  /** Human-readable copy supplied by the backend — do not hardcode in i18n. */
+  name: string;
+  description: string;
   is_suggested: boolean;
   allocations: AllocationInput[];
 }
 
-/** Goal object convention (§5): same shape everywhere a goal is written. */
-export interface BudgetGoal {
-  name: string;
-  target_amount: number;
-  target_months: number;
-}
-
+/**
+ * A budget has NO goal. A savings goal is a completely separate backend entity
+ * with its own endpoints (/goal, /dashboard/goal) — see app/api/goals.ts.
+ * Do not add a `goal` field back to any of these interfaces.
+ */
 export interface CreateBudgetBody {
   selected_template_key: string;
-  goal: BudgetGoal;
   /** Percentages, must sum to 100 (backend rejects with 422 otherwise). */
   allocations: AllocationInput[];
 }
@@ -37,14 +37,12 @@ export interface Budget {
   id: string;
   name?: string;
   selected_template_key: string;
-  goal: BudgetGoal;
   allocations: Allocation[];
 }
 
 /** PATCH /budget body — any subset of fields may be sent; unset fields are left unchanged. */
 export interface UpdateBudgetBody {
   name?: string;
-  goal?: BudgetGoal;
   /** Percentages, must sum to 100 when provided (backend rejects with 422 otherwise). */
   allocations?: AllocationInput[];
   changed_via: "dashboard";

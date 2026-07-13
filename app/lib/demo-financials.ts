@@ -13,14 +13,9 @@ export interface SpendingBreakdownResult {
   categories: SpendingCategory[];
 }
 
-const CATEGORY_NAMES = [
-  "Groceries",
-  "Dining",
-  "Transport",
-  "Utilities",
-  "Shopping",
-  "Health",
-];
+// The canonical six (see TRANSACTION_CATEGORIES) — the chat tool renders these
+// through common.categories.*, so anything else would show a raw key to the user.
+const CATEGORY_NAMES = ["housing", "food", "transport", "savings", "lifestyle", "other"];
 
 /**
  * Placeholder generator — no backend connected yet. Produces a deterministic-looking
@@ -84,35 +79,35 @@ export interface TransactionsListResult {
 const RECENT_TRANSACTION_POOL: Omit<ChatTransaction, "id">[] = [
   {
     title: "Carrefour Market",
-    category: "Groceries",
+    category: "food",
     type: "expense",
     amount: 650,
     datetime: "2026-07-08T18:32:00",
   },
   {
     title: "Salary deposit",
-    category: "Income",
+    category: "other",
     type: "income",
     amount: 42000,
     datetime: "2026-07-01T09:00:00",
   },
   {
     title: "Uber ride",
-    category: "Transport",
+    category: "transport",
     type: "expense",
     amount: 120,
     datetime: "2026-07-06T13:05:00",
   },
   {
     title: "Netflix subscription",
-    category: "Shopping",
+    category: "lifestyle",
     type: "expense",
     amount: 150,
     datetime: "2026-07-05T00:00:00",
   },
   {
     title: "Cairo Kitchen restaurant",
-    category: "Dining",
+    category: "food",
     type: "expense",
     amount: 380,
     datetime: "2026-07-04T21:10:00",

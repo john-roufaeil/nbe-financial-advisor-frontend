@@ -36,7 +36,6 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
             t("common.addAccount.errors.accountNumberInvalid"),
           ),
         accountNumberConfirm: z.string(),
-        initialBalance: z.union([z.number(), z.literal("")]),
       })
       .superRefine((values, ctx) => {
         if (
@@ -48,17 +47,6 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
             code: "custom",
             path: ["accountNumberConfirm"],
             message: t("common.addAccount.errors.accountNumberMismatch"),
-          });
-        }
-        if (
-          values.initialBalance === "" ||
-          !Number.isFinite(values.initialBalance) ||
-          values.initialBalance < 0
-        ) {
-          ctx.addIssue({
-            code: "custom",
-            path: ["initialBalance"],
-            message: t("common.addAccount.errors.balanceInvalid"),
           });
         }
       });
@@ -88,9 +76,6 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
           account_type: values.accountType,
           currency: values.currency,
           account_number: values.accountNumber,
-          initial_balance: String(
-            values.initialBalance === "" ? 0 : values.initialBalance,
-          ),
         });
         resetForm();
         closeDialog(ref);

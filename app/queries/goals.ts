@@ -29,6 +29,8 @@ export function useCreateGoal() {
     mutationFn: (body: Omit<FinancialGoal, "id">) => impl(source).createGoal(body),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.goals] });
+      // The dashboard renders the goal card from its own payload, not from /goal.
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
       toastSuccess("toast.goalCreated");
     },
     onError: (error) => toastApiError(error),
@@ -43,6 +45,7 @@ export function useUpdateGoal() {
       impl(source).updateGoal(id, patch),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.goals] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
       toastSuccess("toast.goalUpdated");
     },
     onError: (error) => toastApiError(error),
@@ -56,6 +59,7 @@ export function useDeleteGoal() {
     mutationFn: (id: string) => impl(source).deleteGoal(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.goals] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
       toastSuccess("toast.goalDeleted");
     },
     onError: (error) => toastApiError(error),
