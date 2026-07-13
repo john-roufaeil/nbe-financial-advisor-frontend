@@ -1,7 +1,5 @@
 services:
   frontend:
-    environment:
-      - CI=true
     build:
       context: .
       dockerfile: Dockerfile.dev
