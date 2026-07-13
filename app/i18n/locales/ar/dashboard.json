@@ -58,8 +58,11 @@
       "editAllocations": "تعديل التوزيعات",
       "allocationsNeedMore": "تحتاج إلى تخصيص {{amount}}٪ أخرى للمتابعة",
       "allocationsOverAllocated": "تجاوز التخصيص بمقدار {{amount}}٪",
+      "allocationsFullyAllocated": "تم التخصيص بالكامل",
+      "allocatedOfTotal": "تم تخصيص {{total}}٪ من 100٪",
       "errors": {
-        "percentageRange": "يجب أن يكون بين 0 و100 شاملاً."
+        "percentageRange": "يجب أن يكون بين 0 و100 شاملاً.",
+        "fixInvalidPercentages": "أصلح النسب غير الصحيحة أدناه للحفظ."
       },
       "categoryNames": {
         "needs": "الاحتياجات",
@@ -69,7 +72,7 @@
     },
     "noPlan": {
       "title": "ليس لديك خطة بعد",
-      "description": "حدّد هدف ادخار ووزّع دخلك على الفئات. ستمتلئ لوحتك بمجرد قيامك بذلك.",
+      "description": "وزّع دخلك على الفئات.",
       "benefitGoal": "تتبّع هدف الادخار",
       "benefitBudget": "اعرف أين يذهب مالك",
       "cta": "أنشئ خطة مع المستشار"

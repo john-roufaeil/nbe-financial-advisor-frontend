@@ -58,8 +58,11 @@
       "editAllocations": "Edit allocations",
       "allocationsNeedMore": "You need to allocate {{amount}}% more to continue",
       "allocationsOverAllocated": "Over-allocated by {{amount}}%",
+      "allocationsFullyAllocated": "Fully allocated",
+      "allocatedOfTotal": "{{total}}% of 100% allocated",
       "errors": {
-        "percentageRange": "Must be between 0 and 100 inclusive."
+        "percentageRange": "Must be between 0 and 100 inclusive.",
+        "fixInvalidPercentages": "Fix the invalid percentages below to save."
       },
       "categoryNames": {
         "needs": "Needs",
@@ -69,7 +72,7 @@
     },
     "noPlan": {
       "title": "You don't have a plan yet",
-      "description": "Set a savings goal and split your income across categories. Your dashboard fills in as soon as you do.",
+      "description": "Split your income across categories.",
       "benefitGoal": "Track a savings goal",
       "benefitBudget": "See where your money goes",
       "cta": "Build a plan with the advisor"

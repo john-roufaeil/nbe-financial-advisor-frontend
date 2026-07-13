@@ -19,6 +19,13 @@
       "lifestyle": "Lifestyle",
       "other": "Other"
     },
+    "incomeCategories": {
+      "salary": "Salary",
+      "freelance": "Freelance",
+      "investment": "Investment",
+      "gift": "Gift",
+      "other_income": "Other"
+    },
     "filtersLabel": "Filters",
     "amountRange": "Amount range",
     "amountRanges": {
