@@ -1,11 +1,13 @@
 import { useTranslation } from "react-i18next";
 import { Money } from "@/components/shared/Money";
 import type { FormFieldConfig } from "@/components/shared/forms/FieldEditor";
+import { useNumberDisplay } from "@/lib/use-number-display";
 
 /** Renders the read-only display for a `FormFieldConfig` — the counterpart
  * to `FieldEditor` shown while the field isn't being edited. */
 export function FieldValue({ field, value }: { field: FormFieldConfig; value?: string }) {
   const { t } = useTranslation();
+  const formatN = useNumberDisplay();
 
   const option = field.options?.find((opt) => opt.value === value);
   if (option) {
@@ -21,9 +23,11 @@ export function FieldValue({ field, value }: { field: FormFieldConfig; value?: s
   }
 
   if (field.currency) {
+    const numeric = Number(value);
+    const formatted = Number.isFinite(numeric) ? formatN(numeric) : value;
     return (
       <Money className="text-sm font-medium">
-        {value} {t("currency.EGP")}
+        {formatted} {t("currency.EGP")}
       </Money>
     );
   }

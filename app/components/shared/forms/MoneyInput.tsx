@@ -1,4 +1,10 @@
-import { forwardRef, useEffect, useState, type InputHTMLAttributes } from "react";
+import {
+  forwardRef,
+  useEffect,
+  useState,
+  type InputHTMLAttributes,
+  type KeyboardEvent,
+} from "react";
 import { formatMoney, parseMoneyInput } from "@/lib/format";
 
 interface MoneyInputProps extends Omit<
@@ -33,8 +39,21 @@ function formatPartial(raw: string): string {
  * amounts (transaction/account totals).
  */
 export const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
-  function MoneyInput({ value, onChange, max, ...props }, ref) {
+  function MoneyInput({ value, onChange, max, onKeyDown, ...props }, ref) {
     const [text, setText] = useState(value === "" ? "" : formatMoney(value));
+
+    // Native `type="number"` steps the value on ArrowUp/ArrowDown; this text
+    // input needs to replicate that manually since it has no such behavior.
+    function handleKeyDown(e: KeyboardEvent<HTMLInputElement>) {
+      onKeyDown?.(e);
+      if (e.defaultPrevented || (e.key !== "ArrowUp" && e.key !== "ArrowDown")) return;
+      e.preventDefault();
+      const current = value === "" ? 0 : value;
+      const next = Math.max(0, current + (e.key === "ArrowUp" ? 1 : -1));
+      const clamped = max !== undefined ? Math.min(next, max) : next;
+      setText(formatMoney(clamped));
+      onChange(clamped);
+    }
 
     // Re-sync the display buffer when the value changes from outside this
     // field (e.g. parent resets the form) rather than from our own typing,
@@ -53,6 +72,7 @@ export const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
         type="text"
         inputMode="decimal"
         value={text}
+        onKeyDown={handleKeyDown}
         onChange={(e) => {
           const raw = parseMoneyInput(e.target.value);
           if (raw === "" || raw === ".") {
