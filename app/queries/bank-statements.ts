@@ -122,6 +122,10 @@ export function useDeleteBankStatement() {
     mutationFn: (id: string) => impl(source).deleteBankStatement(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
+      // An approved statement's committed rows are removed with it, so the
+      // ledger and dashboard totals need restating too.
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.transactions] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
       toastSuccess("toast.bankStatementDeleted");
     },
     onError: (error) => toastApiError(error),

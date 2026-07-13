@@ -42,6 +42,10 @@ export function useCreateTransaction() {
       // month-over-month deltas, the savings rate, and each category's
       // percentage_used. A changed transaction restates all of them.
       queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
+      // Goal progress (GoalCard's `current`) is computed server-side from the
+      // ledger too — a changed transaction can move it, same as the numbers
+      // invalidated above.
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.goals] });
       toastSuccess("toast.transactionCreated");
     },
     onError: (error) => toastApiError(error),
@@ -62,6 +66,7 @@ export function useUpdateTransaction() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
       queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.goals] });
       toastSuccess("toast.transactionUpdated");
     },
     onError: (error) => toastApiError(error),
@@ -76,6 +81,7 @@ export function useDeleteTransaction() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: transactionKeys.all });
       queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.goals] });
       toastSuccess("toast.transactionDeleted");
     },
     onError: (error) => toastApiError(error),

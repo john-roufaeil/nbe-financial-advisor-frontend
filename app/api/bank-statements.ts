@@ -203,10 +203,10 @@ export async function retryBankStatement(id: string): Promise<BankStatement> {
 
 /**
  * Approve the reviewed batch — this is what actually commits the rows to the
- * ledger. Each row is committed from its own submitted data, so the array is the
- * user's final say: it need not match the proposed one in length or order, and
- * rows edited/added/dropped during review carry through as-is. Send the whole
- * draft, including the untouched rows — anything omitted is simply not created.
+ * ledger. The submitted array must match the proposed batch's length exactly,
+ * matched by position (no per-row id); duplicates are re-checked at commit
+ * time and silently skipped (`transaction_id: null`, `duplicate_of` set)
+ * rather than treated as errors.
  *
  * `accountId` is optional and is the ONE place the account can be corrected —
  * there is no separate "confirm account" endpoint.
