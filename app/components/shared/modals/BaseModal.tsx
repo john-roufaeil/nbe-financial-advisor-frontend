@@ -2,6 +2,7 @@ import { forwardRef, type ReactNode } from "react";
 import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { Tooltip } from "@/components/shared/Tooltip";
+import { closeDialog } from "@/lib/close-dialog";
 
 interface BaseModalProps {
   /** Modal heading. Optional so content-driven modals (e.g. bank statement detail) can render without one, but the close button always shows. */
@@ -32,7 +33,7 @@ export const BaseModal = forwardRef<HTMLDialogElement, BaseModalProps>(function 
 
   function handleClose() {
     onClose?.();
-    if (ref && "current" in ref) ref.current?.close();
+    closeDialog(ref);
   }
 
   return (

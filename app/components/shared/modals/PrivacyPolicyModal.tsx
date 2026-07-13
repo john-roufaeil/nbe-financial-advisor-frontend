@@ -1,6 +1,7 @@
 import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import { BaseModal } from "@/components/shared/modals/BaseModal";
+import { closeDialog } from "@/lib/close-dialog";
 
 /** Terms & privacy policy content, shown from the onboarding consent step. */
 export const PrivacyPolicyModal = forwardRef<HTMLDialogElement>(
@@ -13,9 +14,7 @@ export const PrivacyPolicyModal = forwardRef<HTMLDialogElement>(
         actions={
           <button
             type="button"
-            onClick={() => {
-              if (ref && "current" in ref) ref.current?.close();
-            }}
+            onClick={() => closeDialog(ref)}
             className="btn btn-primary btn-sm"
           >
             {t("actions.done")}

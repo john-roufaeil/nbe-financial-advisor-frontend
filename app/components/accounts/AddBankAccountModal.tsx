@@ -1,4 +1,4 @@
-import { forwardRef, type Ref } from "react";
+import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -14,10 +14,7 @@ import {
   emptyBankAccountForm,
   type BankAccountFormValues,
 } from "@/lib/bank-account-form";
-
-function closeDialog(ref: Ref<HTMLDialogElement>) {
-  if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
-}
+import { closeDialog } from "@/lib/close-dialog";
 
 export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
   function AddBankAccountModal(_props, ref) {

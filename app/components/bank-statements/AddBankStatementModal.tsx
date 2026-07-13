@@ -1,4 +1,4 @@
-import { forwardRef, useRef, useState, type Ref } from "react";
+import { forwardRef, useRef, useState } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Upload,
@@ -18,6 +18,7 @@ import {
 import { BYTES_PER_KB } from "@/lib/constants/limits";
 import { useUploadBankStatements } from "@/queries/bank-statements";
 import { toastError } from "@/lib/toast";
+import { closeDialog } from "@/lib/close-dialog";
 import { Button } from "@/components/shared/Button";
 import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { Tooltip } from "@/components/shared/Tooltip";
@@ -27,10 +28,6 @@ const TYPE_ICONS: Record<BankStatementType, typeof FileText> = {
   image: ImageIcon,
   doc: FileIcon,
 };
-
-function closeDialog(ref: Ref<HTMLDialogElement>) {
-  if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
-}
 
 interface StagedFile {
   file: File;

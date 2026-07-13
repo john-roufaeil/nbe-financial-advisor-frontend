@@ -9,6 +9,9 @@ import { useCreateGoal, useUpdateGoal, useDeleteGoal } from "@/queries/goals";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { Button } from "@/components/shared/Button";
 import { BaseModal } from "@/components/shared/modals/BaseModal";
+import { MoneyInput } from "@/components/shared/forms/MoneyInput";
+import { moneyFieldBinding } from "@/components/shared/forms/money-field-binding";
+import { closeDialog } from "@/lib/close-dialog";
 import {
   GOAL_TARGET_MIN as TARGET_MIN,
   GOAL_TARGET_MAX as TARGET_MAX,
@@ -78,9 +81,7 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
     }, [goal, reset]);
 
     function closeModal() {
-      if (ref && "current" in ref && ref.current) {
-        ref.current.close();
-      }
+      closeDialog(ref);
     }
 
     function onSubmit(draft: Draft) {
@@ -171,15 +172,13 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
                 name="target"
                 control={control}
                 render={({ field }) => (
-                  <input
-                    type="text"
-                    inputMode="numeric"
-                    aria-valuemin={TARGET_MIN}
-                    aria-valuemax={TARGET_MAX}
-                    value={field.value === "" ? "" : Number(field.value).toLocaleString()}
-                    onChange={(e) => field.onChange(e.target.value.replace(/[^\d]/g, ""))}
+                  <MoneyInput
+                    {...moneyFieldBinding(field)}
+                    max={TARGET_MAX}
+                    step={1_000}
                     placeholder="0"
-                    className={`input input-bordered w-full ${errors.target ? "input-error" : ""}`}
+                    aria-label={t("dashboard.goals.target")}
+                    className={`w-full ${errors.target ? "input-error" : ""}`}
                   />
                 )}
               />
@@ -190,13 +189,18 @@ export const GoalsEditModal = forwardRef<HTMLDialogElement, { goal?: FinancialGo
 
             <label className="flex min-w-0 flex-col gap-1">
               <span className="label-text text-xs">{t("dashboard.goals.duration")}</span>
-              <input
-                type="number"
-                min={DURATION_MIN}
-                max={DURATION_MAX}
-                placeholder={t("dashboard.goals.monthsPlaceholder", "Months")}
-                className={`input input-bordered w-full ${errors.duration ? "input-error" : ""}`}
-                {...register("duration")}
+              <Controller
+                name="duration"
+                control={control}
+                render={({ field }) => (
+                  <MoneyInput
+                    {...moneyFieldBinding(field)}
+                    max={DURATION_MAX}
+                    placeholder={t("dashboard.goals.monthsPlaceholder", "Months")}
+                    aria-label={t("dashboard.goals.duration")}
+                    className={`w-full ${errors.duration ? "input-error" : ""}`}
+                  />
+                )}
               />
               {errors.duration && (
                 <span className="text-error text-xs">{errors.duration.message}</span>

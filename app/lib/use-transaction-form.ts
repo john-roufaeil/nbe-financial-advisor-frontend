@@ -6,10 +6,7 @@ import { z } from "zod";
 import { TRANSACTION_CATEGORIES, type Transaction } from "@/types/transaction";
 import { useCreateTransaction, useUpdateTransaction } from "@/queries/transactions";
 import { useAccounts } from "@/queries/accounts";
-
-function closeDialog(ref: Ref<HTMLDialogElement>) {
-  if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
-}
+import { closeDialog } from "@/lib/close-dialog";
 
 function today() {
   return new Date().toISOString().slice(0, 10);
@@ -168,6 +165,7 @@ export function useTransactionForm(
   return {
     control,
     register,
+    setValue,
     errors: formState.errors,
     isValid: formState.isValid,
     accounts,

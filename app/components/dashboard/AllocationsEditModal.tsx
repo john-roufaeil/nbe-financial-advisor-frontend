@@ -7,6 +7,7 @@ import type { Allocation } from "@/types/budget";
 import { useUpdateBudget } from "@/queries/budget";
 import { Button } from "@/components/shared/Button";
 import { BaseModal } from "@/components/shared/modals/BaseModal";
+import { closeDialog } from "@/lib/close-dialog";
 
 type Draft = { category: string; percentage: string }[];
 
@@ -83,9 +84,7 @@ export const AllocationsEditModal = forwardRef<
   const remaining = round2(100 - total);
 
   function closeModal() {
-    if (ref && "current" in ref && ref.current) {
-      ref.current.close();
-    }
+    closeDialog(ref);
   }
 
   function onSubmit(values: FormValues) {
