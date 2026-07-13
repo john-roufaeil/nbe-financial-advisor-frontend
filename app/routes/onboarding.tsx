@@ -17,12 +17,14 @@ import { ReviewStep } from "@/components/onboarding/ReviewStep";
 import { useSignup } from "@/queries/auth";
 import { useUpdateProfile } from "@/queries/profile";
 import { useStarterTemplates, useCreateBudget } from "@/queries/budget";
+import { useCreateGoal } from "@/queries/goals";
 import { usePageTitle } from "@/lib/use-page-title";
 import { isEmailTakenError } from "@/lib/toast";
 import {
   STEP_FIELDS,
   isStepDirty,
   isStepComplete,
+  isStepSkippable,
   type OptionalStepKey,
 } from "@/lib/onboarding-fields";
 
@@ -65,13 +67,17 @@ export default function Onboarding() {
   // after an earlier one already succeeded, retrying "Create plan" must not
   // redo the calls that already went through (e.g. signup can't be repeated
   // — the email is already registered), so completed steps are tracked here.
-  const completedRef = useRef({ signup: false, profile: false });
+  const completedRef = useRef({ signup: false, profile: false, budget: false });
 
   const signup = useSignup();
   const updateProfile = useUpdateProfile();
   const createBudget = useCreateBudget();
+  const saveGoal = useCreateGoal();
   const isSubmitting =
-    signup.isPending || updateProfile.isPending || createBudget.isPending;
+    signup.isPending ||
+    updateProfile.isPending ||
+    createBudget.isPending ||
+    saveGoal.isPending;
   // Same query (cached) TemplateStep uses — lets the review step read the
   // selected template's allocations for the create-budget call.
   const { data: templates } = useStarterTemplates();
@@ -83,11 +89,12 @@ export default function Onboarding() {
   const isRtl = typeof document !== "undefined" && document.documentElement.dir === "rtl";
   const enterX = 16 * direction * (isRtl ? -1 : 1);
 
-  // Only the account step is hard-required (name, email, password, consent,
-  // and no unresolved "email already registered" conflict — the user must
-  // change the email before continuing). Every later step is "all or
-  // nothing": Skip always works, but Continue only enables once every field
-  // on that step is filled in, so a half-filled step can never be submitted.
+  // The account step is hard-required (name, email, password, consent, and no
+  // unresolved "email already registered" conflict — the user must change the
+  // email before continuing). Later steps are "all or nothing": Continue only
+  // enables once every field on that step is filled in, so a half-filled step
+  // can never be submitted. Skip is offered only on the steps that are truly
+  // optional (see isStepSkippable) — income and template are not among them.
   const isAccountValid = accountFieldsValid && agreed && !emailTaken;
 
   const optionalStepKey: OptionalStepKey | null =
@@ -113,11 +120,12 @@ export default function Onboarding() {
     goToStep(target);
   }
 
-  // "Skip" always works on an optional step, even mid-fill — it resets that
-  // step's fields back to their defaults first, so the final submit's
-  // dirty-check sees a genuinely untouched step rather than a partial one.
+  // "Skip" works on a skippable step even mid-fill — it resets that step's
+  // fields back to their defaults first, so the final submit's dirty-check sees
+  // a genuinely untouched step rather than a partial one.
   function handleSkip() {
-    if (isSubmitting || optionalStepKey === null) return;
+    if (isSubmitting || optionalStepKey === null || !isStepSkippable(optionalStepKey))
+      return;
     for (const field of STEP_FIELDS[optionalStepKey]) {
       setField(field, INITIAL_ONBOARDING_DATA[field]);
     }
@@ -159,30 +167,38 @@ export default function Onboarding() {
         completedRef.current.profile = true;
       }
 
-      // POST /budget (allocations from the chosen template, sum 100), then
-      // flip isAuthenticated and go to the dashboard. Falls back to the
-      // suggested (or first) template and a zeroed goal if the user skipped
-      // those steps — the backend requires both on every budget.
+      // Budget and goal are TWO SEPARATE backend entities with separate endpoints.
+      // POST /budget carries allocations only; the goal goes to PATCH /dashboard/goal
+      // (an upsert). Sending `goal` inside the budget body silently drops it.
       const fallbackTemplate =
         templates?.find((tpl) => tpl.is_suggested) ?? templates?.[0];
       const template =
         templates?.find((tpl) => tpl.template_key === data.selected_template_key) ??
         fallbackTemplate;
-      await createBudget.mutateAsync({
-        selected_template_key: template?.template_key ?? "",
-        goal: {
-          name: data.goal_name || t("onboarding.review.empty"),
-          target_amount: Number(data.goal_target_amount) || 0,
-          // Backend requires target_months >= 1 — 0 is invalid, so a skipped
-          // goal step defaults to 1 rather than sending an out-of-range value.
-          target_months: Number(data.goal_target_months) || 1,
-        },
-        allocations: template?.allocations ?? [],
-      });
+
+      if (!completedRef.current.budget) {
+        await createBudget.mutateAsync({
+          selected_template_key: template?.template_key ?? "",
+          allocations: template?.allocations ?? [],
+        });
+        completedRef.current.budget = true;
+      }
+
+      // Only create a goal if the user actually entered one. A skipped goal step
+      // means "no goal", not "a goal named empty-string worth 0".
+      if (data.goal_name.trim() && Number(data.goal_target_amount) > 0) {
+        await saveGoal.mutateAsync({
+          name: data.goal_name,
+          target: Number(data.goal_target_amount),
+          // Backend requires target_months >= 1.
+          duration: Number(data.goal_target_months) || 1,
+          current: 0,
+        });
+      }
       reset();
       setPassword("");
       setAgreed(false);
-      completedRef.current = { signup: false, profile: false };
+      completedRef.current = { signup: false, profile: false, budget: false };
       navigate(`/${lang}/sign-in`);
     } catch (error) {
       // Writes (signup, profile, budget) must NOT fake success. The mutation's
@@ -288,7 +304,7 @@ export default function Onboarding() {
                 {t("actions.back")}
               </button>
               <div className="flex items-center gap-2">
-                {optionalStepKey !== null && optionalStepKey !== "template" && (
+                {optionalStepKey !== null && isStepSkippable(optionalStepKey) && (
                   <button
                     type="button"
                     className="btn btn-ghost gap-1.5"

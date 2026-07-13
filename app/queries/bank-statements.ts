@@ -91,30 +91,24 @@ export function useApproveBankStatement() {
   const queryClient = useQueryClient();
   const source = useDataSourceStore((s) => s.source);
   return useMutation({
+    // `accountId` is the account the user confirmed during review. There is no
+    // separate confirm-account endpoint — approve is the one call that takes it.
     mutationFn: ({
       id,
       transactions,
+      accountId,
     }: {
       id: string;
       transactions: ExtractedTransaction[];
-    }) => impl(source).approveBankStatement(id, transactions),
+      accountId?: string;
+    }) => impl(source).approveBankStatement(id, transactions, accountId),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
       queryClient.invalidateQueries({ queryKey: ["transactions"] });
+      // Approving commits rows straight into the ledger, so the dashboard's spend,
+      // deltas, savings rate and per-category usage are all restated by it.
+      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
       toastSuccess("toast.bankStatementApproved");
-    },
-    onError: (error) => toastApiError(error),
-  });
-}
-
-export function useConfirmBankStatementAccount() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
-    mutationFn: ({ id, accountId }: { id: string; accountId: string }) =>
-      impl(source).confirmBankStatementAccount(id, accountId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
     },
     onError: (error) => toastApiError(error),
   });

@@ -9,18 +9,23 @@ export interface Transaction {
   accountId?: string;
 }
 
+/**
+ * The one canonical category vocabulary, shared with the budget.
+ *
+ * These are exactly the six buckets every starter template allocates across, and
+ * the backend matches a transaction to its budget bucket by EXACT string equality
+ * on this value. Any category outside this list — or merely differing in case —
+ * silently contributes to no bucket, so the plan reports 0% used while the money
+ * is really gone. Display names live in i18n (common.categories.*); only these
+ * six values are ever stored.
+ */
 export const TRANSACTION_CATEGORIES = [
-  "Groceries",
-  "Dining",
-  "Transport",
-  "Utilities",
-  "Shopping",
-  "Health",
-  "Income",
-  "Rent",
-  "Savings",
-  "Transportation",
-  "Entertainment",
+  "housing",
+  "food",
+  "transport",
+  "savings",
+  "lifestyle",
+  "other",
 ] as const;
 
 export interface AmountRange {

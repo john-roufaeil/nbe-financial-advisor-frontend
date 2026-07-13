@@ -8,7 +8,6 @@ import {
 import { BankPicker } from "@/components/shared/BankPicker";
 import {
   ACCOUNT_NUMBER_LENGTH,
-  balanceError,
   confirmMismatchError,
   type BankAccountFormErrors,
   type BankAccountFormValues,
@@ -128,34 +127,6 @@ export function BankAccountFields({
         />
         {errors.accountNumberConfirm && (
           <span className="text-error text-xs">{errors.accountNumberConfirm}</span>
-        )}
-      </label>
-
-      <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">
-          {t("common.addAccount.initialBalance")}
-        </span>
-        <label
-          className={`input input-bordered input-sm flex w-full items-center gap-2 ${errors.initialBalance ? "input-error" : ""}`}
-        >
-          <input
-            type="number"
-            min={0}
-            step="0.01"
-            value={values.initialBalance}
-            onChange={(e) => {
-              onChange({ initialBalance: e.target.value });
-              onErrorsChange({ initialBalance: balanceError(e.target.value, t) });
-            }}
-            placeholder={t("common.addAccount.initialBalancePlaceholder")}
-            className="w-full"
-          />
-          <span className="text-base-content/50 shrink-0 text-xs">
-            {t(`currency.${values.currency}`, values.currency)}
-          </span>
-        </label>
-        {errors.initialBalance && (
-          <span className="text-error text-xs">{errors.initialBalance}</span>
         )}
       </label>
     </div>

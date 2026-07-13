@@ -13,12 +13,12 @@ import type {
 } from "@/types/bank-statement";
 
 const SAMPLE_POOL: Omit<ExtractedTransaction, "id" | "datetime">[] = [
-  { title: "Grocery purchase", category: "Groceries", type: "expense", amount: 340 },
-  { title: "Restaurant charge", category: "Dining", type: "expense", amount: 210 },
-  { title: "Incoming transfer", category: "Income", type: "income", amount: 1500 },
-  { title: "Utility payment", category: "Utilities", type: "expense", amount: 180 },
-  { title: "Online purchase", category: "Shopping", type: "expense", amount: 95 },
-  { title: "Ride share", category: "Transport", type: "expense", amount: 65 },
+  { title: "Grocery purchase", category: "food", type: "expense", amount: 340 },
+  { title: "Restaurant charge", category: "food", type: "expense", amount: 210 },
+  { title: "Incoming transfer", category: "other", type: "income", amount: 1500 },
+  { title: "Utility payment", category: "housing", type: "expense", amount: 180 },
+  { title: "Online purchase", category: "lifestyle", type: "expense", amount: 95 },
+  { title: "Ride share", category: "transport", type: "expense", amount: 65 },
 ];
 
 /**
@@ -247,26 +247,16 @@ export function retryBankStatement(id: string): Promise<BankStatement> {
   return delay(doc);
 }
 
-export function confirmBankStatementAccount(
-  id: string,
-  accountId: string,
-): Promise<BankStatement> {
-  bankStatements = bankStatements.map((d) =>
-    d.id === id ? { ...d, accountId, accountConfirmed: true } : d,
-  );
-  const doc = bankStatements.find((d) => d.id === id);
-  if (!doc) return Promise.reject(new Error(`Bank statement ${id} not found`));
-  return delay(doc);
-}
-
 /**
  * Rows are edited/added/removed purely client-side while under review (see
  * BankStatementDetailModal) — the edited list only reaches the mock store here,
- * in one shot, when the user approves.
+ * in one shot, when the user approves. The confirmed account arrives the same
+ * way: like the real API, this is the only call that accepts one.
  */
 export async function approveBankStatement(
   id: string,
   transactions: ExtractedTransaction[],
+  accountId?: string,
 ): Promise<{ approvedAt: string; createdTransactionIds: string[] }> {
   const doc = bankStatements.find((d) => d.id === id);
   if (!doc) throw new Error(`Bank statement ${id} not found`);
@@ -289,6 +279,8 @@ export async function approveBankStatement(
           approved: true,
           approvedAt: Date.now(),
           extractedTransactions: transactions,
+          accountId: accountId ?? d.accountId,
+          accountConfirmed: true,
         }
       : d,
   );

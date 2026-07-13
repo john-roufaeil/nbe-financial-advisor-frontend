@@ -10,7 +10,6 @@ export function BankStatementModalActions({
   selectedAccountId,
   draft,
   onConfirmAccount,
-  confirmPending,
   onApprove,
   approvePending,
 }: {
@@ -19,7 +18,6 @@ export function BankStatementModalActions({
   selectedAccountId: string | null;
   draft: ExtractedTransaction[];
   onConfirmAccount: (accountId: string) => void;
-  confirmPending: boolean;
   onApprove: () => void;
   approvePending: boolean;
 }) {
@@ -33,7 +31,6 @@ export function BankStatementModalActions({
       <Button
         type="button"
         onClick={() => onConfirmAccount(selectedAccountId as string)}
-        loading={confirmPending}
         disabled={!selectedAccountId}
         className="btn btn-primary btn-sm"
       >

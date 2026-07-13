@@ -7,6 +7,8 @@ import { useAuthStore } from "@/store/use-auth-store";
  */
 export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
+  // Required so the browser sends/stores the httpOnly refresh-token cookie.
+  withCredentials: true,
 });
 
 apiClient.interceptors.request.use((config) => {
@@ -39,42 +41,21 @@ function isAuthEndpoint(url?: string) {
 // burst of parallel calls doesn't fire multiple refresh requests.
 let refreshPromise: Promise<string> | null = null;
 
-class NoRefreshTokenError extends Error {}
-
+/**
+ * POST /auth/refresh takes NO body: the refresh token is an httpOnly cookie the
+ * browser attaches automatically (withCredentials above). It is never readable
+ * by JS, so there is no "do we have a refresh token?" check we can make up front
+ * — we just attempt the call, and a 401 means the session is genuinely over.
+ */
 async function refreshAccessToken(): Promise<string> {
-  const { refreshToken } = useAuthStore.getState();
-  if (!refreshToken) {
-    // Nothing to refresh — e.g. a reload wiped the in-memory tokens. This isn't
-    // a session expiring, it's a session that was never re-established.
-    throw new NoRefreshTokenError();
-  }
-  const res = await apiClient.post<{ access_token: string; refresh_token: string }>(
-    "/auth/refresh",
-    { refresh_token: refreshToken },
-  );
-  const tokens = res.data;
-  useAuthStore.getState().setTokens({
-    accessToken: tokens.access_token,
-    refreshToken: tokens.refresh_token,
-  });
-  return tokens.access_token;
+  const res = await apiClient.post<{ access_token: string }>("/auth/refresh");
+  const accessToken = res.data.access_token;
+  useAuthStore.getState().setAccessToken(accessToken);
+  return accessToken;
 }
 
 apiClient.interceptors.response.use(
-  (response) => {
-    // Every backend response is wrapped in a { data: ... } envelope
-    // (API Design Guidelines §3). Unwrap it once here so each service reads the
-    // inner payload directly (no per-service res.data.data). Responses without
-    // the envelope (or non-object bodies) fall through untouched.
-    // NOTE: for collection endpoints the sibling `pagination` object lives
-    // alongside `data`; unwrapping to `data` drops it. No current service reads
-    // pagination, but a paginated consumer must read it before this unwrap.
-    const body = response.data;
-    if (body && typeof body === "object" && "data" in body) {
-      response.data = (body as { data: unknown }).data;
-    }
-    return response;
-  },
+  (response) => response,
   async (error: AxiosError) => {
     const originalRequest = error.config as
       (InternalAxiosRequestConfig & { _retried?: boolean }) | undefined;
@@ -97,14 +78,13 @@ apiClient.interceptors.response.use(
       const accessToken = await refreshPromise;
       originalRequest.headers.Authorization = `Bearer ${accessToken}`;
       return apiClient(originalRequest);
-    } catch (refreshError) {
-      if (refreshError instanceof NoRefreshTokenError) {
-        // No session to lose in the first place — reset silently, no modal.
-        useAuthStore.getState().clearStaleAuth();
-      } else {
-        // A real refresh attempt failed: the session was live and is now gone.
-        // Flag it so a global "session expired" modal can prompt a re-login.
+    } catch {
+      // The refresh cookie is missing, expired, or already used — the session is
+      // over. If the user was signed in, tell them why; otherwise reset quietly.
+      if (useAuthStore.getState().isAuthenticated) {
         useAuthStore.getState().expireSession();
+      } else {
+        useAuthStore.getState().clearStaleAuth();
       }
       return Promise.reject(error);
     }

@@ -13,12 +13,12 @@ export function getDashboardSummary(): Promise<DashboardSummary> {
     ],
     budget: {
       categories: [
-        { name: "Groceries", budget: 3000, spent: 2650 },
-        { name: "Dining", budget: 1500, spent: 1800 },
-        { name: "Transport", budget: 1200, spent: 950 },
-        { name: "Utilities", budget: 1000, spent: 980 },
-        { name: "Shopping", budget: 2000, spent: 2400 },
-        { name: "Health", budget: 800, spent: 300 },
+        { name: "food", budget: 3000, spent: 2650 },
+        { name: "food", budget: 1500, spent: 1800 },
+        { name: "transport", budget: 1200, spent: 950 },
+        { name: "housing", budget: 1000, spent: 980 },
+        { name: "lifestyle", budget: 2000, spent: 2400 },
+        { name: "other", budget: 800, spent: 300 },
       ],
     },
   });

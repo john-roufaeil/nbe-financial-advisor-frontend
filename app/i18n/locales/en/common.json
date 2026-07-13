@@ -12,17 +12,12 @@
     "category": "Category",
     "allCategories": "All categories",
     "categories": {
-      "Groceries": "Groceries",
-      "Dining": "Dining",
-      "Transport": "Transport",
-      "Utilities": "Utilities",
-      "Shopping": "Shopping",
-      "Health": "Health",
-      "Income": "Income",
-      "Rent": "Rent",
-      "Savings": "Savings",
-      "Transportation": "Transportation",
-      "Entertainment": "Entertainment"
+      "housing": "Housing & Rent",
+      "food": "Food & Groceries",
+      "transport": "Transport",
+      "savings": "Savings",
+      "lifestyle": "Lifestyle",
+      "other": "Other"
     },
     "filtersLabel": "Filters",
     "amountRange": "Amount range",
@@ -70,20 +65,10 @@
       "accountNumber": "Last 4 digits of account number",
       "accountNumberConfirm": "Confirm account number",
       "accountNumberPlaceholder": "1234",
-      "initialBalance": "Initial balance",
-      "initialBalancePlaceholder": "0.00",
       "errors": {
         "bankRequired": "Select or add a bank.",
         "accountNumberInvalid": "Enter exactly 8 digits.",
-        "accountNumberMismatch": "Account numbers don't match.",
-        "balanceInvalid": "Enter a valid balance."
-      }
-    },
-    "editAccount": {
-      "title": "Edit Bank Account",
-      "balance": "Current balance",
-      "errors": {
-        "balanceInvalid": "Enter a valid balance."
+        "accountNumberMismatch": "Account numbers don't match."
       }
     },
     "sections": {
