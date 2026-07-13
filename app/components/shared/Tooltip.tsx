@@ -38,6 +38,12 @@ export function Tooltip({
   } | null>(null);
   const [isSuppressed, setIsSuppressed] = useState(false);
   const tooltipId = useId();
+  // Guards the viewport-clamp correction below to a single pass per show():
+  // without it, a correction that doesn't fully converge (subpixel rounding,
+  // or the trigger's layout shifting under it — e.g. a dir="rtl" flip from a
+  // language switch) re-triggers the effect via its own `setCoords` call,
+  // forever — tripping React's "Maximum update depth exceeded" guard.
+  const hasClampedRef = useRef(false);
 
   // The bubble lives in the top layer (via the Popover API) so it can out-rank
   // other top-layer content — like toasts — by z-index; a plain `fixed` element
@@ -66,7 +72,8 @@ export function Tooltip({
     if (rect.top < VIEWPORT_PADDING) dy = VIEWPORT_PADDING - rect.top;
     else if (rect.bottom > window.innerHeight - VIEWPORT_PADDING)
       dy = window.innerHeight - VIEWPORT_PADDING - rect.bottom;
-    if (dx !== 0 || dy !== 0) {
+    if ((dx !== 0 || dy !== 0) && !hasClampedRef.current) {
+      hasClampedRef.current = true;
       setCoords((c) => (c ? { ...c, left: c.left + dx, top: c.top + dy } : c));
     }
   }, [coords]);
@@ -89,6 +96,7 @@ export function Tooltip({
 
     const rect = triggerRef.current?.getBoundingClientRect();
     if (!rect) return;
+    hasClampedRef.current = false;
     const isRtl =
       typeof document !== "undefined" && document.documentElement.dir === "rtl";
 

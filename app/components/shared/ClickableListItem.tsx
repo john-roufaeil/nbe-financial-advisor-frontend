@@ -36,7 +36,7 @@ export function ClickableListItem({
         type="button"
         onClick={onActivate}
         aria-label={activateLabel}
-        className="focus-visible:outline-primary/50 absolute inset-0 rounded-[inherit] focus-visible:outline-2 focus-visible:outline-offset-2"
+        className="focus-visible:outline-primary/50 absolute inset-0 cursor-pointer rounded-[inherit] focus-visible:outline-2 focus-visible:outline-offset-2"
       />
       {children}
     </li>

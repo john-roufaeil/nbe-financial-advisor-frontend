@@ -145,6 +145,20 @@ html[dir="rtl"] body {
   font-family: var(--font-arabic);
 }
 
+/* Double-clicking (or dragging) UI chrome shouldn't select its text — that's
+   a text-editor gesture, not something a dashboard's labels/buttons need to
+   support. Inputs/textareas/contenteditable opt back in since those are the
+   one place selecting text is the point. */
+body {
+  user-select: none;
+}
+
+input,
+textarea,
+[contenteditable="true"] {
+  user-select: text;
+}
+
 /* Text selection highlight follows the active theme's primary color instead
    of the browser default (black), which was invisible against dark-mode's
    already-dark surfaces. --color-primary/-content flip with the theme (see
@@ -413,7 +427,12 @@ html.dark [class*="text-base-content/80"] {
   }
 }
 
-html.a11y-high-contrast {
+/* High contrast is black-on-white in light mode, but flips to white-on-black
+   under html.dark below — otherwise enabling it while in dark mode would
+   force the page back to a white background, which is neither "dark mode"
+   nor actually higher-contrast for someone who picked dark for light
+   sensitivity reasons. */
+html.a11y-high-contrast:not(.dark) {
   --color-primary: oklch(0% 0 0);
   --color-primary-content: oklch(100% 0 0);
 
@@ -439,6 +458,34 @@ html.a11y-high-contrast {
   --color-warning-content: oklch(100% 0 0);
   --color-error: oklch(0% 0 0);
   --color-error-content: oklch(100% 0 0);
+}
+
+html.dark.a11y-high-contrast {
+  --color-primary: oklch(100% 0 0);
+  --color-primary-content: oklch(0% 0 0);
+
+  --color-secondary: oklch(100% 0 0);
+  --color-secondary-content: oklch(0% 0 0);
+
+  --color-accent: oklch(100% 0 0);
+  --color-accent-content: oklch(0% 0 0);
+
+  --color-neutral: oklch(100% 0 0);
+  --color-neutral-content: oklch(0% 0 0);
+
+  --color-base-100: oklch(0% 0 0);
+  --color-base-200: oklch(0% 0 0);
+  --color-base-300: oklch(0% 0 0);
+  --color-base-content: oklch(100% 0 0);
+
+  --color-info: oklch(100% 0 0);
+  --color-info-content: oklch(0% 0 0);
+  --color-success: oklch(100% 0 0);
+  --color-success-content: oklch(0% 0 0);
+  --color-warning: oklch(100% 0 0);
+  --color-warning-content: oklch(0% 0 0);
+  --color-error: oklch(100% 0 0);
+  --color-error-content: oklch(0% 0 0);
 }
 
 html.a11y-high-contrast * {
@@ -472,12 +519,12 @@ html.a11y-high-contrast [class*="text-accent/"] {
 
 html.a11y-high-contrast :is(.btn, .card, .input, .select, .textarea, .badge, .alert) {
   border-width: 2px !important;
-  border-color: oklch(0% 0 0) !important;
+  border-color: var(--color-base-content) !important;
 }
 
 html.a11y-high-contrast
   :is(a, button, [role="button"], input, select, textarea):focus-visible {
-  outline: 3px solid oklch(0% 0 0) !important;
+  outline: 3px solid var(--color-base-content) !important;
   outline-offset: 2px !important;
 }
 

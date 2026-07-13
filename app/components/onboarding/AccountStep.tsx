@@ -73,7 +73,7 @@ export function AccountStep({
   const {
     register,
     control,
-    formState: { errors, isValid },
+    formState: { errors, isValid, touchedFields },
   } = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
     mode: "onChange",
@@ -178,8 +178,10 @@ export function AccountStep({
               international
               value={field.value}
               onBlur={field.onBlur}
-              aria-invalid={!!errors.phone}
-              aria-describedby={errors.phone ? "account-phone-error" : undefined}
+              aria-invalid={touchedFields.phone && !!errors.phone}
+              aria-describedby={
+                touchedFields.phone && errors.phone ? "account-phone-error" : undefined
+              }
               onChange={(value) => {
                 const next = value ?? "";
                 field.onChange(next);
@@ -188,7 +190,7 @@ export function AccountStep({
             />
           )}
         />
-        {errors.phone && (
+        {touchedFields.phone && errors.phone && (
           <span id="account-phone-error" role="alert" className="text-error text-xs">
             {errors.phone.message}
           </span>
