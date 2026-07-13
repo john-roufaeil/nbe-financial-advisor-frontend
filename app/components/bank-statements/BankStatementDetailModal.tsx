@@ -86,78 +86,80 @@ export const BankStatementDetailModal = forwardRef<
   );
 
   return (
-    <BaseModal
-      ref={ref}
-      icon={icon}
-      title={title}
-      actions={
-        doc && (
-          <BankStatementModalActions
-            needsAccountConfirm={needsAccountConfirm}
-            showApprove={showApprove}
-            selectedAccountId={selectedAccountId}
-            draft={draft}
-            onConfirmAccount={(accountId) => {
-              setSelectedAccountId(accountId);
-              setAccountConfirmed(true);
-            }}
-            onApprove={() =>
-              approveBankStatement.mutate({
-                id: doc.id,
-                transactions: draft,
-                accountId: selectedAccountId ?? undefined,
-              })
-            }
-            approvePending={approveBankStatement.isPending}
-          />
-        )
-      }
-    >
-      <div className="flex flex-col gap-4">
-        {doc && (
-          <>
-            {(doc.status === BANK_STATEMENT_STATUS.uploading ||
-              doc.status === BANK_STATEMENT_STATUS.processing ||
-              doc.status === BANK_STATEMENT_STATUS.failed) && (
-              <BankStatementStatusPanel
-                doc={doc}
-                reuploadInputRef={reuploadInputRef}
-                onReupload={(file) => handleReupload(doc.id, file)}
-                uploadPending={uploadBankStatements.isPending}
-                deletePending={deleteBankStatement.isPending}
-                onRetry={() => retryBankStatement.mutate(doc.id)}
-                retryPending={retryBankStatement.isPending}
-              />
-            )}
-
-            {doc.status === BANK_STATEMENT_STATUS.processed && needsAccountConfirm && (
-              <AccountConfirmStep
-                accounts={accounts}
-                accountsLoading={accountsLoading}
-                selectedAccountId={selectedAccountId}
-                onSelectAccount={setSelectedAccountId}
-                onAddNewAccount={() => {
-                  setAwaitingNewAccount(true);
-                  accountModalRef.current?.showModal();
-                }}
-              />
-            )}
-
-            {doc.status === BANK_STATEMENT_STATUS.processed && !needsAccountConfirm && (
-              <ErrorBoundary>
-                <ExtractedTransactionsSection
+    <>
+      <BaseModal
+        ref={ref}
+        icon={icon}
+        title={title}
+        actions={
+          doc && (
+            <BankStatementModalActions
+              needsAccountConfirm={needsAccountConfirm}
+              showApprove={showApprove}
+              selectedAccountId={selectedAccountId}
+              draft={draft}
+              onConfirmAccount={(accountId) => {
+                setSelectedAccountId(accountId);
+                setAccountConfirmed(true);
+              }}
+              onApprove={() =>
+                approveBankStatement.mutate({
+                  id: doc.id,
+                  transactions: draft,
+                  accountId: selectedAccountId ?? undefined,
+                })
+              }
+              approvePending={approveBankStatement.isPending}
+            />
+          )
+        }
+      >
+        <div className="flex flex-col gap-4">
+          {doc && (
+            <>
+              {(doc.status === BANK_STATEMENT_STATUS.uploading ||
+                doc.status === BANK_STATEMENT_STATUS.processing ||
+                doc.status === BANK_STATEMENT_STATUS.failed) && (
+                <BankStatementStatusPanel
                   doc={doc}
-                  draft={draft}
-                  onUpdate={updateDraftTransaction}
-                  onDelete={deleteDraftTransaction}
-                  onAdd={addDraftTransaction}
+                  reuploadInputRef={reuploadInputRef}
+                  onReupload={(file) => handleReupload(doc.id, file)}
+                  uploadPending={uploadBankStatements.isPending}
+                  deletePending={deleteBankStatement.isPending}
+                  onRetry={() => retryBankStatement.mutate(doc.id)}
+                  retryPending={retryBankStatement.isPending}
                 />
-              </ErrorBoundary>
-            )}
-          </>
-        )}
-      </div>
+              )}
+
+              {doc.status === BANK_STATEMENT_STATUS.processed && needsAccountConfirm && (
+                <AccountConfirmStep
+                  accounts={accounts}
+                  accountsLoading={accountsLoading}
+                  selectedAccountId={selectedAccountId}
+                  onSelectAccount={setSelectedAccountId}
+                  onAddNewAccount={() => {
+                    setAwaitingNewAccount(true);
+                    accountModalRef.current?.showModal();
+                  }}
+                />
+              )}
+
+              {doc.status === BANK_STATEMENT_STATUS.processed && !needsAccountConfirm && (
+                <ErrorBoundary>
+                  <ExtractedTransactionsSection
+                    doc={doc}
+                    draft={draft}
+                    onUpdate={updateDraftTransaction}
+                    onDelete={deleteDraftTransaction}
+                    onAdd={addDraftTransaction}
+                  />
+                </ErrorBoundary>
+              )}
+            </>
+          )}
+        </div>
+      </BaseModal>
       <AddBankAccountModal ref={accountModalRef} />
-    </BaseModal>
+    </>
   );
 });
