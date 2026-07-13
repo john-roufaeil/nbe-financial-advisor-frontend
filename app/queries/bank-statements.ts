@@ -1,19 +1,14 @@
-import {
-  useMutation,
-  useQuery,
-  useQueryClient,
-  keepPreviousData,
-} from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import * as bankStatementsApi from "@/api/bank-statements";
 import * as bankStatementsMock from "@/mocks/bank-statements";
 import type { BankStatementFilters } from "@/api/bank-statements";
 import type { BankStatementType, ExtractedTransaction } from "@/types/bank-statement";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
-import { toastSuccess, toastApiError } from "@/lib/toast";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
+import { pickImpl, useInvalidatingMutation } from "@/queries/shared";
 
 function impl(source: DataSource) {
-  return source === "mock" ? bankStatementsMock : bankStatementsApi;
+  return pickImpl(source, bankStatementsApi, bankStatementsMock);
 }
 
 export const bankStatementKeys = {
@@ -53,33 +48,24 @@ export function useBankStatement(id: string | null) {
 }
 
 export function useUploadBankStatements() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
+  return useInvalidatingMutation({
     mutationFn: (
+      source,
       files: { name: string; type: BankStatementType; sizeKb: number; file: File }[],
     ) =>
       source === "mock"
         ? bankStatementsMock.uploadBankStatements(files)
         : bankStatementsApi.uploadBankStatements(files),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
-      toastSuccess("toast.bankStatementUploaded");
-    },
-    onError: (error) => toastApiError(error),
+    invalidates: [bankStatementKeys.all],
+    successToastKey: "toast.bankStatementUploaded",
   });
 }
 
 export function useRetryBankStatement() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
-    mutationFn: (id: string) => impl(source).retryBankStatement(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
-      toastSuccess("toast.bankStatementRetried");
-    },
-    onError: (error) => toastApiError(error),
+  return useInvalidatingMutation({
+    mutationFn: (source, id: string) => impl(source).retryBankStatement(id),
+    invalidates: [bankStatementKeys.all],
+    successToastKey: "toast.bankStatementRetried",
   });
 }
 
@@ -87,47 +73,46 @@ export function useRetryBankStatement() {
  * Extracted-row edits are kept purely client-side while a statement is under
  * review (see BankStatementDetailModal) — the only request this screen ever sends
  * is the approve call below, with the user's final edited rows attached.
+ *
+ * Approving commits rows straight into the ledger, so the transactions list
+ * and the dashboard's spend, deltas, savings rate and per-category usage are
+ * all restated by it.
  */
 export function useApproveBankStatement() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
+  return useInvalidatingMutation({
     // `accountId` is the account the user confirmed during review. There is no
     // separate confirm-account endpoint — approve is the one call that takes it.
-    mutationFn: ({
-      id,
-      transactions,
-      accountId,
-    }: {
-      id: string;
-      transactions: ExtractedTransaction[];
-      accountId?: string;
-    }) => impl(source).approveBankStatement(id, transactions, accountId),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
-      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.transactions] });
-      // Approving commits rows straight into the ledger, so the dashboard's spend,
-      // deltas, savings rate and per-category usage are all restated by it.
-      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
-      toastSuccess("toast.bankStatementApproved");
-    },
-    onError: (error) => toastApiError(error),
+    mutationFn: (
+      source,
+      {
+        id,
+        transactions,
+        accountId,
+      }: {
+        id: string;
+        transactions: ExtractedTransaction[];
+        accountId?: string;
+      },
+    ) => impl(source).approveBankStatement(id, transactions, accountId),
+    invalidates: [
+      bankStatementKeys.all,
+      [QUERY_ROOTS.transactions],
+      [QUERY_ROOTS.dashboard],
+    ],
+    successToastKey: "toast.bankStatementApproved",
   });
 }
 
 export function useDeleteBankStatement() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
-    mutationFn: (id: string) => impl(source).deleteBankStatement(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: bankStatementKeys.all });
-      // An approved statement's committed rows are removed with it, so the
-      // ledger and dashboard totals need restating too.
-      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.transactions] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
-      toastSuccess("toast.bankStatementDeleted");
-    },
-    onError: (error) => toastApiError(error),
+  return useInvalidatingMutation({
+    mutationFn: (source, id: string) => impl(source).deleteBankStatement(id),
+    // An approved statement's committed rows are removed with it, so the
+    // ledger and dashboard totals need restating too.
+    invalidates: [
+      bankStatementKeys.all,
+      [QUERY_ROOTS.transactions],
+      [QUERY_ROOTS.dashboard],
+    ],
+    successToastKey: "toast.bankStatementDeleted",
   });
 }

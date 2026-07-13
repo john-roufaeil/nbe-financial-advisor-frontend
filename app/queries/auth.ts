@@ -5,9 +5,10 @@ import type { SignupBody, LoginBody } from "@/types/auth";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { useAuthStore } from "@/store/use-auth-store";
 import { toastApiError } from "@/lib/toast";
+import { pickImpl } from "@/queries/shared";
 
 function impl(source: DataSource) {
-  return source === "mock" ? authMock : authApi;
+  return pickImpl(source, authApi, authMock);
 }
 
 export function useSignup() {
