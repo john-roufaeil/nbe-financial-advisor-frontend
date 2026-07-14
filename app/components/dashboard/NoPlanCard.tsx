@@ -1,6 +1,6 @@
 import { Link, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Bot, ClipboardList, PieChart, Target } from "lucide-react";
+import { Bot, ClipboardList, PieChart } from "lucide-react";
 
 /**
  * Shown instead of the goals + budget cards when the user has no plan yet.
@@ -24,7 +24,7 @@ export function NoPlanCard() {
           </span>
         </div>
 
-        <div className="flex max-w-md flex-col gap-2">
+        <div className="flex max-w-md flex-col gap-2 text-balance">
           <h2 className="text-lg font-semibold">{t("dashboard.noPlan.title")}</h2>
           <p className="text-base-content/60 text-sm">
             {t("dashboard.noPlan.description")}
@@ -32,10 +32,6 @@ export function NoPlanCard() {
         </div>
 
         <ul className="text-base-content/70 flex flex-col gap-2 text-sm sm:flex-row sm:gap-6">
-          <li className="flex items-center justify-center gap-2">
-            <Target className="text-primary size-4 shrink-0" />
-            {t("dashboard.noPlan.benefitGoal")}
-          </li>
           <li className="flex items-center justify-center gap-2">
             <PieChart className="text-primary size-4 shrink-0" />
             {t("dashboard.noPlan.benefitBudget")}

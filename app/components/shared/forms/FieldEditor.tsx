@@ -8,6 +8,7 @@ import {
   type UseFormRegister,
 } from "react-hook-form";
 import { MAX_MONEY_VALUE } from "@/lib/format";
+import { MoneyInput } from "@/components/shared/forms/MoneyInput";
 
 /** Describes one editable field in a dynamic, RHF-backed form — e.g. a
  * profile section's set of editable attributes. Keyed by the record's field
@@ -91,12 +92,33 @@ export function FieldEditor({
     );
   }
 
+  if (field.currency) {
+    return (
+      <>
+        <Controller
+          name={key}
+          control={control}
+          render={({ field: rhfField }) => (
+            <MoneyInput
+              value={rhfField.value === "" ? "" : Number(rhfField.value)}
+              onChange={(v) => rhfField.onChange(v === "" ? "" : String(v))}
+              max={MAX_MONEY_VALUE}
+              unit={t("currency.EGP")}
+              placeholder={t(field.placeholderKey ?? field.labelKey)}
+              aria-label={t(field.labelKey)}
+              className={`input-sm w-full ${error ? "input-error" : ""}`}
+            />
+          )}
+        />
+        {error && <span className="text-error text-xs">{error}</span>}
+      </>
+    );
+  }
+
   return (
     <>
       <input
-        type={field.currency ? "number" : "text"}
-        min={field.currency ? 0 : undefined}
-        max={field.currency ? MAX_MONEY_VALUE : undefined}
+        type="text"
         placeholder={t(field.placeholderKey ?? field.labelKey)}
         maxLength={field.key === "name" ? 20 : undefined}
         className={`input input-sm input-bordered w-full ${error ? "input-error" : ""}`}

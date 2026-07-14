@@ -62,6 +62,7 @@ export default function Onboarding() {
   // Guards against double-submit while a step's async call is in flight. A ref
   // (not state) so it doesn't change how anything renders.
   const submittingRef = useRef(false);
+  const [attempted, setAttempted] = useState(false);
 
   // Every step's data is held locally until "Create plan" on the final step —
   // no API calls fire before then. If a later call in that sequence fails
@@ -110,15 +111,48 @@ export default function Onboarding() {
         ? stepIsComplete
         : true;
 
-  // Can only jump to a step ahead of the current one if the account step
-  // (the one hard gate) has already been satisfied.
-  function isStepLocked(target: number) {
-    return target > 0 && !isAccountValid && step === 0;
+  // Same gate Continue itself uses, but for an arbitrary step index rather
+  // than just the current one — lets the tab bar check every step between
+  // here and a target ahead, not only the one currently on screen.
+  function stepCanContinue(index: number): boolean {
+    const key = STEP_KEYS[index];
+    if (key === "account") return isAccountValid;
+    if (key === "income" || key === "goal" || key === "template") {
+      // A skippable step (goal) never blocks tab navigation regardless of
+      // fill state — Skip is always available on it, so requiring it to be
+      // *complete* just to jump past would make tab-jumping stricter than
+      // Skip itself. Continue's own gate (`canContinue` above) is separate
+      // and still requires full completion there.
+      return isStepSkippable(key) || isStepComplete(key, data);
+    }
+    return true;
+  }
+
+  // Steps before the current one are already resolved — either completed or
+  // explicitly skipped — via Continue/Skip, so revisiting them is always
+  // allowed (no blocker). Jumping ahead of the current step, to any distance,
+  // is allowed exactly as far as every step from here up to (but not
+  // including) the target is itself valid: e.g. from step 1 (valid) you can
+  // reach step 2, but not step 3 if step 2 has missing data — in which case
+  // this returns step 2's index, not step 3's, so callers can point at the
+  // actual problem rather than just the destination.
+  function firstBlockingStep(target: number): number | null {
+    if (target <= step) return null;
+    for (let i = step; i < target; i++) {
+      if (!stepCanContinue(i)) return i;
+    }
+    return null;
   }
 
   function handleStepClick(target: number) {
-    if (isSubmitting || target === step || isStepLocked(target)) return;
+    if (isSubmitting || target === step) return;
+    const blocker = firstBlockingStep(target);
+    if (blocker !== null) {
+      if (blocker !== step) goToStep(blocker);
+      return;
+    }
     goToStep(target);
+    setAttempted(false);
   }
 
   // "Skip" works on a skippable step even mid-fill — it resets that step's
@@ -131,16 +165,21 @@ export default function Onboarding() {
       setField(field, INITIAL_ONBOARDING_DATA[field]);
     }
     next();
+    setAttempted(false);
   }
 
   async function handlePrimary() {
     if (submittingRef.current) return;
+    if (!canContinue) {
+      return;
+    }
     submittingRef.current = true;
     try {
       if (!isLast) {
         // Steps 1-4 → no API calls. Everything is held in local/store state
         // until "Create plan" on the final step.
         next();
+        setAttempted(false);
         return;
       }
 
@@ -232,35 +271,50 @@ export default function Onboarding() {
               role="tablist"
               aria-label={t("onboarding.progressLabel")}
             >
-              {Array.from({ length: totalSteps }, (_, i) => (
-                <button
-                  key={i}
-                  type="button"
-                  role="tab"
-                  aria-selected={i === step}
-                  aria-current={i === step ? "step" : undefined}
-                  onClick={() => handleStepClick(i)}
-                  disabled={isStepLocked(i)}
-                  aria-label={t(`onboarding.${STEP_KEYS[i]}.title`)}
-                  className={`flex min-h-11 flex-1 items-center py-1 ${
-                    isStepLocked(i) ? "cursor-not-allowed" : "cursor-pointer"
-                  }`}
-                >
-                  <span className="bg-base-300 h-1.5 w-full overflow-hidden rounded-full">
-                    <div
-                      className={`bg-primary h-full rounded-full ease-out ${
-                        i === step || i === prevStep
-                          ? "transition-transform duration-500"
-                          : ""
+              {Array.from({ length: totalSteps }, (_, i) => {
+                const blocker = i > step ? firstBlockingStep(i) : null;
+                const locked = blocker !== null;
+                const tabTooltip =
+                  i === step
+                    ? ""
+                    : locked
+                      ? t("onboarding.errors.completeStepFirst", {
+                          step: t(`onboarding.${STEP_KEYS[blocker]}.title`),
+                        })
+                      : t("onboarding.skipToStep", {
+                          step: t(`onboarding.${STEP_KEYS[i]}.title`),
+                        });
+                return (
+                  <Tooltip key={i} content={tabTooltip} className="min-w-0 flex-1">
+                    <button
+                      type="button"
+                      role="tab"
+                      aria-selected={i === step}
+                      aria-current={i === step ? "step" : undefined}
+                      onClick={() => handleStepClick(i)}
+                      aria-disabled={locked}
+                      aria-label={t(`onboarding.${STEP_KEYS[i]}.title`)}
+                      className={`flex min-h-11 min-w-0 flex-1 items-center py-1 ${
+                        locked ? "cursor-not-allowed" : "cursor-pointer"
                       }`}
-                      style={{
-                        transform: i <= step ? "scaleX(1)" : "scaleX(0)",
-                        transformOrigin: isRtl ? "right" : "left",
-                      }}
-                    />
-                  </span>
-                </button>
-              ))}
+                    >
+                      <span className="bg-base-300 h-1.5 w-full overflow-hidden rounded-full">
+                        <div
+                          className={`bg-primary h-full rounded-full ease-out ${
+                            i === step || i === prevStep
+                              ? "transition-transform duration-500"
+                              : ""
+                          }`}
+                          style={{
+                            transform: i <= step ? "scaleX(1)" : "scaleX(0)",
+                            transformOrigin: isRtl ? "right" : "left",
+                          }}
+                        />
+                      </span>
+                    </button>
+                  </Tooltip>
+                );
+              })}
             </div>
 
             <div
@@ -287,9 +341,9 @@ export default function Onboarding() {
                   onEmailChange={() => setEmailTaken(false)}
                 />
               ) : stepKey === "income" ? (
-                <IncomeStep />
+                <IncomeStep attempted={attempted} />
               ) : stepKey === "goal" ? (
-                <GoalStep />
+                <GoalStep attempted={attempted} />
               ) : stepKey === "template" ? (
                 <TemplateStep />
               ) : (
@@ -301,7 +355,11 @@ export default function Onboarding() {
               <button
                 className="btn btn-ghost gap-1.5"
                 disabled={isSubmitting}
-                onClick={() => (step === 0 ? navigate(localizedPath(lang!)) : back())}
+                onClick={() => {
+                  setAttempted(false);
+                  if (step === 0) navigate(localizedPath(lang!));
+                  else back();
+                }}
               >
                 <ArrowLeft className="size-4" />
                 {t("actions.back")}
@@ -320,14 +378,20 @@ export default function Onboarding() {
                 )}
                 <Tooltip
                   content={
-                    !canContinue && optionalStepKey !== null
-                      ? t("onboarding.errors.fillAllRequired")
-                      : ""
+                    canContinue
+                      ? ""
+                      : stepKey === "account"
+                        ? t("onboarding.errors.fillAccountRequired")
+                        : optionalStepKey === "income"
+                          ? t("onboarding.errors.fillIncomeRequired")
+                          : t("onboarding.errors.fillAllRequired")
                   }
                 >
                   <Button
-                    className="btn btn-primary gap-1.5"
-                    disabled={!canContinue}
+                    className={`btn btn-primary gap-1.5 ${
+                      canContinue ? "" : "cursor-not-allowed opacity-50"
+                    }`}
+                    aria-disabled={!canContinue}
                     loading={isSubmitting}
                     onClick={handlePrimary}
                   >

@@ -3,7 +3,7 @@ import type { ToolCallMessagePartComponent } from "@assistant-ui/react";
 import { PieChart, BarChart3, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { SpendingBreakdownResult } from "@/lib/demo-financials";
-import { CATEGORY_BAR_COLORS } from "@/lib/category-colors";
+import { CATEGORY_BAR_COLORS } from "@/lib/constants/category-colors";
 import { CategoryDonutChart } from "@/components/dashboard/CategoryDonutChart";
 import { CategoryBarChart } from "@/components/chat/tools/CategoryBarChart";
 import { Money } from "@/components/shared/Money";

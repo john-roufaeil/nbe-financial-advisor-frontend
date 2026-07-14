@@ -1,4 +1,4 @@
-import { CATEGORY_BAR_COLORS } from "@/lib/category-colors";
+import { CATEGORY_BAR_COLORS } from "@/lib/constants/category-colors";
 
 interface BarDatum {
   name: string;

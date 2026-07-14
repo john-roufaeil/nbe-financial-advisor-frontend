@@ -9,7 +9,7 @@ import { Button } from "@/components/shared/Button";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { MoneyInput } from "@/components/shared/forms/MoneyInput";
 import { moneyFieldBinding } from "@/components/shared/forms/money-field-binding";
-import { categoryIcon } from "@/lib/category-icons";
+import { categoryIcon } from "@/lib/constants/category-icons";
 import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { closeDialog } from "@/lib/close-dialog";
 

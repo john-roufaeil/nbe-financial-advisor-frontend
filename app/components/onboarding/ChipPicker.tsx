@@ -1,3 +1,5 @@
+import { RequiredMark } from "@/components/onboarding/RequiredMark";
+
 interface ChipOption<T extends string> {
   value: T;
   label: string;
@@ -13,28 +15,23 @@ export function ChipPicker<T extends string>({
   options,
   value,
   onChange,
-  error,
+  required,
 }: {
   label: string;
   options: readonly ChipOption<T>[];
   value: T;
   onChange: (value: T) => void;
-  /** When set, a red dot appears beside the label — this field is required
-   * by the step's "all or nothing" rule but hasn't been picked yet. The
-   * string itself is used only as the dot's accessible label. */
   error?: string;
+  /** Marks the label with the same asterisk AccountStep's hard-required
+   * fields use — for a field that's always required, not just conditionally
+   * flagged once the step is dirty (see `error` above). */
+  required?: boolean;
 }) {
   return (
     <div className="flex flex-col gap-1.5">
       <span className="label-text inline-flex items-center gap-1.5 text-xs">
         {label}
-        {error && (
-          <span
-            className="bg-error inline-block size-1.5 shrink-0 rounded-full"
-            role="img"
-            aria-label={error}
-          />
-        )}
+        {required && <RequiredMark />}
       </span>
       <div className="flex flex-wrap gap-1.5 rounded-lg">
         {options.map((opt) => (

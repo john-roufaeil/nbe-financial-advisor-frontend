@@ -35,7 +35,7 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   employment_status: "",
   monthly_income: "",
   income_steadiness: "",
-  dependents_count: "",
+  dependents_count: "0",
   goal_name: "",
   goal_target_amount: "",
   goal_target_months: "",

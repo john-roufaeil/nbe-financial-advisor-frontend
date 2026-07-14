@@ -109,7 +109,10 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="grid items-stretch gap-4 md:grid-cols-3 xl:grid-cols-12">
-              <div className="md:col-span-2 xl:col-span-9">
+              <div className="md:col-span-1 xl:col-span-3">
+                <GoalCard currency={data.currency} />
+              </div>
+              <div className="md:col-span-2 xl:col-span-6">
                 <NoPlanCard />
               </div>
               <div className="md:col-span-1 xl:col-span-3 xl:self-start">

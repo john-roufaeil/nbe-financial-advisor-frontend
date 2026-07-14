@@ -15,6 +15,7 @@ export const AddTransactionModal = forwardRef<
   const {
     control,
     register,
+    setValue,
     errors,
     isValid,
     accounts,
@@ -64,6 +65,7 @@ export const AddTransactionModal = forwardRef<
           onSubmit={handleFormSubmit}
           control={control}
           register={register}
+          setValue={setValue}
           errors={errors}
           accounts={accounts}
           editing={!!editing}
