@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
 export type DataSource = "mock" | "backend";
 
@@ -15,6 +16,6 @@ export const useDataSourceStore = create<DataSourceState>()(
       source: "backend",
       setSource: (source) => set({ source }),
     }),
-    { name: "nbe_data_source", version: 1 },
+    { name: STORAGE_KEYS.dataSource, version: 1 },
   ),
 );

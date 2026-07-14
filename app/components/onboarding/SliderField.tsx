@@ -1,3 +1,8 @@
+import { ChevronUp, ChevronDown, Info } from "lucide-react";
+import { useTranslation } from "react-i18next";
+import { Tooltip } from "@/components/shared/Tooltip";
+import { RequiredMark } from "@/components/onboarding/RequiredMark";
+
 const THUMB_SIZE = "1.75rem";
 
 interface SliderFieldProps {
@@ -11,10 +16,13 @@ interface SliderFieldProps {
   presets?: { value: number; label: string }[];
   /** Unit shown next to the numeric input, e.g. a currency label. */
   unit?: string;
-  /** When set, a red dot appears beside the label — this field is required
-   * by the step's "all or nothing" rule but is still at its default. The
-   * string itself is used only as the dot's accessible label. */
   error?: string;
+  /** Marks the label with the same asterisk AccountStep's hard-required
+   * fields use. */
+  required?: boolean;
+  /** Definition shown in a tooltip behind an info icon beside the label, for
+   * a field whose meaning isn't self-evident from its name alone. */
+  info?: string;
 }
 
 export function SliderField({
@@ -26,10 +34,17 @@ export function SliderField({
   step,
   presets,
   unit,
-  error,
+  required,
+  info,
 }: SliderFieldProps) {
+  const { t } = useTranslation();
+
   function clamp(v: number) {
     return Math.min(max, Math.max(min, v));
+  }
+
+  function adjust(direction: 1 | -1) {
+    onChange(clamp(value + direction * step));
   }
 
   // Thousands-separated display (e.g. "500,000") — type="number" can't show
@@ -46,12 +61,17 @@ export function SliderField({
     <div className="flex flex-col gap-1.5">
       <span className="label-text inline-flex items-center gap-1.5 text-xs">
         {label}
-        {error && (
-          <span
-            className="bg-error inline-block size-1.5 shrink-0 rounded-full"
-            role="img"
-            aria-label={error}
-          />
+        {required && <RequiredMark />}
+        {info && (
+          <Tooltip content={info}>
+            <button
+              type="button"
+              aria-label={info}
+              className="text-base-content/40 hover:text-primary inline-flex"
+            >
+              <Info data-no-flip className="size-3.5" />
+            </button>
+          </Tooltip>
         )}
       </span>
       <div className="flex w-full items-center gap-3 rounded-lg">
@@ -87,12 +107,42 @@ export function SliderField({
               const digits = e.target.value.replace(/[^\d]/g, "");
               onChange(clamp(digits === "" ? 0 : Number(digits)));
             }}
+            // Mirrors the paired range input's native ArrowUp/Down stepping —
+            // this box is a plain text input (for comma-grouping, which
+            // type="number" can't show), so it has no such behavior for free.
+            onKeyDown={(e) => {
+              if (e.key !== "ArrowUp" && e.key !== "ArrowDown") return;
+              e.preventDefault();
+              adjust(e.key === "ArrowUp" ? 1 : -1);
+            }}
             className="text-primary w-auto shrink-0 bg-transparent text-end font-semibold tabular-nums focus:outline-none"
             style={{ width: inputWidth }}
           />
           {unit && (
             <span className="text-base-content/50 shrink-0 text-[0.65rem]">{unit}</span>
           )}
+          {/* Visible spinner mirroring the keyboard ArrowUp/Down support above —
+              this box is a plain text input, so it has no native spinner. */}
+          <span className="flex shrink-0 flex-col self-stretch">
+            <button
+              type="button"
+              onClick={() => adjust(1)}
+              disabled={value >= max}
+              aria-label={t("actions.increase", { name: label })}
+              className="text-base-content/50 hover:text-primary flex flex-1 cursor-pointer items-center disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <ChevronUp data-no-flip className="size-3" />
+            </button>
+            <button
+              type="button"
+              onClick={() => adjust(-1)}
+              disabled={value <= min}
+              aria-label={t("actions.decrease", { name: label })}
+              className="text-base-content/50 hover:text-primary flex flex-1 cursor-pointer items-center disabled:cursor-not-allowed disabled:opacity-30"
+            >
+              <ChevronDown data-no-flip className="size-3" />
+            </button>
+          </span>
         </label>
       </div>
 

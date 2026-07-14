@@ -1,19 +1,24 @@
 import { useTranslation } from "react-i18next";
 import { Trash2, ArrowDownCircle, ArrowUpCircle } from "lucide-react";
-import { TRANSACTION_CATEGORIES } from "@/types/transaction";
 import type { ExtractedTransaction } from "@/types/bank-statement";
+import { TypeCategoryField } from "@/components/transactions/TypeCategoryField";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useConfirmStore } from "@/store/use-confirm-store";
+import { MoneyInput } from "@/components/shared/forms/MoneyInput";
+import { MAX_MONEY_VALUE } from "@/lib/format";
 
 /** Rows here are edited purely in local state (see `draft` in the parent) —
  * nothing is sent to the server until "Approve" — so every keystroke is a
  * plain re-render with no network round trip. */
 export function ExtractedTransactionRow({
   tx,
+  currencyLabel,
   onUpdate,
   onDelete,
 }: {
   tx: ExtractedTransaction;
+  /** The statement's account currency (e.g. "EGP"), already localized. */
+  currencyLabel: string;
   onUpdate: (patch: Partial<Omit<ExtractedTransaction, "id">>) => void;
   onDelete: () => void;
 }) {
@@ -59,68 +64,40 @@ export function ExtractedTransactionRow({
           </Tooltip>
         </div>
 
-        <div className="border-base-200 flex flex-wrap items-center gap-x-4 gap-y-2 border-t ps-10 pt-3">
-          <label className="flex items-center gap-1.5">
+        <div className="border-base-200 flex flex-col gap-2 border-t ps-10 pt-3">
+          <label className="flex w-full flex-col gap-1">
             <span className="text-base-content/50 text-xs">
-              {t("transactions.add.category")}
+              {t("transactions.add.amount")}
             </span>
-            <select
-              value={tx.category}
-              onChange={(e) => onUpdate({ category: e.target.value })}
-              className="select select-bordered select-xs"
-            >
-              {TRANSACTION_CATEGORIES.map((c) => (
-                <option key={c} value={c}>
-                  {t(`common.categories.${c}`, c)}
-                </option>
-              ))}
-            </select>
-          </label>
-
-          <div className="join border-base-300 rounded-lg border">
-            <button
-              type="button"
-              onClick={() => onUpdate({ type: "expense" })}
-              className={`btn btn-xs join-item cursor-pointer ${tx.type === "expense" ? "btn-error" : "btn-ghost"}`}
-            >
-              {t("common.filters.expense")}
-            </button>
-            <button
-              type="button"
-              onClick={() => onUpdate({ type: "income" })}
-              className={`btn btn-xs join-item cursor-pointer ${tx.type === "income" ? "btn-success" : "btn-ghost"}`}
-            >
-              {t("common.filters.income")}
-            </button>
-          </div>
-
-          <label className="ms-auto flex flex-col items-end gap-1">
-            <span className="flex items-center gap-1.5">
-              <span className="text-base-content/50 text-xs">
-                {t("transactions.add.amount")}
-              </span>
-              <input
-                type="number"
-                min={0}
-                step="0.01"
-                value={tx.amount}
-                onChange={(e) => onUpdate({ amount: Number(e.target.value) })}
-                className={`input input-bordered input-xs min-w-24 ${amountInvalid ? "input-error" : ""}`}
-                // `minWidth` (not `width`) so the field only ever grows to fit longer
-                // amounts, never shrinks — a fixed `width` recalculated on every
-                // keystroke made the box (and everything wrapping next to it in this
-                // flex-wrap row) visibly jitter while typing.
-                style={{
-                  minWidth: `${Math.max(6, String(tx.amount).length + 3.5)}ch`,
-                }}
-              />
-            </span>
+            <MoneyInput
+              value={tx.amount}
+              max={MAX_MONEY_VALUE}
+              onChange={(value) => onUpdate({ amount: value === "" ? 0 : value })}
+              unit={currencyLabel}
+              aria-label={t("transactions.add.amount")}
+              className={`w-full ${amountInvalid ? "input-error" : ""}`}
+            />
             {amountInvalid && (
               <span className="text-error text-xs">
                 {t("transactions.add.errors.amountInvalid")}
               </span>
             )}
           </label>
+
+          <div className="flex flex-col gap-1">
+            <span className="text-base-content/50 text-xs">
+              {t("transactions.add.category")}
+            </span>
+            <TypeCategoryField
+              size="xs"
+              type={tx.type}
+              category={tx.category}
+              onTypeChange={(next, fallback) =>
+                onUpdate({ type: next, ...(fallback ? { category: fallback } : {}) })
+              }
+              onCategoryChange={(c) => onUpdate({ category: c })}
+            />
+          </div>
         </div>
       </div>
     </li>

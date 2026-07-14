@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
+import { useNumberDisplay } from "@/lib/use-number-display";
 
 /**
  * Read-only summary of everything collected. Password is intentionally absent —
@@ -8,6 +9,7 @@ import { useOnboardingStore } from "@/store/use-onboarding-store";
 export function ReviewStep() {
   const { t } = useTranslation();
   const data = useOnboardingStore((s) => s.data);
+  const formatN = useNumberDisplay();
 
   const raw = (value: string) => ({ provided: value.trim().length > 0, value });
   const opt = (prefix: string, value: string) => ({
@@ -18,7 +20,7 @@ export function ReviewStep() {
     const provided = value.trim().length > 0;
     return {
       provided,
-      value: provided ? `${Number(value).toLocaleString()} ${t("currency.EGP")}` : "",
+      value: provided ? `${formatN(Number(value))} ${t("currency.EGP")}` : "",
     };
   };
 

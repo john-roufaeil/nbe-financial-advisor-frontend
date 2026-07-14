@@ -19,7 +19,10 @@
     "budgetCreated": "تم التسجيل بنجاح",
     "budgetUpdated": "تم تحديث الخطة",
     "timeFormatChanged": "تم ضبط صيغة الوقت على {{format}}",
-    "languageChanged": "تم ضبط اللغة على {{language}}",
+    "numberFormatChanged": "تم ضبط صيغة الأرقام على {{format}}",
+    "dateFormatChanged": "تم ضبط صيغة التاريخ على {{format}}",
+    "compactNumbersChanged": "تم ضبط عرض الأرقام على {{format}}",
+    "languageChanged": "Language set to English",
     "dataSourceChanged": "تم ضبط مصدر البيانات على {{source}}"
   }
 }

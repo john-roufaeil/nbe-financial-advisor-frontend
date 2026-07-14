@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
 /**
  * Field names mirror the backend request bodies (snake_case) so wiring is a
@@ -34,7 +35,7 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   employment_status: "",
   monthly_income: "",
   income_steadiness: "",
-  dependents_count: "",
+  dependents_count: "0",
   goal_name: "",
   goal_target_amount: "",
   goal_target_months: "",
@@ -72,6 +73,6 @@ export const useOnboardingStore = create<OnboardingState>()(
     }),
     // version bumped: the field set changed (income_bracket removed), so any
     // stale persisted `data` is discarded instead of hydrating a mismatched shape.
-    { name: "nbe_onboarding", version: 2 },
+    { name: STORAGE_KEYS.onboarding, version: 2 },
   ),
 );

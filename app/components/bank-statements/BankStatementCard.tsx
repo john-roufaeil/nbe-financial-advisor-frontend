@@ -2,22 +2,26 @@ import { Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { BankStatement } from "@/types/bank-statement";
 import { formatDateTime } from "@/lib/format";
-import type { TimeFormat } from "@/store/use-time-format-store";
+import type { TimeFormat, DateFormat } from "@/store/use-display-preferences-store";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { useDeleteBankStatement } from "@/queries/bank-statements";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useConfirmStore } from "@/store/use-confirm-store";
-import { useTimeFormatStore } from "@/store/use-time-format-store";
-import type { ViewMode } from "@/store/use-view-mode-store";
+import {
+  useDisplayPreferencesStore,
+  type ViewMode,
+} from "@/store/use-display-preferences-store";
 import { BankStatementStatusBadge } from "@/components/bank-statements/BankStatementStatusBadge";
+import { ClickableListItem } from "@/components/shared/ClickableListItem";
 
 /** Bank name + logo are shown by BankBadge itself; the subtitle is just date + count. */
 function bankStatementSubtitle(
   doc: BankStatement,
   t: (key: string, options?: Record<string, unknown>) => string,
   timeFormat: TimeFormat,
+  dateFormat: DateFormat,
 ) {
-  const parts = [formatDateTime(doc.uploadDate, timeFormat, t)];
+  const parts = [formatDateTime(doc.uploadDate, timeFormat, t, dateFormat)];
   if (doc.extractedTransactions) {
     parts.push(
       t("bankStatements.detail.transactionCount", {
@@ -40,29 +44,33 @@ export function BankStatementCard({
   const { t } = useTranslation();
   const deleteBankStatement = useDeleteBankStatement();
   const confirm = useConfirmStore((s) => s.confirm);
-  const timeFormat = useTimeFormatStore((s) => s.format);
+  const timeFormat = useDisplayPreferencesStore((s) => s.timeFormat);
+  const dateFormat = useDisplayPreferencesStore((s) => s.dateFormat);
+  const density = useDisplayPreferencesStore((s) => s.density);
+  const isCompact = density === "compact";
   const isGrid = view === "grid";
 
   const logoAndText = (
     <BankBadge
       bank={doc.bankName}
       className="flex-1"
-      subtitle={bankStatementSubtitle(doc, t, timeFormat)}
+      subtitle={
+        isCompact ? undefined : bankStatementSubtitle(doc, t, timeFormat, dateFormat)
+      }
     />
   );
 
   const status = <BankStatementStatusBadge doc={doc} />;
 
-  const deleteLabel = t("actions.delete", {
-    name: doc.name || t("bankStatements.fallbackName"),
-  });
+  const statementName = doc.name || t("bankStatements.fallbackName");
+  const deleteLabel = t("actions.delete", { name: statementName });
+  const viewDetailsLabel = t("actions.viewDetails", { name: statementName });
 
   const deleteButton = (
-    <Tooltip content={deleteLabel} className="shrink-0">
+    <Tooltip content={deleteLabel} className="relative z-10 shrink-0">
       <button
         type="button"
-        onClick={(e) => {
-          e.stopPropagation();
+        onClick={() => {
           confirm({
             title: t("confirm.deleteBankStatementTitle"),
             message: t("confirm.deleteMessage"),
@@ -77,42 +85,31 @@ export function BankStatementCard({
     </Tooltip>
   );
 
-  function onKeyDown(e: React.KeyboardEvent<HTMLLIElement>) {
-    if (e.key === "Enter" || e.key === " ") {
-      e.preventDefault();
-      onOpen();
-    }
-  }
-
   if (isGrid) {
     return (
-      <li
-        onClick={onOpen}
-        onKeyDown={onKeyDown}
-        tabIndex={0}
-        role="button"
-        className="border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer flex-col gap-3 rounded-md border p-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+      <ClickableListItem
+        onActivate={onOpen}
+        activateLabel={viewDetailsLabel}
+        className={`border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer flex-col rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${isCompact ? "gap-2 p-2" : "gap-3 p-3"}`}
       >
         {logoAndText}
         <div className="border-base-200 flex items-center gap-2 border-t pt-2">
           {status}
           <div className="ms-auto">{deleteButton}</div>
         </div>
-      </li>
+      </ClickableListItem>
     );
   }
 
   return (
-    <li
-      onClick={onOpen}
-      onKeyDown={onKeyDown}
-      tabIndex={0}
-      role="button"
-      className="border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer items-center gap-3 rounded-md border p-3 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
+    <ClickableListItem
+      onActivate={onOpen}
+      activateLabel={viewDetailsLabel}
+      className={`border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer items-center rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${isCompact ? "gap-2 p-2" : "gap-3 p-3"}`}
     >
       {logoAndText}
       {status}
       {deleteButton}
-    </li>
+    </ClickableListItem>
   );
 }

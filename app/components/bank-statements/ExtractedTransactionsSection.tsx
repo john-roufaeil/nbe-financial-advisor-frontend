@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import type { BankStatement, ExtractedTransaction } from "@/types/bank-statement";
 import { Money } from "@/components/shared/Money";
 import { ExtractedTransactionRow } from "@/components/bank-statements/ExtractedTransactionRow";
+import { useNumberDisplay } from "@/lib/use-number-display";
+import { useAccounts } from "@/queries/accounts";
 
 /** Step 2 of the review flow: the (possibly editable) list of transactions
  * extracted from an already-processed statement, plus the approved banner. */
@@ -20,6 +22,13 @@ export function ExtractedTransactionsSection({
   onAdd: () => void;
 }) {
   const { t } = useTranslation();
+  const formatN = useNumberDisplay();
+  const { data: accounts } = useAccounts();
+  const account = accounts?.find((a) => a.id === doc.accountId);
+  const currencyLabel = t(
+    `currency.${account?.currency ?? "EGP"}`,
+    account?.currency ?? "EGP",
+  );
 
   return (
     <div className="flex flex-col gap-3">
@@ -80,9 +89,9 @@ export function ExtractedTransactionsSection({
                     >
                       <span dir="ltr">
                         {isIncome ? "+" : "-"}
-                        {tx.amount.toLocaleString()}
+                        {formatN(tx.amount)}
                       </span>{" "}
-                      {t("currency.EGP")}
+                      {currencyLabel}
                     </Money>
                   </div>
                 </li>
@@ -92,6 +101,7 @@ export function ExtractedTransactionsSection({
               <ExtractedTransactionRow
                 key={tx.id}
                 tx={tx}
+                currencyLabel={currencyLabel}
                 onUpdate={(patch) => onUpdate(tx.id, patch)}
                 onDelete={() => onDelete(tx.id)}
               />

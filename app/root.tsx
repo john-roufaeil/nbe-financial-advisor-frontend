@@ -8,23 +8,12 @@ import {
   Scripts,
   ScrollRestoration,
 } from "react-router";
+import "@fontsource-variable/inter/wght.css";
+import "@fontsource-variable/inter/wght-italic.css";
 import "@/i18n";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { useTranslation } from "react-i18next";
-
-export const links: Route.LinksFunction = () => [
-  { rel: "preconnect", href: "https://fonts.googleapis.com" },
-  {
-    rel: "preconnect",
-    href: "https://fonts.gstatic.com",
-    crossOrigin: "anonymous",
-  },
-  {
-    rel: "stylesheet",
-    href: "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,100..900;1,14..32,100..900&family=Tajawal:wght@400;500;700&display=swap",
-  },
-];
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
@@ -56,17 +45,23 @@ export function HydrateFallback() {
   return null;
 }
 
-import { AccessibilityMenu } from "@/components/shared/AccessibilityMenu";
+import { AccessibilityMenu } from "@/components/shared/preferences/AccessibilityMenu";
+import { NavigationProgressBar } from "@/components/shared/NavigationProgressBar";
+import { RouteAnnouncer } from "@/components/shared/RouteAnnouncer";
 import { ToastHost } from "@/components/shared/ToastHost";
-import { SessionExpiredModal } from "@/components/shared/SessionExpiredModal";
+import { SessionExpiredModal } from "@/components/shared/modals/SessionExpiredModal";
 import { useStackedModals } from "@/lib/use-stacked-modals";
 import { useButtonRipple } from "@/lib/use-button-ripple";
+import { useLanguageSwitchWatcher } from "@/lib/use-language-switch-watcher";
 
 export default function App() {
   useStackedModals();
   useButtonRipple();
+  useLanguageSwitchWatcher();
   return (
     <QueryClientProvider client={queryClient}>
+      <NavigationProgressBar />
+      <RouteAnnouncer />
       <AccessibilityMenu />
       <Outlet />
       <ToastHost />

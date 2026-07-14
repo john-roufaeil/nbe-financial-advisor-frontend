@@ -12,7 +12,10 @@
     "edit": "تعديل",
     "clear": "مسح",
     "remove": "إزالة",
+    "viewDetails": "عرض تفاصيل {{name}}",
     "showPassword": "إظهار كلمة المرور",
-    "hidePassword": "إخفاء كلمة المرور"
+    "hidePassword": "إخفاء كلمة المرور",
+    "increase": "زيادة {{name}}",
+    "decrease": "إنقاص {{name}}"
   }
 }

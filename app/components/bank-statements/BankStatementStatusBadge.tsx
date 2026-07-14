@@ -3,9 +3,10 @@ import type { ComponentType, CSSProperties } from "react";
 import { Loader2, TriangleAlert, CircleCheck, ClockCheck } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { BankStatement } from "@/types/bank-statement";
-
-const PROCESSED_BADGE_DURATION_MS = 5000;
-const PROCESSED_BADGE_FADE_MS = 400;
+import {
+  PROCESSED_BADGE_DURATION_MS,
+  PROCESSED_BADGE_FADE_MS,
+} from "@/lib/constants/time";
 
 function StatusPill({
   tone,

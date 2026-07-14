@@ -19,6 +19,13 @@
       "lifestyle": "نمط الحياة",
       "other": "أخرى"
     },
+    "incomeCategories": {
+      "salary": "راتب",
+      "freelance": "عمل حر",
+      "investment": "استثمار",
+      "gift": "هدية",
+      "other_income": "أخرى"
+    },
     "filtersLabel": "الفلاتر",
     "amountRange": "نطاق المبلغ",
     "amountRanges": {
@@ -67,7 +74,7 @@
       "accountNumberPlaceholder": "1234",
       "errors": {
         "bankRequired": "اختر بنكًا أو أضف واحدًا.",
-        "accountNumberInvalid": "أدخل 8 أرقام بالضبط.",
+        "accountNumberInvalid": "أدخل 4 أرقام بالضبط.",
         "accountNumberMismatch": "أرقام الحساب غير متطابقة."
       }
     },
@@ -119,6 +126,11 @@
       "toggleLabel": "وضع العرض",
       "list": "عرض قائمة",
       "grid": "عرض شبكة"
+    },
+    "density": {
+      "toggleLabel": "كثافة القائمة",
+      "comfortable": "مريح",
+      "compact": "مضغوط"
     }
   }
 }

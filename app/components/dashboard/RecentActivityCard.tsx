@@ -16,6 +16,8 @@ import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { formatDate } from "@/lib/format";
+import { useNumberDisplay } from "@/lib/use-number-display";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 
 const RECENT_COUNT = 2;
 
@@ -96,6 +98,7 @@ function TransactionsSummary() {
   const { t } = useTranslation();
   const { lang } = useParams<{ lang: string }>();
   const { data, isPending } = useTransactions({ limit: RECENT_COUNT });
+  const formatN = useNumberDisplay();
 
   if (isPending) return <CardSkeleton icon={ArrowLeftRight} className="animate-entry" />;
 
@@ -126,7 +129,7 @@ function TransactionsSummary() {
             >
               <span dir="ltr">
                 {isIncome ? "+" : "-"}
-                {tx.amount.toLocaleString()}
+                {formatN(tx.amount)}
               </span>
             </Money>
           </li>
@@ -140,6 +143,7 @@ function BankStatementsSummary() {
   const { t } = useTranslation();
   const { lang } = useParams<{ lang: string }>();
   const { data, isPending } = useBankStatements({ limit: RECENT_COUNT });
+  const dateFormat = useDisplayPreferencesStore((s) => s.dateFormat);
 
   if (isPending) return <CardSkeleton icon={FileText} className="animate-entry" />;
 
@@ -160,7 +164,7 @@ function BankStatementsSummary() {
           <BankBadge
             bank={doc.bankName}
             size="size-6"
-            subtitle={formatDate(doc.uploadDate)}
+            subtitle={formatDate(doc.uploadDate, dateFormat)}
           />
         </li>
       ))}

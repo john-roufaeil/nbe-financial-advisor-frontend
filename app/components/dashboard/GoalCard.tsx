@@ -12,6 +12,8 @@ import { useTranslation } from "react-i18next";
 import type { FinancialGoal } from "@/types/goal";
 import { useGoals } from "@/queries/goals";
 import { formatDate } from "@/lib/format";
+import { useNumberDisplay } from "@/lib/use-number-display";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 import { GoalsEditModal } from "@/components/dashboard/GoalsEditModal";
 import { ErrorState, GoalEmptyState } from "@/components/shared/QueryState";
 import { SkeletonTimelineRow } from "@/components/shared/skeletons/SkeletonRows";
@@ -20,6 +22,8 @@ import { Tooltip } from "@/components/shared/Tooltip";
 
 function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: string }) {
   const { t } = useTranslation();
+  const formatN = useNumberDisplay();
+  const dateFormat = useDisplayPreferencesStore((s) => s.dateFormat);
   const currentPct = Math.min(100, Math.round((goal.current / goal.target) * 100));
   const currencyLabel = t(`currency.${currency}`, currency);
 
@@ -65,23 +69,27 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
         </div>
         <p className="text-base-content/60 text-xs">
           <Money className="text-base-content inline font-semibold">
-            {goal.current.toLocaleString()}
+            {formatN(goal.current)}
           </Money>{" "}
-          / <Money className="inline">{goal.target.toLocaleString()}</Money>{" "}
-          {currencyLabel}
+          / <Money className="inline">{formatN(goal.target)}</Money> {currencyLabel}
         </p>
         {goal.projectedCompletionDate && (
           <div className="bg-base-200/60 text-base-content/60 mt-0.5 inline-flex w-fit items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium">
             <Calendar data-no-flip className="size-3" />
             {t("dashboard.goals.projectedCompletion", {
-              date: formatDate(goal.projectedCompletionDate),
+              date: formatDate(goal.projectedCompletionDate, dateFormat),
             })}
           </div>
         )}
       </div>
 
       <div className="relative flex flex-col gap-4">
-        <div className="bg-base-200 absolute start-[13px] top-[14px] bottom-[14px] w-[2px] overflow-hidden rounded-full">
+        {/* rem, not px: the milestone circles below are `size-7` (1.75rem),
+            which grow with the app's font-scale setting (see
+            html[data-a11y-font-scale] in app.css). A fixed-px offset here
+            would stay pinned to its original position while the circles
+            grow around it, drifting off-center at high scale (e.g. 200%). */}
+        <div className="bg-base-200 absolute inset-s-3.25 top-3.5 bottom-3.5 w-0.5 overflow-hidden rounded-full">
           <div
             className="bg-primary w-full origin-top rounded-full transition-[height] duration-500 ease-out"
             style={{ height: calculateLineHeight() }}
@@ -120,7 +128,7 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
                 </span>
                 <span className="text-base-content/40 text-xs wrap-break-word">
                   <Money className="inline">
-                    {Math.round(goal.target * (milestone.pct / 100)).toLocaleString()}
+                    {formatN(Math.round(goal.target * (milestone.pct / 100)))}
                   </Money>{" "}
                   {currencyLabel}
                 </span>

@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/client";
+import { API_ENDPOINTS } from "@/lib/constants/api";
 import type {
   BankStatement,
   BankStatementStatus,
@@ -139,7 +140,9 @@ export async function getBankStatements(
   if (filters.offset !== undefined) params.offset = filters.offset;
   if (filters.limit !== undefined) params.limit = filters.limit;
 
-  const res = await apiClient.get<PaginatedStatements>("/statements", { params });
+  const res = await apiClient.get<PaginatedStatements>(API_ENDPOINTS.statements, {
+    params,
+  });
   return {
     items: res.data.results.map(toBankStatement),
     total: res.data.count,
@@ -147,7 +150,7 @@ export async function getBankStatements(
 }
 
 export async function getBankStatement(id: string): Promise<BankStatement> {
-  const res = await apiClient.get<RawStatement>(`/statements/${id}`);
+  const res = await apiClient.get<RawStatement>(API_ENDPOINTS.statement(id));
   return toBankStatement(res.data);
 }
 
@@ -164,7 +167,7 @@ export async function uploadBankStatements(
     files.map((f) => {
       const formData = new FormData();
       formData.append("file", f.file, f.name);
-      return apiClient.post<RawStatement>("/statements", formData, {
+      return apiClient.post<RawStatement>(API_ENDPOINTS.statements, formData, {
         headers: { "Content-Type": "multipart/form-data" },
       });
     }),
@@ -183,7 +186,7 @@ export async function uploadBankStatements(
 }
 
 export async function deleteBankStatement(id: string): Promise<void> {
-  await apiClient.delete(`/statements/${id}`);
+  await apiClient.delete(API_ENDPOINTS.statement(id));
 }
 
 /**
@@ -200,10 +203,10 @@ export async function retryBankStatement(id: string): Promise<BankStatement> {
 
 /**
  * Approve the reviewed batch — this is what actually commits the rows to the
- * ledger. Each row is committed from its own submitted data, so the array is the
- * user's final say: it need not match the proposed one in length or order, and
- * rows edited/added/dropped during review carry through as-is. Send the whole
- * draft, including the untouched rows — anything omitted is simply not created.
+ * ledger. The submitted array must match the proposed batch's length exactly,
+ * matched by position (no per-row id); duplicates are re-checked at commit
+ * time and silently skipped (`transaction_id: null`, `duplicate_of` set)
+ * rather than treated as errors.
  *
  * `accountId` is optional and is the ONE place the account can be corrected —
  * there is no separate "confirm account" endpoint.

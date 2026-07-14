@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useDataSourceStore } from "./use-data-source-store";
+import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
 interface AuthTokens {
   accessToken: string;
@@ -52,7 +53,7 @@ export const useAuthStore = create<AuthState>()(
       clearSessionExpired: () => set({ sessionExpired: false }),
     }),
     {
-      name: "nbe_auth",
+      name: STORAGE_KEYS.auth,
       // Persist ONLY the auth flag — never the token (see accessToken note).
       partialize: (state) => ({ isAuthenticated: state.isAuthenticated }),
     },

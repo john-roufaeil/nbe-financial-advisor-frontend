@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { useCategoryColorVars } from "@/lib/category-colors";
+import { useCategoryColorVars } from "@/lib/constants/category-colors";
 import { Money } from "@/components/shared/Money";
 
 interface DonutSlice {

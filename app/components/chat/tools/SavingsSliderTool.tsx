@@ -5,6 +5,7 @@ import { useTranslation } from "react-i18next";
 import type { SavingsSliderResult } from "@/lib/demo-financials";
 import { Money } from "@/components/shared/Money";
 import { HighlightStatCard } from "@/components/chat/tools/HighlightStatCard";
+import { useNumberDisplay } from "@/lib/use-number-display";
 
 const HORIZON_MONTHS = 12;
 const MAX_MONTHLY = 10000;
@@ -19,6 +20,7 @@ function ProjectionChart({
   currencyLabel: string;
 }) {
   const gradientId = useId();
+  const formatN = useNumberDisplay();
   const containerRef = useRef<HTMLDivElement>(null);
   const [width, setWidth] = useState(280); // Fallback/Initial width
   const height = 90;
@@ -100,10 +102,10 @@ function ProjectionChart({
       </svg>
       <div className="text-base-content/50 mt-1.5 flex items-center justify-between text-xs">
         <Money>
-          {start.toLocaleString()} {currencyLabel}
+          {formatN(start)} {currencyLabel}
         </Money>
         <Money className="text-primary font-medium">
-          {points[points.length - 1].toLocaleString()} {currencyLabel}
+          {formatN(points[points.length - 1])} {currencyLabel}
         </Money>
       </div>
     </div>
@@ -114,6 +116,7 @@ export const SavingsSliderTool: ToolCallMessagePartComponent = ({ result }) => {
   const { t } = useTranslation();
   const data = result as SavingsSliderResult | undefined;
   const [monthly, setMonthly] = useState(data?.defaultMonthlySavings ?? 0);
+  const formatN = useNumberDisplay();
   if (!data) return null;
 
   const projected = data.currentBalance + monthly * HORIZON_MONTHS;
@@ -140,7 +143,7 @@ export const SavingsSliderTool: ToolCallMessagePartComponent = ({ result }) => {
         label={t("chat.tools.savings.projected", { months: HORIZON_MONTHS })}
         value={
           <Money>
-            {projected.toLocaleString()} {currencyLabel}
+            {formatN(projected)} {currencyLabel}
           </Money>
         }
       />
@@ -149,7 +152,7 @@ export const SavingsSliderTool: ToolCallMessagePartComponent = ({ result }) => {
         <div className="flex items-center justify-between text-xs">
           <span className="text-base-content/60">{t("chat.tools.savings.monthly")}</span>
           <Money className="font-medium tabular-nums">
-            {monthly.toLocaleString()} {currencyLabel}
+            {formatN(monthly)} {currencyLabel}
           </Money>
         </div>
         <input

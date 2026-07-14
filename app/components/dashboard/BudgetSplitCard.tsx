@@ -2,12 +2,14 @@ import { useRef } from "react";
 import { PieChart, Pencil, TriangleAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { BudgetCategory } from "@/types/dashboard";
-import { useCategoryColorVars } from "@/lib/category-colors";
+import { useCategoryColorVars } from "@/lib/constants/category-colors";
+import { categoryIcon } from "@/lib/constants/category-icons";
 import { CategoryDonutChart } from "@/components/dashboard/CategoryDonutChart";
 import { AllocationsEditModal } from "@/components/dashboard/AllocationsEditModal";
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useBudget } from "@/queries/budget";
+import { useNumberDisplay } from "@/lib/use-number-display";
 
 function BudgetRow({
   category,
@@ -19,17 +21,20 @@ function BudgetRow({
   color: string;
 }) {
   const { t } = useTranslation();
+  const formatN = useNumberDisplay();
   const pct = Math.min(100, Math.round((category.spent / category.budget) * 100));
   const isOver = category.spent > category.budget;
+  const Icon = categoryIcon(category.name);
 
   return (
     <li className="flex flex-col gap-1.5">
       <div className="flex items-center justify-between text-sm">
-        <span className="font-medium">
+        <span className="flex min-w-0 items-center gap-1.5 font-medium">
+          <Icon data-no-flip className="text-base-content/60 size-3.5 shrink-0" />
           {t(`common.categories.${category.name}`, category.name)}
         </span>
         <Money className="text-base-content/60 tabular-nums">
-          {category.spent.toLocaleString()} / {category.budget.toLocaleString()}{" "}
+          {formatN(category.spent)} / {formatN(category.budget)}{" "}
           {t(`currency.${currency}`, currency)}
         </Money>
       </div>
@@ -57,6 +62,7 @@ export function BudgetSplitCard({
   categories: BudgetCategory[];
 }) {
   const { t } = useTranslation();
+  const formatN = useNumberDisplay();
   const colors = useCategoryColorVars();
   const totalAllocated = categories.reduce((sum, c) => sum + c.budget, 0);
   const modalRef = useRef<HTMLDialogElement>(null);
@@ -124,7 +130,7 @@ export function BudgetSplitCard({
               <CategoryDonutChart variant="pie" slices={pieSlices} />
               <p className="text-base-content/50 text-center text-xs">
                 <Money className="text-base-content font-semibold">
-                  {totalAllocated.toLocaleString()}
+                  {formatN(totalAllocated)}
                 </Money>{" "}
                 {t(`currency.${currency}`, currency)} {t("dashboard.budget.allocated")}
               </p>
@@ -132,6 +138,7 @@ export function BudgetSplitCard({
                 {sortedCategories.map((category, i) => {
                   const slicePct =
                     pieTotal > 0 ? Math.round((pieSlices[i].value / pieTotal) * 100) : 0;
+                  const Icon = categoryIcon(category.name);
                   return (
                     <li
                       key={category.name}
@@ -141,9 +148,10 @@ export function BudgetSplitCard({
                         className="size-2 shrink-0 rounded-full"
                         style={{ backgroundColor: colors[i % colors.length] }}
                       />
-                      <span className="text-base-content/70 min-w-0 truncate">
-                        {t(`common.categories.${category.name}`, category.name)}
-                      </span>
+                      <Icon
+                        data-no-flip
+                        className="text-base-content/50 size-3.5 shrink-0"
+                      />
                       <span className="text-base-content/40 ms-auto shrink-0 tabular-nums">
                         {slicePct}%
                       </span>

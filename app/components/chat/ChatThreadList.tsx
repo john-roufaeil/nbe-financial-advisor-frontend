@@ -1,30 +1,24 @@
-import { useEffect, useRef, useState } from "react";
-import { ThreadListPrimitive, ThreadListItemPrimitive } from "@assistant-ui/react";
+import {
+  ThreadListPrimitive,
+  ThreadListItemPrimitive,
+  useThreadListItem,
+} from "@assistant-ui/react";
 import { Plus, MessageSquare, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@/components/shared/Tooltip";
 
 function ThreadListItem() {
-  const titleRef = useRef<HTMLSpanElement>(null);
-  const [titleText, setTitleText] = useState("");
-
-  // `ThreadListItemPrimitive.Title` renders the chat name as a child we don't
-  // otherwise have as a plain string — read it back off the DOM so the
-  // tooltip can show the full (possibly truncated) name on hover.
-  useEffect(() => {
-    setTitleText(titleRef.current?.textContent ?? "");
-  });
+  const { t } = useTranslation();
+  const title = useThreadListItem((item) => item.title);
+  const titleText = title ?? t("chat.newChat");
 
   return (
-    <ThreadListItemPrimitive.Root className="group/item hover:bg-base-300 data-[active]:bg-primary/10 data-[active]:hover:bg-primary/15 relative flex items-center gap-1 rounded-md text-sm transition-colors">
-      <span className="bg-primary my-1 h-5 w-1 shrink-0 rounded-full opacity-0 transition-opacity group-data-[active]/item:opacity-100" />
+    <ThreadListItemPrimitive.Root className="group/item hover:bg-base-300 data-active:bg-primary/10 data-active:hover:bg-primary/15 relative flex items-center gap-1 rounded-md text-sm transition-colors">
+      <span className="bg-primary my-1 h-5 w-1 shrink-0 rounded-full opacity-0 transition-opacity group-data-active/item:opacity-100" />
       <ThreadListItemPrimitive.Trigger className="focus-visible:outline-primary/50 flex min-w-0 flex-1 cursor-pointer items-center gap-2 py-2 pe-2.5 text-start focus-visible:rounded-md focus-visible:outline-2 focus-visible:outline-offset-2">
-        <MessageSquare className="text-base-content/50 group-data-[active]/item:text-primary size-4 shrink-0" />
+        <MessageSquare className="text-base-content/50 group-data-active/item:text-primary size-4 shrink-0" />
         <Tooltip content={titleText} position="top" className="min-w-0 flex-1">
-          <span
-            ref={titleRef}
-            className="group-data-[active]/item:text-primary block truncate group-data-[active]/item:font-medium"
-          >
+          <span className="group-data-active/item:text-primary block truncate group-data-active/item:font-medium">
             <ThreadListItemPrimitive.Title fallback="New chat" />
           </span>
         </Tooltip>

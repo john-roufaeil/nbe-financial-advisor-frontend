@@ -4,7 +4,7 @@ import { ArrowLeftRight, Plus } from "lucide-react";
 import { TransactionsTab } from "@/components/transactions/TransactionsTab";
 import { type TransactionsTabHandle } from "@/lib/use-transaction-modals";
 import { ReplanFab } from "@/components/shared/ReplanFab";
-import { PageBanner } from "@/components/shared/PageBanner";
+import { PageBanner } from "@/components/shared/layout/PageBanner";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useConsumeOpenAddState } from "@/lib/use-consume-open-add-state";
 

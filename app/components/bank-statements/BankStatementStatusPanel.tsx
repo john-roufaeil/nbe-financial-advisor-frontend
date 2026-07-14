@@ -1,7 +1,11 @@
 import type { RefObject } from "react";
 import { useTranslation } from "react-i18next";
 import { Loader2, TriangleAlert, RotateCcw, Upload } from "lucide-react";
-import { BANK_STATEMENT_UPLOAD_ACCEPT, type BankStatement } from "@/types/bank-statement";
+import {
+  BANK_STATEMENT_UPLOAD_ACCEPT,
+  BANK_STATEMENT_STATUS,
+  type BankStatement,
+} from "@/types/bank-statement";
 import { Button } from "@/components/shared/Button";
 
 /** Renders the uploading/processing spinner or the failed-upload/failed-processing
@@ -25,12 +29,15 @@ export function BankStatementStatusPanel({
 }) {
   const { t } = useTranslation();
 
-  if (doc.status === "uploading" || doc.status === "processing") {
+  if (
+    doc.status === BANK_STATEMENT_STATUS.uploading ||
+    doc.status === BANK_STATEMENT_STATUS.processing
+  ) {
     return (
       <div className="flex flex-col items-center gap-3 py-8">
         <Loader2 data-no-flip className="text-primary size-8 animate-spin" />
         <p className="text-base-content/60 text-sm">
-          {doc.status === "uploading"
+          {doc.status === BANK_STATEMENT_STATUS.uploading
             ? t("bankStatements.detail.uploading")
             : t("bankStatements.detail.processing")}
         </p>
@@ -38,7 +45,7 @@ export function BankStatementStatusPanel({
     );
   }
 
-  if (doc.status !== "failed") return null;
+  if (doc.status !== BANK_STATEMENT_STATUS.failed) return null;
 
   if (doc.failedStage === "upload") {
     return (

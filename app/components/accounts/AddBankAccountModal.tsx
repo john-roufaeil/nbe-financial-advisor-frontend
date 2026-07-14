@@ -1,42 +1,69 @@
-import { forwardRef, type Ref, useState } from "react";
+import { forwardRef } from "react";
 import { useTranslation } from "react-i18next";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
 import { useCreateAccount } from "@/queries/accounts";
 import { getBankCode } from "@/lib/banks";
+import { ACCOUNT_TYPES, CURRENCIES } from "@/types/account";
 import { Button } from "@/components/shared/Button";
-import { BaseModal } from "@/components/shared/BaseModal";
+import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { BankAccountFields } from "@/components/accounts/BankAccountFields";
 import {
+  ACCOUNT_NUMBER_LENGTH,
   emptyBankAccountForm,
-  isBankAccountFormValid,
-  validateBankAccountForm,
-  type BankAccountFormErrors,
+  type BankAccountFormValues,
 } from "@/lib/bank-account-form";
-
-function closeDialog(ref: Ref<HTMLDialogElement>) {
-  if (ref && typeof ref === "object" && "current" in ref) ref.current?.close();
-}
+import { closeDialog } from "@/lib/close-dialog";
 
 export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
   function AddBankAccountModal(_props, ref) {
     const { t } = useTranslation();
     const createAccount = useCreateAccount();
 
-    const [values, setValues] = useState(emptyBankAccountForm());
-    const [errors, setErrors] = useState<BankAccountFormErrors>({});
+    const schema = z
+      .object({
+        accountType: z.enum(ACCOUNT_TYPES),
+        bankName: z.string().trim().min(1, t("common.addAccount.errors.bankRequired")),
+        currency: z.enum(CURRENCIES),
+        accountNumber: z
+          .string()
+          .regex(
+            new RegExp(`^\\d{${ACCOUNT_NUMBER_LENGTH}}$`),
+            t("common.addAccount.errors.accountNumberInvalid"),
+          ),
+        accountNumberConfirm: z.string(),
+      })
+      .superRefine((values, ctx) => {
+        if (
+          /^\d+$/.test(values.accountNumber) &&
+          values.accountNumber.length === ACCOUNT_NUMBER_LENGTH &&
+          values.accountNumber !== values.accountNumberConfirm
+        ) {
+          ctx.addIssue({
+            code: "custom",
+            path: ["accountNumberConfirm"],
+            message: t("common.addAccount.errors.accountNumberMismatch"),
+          });
+        }
+      });
 
-    function reset() {
-      setValues(emptyBankAccountForm());
-      setErrors({});
+    const {
+      control,
+      handleSubmit,
+      reset,
+      formState: { errors, isValid },
+    } = useForm<BankAccountFormValues>({
+      resolver: zodResolver(schema),
+      mode: "onChange",
+      defaultValues: emptyBankAccountForm(),
+    });
+
+    function resetForm() {
+      reset(emptyBankAccountForm());
     }
 
-    const isValid = isBankAccountFormValid(values);
-
-    async function handleSubmit(e: React.FormEvent) {
-      e.preventDefault();
-      const nextErrors = validateBankAccountForm(values, t);
-      setErrors(nextErrors);
-      if (Object.keys(nextErrors).length > 0) return;
-
+    async function onSubmit(values: BankAccountFormValues) {
       const trimmedBankName = values.bankName.trim();
       try {
         await createAccount.mutateAsync({
@@ -47,7 +74,7 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
           currency: values.currency,
           account_number: values.accountNumber,
         });
-        reset();
+        resetForm();
         closeDialog(ref);
       } catch {
         // onError already toasted; keep the modal open with the entered values.
@@ -57,7 +84,7 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
     return (
       <BaseModal
         ref={ref}
-        onClose={reset}
+        onClose={resetForm}
         title={t("common.addAccount.title")}
         actions={
           <>
@@ -73,7 +100,7 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
             <button
               type="button"
               onClick={() => {
-                reset();
+                resetForm();
                 closeDialog(ref);
               }}
               className="btn btn-ghost"
@@ -85,15 +112,10 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
       >
         <form
           id="add-account-form"
-          onSubmit={handleSubmit}
+          onSubmit={handleSubmit(onSubmit)}
           className="flex flex-col gap-3"
         >
-          <BankAccountFields
-            values={values}
-            errors={errors}
-            onChange={(patch) => setValues((v) => ({ ...v, ...patch }))}
-            onErrorsChange={(patch) => setErrors((err) => ({ ...err, ...patch }))}
-          />
+          <BankAccountFields control={control} errors={errors} />
         </form>
       </BaseModal>
     );

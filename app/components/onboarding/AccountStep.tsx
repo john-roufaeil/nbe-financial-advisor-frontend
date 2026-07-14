@@ -6,8 +6,8 @@ import { useTranslation } from "react-i18next";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
-import { PrivacyPolicyModal } from "@/components/shared/PrivacyPolicyModal";
-import { PasswordInput } from "@/components/shared/PasswordInput";
+import { PrivacyPolicyModal } from "@/components/shared/modals/PrivacyPolicyModal";
+import { PasswordInput } from "@/components/shared/forms/PasswordInput";
 import { RequiredMark } from "@/components/onboarding/RequiredMark";
 
 interface AccountFormValues {
@@ -73,7 +73,7 @@ export function AccountStep({
   const {
     register,
     control,
-    formState: { errors, isValid },
+    formState: { errors, isValid, touchedFields },
   } = useForm<AccountFormValues>({
     resolver: zodResolver(accountSchema),
     mode: "onChange",
@@ -102,7 +102,7 @@ export function AccountStep({
             onChange: (e) => setField("name", e.target.value),
           })}
         />
-        {errors.name && (
+        {touchedFields.name && errors.name && (
           <span id="account-name-error" role="alert" className="text-error text-xs">
             {errors.name.message}
           </span>
@@ -128,7 +128,7 @@ export function AccountStep({
             },
           })}
         />
-        {errors.email ? (
+        {touchedFields.email && errors.email ? (
           <span id="account-email-error" role="alert" className="text-error text-xs">
             {errors.email.message}
           </span>
@@ -155,7 +155,7 @@ export function AccountStep({
             onChange: (e) => onPasswordChange(e.target.value),
           })}
         />
-        {errors.password ? (
+        {touchedFields.password && errors.password ? (
           <span id="account-password-hint" role="alert" className="text-error text-xs">
             {errors.password.message}
           </span>
@@ -178,8 +178,10 @@ export function AccountStep({
               international
               value={field.value}
               onBlur={field.onBlur}
-              aria-invalid={!!errors.phone}
-              aria-describedby={errors.phone ? "account-phone-error" : undefined}
+              aria-invalid={touchedFields.phone && !!errors.phone}
+              aria-describedby={
+                touchedFields.phone && errors.phone ? "account-phone-error" : undefined
+              }
               onChange={(value) => {
                 const next = value ?? "";
                 field.onChange(next);
@@ -188,18 +190,13 @@ export function AccountStep({
             />
           )}
         />
-        {errors.phone && (
+        {touchedFields.phone && errors.phone && (
           <span id="account-phone-error" role="alert" className="text-error text-xs">
             {errors.phone.message}
           </span>
         )}
       </label>
       <div className="mt-1 flex flex-row flex-nowrap items-center gap-3">
-        {/* p-3 -m-3 expands the tap target to ~44px (WCAG 2.5.8) without the
-            box itself taking up 44px of layout height — a plain min-h-11
-            here made this row's own whitespace read as a much bigger gap
-            than the gap-4 between every other field, since the tiny
-            checkbox glyph sat lost in the middle of a 44px-tall box. */}
         <label
           htmlFor="consent-agree"
           className="relative -m-3 flex shrink-0 cursor-pointer items-center justify-center p-3"
@@ -223,6 +220,7 @@ export function AccountStep({
           >
             {t("consent.termsLink")}
           </button>
+          <RequiredMark />
         </p>
       </div>
 

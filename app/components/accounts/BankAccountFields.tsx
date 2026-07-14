@@ -1,29 +1,67 @@
 import { useTranslation } from "react-i18next";
+import { Controller, type Control, type FieldErrors } from "react-hook-form";
 import {
   ACCOUNT_TYPES,
   CURRENCIES,
   type AccountType,
   type Currency,
 } from "@/types/account";
-import { BankPicker } from "@/components/shared/BankPicker";
+import { BankPicker } from "@/components/shared/forms/BankPicker";
 import {
   ACCOUNT_NUMBER_LENGTH,
-  confirmMismatchError,
-  type BankAccountFormErrors,
   type BankAccountFormValues,
 } from "@/lib/bank-account-form";
 
+/** The account-number field and its confirmation twin: digits-only input
+ * capped at ACCOUNT_NUMBER_LENGTH, with the field's own error underneath. */
+function AccountNumberField({
+  name,
+  label,
+  control,
+  error,
+}: {
+  name: "accountNumber" | "accountNumberConfirm";
+  label: string;
+  control: Control<BankAccountFormValues>;
+  error?: { message?: string };
+}) {
+  const { t } = useTranslation();
+
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="label-text text-xs">{label}</span>
+      <Controller
+        name={name}
+        control={control}
+        render={({ field }) => (
+          <input
+            type="text"
+            inputMode="numeric"
+            dir="ltr"
+            value={field.value}
+            onChange={(e) =>
+              field.onChange(
+                e.target.value.replace(/\D/g, "").slice(0, ACCOUNT_NUMBER_LENGTH),
+              )
+            }
+            placeholder={t("common.addAccount.accountNumberPlaceholder")}
+            maxLength={ACCOUNT_NUMBER_LENGTH}
+            className={`input input-bordered input-sm w-full ${error ? "input-error" : ""}`}
+          />
+        )}
+      />
+      {error && <span className="text-error text-xs">{error.message}</span>}
+    </label>
+  );
+}
+
 /** Shared bank-account form fields, used both by the standalone AddBankAccountModal and inline in the statement-review flow's "add a new account" step. */
 export function BankAccountFields({
-  values,
+  control,
   errors,
-  onChange,
-  onErrorsChange,
 }: {
-  values: BankAccountFormValues;
-  errors: BankAccountFormErrors;
-  onChange: (patch: Partial<BankAccountFormValues>) => void;
-  onErrorsChange: (patch: Partial<BankAccountFormErrors>) => void;
+  control: Control<BankAccountFormValues>;
+  errors: FieldErrors<BankAccountFormValues>;
 }) {
   const { t } = useTranslation();
 
@@ -32,103 +70,74 @@ export function BankAccountFields({
       <div className="flex gap-3">
         <label className="flex flex-1 flex-col gap-1">
           <span className="label-text text-xs">{t("common.addAccount.accountType")}</span>
-          <select
-            value={values.accountType}
-            onChange={(e) => onChange({ accountType: e.target.value as AccountType })}
-            className="select select-bordered select-sm w-full"
-          >
-            {ACCOUNT_TYPES.map((type) => (
-              <option key={type} value={type}>
-                {t(`common.addAccount.accountTypes.${type}`)}
-              </option>
-            ))}
-          </select>
+          <Controller
+            name="accountType"
+            control={control}
+            render={({ field }) => (
+              <select
+                value={field.value}
+                onChange={(e) => field.onChange(e.target.value as AccountType)}
+                className="select select-bordered select-sm w-full"
+              >
+                {ACCOUNT_TYPES.map((type) => (
+                  <option key={type} value={type}>
+                    {t(`common.addAccount.accountTypes.${type}`)}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
         </label>
 
         <label className="flex flex-1 flex-col gap-1">
           <span className="label-text text-xs">{t("common.addAccount.currency")}</span>
-          <select
-            value={values.currency}
-            onChange={(e) => onChange({ currency: e.target.value as Currency })}
-            className="select select-bordered select-sm w-full"
-          >
-            {CURRENCIES.map((currency) => (
-              <option key={currency} value={currency}>
-                {t(`currency.${currency}`, currency)}
-              </option>
-            ))}
-          </select>
+          <Controller
+            name="currency"
+            control={control}
+            render={({ field }) => (
+              <select
+                value={field.value}
+                onChange={(e) => field.onChange(e.target.value as Currency)}
+                className="select select-bordered select-sm w-full"
+              >
+                {CURRENCIES.map((currency) => (
+                  <option key={currency} value={currency}>
+                    {t(`currency.${currency}`, currency)}
+                  </option>
+                ))}
+              </select>
+            )}
+          />
         </label>
       </div>
 
       <label className="flex flex-col gap-1">
         <span className="label-text text-xs">{t("common.addAccount.bank")}</span>
-        <BankPicker
-          value={values.bankName}
-          onChange={(name) => {
-            onChange({ bankName: name });
-            if (errors.bankName) onErrorsChange({ bankName: undefined });
-          }}
+        <Controller
+          name="bankName"
+          control={control}
+          render={({ field }) => (
+            <BankPicker value={field.value} onChange={field.onChange} />
+          )}
         />
-        {errors.bankName && <span className="text-error text-xs">{errors.bankName}</span>}
-      </label>
-
-      <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">{t("common.addAccount.accountNumber")}</span>
-        <input
-          type="text"
-          inputMode="numeric"
-          dir="ltr"
-          value={values.accountNumber}
-          onChange={(e) => {
-            const digits = e.target.value
-              .replace(/\D/g, "")
-              .slice(0, ACCOUNT_NUMBER_LENGTH);
-            onChange({ accountNumber: digits });
-            onErrorsChange({
-              accountNumber: undefined,
-              accountNumberConfirm: confirmMismatchError(
-                digits,
-                values.accountNumberConfirm,
-                t,
-              ),
-            });
-          }}
-          placeholder={t("common.addAccount.accountNumberPlaceholder")}
-          maxLength={ACCOUNT_NUMBER_LENGTH}
-          className={`input input-bordered input-sm w-full ${errors.accountNumber ? "input-error" : ""}`}
-        />
-        {errors.accountNumber && (
-          <span className="text-error text-xs">{errors.accountNumber}</span>
+        {errors.bankName && (
+          <span className="text-error text-xs">{errors.bankName.message}</span>
         )}
       </label>
 
-      <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">
-          {t("common.addAccount.accountNumberConfirm")}
-        </span>
-        <input
-          type="text"
-          inputMode="numeric"
-          dir="ltr"
-          value={values.accountNumberConfirm}
-          onChange={(e) => {
-            const digits = e.target.value
-              .replace(/\D/g, "")
-              .slice(0, ACCOUNT_NUMBER_LENGTH);
-            onChange({ accountNumberConfirm: digits });
-            onErrorsChange({
-              accountNumberConfirm: confirmMismatchError(values.accountNumber, digits, t),
-            });
-          }}
-          placeholder={t("common.addAccount.accountNumberPlaceholder")}
-          maxLength={ACCOUNT_NUMBER_LENGTH}
-          className={`input input-bordered input-sm w-full ${errors.accountNumberConfirm ? "input-error" : ""}`}
-        />
-        {errors.accountNumberConfirm && (
-          <span className="text-error text-xs">{errors.accountNumberConfirm}</span>
-        )}
-      </label>
+      <AccountNumberField
+        name="accountNumber"
+        label={t("common.addAccount.accountNumber")}
+        control={control}
+        error={errors.accountNumber}
+      />
+
+      <AccountNumberField
+        name="accountNumberConfirm"
+        label={t("common.addAccount.accountNumberConfirm")}
+        control={control}
+        error={errors.accountNumberConfirm}
+      />
     </div>
   );
 }

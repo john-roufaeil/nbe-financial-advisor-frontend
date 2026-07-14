@@ -1,10 +1,11 @@
 import { Link, Navigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Wallet, Target, Bot } from "lucide-react";
-import { AuthLayout } from "@/components/shared/AuthLayout";
+import { AuthLayout } from "@/components/shared/layout/AuthLayout";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { usePageTitle } from "@/lib/use-page-title";
+import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 
 const FEATURES = [
   { icon: Wallet, key: "track" },
@@ -20,7 +21,8 @@ export default function Splash() {
   const onboardingStarted = useOnboardingStore((s) => s.started);
   const begin = useOnboardingStore((s) => s.begin);
 
-  if (isAuthenticated) return <Navigate to={`/${lang}/dashboard`} replace />;
+  if (isAuthenticated)
+    return <Navigate to={localizedPath(lang!, ROUTE_SEGMENTS.dashboard)} replace />;
 
   return (
     <AuthLayout>
@@ -50,18 +52,24 @@ export default function Splash() {
 
         <div className="flex w-full flex-col gap-3">
           {onboardingStarted && (
-            <Link to={`/${lang}/onboarding`} className="btn btn-primary">
+            <Link
+              to={localizedPath(lang!, ROUTE_SEGMENTS.onboarding)}
+              className="btn btn-primary"
+            >
               {t("splash.continue")}
             </Link>
           )}
           <Link
-            to={`/${lang}/onboarding`}
+            to={localizedPath(lang!, ROUTE_SEGMENTS.onboarding)}
             onClick={() => begin()}
             className={`btn ${onboardingStarted ? "btn-outline btn-primary" : "btn-primary"}`}
           >
             {t("splash.getStarted")}
           </Link>
-          <Link to={`/${lang}/sign-in`} className="btn btn-ghost">
+          <Link
+            to={localizedPath(lang!, ROUTE_SEGMENTS.signIn)}
+            className="btn btn-ghost"
+          >
             {t("splash.login")}
           </Link>
         </div>

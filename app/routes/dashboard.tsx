@@ -10,7 +10,7 @@ import {
   PiggyBank,
   FileText,
 } from "lucide-react";
-import { PageBanner } from "@/components/shared/PageBanner";
+import { PageBanner } from "@/components/shared/layout/PageBanner";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { GoalCard, GoalCardSkeleton } from "@/components/dashboard/GoalCard";
@@ -19,6 +19,7 @@ import { NoPlanCard } from "@/components/dashboard/NoPlanCard";
 import { AddItemFab } from "@/components/dashboard/AddItemFab";
 import { useDashboard } from "@/queries/dashboard";
 import { usePageTitle } from "@/lib/use-page-title";
+import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { ErrorState } from "@/components/shared/QueryState";
 
@@ -67,7 +68,7 @@ export default function Dashboard() {
         actions={
           <>
             <Link
-              to={`/${lang}/chat`}
+              to={localizedPath(lang!, ROUTE_SEGMENTS.chat)}
               className="btn bg-secondary btn-sm text-secondary-content hover:bg-secondary/90 gap-2 border-none shadow-sm"
             >
               <Bot className="size-4" />
@@ -108,7 +109,10 @@ export default function Dashboard() {
             </div>
           ) : (
             <div className="grid items-stretch gap-4 md:grid-cols-3 xl:grid-cols-12">
-              <div className="md:col-span-2 xl:col-span-9">
+              <div className="md:col-span-1 xl:col-span-3">
+                <GoalCard currency={data.currency} />
+              </div>
+              <div className="md:col-span-2 xl:col-span-6">
                 <NoPlanCard />
               </div>
               <div className="md:col-span-1 xl:col-span-3 xl:self-start">

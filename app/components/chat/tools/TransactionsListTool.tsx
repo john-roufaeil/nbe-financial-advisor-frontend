@@ -5,10 +5,14 @@ import type { TransactionsListResult } from "@/lib/demo-financials";
 import { formatDate } from "@/lib/format";
 import { Money } from "@/components/shared/Money";
 import { HighlightStatCard } from "@/components/chat/tools/HighlightStatCard";
+import { useNumberDisplay } from "@/lib/use-number-display";
+import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 
 export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) => {
   const { t } = useTranslation();
   const data = result as TransactionsListResult | undefined;
+  const formatN = useNumberDisplay();
+  const dateFormat = useDisplayPreferencesStore((s) => s.dateFormat);
   if (!data) return null;
 
   const currencyLabel = t(`currency.${data.currency}`, data.currency);
@@ -34,7 +38,7 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
           label={t("common.filters.income")}
           value={
             <Money>
-              {totalIncome.toLocaleString()} {currencyLabel}
+              {formatN(totalIncome)} {currencyLabel}
             </Money>
           }
         />
@@ -44,7 +48,7 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
           label={t("common.filters.expense")}
           value={
             <Money>
-              {totalExpense.toLocaleString()} {currencyLabel}
+              {formatN(totalExpense)} {currencyLabel}
             </Money>
           }
         />
@@ -68,7 +72,7 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
                 <p className="truncate text-sm font-medium">{tx.title}</p>
                 <p className="text-base-content/50 text-xs">
                   {t(`common.categories.${tx.category}`, tx.category)} ·{" "}
-                  {formatDate(tx.datetime)}
+                  {formatDate(tx.datetime, dateFormat)}
                 </p>
               </div>
               <Money
@@ -76,7 +80,7 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
               >
                 <span dir="ltr">
                   {isIncome ? "+" : "-"}
-                  {tx.amount.toLocaleString()}
+                  {formatN(tx.amount)}
                 </span>{" "}
                 {t(`currency.${data.currency}`, data.currency)}
               </Money>

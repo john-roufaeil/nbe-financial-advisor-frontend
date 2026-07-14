@@ -1,1 +1,1 @@
-export { default } from "@/components/shared/AppLayout";
+export { default } from "@/components/shared/layout/AppLayout";

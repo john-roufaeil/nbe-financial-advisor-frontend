@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/client";
+import { API_ENDPOINTS } from "@/lib/constants/api";
 import type { DashboardSummary } from "@/types/dashboard";
 
 interface RawAllocation {
@@ -49,7 +50,7 @@ interface RawDashboard {
  */
 async function getAllocatedAmounts(): Promise<Map<string, number>> {
   try {
-    const res = await apiClient.get<RawBudget>("/budget");
+    const res = await apiClient.get<RawBudget>(API_ENDPOINTS.budget);
     return new Map(
       (res.data.allocations ?? []).map((alloc) => [
         alloc.category,
@@ -63,7 +64,7 @@ async function getAllocatedAmounts(): Promise<Map<string, number>> {
 
 export async function getDashboardSummary(): Promise<DashboardSummary> {
   const [res, allocatedAmounts] = await Promise.all([
-    apiClient.get<RawDashboard>("/dashboard"),
+    apiClient.get<RawDashboard>(API_ENDPOINTS.dashboard),
     getAllocatedAmounts(),
   ]);
   const data = res.data;

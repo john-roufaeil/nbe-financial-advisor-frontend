@@ -1,5 +1,6 @@
 import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAuthStore } from "@/store/use-auth-store";
+import { API_ENDPOINTS } from "@/lib/constants/api";
 
 /**
  * Single axios instance for all backend calls. Auth endpoints (signup/login/refresh)
@@ -48,7 +49,7 @@ let refreshPromise: Promise<string> | null = null;
  * — we just attempt the call, and a 401 means the session is genuinely over.
  */
 async function refreshAccessToken(): Promise<string> {
-  const res = await apiClient.post<{ access_token: string }>("/auth/refresh");
+  const res = await apiClient.post<{ access_token: string }>(API_ENDPOINTS.authRefresh);
   const accessToken = res.data.access_token;
   useAuthStore.getState().setAccessToken(accessToken);
   return accessToken;

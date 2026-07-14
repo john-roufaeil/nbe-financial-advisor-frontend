@@ -19,3 +19,7 @@ export function login(body: LoginBody): Promise<AuthTokens> {
 export function refresh(): Promise<{ access_token: string }> {
   return delay({ access_token: "mock-access-token.refreshed" });
 }
+
+export function logout(): Promise<void> {
+  return delay(undefined);
+}

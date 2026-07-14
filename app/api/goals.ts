@@ -1,4 +1,5 @@
 import { apiClient } from "@/api/client";
+import { API_ENDPOINTS } from "@/lib/constants/api";
 import type { FinancialGoal } from "@/types/goal";
 
 interface RawSavingsProgress {
@@ -19,7 +20,7 @@ interface RawSavingsProgress {
  */
 export async function getGoals(): Promise<FinancialGoal[]> {
   try {
-    const res = await apiClient.get<RawSavingsProgress>("/budget/savings-progress");
+    const res = await apiClient.get<RawSavingsProgress>(API_ENDPOINTS.savingsProgress);
     const data = res.data;
 
     if (data.goal && data.goal.name) {
@@ -52,7 +53,7 @@ export async function getGoals(): Promise<FinancialGoal[]> {
  * that endpoint has no `goal` field and will silently discard it.
  */
 async function upsertGoal(body: Omit<FinancialGoal, "id">): Promise<FinancialGoal> {
-  await apiClient.patch("/dashboard/goal", {
+  await apiClient.patch(API_ENDPOINTS.dashboardGoal, {
     goal: {
       name: body.name,
       target_amount: body.target,
@@ -76,5 +77,5 @@ export async function updateGoal(
 }
 
 export async function deleteGoal(_id: string): Promise<void> {
-  await apiClient.delete("/goal");
+  await apiClient.delete(API_ENDPOINTS.goal);
 }

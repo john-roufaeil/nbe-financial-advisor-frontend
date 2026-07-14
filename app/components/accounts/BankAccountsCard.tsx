@@ -9,6 +9,7 @@ import { Tooltip } from "@/components/shared/Tooltip";
 import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
 import type { BankAccount } from "@/types/account";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
+import { useNumberDisplay } from "@/lib/use-number-display";
 
 // `current_balance` is derived server-side from the account's latest transaction
 // and is read-only, so there is no edit action here — only add and remove.
@@ -20,10 +21,11 @@ function AccountRow({
   onDelete: () => void;
 }) {
   const { t } = useTranslation();
+  const formatN = useNumberDisplay();
   const currencyLabel = t(`currency.${account.currency}`, account.currency);
 
   return (
-    <li className="border-base-300 bg-base-100 flex items-center gap-3 rounded-lg border p-3">
+    <li className="border-base-300 bg-base-100 flex min-w-0 items-center gap-3 rounded-lg border p-3">
       <BankBadge
         bank={account.bank_name}
         className="flex-1"
@@ -38,7 +40,7 @@ function AccountRow({
         }
       />
       <Money className="shrink-0 text-sm font-semibold tabular-nums">
-        {Number(account.current_balance).toLocaleString()} {currencyLabel}
+        {formatN(Number(account.current_balance))} {currencyLabel}
       </Money>
       <div className="flex shrink-0 gap-1">
         <Tooltip content={t("actions.remove")}>
@@ -92,7 +94,7 @@ export function BankAccountsCard() {
   }
 
   return (
-    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm sm:col-span-2">
+    <div className="card border-base-300 bg-base-100 animate-entry min-w-0 border shadow-sm sm:col-span-2">
       <div className="card-body gap-4 p-4">
         <div className="flex items-center gap-2">
           <span className="bg-success/10 text-success grid size-9 shrink-0 place-items-center rounded-lg">

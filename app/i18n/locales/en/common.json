@@ -19,6 +19,13 @@
       "lifestyle": "Lifestyle",
       "other": "Other"
     },
+    "incomeCategories": {
+      "salary": "Salary",
+      "freelance": "Freelance",
+      "investment": "Investment",
+      "gift": "Gift",
+      "other_income": "Other"
+    },
     "filtersLabel": "Filters",
     "amountRange": "Amount range",
     "amountRanges": {
@@ -67,7 +74,7 @@
       "accountNumberPlaceholder": "1234",
       "errors": {
         "bankRequired": "Select or add a bank.",
-        "accountNumberInvalid": "Enter exactly 8 digits.",
+        "accountNumberInvalid": "Enter exactly 4 digits.",
         "accountNumberMismatch": "Account numbers don't match."
       }
     },
@@ -119,6 +126,11 @@
       "toggleLabel": "View mode",
       "list": "List view",
       "grid": "Grid view"
+    },
+    "density": {
+      "toggleLabel": "List density",
+      "comfortable": "Comfortable",
+      "compact": "Compact"
     }
   }
 }

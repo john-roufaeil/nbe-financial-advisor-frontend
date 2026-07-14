@@ -1,16 +1,17 @@
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery } from "@tanstack/react-query";
 import * as goalsApi from "@/api/goals";
 import * as goalsMock from "@/mocks/goals";
 import type { FinancialGoal } from "@/types/goal";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
-import { toastSuccess, toastApiError } from "@/lib/toast";
+import { QUERY_ROOTS } from "@/lib/constants/query-keys";
+import { pickImpl, useInvalidatingMutation } from "@/queries/shared";
 
 function impl(source: DataSource) {
-  return source === "mock" ? goalsMock : goalsApi;
+  return pickImpl(source, goalsApi, goalsMock);
 }
 
 export const goalKeys = {
-  all: (source: DataSource) => ["goals", source] as const,
+  all: (source: DataSource) => [QUERY_ROOTS.goals, source] as const,
 };
 
 export function useGoals() {
@@ -21,46 +22,33 @@ export function useGoals() {
   });
 }
 
+// Mutations also invalidate the dashboard: it renders the goal card from its
+// own payload, not from /goal.
+
 export function useCreateGoal() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
-    mutationFn: (body: Omit<FinancialGoal, "id">) => impl(source).createGoal(body),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
-      // The dashboard renders the goal card from its own payload, not from /goal.
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      toastSuccess("toast.goalCreated");
-    },
-    onError: (error) => toastApiError(error),
+  return useInvalidatingMutation({
+    mutationFn: (source, body: Omit<FinancialGoal, "id">) =>
+      impl(source).createGoal(body),
+    invalidates: [[QUERY_ROOTS.goals], [QUERY_ROOTS.dashboard]],
+    successToastKey: "toast.goalCreated",
   });
 }
 
 export function useUpdateGoal() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
-    mutationFn: ({ id, patch }: { id: string; patch: Omit<FinancialGoal, "id"> }) =>
-      impl(source).updateGoal(id, patch),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      toastSuccess("toast.goalUpdated");
-    },
-    onError: (error) => toastApiError(error),
+  return useInvalidatingMutation({
+    mutationFn: (
+      source,
+      { id, patch }: { id: string; patch: Omit<FinancialGoal, "id"> },
+    ) => impl(source).updateGoal(id, patch),
+    invalidates: [[QUERY_ROOTS.goals], [QUERY_ROOTS.dashboard]],
+    successToastKey: "toast.goalUpdated",
   });
 }
 
 export function useDeleteGoal() {
-  const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
-  return useMutation({
-    mutationFn: (id: string) => impl(source).deleteGoal(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["goals"] });
-      queryClient.invalidateQueries({ queryKey: ["dashboard"] });
-      toastSuccess("toast.goalDeleted");
-    },
-    onError: (error) => toastApiError(error),
+  return useInvalidatingMutation({
+    mutationFn: (source, id: string) => impl(source).deleteGoal(id),
+    invalidates: [[QUERY_ROOTS.goals], [QUERY_ROOTS.dashboard]],
+    successToastKey: "toast.goalDeleted",
   });
 }

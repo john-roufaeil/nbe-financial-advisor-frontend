@@ -2,15 +2,16 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useNavigate, useParams, useLocation, Link } from "react-router";
-import { AuthLayout } from "@/components/shared/AuthLayout";
+import { AuthLayout } from "@/components/shared/layout/AuthLayout";
 import { Button } from "@/components/shared/Button";
-import { PasswordInput } from "@/components/shared/PasswordInput";
+import { PasswordInput } from "@/components/shared/forms/PasswordInput";
 import { useTranslation } from "react-i18next";
 import { ArrowLeft } from "lucide-react";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useLogin } from "@/queries/auth";
+import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 
 export default function SignIn() {
   const { lang } = useParams<{ lang: string }>();
@@ -40,7 +41,7 @@ export default function SignIn() {
     try {
       await loginMutation.mutateAsync(values);
       login();
-      navigate(from ?? `/${lang}/dashboard`, { replace: true });
+      navigate(from ?? localizedPath(lang!, ROUTE_SEGMENTS.dashboard), { replace: true });
     } catch {
       // loginMutation.onError already surfaced a toast; stay on page.
     }
@@ -55,7 +56,7 @@ export default function SignIn() {
           className="mx-auto h-auto w-1/2 max-w-50"
         />
         <Link
-          to={`/${lang}`}
+          to={localizedPath(lang!)}
           className="btn btn-ghost text-base-content/60 flex w-fit items-center gap-1.5 text-sm"
         >
           <ArrowLeft className="size-4" />
@@ -105,7 +106,7 @@ export default function SignIn() {
           </Button>
         </form>
         <Link
-          to={`/${lang}/onboarding`}
+          to={localizedPath(lang!, ROUTE_SEGMENTS.onboarding)}
           onClick={() => begin()}
           className="btn btn-ghost underline underline-offset-2"
         >
