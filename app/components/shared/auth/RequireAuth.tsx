@@ -1,16 +1,14 @@
-import { Navigate, Outlet, useLocation, useParams } from "react-router";
-import { useAuthStore } from "@/store/use-auth-store";
-import { useSessionRestore } from "@/lib/use-session-restore";
+import { Navigate, Outlet, useLocation } from "react-router";
+import { useSessionGate } from "@/lib/use-session-gate";
+import { RestoringScreen } from "@/components/shared/auth/RestoringScreen";
 
 /**
  * Gate for every route behind the app shell.
  *
- * Guards on the ACCESS TOKEN, not on the persisted `isAuthenticated` flag.
- * Tokens are deliberately in-memory only (XSS: see use-auth-store), so after a
- * full page reload the flag rehydrates as `true` while the token is gone.
- * Trusting the flag would admit the user, let the first request fire without an
- * Authorization header, and only bounce them once the 401 interceptor ran —
- * a visible flash of the dashboard followed by a logout.
+ * Guards on the ACCESS TOKEN, not on the persisted `isAuthenticated` flag
+ * (see useSessionGate). Trusting the flag would admit the user, let the first
+ * request fire without an Authorization header, and only bounce them once the
+ * 401 interceptor ran — a visible flash of the dashboard followed by a logout.
  *
  * But a missing token is not a missing session: the httpOnly refresh cookie
  * survives the reload precisely so it can mint a new one. useSessionRestore does
@@ -21,18 +19,10 @@ import { useSessionRestore } from "@/lib/use-session-restore";
  * flipping `isAuthenticated`, so a half-onboarded user must stay put.
  */
 export function RequireAuth() {
-  const status = useSessionRestore();
-  const hasSession = useAuthStore((s) => s.isAuthenticated && s.accessToken !== null);
-  const { lang } = useParams<{ lang: string }>();
+  const { restoring, hasSession, lang } = useSessionGate();
   const location = useLocation();
 
-  if (status === "restoring") {
-    return (
-      <div className="grid min-h-screen place-items-center">
-        <span className="loading loading-spinner loading-lg text-primary" />
-      </div>
-    );
-  }
+  if (restoring) return <RestoringScreen />;
 
   if (!hasSession) {
     // `from` lets sign-in send the user back where they were headed.
