@@ -43,5 +43,5 @@ export function FieldValue({ field, value }: { field: FormFieldConfig; value?: s
     );
   }
 
-  return <span className="text-sm font-medium break-words">{value}</span>;
+  return <span className="text-sm font-medium wrap-break-word">{value}</span>;
 }
