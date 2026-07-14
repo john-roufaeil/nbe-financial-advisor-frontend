@@ -1,75 +1,192 @@
 # NBE Financial Advisor — Frontend
 
-React Router v7 (SPA) · TypeScript · Tailwind v4/DaisyUI · TanStack Query · Zustand · i18next (en/ar) · assistant-ui + Tool UI (chat)
+React Router v7 (SPA) · TypeScript · Tailwind v4 / DaisyUI v5 · TanStack Query v5 · Zustand v5 · i18next (en/ar) · assistant-ui (AI chat)
 
-## Setup
+---
+
+## Quick start
 
 ```bash
-# once, so new terminals auto-load the right Node version
-echo 'cd() { builtin cd "$@"; [ -f .nvmrc ] && nvm use --silent; }' >> ~/.bashrc && source ~/.bashrc
+# 1. Use the pinned Node version (Node ≥ 22 required)
+nvm use 22                     # or: echo 'cd() { builtin cd "$@"; [ -f .nvmrc ] && nvm use --silent; }' >> ~/.bashrc
 
+# 2. Enable the pinned package manager
 corepack enable && corepack prepare pnpm@11.10.0 --activate
+
+# 3. Install dependencies
 pnpm install
+
+# 4. Set the API base URL
 cp .env.example .env.local
+# Edit .env.local — set VITE_API_BASE_URL to your backend address
+
+# 5. Start the dev server (http://localhost:5173)
 pnpm dev
 ```
 
-Or: `docker build -f Dockerfile.dev -t frontend-dev . && docker run --rm -it -p 5173:5173 -v "$(pwd)":/app -v /app/node_modules --env-file .env.local frontend-dev`
+> **Docker alternative** — run without installing Node locally:
+>
+> ```bash
+> docker build -f Dockerfile.dev -t frontend-dev .
+> docker run --rm -it -p 5173:5173 \
+>   -v "$(pwd)":/app -v /app/node_modules \
+>   --env-file .env.local frontend-dev
+> ```
 
-`pnpm` requires Node ≥22 (pinned `packageManager: pnpm@11.10.0`); the default shell Node may be v20 — `nvm use 22` first if `pnpm` errors immediately. `node_modules/.bin/tsc`/`eslint` work under either Node version.
+### Environment variables
+
+| Variable            | Required | Description                                                  |
+| ------------------- | -------- | ------------------------------------------------------------ |
+| `VITE_API_BASE_URL` | ✅       | Base URL of the Django backend, e.g. `http://localhost:8000` |
+
+---
 
 ## Scripts
 
-`dev` `build` `lint` `lint:fix` `format` `format:check` `typecheck` `check:i18n`. Pre-commit hook (Husky + lint-staged) auto-runs lint+format on staged files; `check:i18n` and the no-hardcoded-hex check (`scripts/check-no-hardcoded-hex.sh`) also gate CI — run all of these before opening a PR.
+| Script              | What it does                                       |
+| ------------------- | -------------------------------------------------- |
+| `pnpm dev`          | Vite dev server with HMR                           |
+| `pnpm build`        | Production bundle via React Router                 |
+| `pnpm typecheck`    | Regenerates RR type stubs + runs `tsc`             |
+| `pnpm lint`         | ESLint (zero warnings allowed)                     |
+| `pnpm lint:fix`     | ESLint with auto-fix                               |
+| `pnpm format`       | Prettier write                                     |
+| `pnpm format:check` | Prettier check (CI)                                |
+| `pnpm check:i18n`   | Verify locale key parity + all `t()` calls resolve |
+
+**Pre-commit (Husky + lint-staged)** auto-runs lint + format on staged `*.ts`/`*.tsx` files.
+
+**Before opening a PR**, make sure these all pass locally:
+
+```bash
+pnpm lint && pnpm format:check && pnpm typecheck && pnpm check:i18n
+bash scripts/check-no-hardcoded-hex.sh
+```
+
+---
+
+## Authentication & offline mode
+
+The app defaults to **`source: "backend"`** — all data calls hit the real Django API.
+
+To switch to the built-in **mock/demo mode** (no backend required, any credentials work):
+
+```js
+// Run once in browser console, then reload
+localStorage.setItem(
+  "nbe_data_source",
+  JSON.stringify({ state: { source: "mock" }, version: 1 }),
+);
+```
+
+Or use the **Profile → Preferences** toggle inside the running app.
+
+**Auth note:** Access tokens are held **in memory only** — they are never written to `localStorage`. On a page reload, the app silently calls `POST /auth/refresh` using the httpOnly refresh cookie. If the cookie is missing or expired, the user is shown a "session expired" modal.
+
+---
 
 ## Folder structure
 
-```bash
+```
 app/
-  routes.ts                register every route here (nested layouts: lang → require-auth → app-layout)
-  routes/                   one file per page — dashboard, chat, transactions, documents, profile, onboarding, sign-in...
-  components/
-    shared/                 cross-context display components — reused by pages AND chat tools
-    dashboard/, data/, onboarding/  feature-scoped components, co-located by area
-    chat/                   chat scaffolding (thread, bubbles, input) + chat/tools/ (LLM tool-call → UI renderers)
-  api/                      real backend calls (axios via api/client.ts) — one file per domain
-  mocks/                    in-memory fake data, same function signatures as api/ — for demo/offline mode
-  queries/                  TanStack Query hooks components actually import — picks api/ or mocks/ per useDataSourceStore
-  types/                    TypeScript types per domain, shared by api/mocks/queries
-  store/                    Zustand stores — client-only UI/session state (see below)
-  lib/                      utilities + misc hooks not tied to server state (format, pagination, toast, query-client...)
-  i18n/                     i18next setup + locales/{en,ar}/*.json (one JSON per feature area)
-  root.tsx, app.css
+├── routes.ts              # Route registry — every page is registered here
+├── routes/                # One file per page/layout (dashboard, chat, sign-in…)
+├── components/
+│   ├── shared/            # Prop-driven, data-free components used by pages AND chat tools
+│   │   ├── auth/          # RequireAuth, RequireGuest, RestoringScreen guards
+│   │   ├── forms/         # BankPicker, DateField, MoneyInput, ToggleSwitch…
+│   │   ├── layout/        # AppLayout, AuthLayout, DataToolbar, Sidebar pieces
+│   │   ├── modals/        # BaseModal, ConfirmDialog, SessionExpiredModal…
+│   │   ├── preferences/   # ThemeToggle, LanguageSwitcher, AccessibilityMenu…
+│   │   └── skeletons/     # Loading placeholder skeletons
+│   ├── chat/              # AI chat scaffolding + tool renderers (chat/tools/)
+│   ├── dashboard/         # Dashboard-specific widgets
+│   ├── transactions/      # Transaction form fields
+│   ├── accounts/          # Account card components
+│   ├── bank-statements/   # Statement list + review flow
+│   ├── onboarding/        # Multi-step onboarding step components
+│   └── profile/           # Profile page sections
+├── api/                   # Real backend calls via axios (one file per domain)
+├── mocks/                 # In-memory fake data, same function signatures as api/
+├── queries/               # TanStack Query hooks — the ONLY import point for data
+├── types/                 # TypeScript interfaces, shared enums, domain constants
+├── store/                 # Zustand stores — client-only UI/session state
+├── lib/                   # Pure utilities, custom hooks, and constants
+│   └── constants/         # Named constant files (api, routes, limits, time…)
+├── i18n/
+│   ├── index.ts           # i18next setup
+│   └── locales/
+│       ├── en/            # English translations (15 namespace JSON files)
+│       └── ar/            # Arabic translations (must mirror en/ exactly)
+├── root.tsx               # React Router root (providers, global error boundary)
+└── app.css                # Global styles, Tailwind + DaisyUI theme tokens
 ```
 
-## Data flow — api/ vs mocks/ vs queries/
+---
 
-- **`api/*.ts`** — plain async functions hitting the real backend via the shared `apiClient` (axios, auto Bearer token + refresh-on-401, in `api/client.ts`). No React involved.
-- **`mocks/*.ts`** — fake implementations with the _identical_ function signatures as their `api/` counterpart.
-- **`queries/*.ts`** — the only layer components should import. Each hook (`useAccounts`, `useCreateAccount`, ...) picks `api/` or `mocks/` at call time based on `useDataSourceStore` (`source: "mock" | "backend"`, persisted, defaults to `"backend"`), and owns query keys, cache invalidation, and success/error toasts.
+## Data flow
 
-**Never import `api/` or `mocks/` directly from a component** — always go through `queries/`. This is what lets someone flip the data-source toggle (Profile → Preferences) and see the whole app switch between live data and demo data with zero component changes.
+```
+Component
+  └─► queries/*.ts         (useAccounts, useTransactions, …)
+        ├─► api/*.ts       when source === "backend"
+        └─► mocks/*.ts     when source === "mock"
+```
 
-Local auth testing: the backend will 422 on fake credentials since the default source is `"backend"`. To log in against mocks instead: `localStorage.setItem('nbe_data_source', JSON.stringify({state:{source:'mock'},version:1}))`, reload, then any email/password works.
+- **`api/`** — plain async functions; each hits the real backend via the shared `apiClient` (axios with auto Bearer token + refresh-on-401 interceptor in `api/client.ts`). No React.
+- **`mocks/`** — identical function signatures to `api/`, in-memory data, `MOCK_LATENCY_MS` delay (from `lib/constants/time.ts`).
+- **`queries/`** — the only layer components import. Each hook picks `api/` or `mocks/` at call time based on `useDataSourceStore`. Owns query keys, cache invalidation, and success/error toasts.
 
-## Add a page
+> **Rule:** Never import `api/` or `mocks/` directly in a component. Always go through `queries/`.  
+> This is what makes the data-source toggle work transparently across the whole app.
 
-1. File in `app/routes/`, register in `app/routes.ts` in the right layout tier (public vs `require-auth` vs inside `app-layout`).
-2. Add new strings to **both** `en/*.json` and `ar/*.json` in `app/i18n/locales/` — `pnpm check:i18n` fails otherwise (parity + "every `t()` key exists" checks).
-3. Server data → a `queries/` hook, never a raw `useEffect` fetch. Forms → React Hook Form + Zod. Multi-step flows (onboarding) → a Zustand store for step state.
+---
 
-## Components — build once, use in both dashboard and chat
+## Adding a page
 
-- **Shared, prop-driven, no fetching inside** → `app/components/shared/`. Pages feed them via a `queries/` hook; the chatbot feeds the _same_ component via `app/components/chat/tools/` when the LLM calls a matching tool (see `chat/tools/index.ts` for the tool → component map). Don't fork a component per context.
-- Feature-only, one-off → co-locate under `components/dashboard|data|onboarding/` next to its route.
-- Chat-only scaffolding (thread, bubbles, input) → `app/components/chat/` (not `chat/tools/`).
-- DaisyUI classes only, **never hardcoded hex** (CI-enforced via `scripts/check-no-hardcoded-hex.sh`). Logical properties (`ms-`/`me-`/`ps-`/`pe-`) for RTL. `btn-primary` = one per screen. Status → `badge-success`/`error`/`warning`. Icons: `lucide-react`, `size-*` + `text-*`.
-- assistant-ui/Tool UI ship their own pre-built kits (AI Elements, shadcn-chatbot-kit), but those are shadcn-based — we don't use them, since we're DaisyUI-only. We use assistant-ui's engine (streaming/threads) + Tool UI's Zod-validated tool-call routing, pointed at our own `shared/` components instead.
+1. Create `app/routes/my-page.tsx`.
+2. Register it in `app/routes.ts` inside the correct layout tier (`require-guest`, `require-auth`, or `app-layout`). Use `ROUTE_SEGMENTS` from `lib/constants/routes.ts` for the URL segment — never a raw string.
+3. Add translation strings to **both** `app/i18n/locales/en/*.json` and `app/i18n/locales/ar/*.json` — `pnpm check:i18n` will fail if they're missing or out of sync.
+4. Fetch data via a `queries/` hook, not a raw `useEffect`. Use React Hook Form + Zod for forms.
+
+---
+
+## Styling rules
+
+- **DaisyUI semantic classes only** — never hardcoded hex colors (`#...`). CI enforces this via `scripts/check-no-hardcoded-hex.sh`.
+- **Logical CSS properties** for RTL support: use `ms-`/`me-`/`ps-`/`pe-` instead of `ml-`/`mr-`/`pl-`/`pr-`.
+- **One `btn-primary` per screen**. Use `badge-success`/`badge-error`/`badge-warning` for status.
+- **Icons:** `lucide-react` with `size-*` + `text-*` classes.
+
+---
 
 ## Stores (Zustand)
 
-Client-only state — UI (sidebar, active tab, balance visibility, view mode), session (`use-auth-store` — in-memory access/refresh tokens), and preferences (`use-data-source-store`, `use-time-format-store`). Never server data — that's `queries/`. One small store per concern in `app/store/`, no provider needed. Most preference stores persist to `localStorage`.
+Client-only state only — **no server data in stores**. All server data lives in the TanStack Query cache.
 
-## Known quirks — ignore these
+| Store                           | Purpose                                                     | Persisted               |
+| ------------------------------- | ----------------------------------------------------------- | ----------------------- |
+| `use-auth-store`                | `isAuthenticated` flag + in-memory access token             | Flag only (never token) |
+| `use-data-source-store`         | `"mock"` or `"backend"` preference                          | ✅                      |
+| `use-display-preferences-store` | View mode, density, number/date/time format, balance hidden | ✅                      |
+| `use-theme-store`               | Light / dark / system                                       | ✅                      |
+| `use-accessibility-store`       | Font scale, high contrast, reduced motion                   | ✅                      |
+| `use-language-switch-store`     | Pending language change state                               | ❌                      |
+| `use-onboarding-store`          | Multi-step onboarding form state                            | ✅                      |
+| `use-sidebar-store`             | Collapsed state, width                                      | ✅                      |
+| `use-page-size-store`           | Rows-per-page preference                                    | ✅                      |
+| `use-toast-store`               | Active toast message (UI only)                              | ❌                      |
+| `use-confirm-store`             | Confirm dialog state (UI only)                              | ❌                      |
+| `use-chat-store`                | Active chat thread state                                    | ❌                      |
+| `use-drawer-store`              | Mobile drawer open state                                    | ❌                      |
+| `use-route-announcer-store`     | Accessibility route announcements                           | ❌                      |
 
-`envFile deprecated` / babel `filter` warnings → upstream bugs. `@react-router/node` + `isbot` are required deps, don't remove. `eslint-plugin-react-hooks` pinned to `6.1.1` (7.x crash bug). pnpm pinned to `11.10.0` exactly — required for `pnpm-workspace.yaml`'s supply-chain settings. The plain `Dockerfile` is broken/unused (real builds are `Dockerfile.dev`/`Dockerfile.prod`).
+---
+
+## Known quirks
+
+- `envFile deprecated` / babel `filter` warnings → upstream bugs in dependencies; safe to ignore.
+- `@react-router/node` + `isbot` are required deps (React Router internals); do not remove.
+- `eslint-plugin-react-hooks` pinned to `6.1.1` — 7.x has a known crash bug.
+- `pnpm` pinned to `11.10.0` exactly — required for `pnpm-workspace.yaml` supply-chain settings.
+- The plain `Dockerfile` is **broken/unused**. Real builds use `Dockerfile.dev` (development) and `Dockerfile.prod` (production).
