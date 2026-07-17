@@ -12,7 +12,7 @@
     "category": "الفئة",
     "allCategories": "كل الفئات",
     "categories": {
-      "housing": "السكن والإيجار",
+      "housing": "السكن والمرافق",
       "food": "الطعام والبقالة",
       "transport": "المواصلات",
       "savings": "المدخرات",
@@ -21,10 +21,11 @@
     },
     "incomeCategories": {
       "salary": "راتب",
+      "transfers_in": "تحويلات واردة",
       "freelance": "عمل حر",
       "investment": "استثمار",
       "gift": "هدية",
-      "other_income": "أخرى"
+      "other_income": "دخل آخر"
     },
     "filtersLabel": "الفلاتر",
     "amountRange": "نطاق المبلغ",

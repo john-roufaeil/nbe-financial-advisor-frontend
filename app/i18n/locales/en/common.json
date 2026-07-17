@@ -12,7 +12,7 @@
     "category": "Category",
     "allCategories": "All categories",
     "categories": {
-      "housing": "Housing & Rent",
+      "housing": "Housing & Utilities",
       "food": "Food & Groceries",
       "transport": "Transport",
       "savings": "Savings",
@@ -21,10 +21,11 @@
     },
     "incomeCategories": {
       "salary": "Salary",
+      "transfers_in": "Transfers In",
       "freelance": "Freelance",
       "investment": "Investment",
       "gift": "Gift",
-      "other_income": "Other"
+      "other_income": "Other Income"
     },
     "filtersLabel": "Filters",
     "amountRange": "Amount range",

@@ -11,12 +11,32 @@
       "mock": "بيانات تجريبية",
       "backend": "بيانات مباشرة"
     },
+    "toolbar": {
+      "period": "الفترة",
+      "periods": {
+        "thisMonth": "هذا الشهر",
+        "lastMonth": "الشهر الماضي",
+        "last3Months": "3 أشهر",
+        "thisYear": "هذه السنة"
+      },
+      "account": "الحساب",
+      "allAccounts": "كل الحسابات",
+      "customize": "تخصيص",
+      "cards": {
+        "stats": "الأرقام الرئيسية",
+        "goal": "تقدم الهدف",
+        "budget": "توزيع الميزانية",
+        "activity": "النشاط الأخير"
+      }
+    },
     "stats": {
       "balance": "الرصيد الإجمالي",
-      "income": "الدخل الشهري",
-      "spending": "المصروفات الشهرية",
+      "income": "الدخل",
+      "spending": "المصروفات",
       "savingsRate": "معدل الادخار",
-      "vsLastMonth": "مقارنة بالشهر الماضي"
+      "vsLastMonth": "مقارنة بالشهر الماضي",
+      "vsPreviousPeriod": "مقارنة بالفترة السابقة",
+      "drillDown": "عرض معاملات {{stat}}"
     },
     "goals": {
       "goal": "الهدف",
@@ -52,6 +72,7 @@
     },
     "budget": {
       "title": "توزيع خطة الميزانية",
+      "drillDown": "عرض معاملات {{category}}",
       "over": "تجاوز الميزانية",
       "allocated": "مخصص",
       "empty": "لا تحتوي هذه الخطة على فئات بعد.",
