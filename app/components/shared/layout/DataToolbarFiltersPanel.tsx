@@ -3,6 +3,8 @@ import { createPortal } from "react-dom";
 import { X } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DateField } from "@/components/shared/forms/DateField";
+import { SimpleSelect } from "@/components/shared/forms/SimpleSelect";
+import { categoryIcon } from "@/lib/constants/category-icons";
 import { Z_POPOVER } from "@/lib/z-index";
 
 /** The filter controls shared by DataToolbar (which collects them) and this
@@ -84,34 +86,28 @@ function DataToolbarFiltersPanelInner<F extends string>(
         </div>
 
         {categories && onCategoryChange && (
-          <select
-            value={category}
-            onChange={(e) => onCategoryChange(e.target.value)}
-            className="select select-bordered select-sm w-full"
-            aria-label={t("common.category")}
-          >
-            <option value="">{t("common.allCategories")}</option>
-            {categories.map((c) => (
-              <option key={c} value={c}>
-                {categoryLabel ? categoryLabel(c) : c}
-              </option>
-            ))}
-          </select>
+          <SimpleSelect
+            value={category ?? ""}
+            onChange={onCategoryChange}
+            ariaLabel={t("common.category")}
+            options={[
+              { value: "", label: t("common.allCategories") },
+              ...categories.map((c) => ({
+                value: c,
+                label: categoryLabel ? categoryLabel(c) : c,
+                icon: categoryIcon(c),
+              })),
+            ]}
+          />
         )}
 
         {amountRanges && onAmountRangeChange && (
-          <select
-            value={amountRange}
-            onChange={(e) => onAmountRangeChange(e.target.value)}
-            className="select select-bordered select-sm w-full"
-            aria-label={t("common.amountRange")}
-          >
-            {amountRanges.map((r) => (
-              <option key={r.key} value={r.key}>
-                {r.label}
-              </option>
-            ))}
-          </select>
+          <SimpleSelect
+            value={amountRange ?? ""}
+            onChange={onAmountRangeChange}
+            ariaLabel={t("common.amountRange")}
+            options={amountRanges.map((r) => ({ value: r.key, label: r.label }))}
+          />
         )}
 
         <div className="flex flex-col gap-2">
