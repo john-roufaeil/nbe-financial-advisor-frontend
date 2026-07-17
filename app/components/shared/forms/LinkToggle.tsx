@@ -42,7 +42,7 @@ export function LinkToggle<T extends string>({
 
   const variantClassName =
     variant === "btn-ghost"
-      ? "btn btn-ghost bg-base-200 gap-1.5 font-medium"
+      ? "btn btn-ghost border-current/20 gap-1.5 font-medium"
       : "text-base-content/70 hover:text-primary flex min-h-11 cursor-pointer items-center gap-1.5 py-2 text-sm font-medium transition-colors hover:underline focus-visible:outline-primary/50 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:rounded-md";
 
   return (
