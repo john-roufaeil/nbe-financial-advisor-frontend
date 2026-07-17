@@ -9,6 +9,8 @@ export const STORAGE_KEYS = {
   pageSize: "nbe_data_page_size",
   sidebar: "nbe_sidebar",
   displayPreferences: "nbe_display_preferences",
+  dashboardPreferences: "nbe_dashboard_preferences",
   accessibility: "accessibility-settings",
   a11yPeekSeen: "nbe_a11y_peek_seen",
+  adminAuth: "nbe_admin_auth",
 } as const;

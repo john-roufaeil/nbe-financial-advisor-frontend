@@ -1,0 +1,100 @@
+/**
+ * Admin API shapes — mirrors core/serializers/administration.py and
+ * core/serializers/categories.py on the backend. Admin auth is a completely
+ * separate credential space from end-user auth: tokens are NOT interchangeable,
+ * and there is no admin refresh/logout endpoint (tokens simply expire).
+ */
+
+export interface AdminLoginBody {
+  email: string;
+  password: string;
+}
+
+export type AdminRole = "reviewer" | "super_admin";
+
+export interface AdminLoginResponse {
+  access_token: string;
+  refresh_token: string;
+  admin_id: string;
+  role: AdminRole;
+}
+
+/** DRF LimitOffsetPagination envelope — every admin list endpoint uses it. */
+export interface Paginated<T> {
+  count: number;
+  next: string | null;
+  previous: string | null;
+  results: T[];
+}
+
+/** Row from GET /admin/categories (same CategorySerializer as the user API). */
+export interface AdminCategory {
+  id: string;
+  name: string;
+  label: string;
+  category_type: "income" | "expense";
+  is_fallback: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface AdminCategoryCreateBody {
+  name: string;
+  label: string;
+  category_type: "income" | "expense";
+  is_fallback?: boolean;
+}
+
+export type AdminCategoryUpdateBody = Partial<AdminCategoryCreateBody>;
+
+export interface AdminProduct {
+  id: string;
+  title: string;
+  description: string | null;
+  categories: string[];
+  tags: string[];
+  /** Free-form JSONB payload on the backend — displayed, not edited field-by-field. */
+  features: Record<string, unknown> | null;
+  external_link: string | null;
+  is_active: boolean;
+  created_at: string;
+}
+
+export interface AdminProductCreateBody {
+  title: string;
+  description?: string;
+  categories?: string[];
+  tags?: string[];
+  features?: Record<string, unknown> | null;
+  external_link?: string;
+  is_active?: boolean;
+  /** Seed texts for recommendation embeddings — create-time only. */
+  problem_statements?: string[];
+}
+
+export type AdminProductUpdateBody = Partial<
+  Omit<AdminProductCreateBody, "problem_statements">
+>;
+
+/** Row from GET /admin/feedback (AdminReactionSerializer) — read-only. */
+export interface AdminFeedbackEntry {
+  id: string;
+  user_id: string;
+  target_type: string;
+  target_id: string;
+  rating: number;
+  comment: string | null;
+  created_at: string;
+}
+
+export const ISSUE_STATUSES = ["open", "in_review", "resolved", "dismissed"] as const;
+export type IssueStatus = (typeof ISSUE_STATUSES)[number];
+
+export interface AdminIssue {
+  id: string;
+  user_id: string;
+  description: string;
+  status: IssueStatus;
+  created_at: string;
+  resolved_at: string | null;
+}
