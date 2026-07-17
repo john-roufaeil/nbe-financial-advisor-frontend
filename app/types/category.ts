@@ -1,5 +1,4 @@
 export interface Category {
-  id: string;
   /** Stable machine key the whole API speaks (e.g. "housing") — transactions,
    * budget allocations, and analytics all reference categories by this value. */
   name: string;

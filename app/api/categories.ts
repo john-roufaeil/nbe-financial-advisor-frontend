@@ -15,7 +15,6 @@ interface RawCategory {
 
 function toCategory(raw: RawCategory): Category {
   return {
-    id: raw.id,
     name: raw.name,
     label: raw.label,
     type: raw.category_type,
