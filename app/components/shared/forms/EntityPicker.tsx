@@ -1,19 +1,36 @@
-import { useRef, useState, type ReactNode } from "react";
+import { useCallback, useRef, useState, type ReactNode } from "react";
+import { createPortal } from "react-dom";
 import { ChevronDown } from "lucide-react";
 import { useDismissablePanel } from "@/lib/use-dismissable-panel";
-import { Z_DROPDOWN } from "@/lib/z-index";
+import { Z_POPOVER } from "@/lib/z-index";
+
+// Tailwind's build-time scanner needs literal class strings — `input-${size}`
+// would silently drop input-xs/input-md from the compiled CSS since neither
+// appears literally anywhere else the scanner walks.
+const TRIGGER_SIZE_CLASSES = {
+  xs: "input-xs",
+  sm: "input-sm",
+  md: "input-md",
+} as const;
 
 export interface EntityPickerProps<T> {
-  items: T[];
+  items: readonly T[];
   getKey: (item: T) => string;
   onSelect: (item: T) => void;
   /** Content of the collapsed trigger button (selected item preview or placeholder). */
   trigger: ReactNode;
   /** Content of each item row in the open list (logo, label, trailing check, etc). */
   renderItem: (item: T) => ReactNode;
+  /** Extra classes for a row's button — e.g. a tinted background on the
+   * currently-selected item, matching its trailing check indicator. */
+  itemClassName?: (item: T) => string;
   disabled?: boolean;
   error?: boolean;
   className?: string;
+  ariaLabel?: string;
+  /** daisyUI input size suffix for the trigger button — matches whatever
+   * size the native `<select>` it replaces would have used. */
+  triggerSize?: "xs" | "sm" | "md";
   /** Optional search input rendered above the list (e.g. BankPicker's bank search). */
   search?: ReactNode;
   /** Rendered below the list; receives `close` so actions can dismiss the dropdown. */
@@ -34,70 +51,142 @@ export function EntityPicker<T>({
   onSelect,
   trigger,
   renderItem,
+  itemClassName,
   disabled,
   error,
   className = "",
+  ariaLabel,
+  triggerSize = "sm",
   search,
   footer,
   emptyMessage,
-  listClassName = "max-h-40",
+  // Grows to fill the panel's available height (itself capped to remaining
+  // viewport space, see updateCoords) rather than a fixed max-h — a short
+  // list then renders with no scrollbar at all instead of an arbitrary gap.
+  listClassName = "flex-1",
 }: EntityPickerProps<T>) {
   const [open, setOpen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
+  const [coords, setCoords] = useState<{
+    top: number;
+    left: number;
+    width: number;
+    maxHeight: number;
+  } | null>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const close = () => setOpen(false);
+
+  // Portal-rendered and positioned from the trigger's live rect (not a
+  // `relative`-parent `absolute` child) so the open menu overlays the page —
+  // e.g. inside a modal — instead of adding to the modal's own scroll height.
+  // maxHeight is the real remaining viewport space below the trigger, not a
+  // fixed guess: a short list (e.g. 4 categories) then renders at its natural
+  // height with no scrollbar, while a long one still clips and scrolls.
+  const updateCoords = useCallback(() => {
+    const rect = triggerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    const top = rect.bottom + 4;
+    setCoords({
+      top,
+      left: rect.left,
+      width: rect.width,
+      maxHeight: Math.max(160, window.innerHeight - top - 8),
+    });
+  }, []);
 
   useDismissablePanel({
     open: open && !disabled,
     onClose: close,
     panelRef,
     triggerRef,
+    reposition: updateCoords,
   });
 
   return (
-    <div ref={containerRef} className={`relative ${className}`}>
+    <div className={`relative ${className}`}>
       <button
         ref={triggerRef}
         type="button"
-        onClick={() => !disabled && setOpen((v) => !v)}
+        onClick={() => {
+          if (disabled) return;
+          updateCoords();
+          setOpen((v) => !v);
+        }}
         disabled={disabled}
         aria-haspopup="listbox"
         aria-expanded={open}
-        className={`input input-bordered input-sm relative flex w-full items-center justify-between gap-2 before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-[''] ${error ? "input-error" : ""} ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
+        aria-label={ariaLabel}
+        className={`input input-bordered ${TRIGGER_SIZE_CLASSES[triggerSize]} relative flex w-full items-center justify-between gap-2 before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-[''] ${error ? "input-error" : ""} ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
       >
         {trigger}
-        <ChevronDown className="size-4 shrink-0 opacity-50" />
+        <ChevronDown data-no-flip className="size-4 shrink-0 opacity-50" />
       </button>
 
-      {open && !disabled && (
-        <div
-          ref={panelRef}
-          className={`menu bg-base-100 border-base-300 absolute ${Z_DROPDOWN} mt-1 w-full flex-col gap-1 rounded-xl border p-2 shadow-lg`}
-        >
-          {search}
-          <ul role="listbox" className={`${listClassName} overflow-y-auto`}>
-            {items.map((item) => (
-              <li key={getKey(item)} role="option">
-                <button
-                  type="button"
-                  onClick={() => {
-                    onSelect(item);
-                    close();
-                  }}
-                  className="hover:bg-base-200 focus-visible:outline-primary/50 relative flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-start text-sm before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2"
-                >
-                  {renderItem(item)}
-                </button>
-              </li>
-            ))}
-            {items.length === 0 && emptyMessage && (
-              <li className="text-base-content/50 px-2 py-1.5 text-sm">{emptyMessage}</li>
-            )}
-          </ul>
-          {footer?.(close)}
-        </div>
-      )}
+      {open &&
+        !disabled &&
+        coords &&
+        typeof document !== "undefined" &&
+        createPortal(
+          <div
+            ref={panelRef}
+            role="presentation"
+            // Lets an ancestor panel's useDismissablePanel recognize this
+            // portaled-elsewhere menu as "still inside" for click-outside
+            // purposes — see use-dismissable-panel.ts.
+            data-floating-menu=""
+            style={{
+              top: coords.top,
+              left: coords.left,
+              width: coords.width,
+              maxHeight: coords.maxHeight,
+              // Forces this menu onto its own GPU-composited layer from the
+              // first frame, instead of Chromium lazily promoting/demoting it
+              // — the lazy path is what leaves a stale, incorrectly-ordered
+              // layer behind when this element lives inside an open <dialog>
+              // (hit-testing stays correct; only the painted pixels are wrong).
+              transform: "translateZ(0)",
+            }}
+            // Deliberately no entrance animation here: animating transform/
+            // opacity promotes this menu to its own compositor layer during
+            // the transition, and this menu specifically can be nested inside
+            // a native <dialog> alongside other content (unlike the page-level
+            // popovers `animate-a11y-panel-in` was written for) — in that
+            // configuration Chromium can leave the layer's paint order wrong
+            // after the animation ends, even though hit-testing stays correct
+            // (a real compositor bug, not a stacking bug).
+            className={`menu bg-base-100 border-base-300 fixed ${Z_POPOVER} flex-col gap-1 overflow-hidden rounded-xl border p-2 shadow-lg`}
+          >
+            {search}
+            <ul role="listbox" className={`${listClassName} min-h-0 overflow-y-auto`}>
+              {items.map((item) => (
+                <li key={getKey(item)} role="option">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      onSelect(item);
+                      close();
+                    }}
+                    className={`hover:bg-base-200 focus-visible:outline-primary/50 relative flex w-full cursor-pointer items-center gap-2 rounded-md px-2 py-2 text-start text-sm before:absolute before:inset-x-0 before:-inset-y-1 before:content-[''] focus-visible:outline-2 focus-visible:outline-offset-2 ${itemClassName?.(item) ?? ""}`}
+                  >
+                    {renderItem(item)}
+                  </button>
+                </li>
+              ))}
+              {items.length === 0 && emptyMessage && (
+                <li className="text-base-content/50 px-2 py-1.5 text-sm">
+                  {emptyMessage}
+                </li>
+              )}
+            </ul>
+            {footer?.(close)}
+          </div>,
+          // Native <dialog> content renders in the browser's top layer, which
+          // always paints above regular DOM regardless of z-index — a portal
+          // to document.body would render *behind* an open modal. Portaling
+          // into the dialog itself keeps the menu in that same top-layer
+          // subtree; outside a dialog, document.body is the normal target.
+          triggerRef.current?.closest("dialog") ?? document.body,
+        )}
     </div>
   );
 }

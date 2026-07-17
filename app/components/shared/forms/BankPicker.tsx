@@ -78,7 +78,7 @@ export function BankPicker({
       }
       search={
         <label className="input input-bordered input-sm flex items-center gap-2">
-          <Search className="size-3.5 opacity-50" />
+          <Search data-no-flip className="size-3.5 opacity-50" />
           <input
             type="text"
             autoFocus
@@ -100,7 +100,7 @@ export function BankPicker({
           <span className="flex-1 truncate">
             {t(`banks.${code}`, getBankName(code) ?? code)}
           </span>
-          {selectedCode === code && <Check className="size-4 shrink-0" />}
+          {selectedCode === code && <Check data-no-flip className="size-4 shrink-0" />}
         </>
       )}
       footer={(close) =>
