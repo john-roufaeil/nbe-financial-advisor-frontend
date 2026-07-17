@@ -1,6 +1,22 @@
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/lib/constants/api";
-import type { DashboardSummary } from "@/types/dashboard";
+import type {
+  DashboardFilters,
+  DashboardPeriod,
+  DashboardSummary,
+} from "@/types/dashboard";
+
+/** UI period keys → the backend's `?period=` values (ASSUMED BACKEND CHANGE:
+ * GET /dashboard must accept `period` and `account_id` query params and
+ * compute every metric — inflow, spend, deltas vs the preceding equal window,
+ * net worth as-of, and each allocation's percentage_used — over that window
+ * and, when given, restricted to that account's transactions). */
+const PERIOD_PARAM: Record<DashboardPeriod, string> = {
+  thisMonth: "this_month",
+  lastMonth: "last_month",
+  last3Months: "last_3_months",
+  thisYear: "this_year",
+};
 
 interface RawAllocation {
   category: string;
@@ -62,9 +78,16 @@ async function getAllocatedAmounts(): Promise<Map<string, number>> {
   }
 }
 
-export async function getDashboardSummary(): Promise<DashboardSummary> {
+export async function getDashboardSummary(
+  filters: DashboardFilters,
+): Promise<DashboardSummary> {
   const [res, allocatedAmounts] = await Promise.all([
-    apiClient.get<RawDashboard>(API_ENDPOINTS.dashboard),
+    apiClient.get<RawDashboard>(API_ENDPOINTS.dashboard, {
+      params: {
+        period: PERIOD_PARAM[filters.period],
+        account_id: filters.accountId,
+      },
+    }),
     getAllocatedAmounts(),
   ]);
   const data = res.data;

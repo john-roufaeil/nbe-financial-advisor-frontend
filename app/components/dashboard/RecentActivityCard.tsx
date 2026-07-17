@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { Link, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
+import type { DashboardFilters } from "@/types/dashboard";
+import { dashboardPeriodRange } from "@/lib/dashboard-period";
 import {
   ArrowLeftRight,
   FileText,
@@ -21,6 +24,9 @@ import { useDisplayPreferencesStore } from "@/store/use-display-preferences-stor
 
 const RECENT_COUNT = 2;
 
+const TYPE_CHIPS = ["all", "income", "expense"] as const;
+type TypeChip = (typeof TYPE_CHIPS)[number];
+
 function SummaryCard({
   to,
   icon: Icon,
@@ -31,6 +37,7 @@ function SummaryCard({
   emptyIcon: EmptyIcon,
   emptyLabel,
   emptyCtaLabel,
+  controls,
   children,
 }: {
   to: string;
@@ -42,6 +49,9 @@ function SummaryCard({
   emptyIcon: typeof ArrowLeftRight;
   emptyLabel: string;
   emptyCtaLabel: string;
+  /** Inline filter controls rendered in the header row. They live inside the
+   * card's Link, so they must preventDefault their own clicks. */
+  controls?: React.ReactNode;
   children: React.ReactNode;
 }) {
   const isEmpty = count === 0;
@@ -52,7 +62,7 @@ function SummaryCard({
       // When empty, the whole card is the invitation to add the first item —
       // send it straight into the add flow instead of the (empty) list view.
       state={isEmpty ? { openAdd: true } : undefined}
-      className="card border-base-300 bg-base-100 hover:border-primary group animate-entry h-40 border shadow-sm transition-colors"
+      className={`card border-base-300 bg-base-100 hover:border-primary group animate-entry border shadow-sm transition-colors ${controls ? "h-48" : "h-40"}`}
     >
       <div className="card-body flex h-full min-h-0 flex-col gap-3 p-4">
         <div className="flex shrink-0 items-center gap-2">
@@ -65,6 +75,7 @@ function SummaryCard({
           </div>
           <ChevronRight className="text-base-content/30 group-hover:text-primary size-4 shrink-0 transition-[color,translate] ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
         </div>
+        {controls}
         {count > 0 ? (
           <div className="relative min-h-0 flex-1">
             <ul className="flex h-full flex-col gap-2 overflow-y-auto">{children}</ul>
@@ -94,16 +105,48 @@ function SummaryCard({
   );
 }
 
-function TransactionsSummary() {
+function TransactionsSummary({ filters }: { filters: DashboardFilters }) {
   const { t } = useTranslation();
   const { lang } = useParams<{ lang: string }>();
-  const { data, isPending } = useTransactions({ limit: RECENT_COUNT });
+  const [typeChip, setTypeChip] = useState<TypeChip>("all");
+  const range = dashboardPeriodRange(filters.period);
+  const { data, isPending } = useTransactions({
+    limit: RECENT_COUNT,
+    type: typeChip === "all" ? undefined : typeChip,
+    accountId: filters.accountId,
+    from: range.from,
+    to: range.to,
+  });
   const formatN = useNumberDisplay();
 
   if (isPending) return <CardSkeleton icon={ArrowLeftRight} className="animate-entry" />;
 
   return (
     <SummaryCard
+      controls={
+        <div className="flex shrink-0 gap-1">
+          {TYPE_CHIPS.map((chip) => (
+            <button
+              key={chip}
+              type="button"
+              aria-pressed={typeChip === chip}
+              onClick={(e) => {
+                // Inside the card's Link — keep the click from navigating.
+                e.preventDefault();
+                e.stopPropagation();
+                setTypeChip(chip);
+              }}
+              className={`badge badge-sm cursor-pointer border transition-colors ${
+                typeChip === chip
+                  ? "badge-primary"
+                  : "border-base-300 bg-base-200/50 text-base-content/60 hover:border-primary/40"
+              }`}
+            >
+              {t(`common.filters.${chip}`)}
+            </button>
+          ))}
+        </div>
+      }
       to={`/${lang}/transactions`}
       icon={ArrowLeftRight}
       color="bg-info/10 text-info"
@@ -182,13 +225,19 @@ function BankStatementsSummary() {
  * layout the two cards sit flush at the top and leave the rest of the column
  * clear for the floating add button instead of stretching to match it.
  */
-export function RecentActivityCard({ stacked = false }: { stacked?: boolean }) {
+export function RecentActivityCard({
+  stacked = false,
+  filters,
+}: {
+  stacked?: boolean;
+  filters: DashboardFilters;
+}) {
   return (
     <div className="@container">
       <div
         className={`grid grid-cols-1 gap-4 ${stacked ? "" : "@sm:grid-cols-2 @sm:grid-rows-1"}`}
       >
-        <TransactionsSummary />
+        <TransactionsSummary filters={filters} />
         <BankStatementsSummary />
       </div>
     </div>

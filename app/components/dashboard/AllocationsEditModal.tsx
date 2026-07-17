@@ -10,6 +10,7 @@ import { Tooltip } from "@/components/shared/Tooltip";
 import { MoneyInput } from "@/components/shared/forms/MoneyInput";
 import { moneyFieldBinding } from "@/components/shared/forms/money-field-binding";
 import { categoryIcon } from "@/lib/constants/category-icons";
+import { useCategories, sortByValueFallbackLast } from "@/queries/categories";
 import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { closeDialog } from "@/lib/close-dialog";
 
@@ -27,14 +28,20 @@ function round2(n: number): number {
 
 /** Biggest allocation first, matching the dashboard's Budget Plan Split card
  * and its pie chart — fixed at load time so rows don't jump around as the
- * user edits percentages. */
-function toDraft(allocations: Allocation[]): Draft {
-  return [...allocations]
-    .sort((a, b) => b.allocated_percentage - a.allocated_percentage)
-    .map((a) => ({
-      category: a.category,
-      percentage: String(a.allocated_percentage),
-    }));
+ * user edits percentages. The taxonomy's fallback bucket (e.g. "other")
+ * always trails the rest, regardless of its allocated size. */
+function toDraft(
+  allocations: Allocation[],
+  isFallback: (name: string) => boolean,
+): Draft {
+  return sortByValueFallbackLast(
+    allocations,
+    (a) => a.allocated_percentage,
+    (a) => isFallback(a.category),
+  ).map((a) => ({
+    category: a.category,
+    percentage: String(a.allocated_percentage),
+  }));
 }
 
 export const AllocationsEditModal = forwardRef<
@@ -43,6 +50,9 @@ export const AllocationsEditModal = forwardRef<
 >(function AllocationsEditModal({ allocations }, ref) {
   const { t } = useTranslation();
   const updateBudget = useUpdateBudget();
+  const { data: taxonomy } = useCategories();
+  const isFallbackCategory = (name: string) =>
+    taxonomy?.find((c) => c.name === name)?.isFallback ?? false;
 
   const schema = z
     .object({
@@ -76,12 +86,12 @@ export const AllocationsEditModal = forwardRef<
   } = useForm<FormValues>({
     resolver: zodResolver(schema),
     mode: "onChange",
-    defaultValues: { rows: toDraft(allocations) },
+    defaultValues: { rows: toDraft(allocations, isFallbackCategory) },
   });
 
   useEffect(() => {
-    reset({ rows: toDraft(allocations) });
-  }, [allocations, reset]);
+    reset({ rows: toDraft(allocations, isFallbackCategory) });
+  }, [allocations, reset, taxonomy]);
 
   const rows = watch("rows");
   const total = round2(rows.reduce((sum, d) => sum + (Number(d.percentage) || 0), 0));

@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { createPortal } from "react-dom";
-import { useCategoryColorVars } from "@/lib/constants/category-colors";
+import { useCategoryStyle } from "@/lib/use-category-style";
 import { Money } from "@/components/shared/Money";
 
 interface DonutSlice {
@@ -35,7 +35,7 @@ export function CategoryDonutChart({
   const [hovered, setHovered] = useState<{ index: number; x: number; y: number } | null>(
     null,
   );
-  const colors = useCategoryColorVars();
+  const { color } = useCategoryStyle();
 
   const total = slices.reduce((sum, s) => sum + s.value, 0);
   // A "pie" is just a donut whose ring thickness equals its own radius, so the
@@ -92,7 +92,7 @@ export function CategoryDonutChart({
                 cy={size / 2}
                 r={radius}
                 fill="none"
-                stroke={colors[i % colors.length]}
+                stroke={color(slice.name)}
                 strokeWidth={effectiveStrokeWidth}
                 strokeDasharray={`${dash} ${circumference - dash}`}
                 strokeDashoffset={offset}
