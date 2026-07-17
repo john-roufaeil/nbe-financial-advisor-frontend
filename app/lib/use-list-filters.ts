@@ -12,12 +12,18 @@ import { usePageSizeStore } from "@/store/use-page-size-store";
  * range) layer them on top and fold them into `hasActiveFilters` /
  * `clearAllFilters` themselves.
  */
-export function useListFilters<F extends string>(defaultFilter: F) {
+export function useListFilters<F extends string>(
+  defaultFilter: F,
+  /** Values to start from instead of the defaults — e.g. a dashboard
+   * drill-down's one-shot filters. They count as active filters, so the
+   * "clear all" affordance resets them like any user-picked filter. */
+  initial?: { filter?: F; fromDate?: string; toDate?: string },
+) {
   const [searchInput, setSearchInput] = useState("");
   const search = useDebouncedValue(searchInput, 1000);
-  const [filter, setFilter] = useState<F>(defaultFilter);
-  const [fromDate, setFromDate] = useState("");
-  const [toDate, setToDate] = useState("");
+  const [filter, setFilter] = useState<F>(initial?.filter ?? defaultFilter);
+  const [fromDate, setFromDate] = useState(initial?.fromDate ?? "");
+  const [toDate, setToDate] = useState(initial?.toDate ?? "");
   const [sort, setSort] = useState<"asc" | "desc">("desc");
   const [page, setPage] = useState(1);
   const pageSize = usePageSizeStore((s) => s.pageSize);

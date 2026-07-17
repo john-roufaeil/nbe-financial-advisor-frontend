@@ -6,6 +6,7 @@ import type { Transaction } from "@/types/transaction";
 import { useAccounts } from "@/queries/accounts";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { Money } from "@/components/shared/Money";
+import { CategoryLabel } from "@/components/shared/CategoryLabel";
 import { ClickableListItem } from "@/components/shared/ClickableListItem";
 import {
   useDisplayPreferencesStore,
@@ -54,9 +55,15 @@ export function TransactionCard({
       <div className="min-w-0 flex-1">
         <p className="truncate text-sm font-medium">{transaction.title}</p>
         {!isCompact && (
-          <p className="text-base-content/50 text-xs">
-            {t(`common.categories.${transaction.category}`, transaction.category)} ·{" "}
-            {formatDateTime(transaction.datetime, timeFormat, t, dateFormat)}
+          <p className="text-base-content/50 flex min-w-0 items-center gap-1 text-xs">
+            <CategoryLabel
+              category={transaction.category}
+              type={transaction.type}
+              iconClassName="size-3 shrink-0 opacity-60"
+            />
+            <span className="shrink-0">
+              · {formatDateTime(transaction.datetime, timeFormat, t, dateFormat)}
+            </span>
           </p>
         )}
       </div>

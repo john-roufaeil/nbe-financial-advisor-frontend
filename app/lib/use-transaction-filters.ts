@@ -8,9 +8,14 @@ export type TransactionFilter = (typeof FILTERS)[number];
 /** All filter/sort/pagination state for the transactions list, plus the
  * updater functions that also reset the page back to 1 on any filter change.
  * Extends the shared list filters with category and amount-range filters. */
-export function useTransactionFilters() {
-  const base = useListFilters<TransactionFilter>("all");
-  const [category, setCategory] = useState("");
+export function useTransactionFilters(initial?: {
+  filter?: TransactionFilter;
+  category?: string;
+  fromDate?: string;
+  toDate?: string;
+}) {
+  const base = useListFilters<TransactionFilter>("all", initial);
+  const [category, setCategory] = useState(initial?.category ?? "");
   const [amountRange, setAmountRange] = useState("any");
 
   const selectedAmountRange = AMOUNT_RANGES.find((r) => r.key === amountRange);

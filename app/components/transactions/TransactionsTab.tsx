@@ -1,8 +1,9 @@
 import { forwardRef } from "react";
 import { Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { AMOUNT_RANGES, TRANSACTION_CATEGORIES } from "@/types/transaction";
+import { AMOUNT_RANGES } from "@/types/transaction";
 import { useTransactions, useDeleteTransaction } from "@/queries/transactions";
+import { useCategories } from "@/queries/categories";
 import { AddTransactionModal } from "@/components/transactions/AddTransactionModal";
 import { TransactionDetailModal } from "@/components/transactions/TransactionDetailModal";
 import { TransactionCard } from "@/components/transactions/TransactionCard";
@@ -10,6 +11,7 @@ import { DataToolbar } from "@/components/shared/layout/DataToolbar";
 import { PagedListSection } from "@/components/shared/layout/PagedListSection";
 import { useConfirmStore } from "@/store/use-confirm-store";
 import { useTransactionFilters } from "@/lib/use-transaction-filters";
+import { useConsumeTxFilterState } from "@/lib/use-consume-tx-filter-state";
 import {
   useTransactionModals,
   type TransactionsTabHandle,
@@ -19,10 +21,47 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
   function TransactionsTab(_props, ref) {
     const { t } = useTranslation();
     const confirm = useConfirmStore((s) => s.confirm);
-    const f = useTransactionFilters();
+    // Dashboard drill-downs (a stat card, a budget category) arrive with
+    // one-shot filters in navigation state; open the list pre-filtered.
+    const drill = useConsumeTxFilterState();
+    const f = useTransactionFilters(
+      drill && {
+        filter: drill.type,
+        category: drill.category,
+        fromDate: drill.from,
+        toDate: drill.to,
+      },
+    );
     const modals = useTransactionModals(ref);
+    // The category filter's options narrow to match the type filter (All
+    // shows both taxonomy sides; Income/Expense shows only that side) — GET
+    // /transactions itself filters by bare category name regardless of type,
+    // but offering a category that can't occur under the selected type would
+    // just silently return zero rows.
+    const { data: allCategories } = useCategories();
+    const visibleCategories = (allCategories ?? []).filter(
+      (c) => f.filter === "all" || c.type === f.filter,
+    );
+    const categoryLabel = (name: string) => {
+      const category = allCategories?.find((c) => c.name === name);
+      const namespace = category?.type === "income" ? "incomeCategories" : "categories";
+      return t(`common.${namespace}.${name}`, category?.label ?? name);
+    };
+    // Switching to a type that doesn't have the currently-selected category
+    // clears it back to "All categories" instead of leaving a dangling filter
+    // that no longer appears in the (now-narrowed) dropdown.
+    function updateFilterAndCategory(next: typeof f.filter) {
+      f.updateFilter(next);
+      if (
+        f.category &&
+        next !== "all" &&
+        !allCategories?.some((c) => c.name === f.category && c.type === next)
+      ) {
+        f.updateCategory("");
+      }
+    }
 
-    const { data, isPending, isError, refetch } = useTransactions({
+    const { data, isPending, isError, isFetching, refetch } = useTransactions({
       type: f.filter === "all" ? undefined : f.filter,
       category: f.category || undefined,
       q: f.search.trim() || undefined,
@@ -42,18 +81,24 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
           <DataToolbar
             search={f.searchInput}
             onSearchChange={f.updateSearch}
+            // "Search running" covers the debounce window (typed text not yet
+            // applied) and the request the applied text is still fetching.
+            searching={
+              f.searchInput.trim() !== f.search.trim() ||
+              (isFetching && f.search.trim() !== "")
+            }
             fromDate={f.fromDate}
             onFromDateChange={f.updateFromDate}
             toDate={f.toDate}
             onToDateChange={f.updateToDate}
             filters={f.FILTERS}
             filter={f.filter}
-            onFilterChange={f.updateFilter}
+            onFilterChange={updateFilterAndCategory}
             filterLabel={(value) => t(`common.filters.${value}`)}
-            categories={TRANSACTION_CATEGORIES}
+            categories={visibleCategories.map((c) => c.name)}
             category={f.category}
             onCategoryChange={f.updateCategory}
-            categoryLabel={(c) => t(`common.categories.${c}`, c)}
+            categoryLabel={categoryLabel}
             amountRanges={AMOUNT_RANGES.map((r) => ({
               key: r.key,
               label: t(`common.amountRanges.${r.key}`),

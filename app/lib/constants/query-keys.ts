@@ -4,7 +4,9 @@ export const QUERY_ROOTS = {
   transactions: "transactions",
   bankStatements: "bankStatements",
   budget: "budget",
+  categories: "categories",
   dashboard: "dashboard",
   goals: "goals",
   profile: "profile",
+  admin: "admin",
 } as const;

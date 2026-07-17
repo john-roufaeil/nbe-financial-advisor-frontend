@@ -1,5 +1,7 @@
 import { useTranslation } from "react-i18next";
-import { categoriesForType } from "@/types/transaction";
+import { useCategoriesForType } from "@/queries/categories";
+import { categoryIcon } from "@/lib/constants/category-icons";
+import { SimpleSelect } from "@/components/shared/forms/SimpleSelect";
 
 /** Per-size classes: the transaction form uses the sm variant, the denser
  * extracted-statement rows the xs one. */
@@ -8,13 +10,13 @@ const SIZES = {
     row: "flex items-center gap-3",
     join: "join border-base-300 w-fit shrink-0 rounded-lg border",
     btn: "btn btn-sm join-item cursor-pointer",
-    select: "select select-bordered select-sm w-full",
+    triggerSize: "sm",
   },
   xs: {
     row: "flex items-center gap-2",
     join: "join border-base-300 shrink-0 rounded-lg border",
     btn: "btn btn-xs join-item cursor-pointer",
-    select: "select select-bordered select-xs w-full",
+    triggerSize: "xs",
   },
 } as const;
 
@@ -41,12 +43,15 @@ export function TypeCategoryField({
 }) {
   const { t } = useTranslation();
   const classes = SIZES[size];
-  const categoryOptions = categoriesForType(type);
+  const expenseCategories = useCategoriesForType("expense");
+  const incomeCategories = useCategoriesForType("income");
+  const categoryOptions = type === "income" ? incomeCategories : expenseCategories;
   const categoryNamespace = type === "income" ? "incomeCategories" : "categories";
 
   function changeType(next: "income" | "expense") {
-    const nextOptions = categoriesForType(next);
-    onTypeChange(next, nextOptions.includes(category) ? null : nextOptions[0]);
+    const nextOptions = next === "income" ? incomeCategories : expenseCategories;
+    const carriesOver = nextOptions.some((c) => c.name === category);
+    onTypeChange(next, carriesOver ? null : (nextOptions[0]?.name ?? null));
   }
 
   return (
@@ -67,17 +72,17 @@ export function TypeCategoryField({
           {t("common.filters.income")}
         </button>
       </div>
-      <select
+      <SimpleSelect
         value={category}
-        onChange={(e) => onCategoryChange(e.target.value)}
-        className={classes.select}
-      >
-        {categoryOptions.map((c) => (
-          <option key={c} value={c}>
-            {t(`common.${categoryNamespace}.${c}`, c)}
-          </option>
-        ))}
-      </select>
+        onChange={onCategoryChange}
+        triggerSize={classes.triggerSize}
+        className="flex-1"
+        options={categoryOptions.map((c) => ({
+          value: c.name,
+          label: t(`common.${categoryNamespace}.${c.name}`, c.label),
+          icon: categoryIcon(c.name),
+        }))}
+      />
     </div>
   );
 }

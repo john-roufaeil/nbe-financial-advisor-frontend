@@ -146,6 +146,7 @@ export function getTransactions(
   const filtered = transactions.filter((tr) => {
     const matchesType = !filters.type || tr.type === filters.type;
     const matchesCategory = !filters.category || tr.category === filters.category;
+    const matchesAccount = !filters.accountId || tr.accountId === filters.accountId;
     const q = filters.q?.trim().toLowerCase();
     const matchesSearch =
       !q || tr.title.toLowerCase().includes(q) || tr.category.toLowerCase().includes(q);
@@ -156,7 +157,12 @@ export function getTransactions(
       (filters.minAmount === undefined || tr.amount >= filters.minAmount) &&
       (filters.maxAmount === undefined || tr.amount <= filters.maxAmount);
     return (
-      matchesType && matchesCategory && matchesSearch && matchesDate && matchesAmount
+      matchesType &&
+      matchesCategory &&
+      matchesAccount &&
+      matchesSearch &&
+      matchesDate &&
+      matchesAmount
     );
   });
   const sorted = [...filtered].sort((a, b) =>
