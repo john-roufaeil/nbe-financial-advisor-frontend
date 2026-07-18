@@ -11,12 +11,32 @@
       "mock": "Mock data",
       "backend": "Live data"
     },
+    "toolbar": {
+      "period": "Period",
+      "periods": {
+        "thisMonth": "This month",
+        "lastMonth": "Last month",
+        "last3Months": "3 months",
+        "thisYear": "This year"
+      },
+      "account": "Account",
+      "allAccounts": "All accounts",
+      "customize": "Customize",
+      "cards": {
+        "stats": "Key figures",
+        "goal": "Goal progress",
+        "budget": "Budget split",
+        "activity": "Recent activity"
+      }
+    },
     "stats": {
       "balance": "Total Balance",
-      "income": "Monthly Income",
-      "spending": "Monthly Spending",
+      "income": "Income",
+      "spending": "Spending",
       "savingsRate": "Savings Rate",
-      "vsLastMonth": "vs last month"
+      "vsLastMonth": "vs last month",
+      "vsPreviousPeriod": "vs previous period",
+      "drillDown": "View {{stat}} transactions"
     },
     "goals": {
       "goal": "goal",
@@ -52,6 +72,7 @@
     },
     "budget": {
       "title": "Budget Plan Split",
+      "drillDown": "View {{category}} transactions",
       "over": "Over budget",
       "allocated": "allocated",
       "empty": "This plan has no categories yet.",

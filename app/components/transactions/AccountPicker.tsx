@@ -58,7 +58,7 @@ export function AccountPicker({
       emptyMessage={t("common.noResults")}
       search={
         <label className="input input-bordered input-sm flex items-center gap-2">
-          <Search className="size-3.5 opacity-50" />
+          <Search data-no-flip className="size-3.5 opacity-50" />
           <input
             type="text"
             autoFocus
@@ -99,7 +99,7 @@ export function AccountPicker({
             <span className="flex-1 truncate">
               {label} {a.masked_account_number}
             </span>
-            {value === a.id && <Check className="size-4 shrink-0" />}
+            {value === a.id && <Check data-no-flip className="size-4 shrink-0" />}
           </>
         );
       }}

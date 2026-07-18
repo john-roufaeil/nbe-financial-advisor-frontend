@@ -1,9 +1,12 @@
 import { useRef } from "react";
+import { useNavigate, useParams } from "react-router";
 import { PieChart, Pencil, TriangleAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { BudgetCategory } from "@/types/dashboard";
-import { useCategoryColorVars } from "@/lib/constants/category-colors";
+import type { BudgetCategory, DashboardPeriod } from "@/types/dashboard";
+import { dashboardPeriodRange } from "@/lib/dashboard-period";
+import { useCategoryStyle } from "@/lib/use-category-style";
 import { categoryIcon } from "@/lib/constants/category-icons";
+import { useCategories, sortByValueFallbackLast } from "@/queries/categories";
 import { CategoryDonutChart } from "@/components/dashboard/CategoryDonutChart";
 import { AllocationsEditModal } from "@/components/dashboard/AllocationsEditModal";
 import { Money } from "@/components/shared/Money";
@@ -15,10 +18,12 @@ function BudgetRow({
   category,
   currency,
   color,
+  onDrillDown,
 }: {
   category: BudgetCategory;
   currency: string;
   color: string;
+  onDrillDown: () => void;
 }) {
   const { t } = useTranslation();
   const formatN = useNumberDisplay();
@@ -27,7 +32,21 @@ function BudgetRow({
   const Icon = categoryIcon(category.name);
 
   return (
-    <li className="flex flex-col gap-1.5">
+    <li
+      role="button"
+      tabIndex={0}
+      aria-label={t("dashboard.budget.drillDown", {
+        category: t(`common.categories.${category.name}`, category.name),
+      })}
+      onClick={onDrillDown}
+      onKeyDown={(e) => {
+        if (e.key === "Enter" || e.key === " ") {
+          e.preventDefault();
+          onDrillDown();
+        }
+      }}
+      className="hover:bg-base-200/60 focus-visible:outline-primary -mx-1.5 flex cursor-pointer flex-col gap-1.5 rounded-lg px-1.5 py-1 transition-colors"
+    >
       <div className="flex items-center justify-between text-sm">
         <span className="flex min-w-0 items-center gap-1.5 font-medium">
           <Icon data-no-flip className="text-base-content/60 size-3.5 shrink-0" />
@@ -57,13 +76,28 @@ function BudgetRow({
 export function BudgetSplitCard({
   currency,
   categories,
+  period,
 }: {
   currency: string;
   categories: BudgetCategory[];
+  period: DashboardPeriod;
 }) {
   const { t } = useTranslation();
+  const navigate = useNavigate();
+  const { lang } = useParams<{ lang: string }>();
+  // Clicking a category (pie slice or budget row) opens the transactions page
+  // pre-filtered to that category's spending over the dashboard's period.
+  const drillDown = (category: string) =>
+    navigate(`/${lang}/transactions`, {
+      state: {
+        txFilters: { type: "expense", category, ...dashboardPeriodRange(period) },
+      },
+    });
   const formatN = useNumberDisplay();
-  const colors = useCategoryColorVars();
+  const { color } = useCategoryStyle();
+  const { data: taxonomy } = useCategories();
+  const isFallbackCategory = (name: string) =>
+    taxonomy?.find((c) => c.name === name)?.isFallback ?? false;
   const totalAllocated = categories.reduce((sum, c) => sum + c.budget, 0);
   const modalRef = useRef<HTMLDialogElement>(null);
   const { data: budget } = useBudget();
@@ -88,11 +122,17 @@ export function BudgetSplitCard({
   // the spent/budget list below — all three read from this same order.
   // Categories with a 0% allocation carry no information in a split view, so
   // they're dropped entirely rather than rendered as an empty sliver/row.
-  const sortedCategories = [...categories]
-    .filter((c) => allocationValue(c) > 0)
-    .sort((a, b) => allocationValue(b) - allocationValue(a));
+  // The taxonomy's fallback bucket (e.g. "other") always trails the rest
+  // regardless of its allocation size — it's a catch-all, not a category the
+  // user deliberately sized.
+  const sortedCategories = sortByValueFallbackLast(
+    categories.filter((c) => allocationValue(c) > 0),
+    allocationValue,
+    (c) => isFallbackCategory(c.name),
+  );
   const pieSlices = sortedCategories.map((c) => ({
-    name: t(`common.categories.${c.name}`, c.name),
+    name: c.name,
+    displayName: t(`common.categories.${c.name}`, c.name),
     value: allocationValue(c),
   }));
   const pieTotal = pieSlices.reduce((sum, s) => sum + s.value, 0);
@@ -127,7 +167,11 @@ export function BudgetSplitCard({
         ) : (
           <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
             <div className="flex w-full min-w-0 flex-col items-center gap-2 sm:w-auto">
-              <CategoryDonutChart variant="pie" slices={pieSlices} />
+              <CategoryDonutChart
+                variant="pie"
+                slices={pieSlices}
+                onSelectName={drillDown}
+              />
               <p className="text-base-content/50 text-center text-xs">
                 <Money className="text-base-content font-semibold">
                   {formatN(totalAllocated)}
@@ -146,7 +190,7 @@ export function BudgetSplitCard({
                     >
                       <span
                         className="size-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: colors[i % colors.length] }}
+                        style={{ backgroundColor: color(category.name) }}
                       />
                       <Icon
                         data-no-flip
@@ -161,12 +205,13 @@ export function BudgetSplitCard({
               </ul>
             </div>
             <ul className="flex w-full min-w-0 flex-col gap-4">
-              {sortedCategories.map((category, i) => (
+              {sortedCategories.map((category) => (
                 <BudgetRow
                   key={category.name}
                   category={category}
                   currency={currency}
-                  color={colors[i % colors.length]}
+                  color={color(category.name)}
+                  onDrillDown={() => drillDown(category.name)}
                 />
               ))}
             </ul>

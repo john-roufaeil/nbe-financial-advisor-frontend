@@ -25,6 +25,8 @@ const PANEL_WIDTH = 288;
 interface DataToolbarProps<F extends string> extends ToolbarFiltersProps<F> {
   search: string;
   onSearchChange: (value: string) => void;
+  /** True while the typed search hasn't settled yet (debouncing or fetching). */
+  searching?: boolean;
   /** Optional date sort toggle (transactions only). */
   sort?: "asc" | "desc";
   onSortChange?: (value: "asc" | "desc") => void;
@@ -33,6 +35,7 @@ interface DataToolbarProps<F extends string> extends ToolbarFiltersProps<F> {
 export function DataToolbar<F extends string>({
   search,
   onSearchChange,
+  searching,
   sort,
   onSortChange,
   ...filterProps
@@ -73,7 +76,11 @@ export function DataToolbar<F extends string>({
 
   return (
     <div className="bg-base-100 flex flex-col gap-3 rounded-t-xl p-3 sm:p-4">
-      <ToolbarSearchInput value={search} onChange={onSearchChange} />
+      <ToolbarSearchInput
+        value={search}
+        onChange={onSearchChange}
+        searching={searching}
+      />
 
       <div className="flex min-w-0 flex-wrap items-center gap-3">
         <div className="relative shrink-0">

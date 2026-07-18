@@ -24,9 +24,9 @@ export function DateField({
   const placeholder = rtl ? "yyyy/mm/dd" : "dd/mm/yyyy";
 
   return (
-    <label className="text-base-content/50 flex shrink-0 items-center gap-1.5 text-xs">
-      {label}
-      <span className="relative inline-block shrink-0">
+    <label className="text-base-content/50 flex items-center gap-1.5 text-xs">
+      <span className="w-9 shrink-0">{label}</span>
+      <span className="relative block min-w-0 flex-1">
         <input
           type="date"
           value={value}
@@ -34,7 +34,7 @@ export function DateField({
           min={min}
           max={max}
           style={rtl ? { transform: "scaleX(-1)" } : undefined}
-          className="input input-bordered input-sm text-transparent caret-transparent"
+          className="input input-bordered input-sm w-full text-transparent caret-transparent"
         />
         <span className="text-base-content pointer-events-none absolute inset-0 flex items-center ps-3 pe-7 text-sm">
           {value ? (

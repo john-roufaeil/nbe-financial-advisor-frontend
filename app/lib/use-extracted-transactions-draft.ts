@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { TRANSACTION_CATEGORIES } from "@/types/transaction";
+import { useCategoriesForType } from "@/queries/categories";
 import type { BankStatement, ExtractedTransaction } from "@/types/bank-statement";
 
 /**
@@ -10,6 +10,7 @@ import type { BankStatement, ExtractedTransaction } from "@/types/bank-statement
  */
 export function useExtractedTransactionsDraft(doc: BankStatement | undefined) {
   const [draft, setDraft] = useState<ExtractedTransaction[]>([]);
+  const expenseCategories = useCategoriesForType("expense");
 
   useEffect(() => {
     setDraft(doc?.extractedTransactions ?? []);
@@ -34,7 +35,9 @@ export function useExtractedTransactionsDraft(doc: BankStatement | undefined) {
         id: crypto.randomUUID(),
         datetime: `${doc.uploadDate.slice(0, 10)}T00:00:00`,
         title: "",
-        category: TRANSACTION_CATEGORIES[0],
+        // "other" is the backend's guaranteed expense fallback bucket, so a
+        // fresh row stays valid even if the taxonomy hasn't loaded yet.
+        category: expenseCategories[0]?.name ?? "other",
         type: "expense",
         amount: 0,
       },

@@ -23,6 +23,13 @@ export default [
         route(`:lang/${ROUTE_SEGMENTS.profile}`, "routes/profile.tsx"),
       ]),
     ]),
+    // Admin app: separate credential space from end-user auth, so it sits
+    // outside both the guest and auth guards above. The sign-in route guards
+    // itself (redirects to the admin dashboard when a session exists).
+    route(`:lang/${ROUTE_SEGMENTS.admin}`, "routes/admin-sign-in.tsx"),
+    layout("routes/require-admin.tsx", [
+      route(`:lang/${ROUTE_SEGMENTS.adminDashboard}`, "routes/admin-dashboard.tsx"),
+    ]),
     route(":lang/*", "routes/not-found.tsx"),
   ]),
   route("*", "routes/root-redirect.tsx", { id: "catch-all-redirect" }),

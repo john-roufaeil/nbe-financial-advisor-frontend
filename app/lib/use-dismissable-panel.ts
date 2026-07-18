@@ -40,6 +40,10 @@ export function useDismissablePanel({
 
     function onKeyDown(e: KeyboardEvent) {
       if (e.key === "Escape") {
+        // Without this, Escape both closes this panel AND bubbles to a native
+        // <dialog> ancestor's default `cancel` handling, closing the whole
+        // modal a picker like EntityPicker's menu happens to be nested in.
+        e.preventDefault();
         onCloseRef.current();
         triggerRef.current?.focus();
         return;
@@ -66,10 +70,18 @@ export function useDismissablePanel({
     }
 
     function onClickOutside(e: MouseEvent) {
+      const target = e.target as Node;
       if (
         panelRef.current &&
-        !panelRef.current.contains(e.target as Node) &&
-        !triggerRef.current?.contains(e.target as Node)
+        !panelRef.current.contains(target) &&
+        !triggerRef.current?.contains(target) &&
+        // A nested floating menu (e.g. an EntityPicker/SimpleSelect dropdown
+        // opened from inside this panel) portals to document.body as a
+        // *sibling* of this panel, not a DOM descendant — without this check,
+        // clicking one of its options fires this panel's mousedown handler
+        // first and closes the whole panel before the option's own click
+        // handler runs, so the selection never takes effect.
+        !(target instanceof Element && target.closest("[data-floating-menu]"))
       ) {
         onCloseRef.current();
       }

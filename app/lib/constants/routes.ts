@@ -7,6 +7,8 @@ export const ROUTE_SEGMENTS = {
   profile: "profile",
   onboarding: "onboarding",
   signIn: "sign-in",
+  admin: "admin",
+  adminDashboard: "admin/dashboard",
 } as const;
 
 /** Builds an in-app path for the given language. */

@@ -1,3 +1,17 @@
+export const DASHBOARD_PERIODS = [
+  "thisMonth",
+  "lastMonth",
+  "last3Months",
+  "thisYear",
+] as const;
+export type DashboardPeriod = (typeof DASHBOARD_PERIODS)[number];
+
+/** Dashboard-wide filters. `accountId` undefined means "all accounts". */
+export interface DashboardFilters {
+  period: DashboardPeriod;
+  accountId?: string;
+}
+
 export interface DashboardStat {
   key: "balance" | "income" | "spending" | "savingsRate";
   value: number;

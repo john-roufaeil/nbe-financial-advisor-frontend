@@ -23,7 +23,7 @@ export function ChatScrollButtons({
           className="btn btn-circle btn-sm border-base-300 bg-base-100 border shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
           aria-label={t("chat.nav.top")}
         >
-          <ChevronUp className="size-4" />
+          <ChevronUp data-no-flip className="size-4" />
         </button>
       </Tooltip>
       <Tooltip content={t("chat.nav.bottom")} position="start">
@@ -37,7 +37,7 @@ export function ChatScrollButtons({
           className="btn btn-circle btn-sm border-base-300 bg-base-100 border shadow-sm transition-opacity disabled:cursor-not-allowed disabled:opacity-40 disabled:shadow-none"
           aria-label={t("chat.nav.bottom")}
         >
-          <ChevronDown className="size-4" />
+          <ChevronDown data-no-flip className="size-4" />
         </button>
       </Tooltip>
     </div>

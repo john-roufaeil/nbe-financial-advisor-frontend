@@ -13,7 +13,7 @@ export interface SpendingBreakdownResult {
   categories: SpendingCategory[];
 }
 
-// The canonical six (see TRANSACTION_CATEGORIES) — the chat tool renders these
+// The backend's six expense buckets (see GET /categories) — the chat tool renders these
 // through common.categories.*, so anything else would show a raw key to the user.
 const CATEGORY_NAMES = ["housing", "food", "transport", "savings", "lifestyle", "other"];
 
@@ -27,9 +27,15 @@ export function buildSpendingBreakdown(): ChatToolCall {
     amount: Math.round(200 + Math.random() * 2200),
   }));
   const total = raw.reduce((sum, c) => sum + c.amount, 0);
+  // "other" always trails the rest, matching every other category list in
+  // the app — it's the catch-all bucket, not one ranked by amount.
   const categories: SpendingCategory[] = raw
     .map((c) => ({ ...c, pct: Math.round((c.amount / total) * 100) }))
-    .sort((a, b) => b.amount - a.amount);
+    .sort((a, b) => {
+      if (a.name === "other") return 1;
+      if (b.name === "other") return -1;
+      return b.amount - a.amount;
+    });
 
   const result: SpendingBreakdownResult = {
     currency: "EGP",

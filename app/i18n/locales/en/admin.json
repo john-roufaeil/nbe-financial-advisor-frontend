@@ -1,0 +1,127 @@
+{
+  "admin": {
+    "signIn": {
+      "title": "Admin Sign In",
+      "subtitle": "Internal staff access only.",
+      "submit": "Sign in",
+      "badge": "Admin Portal",
+      "notice": "Admin accounts are separate from customer accounts and are monitored."
+    },
+    "dashboard": {
+      "title": "Admin Dashboard",
+      "logout": "Log out"
+    },
+    "roles": {
+      "reviewer": "Reviewer",
+      "super_admin": "Super admin"
+    },
+    "tabs": {
+      "categories": "Categories",
+      "products": "Products",
+      "issues": "Issues",
+      "feedback": "Feedback"
+    },
+    "columns": {
+      "createdAt": "Created",
+      "actions": "Actions",
+      "user": "User"
+    },
+    "yes": "Yes",
+    "pager": {
+      "range": "{{from}}–{{to}} of {{count}}",
+      "previous": "Previous page",
+      "next": "Next page"
+    },
+    "categories": {
+      "add": "Add category",
+      "addTitle": "Add category",
+      "editTitle": "Edit category",
+      "deleteTitle": "Delete “{{name}}”?",
+      "deleteMessage": "This permanently deletes the category. It will be rejected if any transactions or budget allocations still use it.",
+      "empty": "No categories yet.",
+      "filterAll": "All types",
+      "nameHint": "Stable machine key the whole API uses (lowercase, e.g. \"housing\").",
+      "fallbackHint": "Fallback bucket for uncategorizable transactions (one per type)",
+      "columns": {
+        "name": "Name",
+        "label": "Label",
+        "type": "Type",
+        "fallback": "Fallback"
+      },
+      "types": {
+        "income": "Income",
+        "expense": "Expense"
+      }
+    },
+    "products": {
+      "add": "Add product",
+      "addTitle": "Add product",
+      "editTitle": "Edit product",
+      "deleteTitle": "Delete “{{name}}”?",
+      "deleteMessage": "This permanently deletes the product and its recommendation data. Consider marking it inactive instead.",
+      "empty": "No products yet.",
+      "active": "Active",
+      "inactive": "Inactive",
+      "filterStatus": {
+        "all": "All statuses",
+        "active": "Active only",
+        "inactive": "Inactive only"
+      },
+      "filterCategory": "Filter by category",
+      "activeHint": "Active (visible in user recommendations)",
+      "listHint": "Comma-separated values",
+      "openLink": "Open product link",
+      "problemStatements": "Problem statements",
+      "problemStatementsHint": "One per line — seed texts used to match this product to user needs. Can only be set when creating.",
+      "columns": {
+        "title": "Title",
+        "description": "Description",
+        "categories": "Categories",
+        "tags": "Tags",
+        "active": "Status",
+        "externalLink": "External link"
+      }
+    },
+    "issues": {
+      "empty": "No reported issues.",
+      "changeStatus": "Change issue status",
+      "filterStatus": "Filter by status",
+      "filterAll": "All statuses",
+      "viewDetails": "View issue details",
+      "detailsTitle": "Issue details",
+      "columns": {
+        "description": "Description",
+        "status": "Status",
+        "resolvedAt": "Resolved"
+      },
+      "statuses": {
+        "open": "Open",
+        "in_review": "In review",
+        "resolved": "Resolved",
+        "dismissed": "Dismissed"
+      }
+    },
+    "feedback": {
+      "empty": "No feedback yet.",
+      "filterRating": "Filter by rating",
+      "allRatings": "All ratings",
+      "viewDetails": "View feedback details",
+      "detailsTitle": "Feedback details",
+      "noComment": "No comment left.",
+      "columns": {
+        "rating": "Rating",
+        "comment": "Comment",
+        "target": "Target"
+      }
+    },
+    "toast": {
+      "categoryCreated": "Category created",
+      "categoryUpdated": "Category updated",
+      "categoryDeleted": "Category deleted",
+      "productCreated": "Product created",
+      "productUpdated": "Product updated",
+      "productDeleted": "Product deleted",
+      "issueUpdated": "Issue status updated"
+    }
+  }
+}

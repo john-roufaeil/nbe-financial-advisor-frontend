@@ -9,6 +9,7 @@ import { useDisplayPreferencesStore } from "@/store/use-display-preferences-stor
 import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
+import { CategoryLabel } from "@/components/shared/CategoryLabel";
 
 function DetailRow({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -62,7 +63,7 @@ export const TransactionDetailModal = forwardRef<
             </Money>
           </DetailRow>
           <DetailRow label={t("transactions.detail.category")}>
-            {t(`common.categories.${transaction.category}`, transaction.category)}
+            <CategoryLabel category={transaction.category} type={transaction.type} />
           </DetailRow>
           <DetailRow label={t("transactions.detail.date")}>
             {formatDateTime(transaction.datetime, timeFormat, t, dateFormat)}

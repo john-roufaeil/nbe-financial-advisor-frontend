@@ -5,6 +5,8 @@ import type { Transaction } from "@/types/transaction";
 export interface TransactionFilters {
   type?: "income" | "expense";
   category?: string;
+  /** ASSUMED BACKEND CHANGE: GET /transactions must accept `?account_id=`. */
+  accountId?: string;
   from?: string;
   to?: string;
   minAmount?: number;
@@ -93,7 +95,13 @@ function toTransaction(raw: RawTransaction): Transaction {
  */
 function toQueryParams(filters: TransactionFilters): Record<string, string | number> {
   const params: Record<string, string | number> = {};
+  // ASSUMED BACKEND CHANGE: GET /transactions must accept `?type=income|expense`
+  // using the same mapping as toUiType (income = credit rows, expense = every
+  // other transaction_type). Until it exists, the backend ignores the param and
+  // the type filter only narrows mock data.
+  if (filters.type) params.type = filters.type;
   if (filters.category) params.category = filters.category;
+  if (filters.accountId) params.account_id = filters.accountId;
   if (filters.from) params.from = filters.from;
   if (filters.to) params.to = filters.to;
   if (filters.minAmount !== undefined) params.min_amount = filters.minAmount;

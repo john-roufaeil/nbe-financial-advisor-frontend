@@ -3,9 +3,10 @@ import { useTranslation } from "react-i18next";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { TRANSACTION_CATEGORIES, type Transaction } from "@/types/transaction";
+import type { Transaction } from "@/types/transaction";
 import { useCreateTransaction, useUpdateTransaction } from "@/queries/transactions";
 import { useAccounts } from "@/queries/accounts";
+import { useCategoriesForType } from "@/queries/categories";
 import { closeDialog } from "@/lib/close-dialog";
 
 function today() {
@@ -31,7 +32,8 @@ function emptyValues(): TransactionFormValues {
   return {
     title: "",
     accountId: "",
-    category: TRANSACTION_CATEGORIES[0],
+    // Filled in from the fetched taxonomy once categories load (see effect below).
+    category: "",
     type: "expense",
     amount: "",
     date: today(),
@@ -58,7 +60,8 @@ export function useTransactionForm(
         .min(1, t("transactions.add.errors.nameRequired"))
         .max(20, t("transactions.add.errors.nameTooLong")),
       accountId: z.string(),
-      category: z.string(),
+      // Non-empty guard: the default is "" until the fetched taxonomy fills it in.
+      category: z.string().min(1),
       type: z.enum(["income", "expense"]),
       amount: z.union([z.number(), z.literal("")]),
       date: z.string(),
@@ -103,6 +106,16 @@ export function useTransactionForm(
   }, [editing, reset]);
 
   const accountId = watch("accountId");
+  const category = watch("category");
+
+  // Default a fresh form to the first expense category once the taxonomy
+  // loads (it's fetched, not hardcoded — same pattern as accountId below).
+  const expenseCategories = useCategoriesForType("expense");
+  useEffect(() => {
+    if (!editing && !category && expenseCategories.length > 0) {
+      setValue("category", expenseCategories[0].name, { shouldValidate: true });
+    }
+  }, [editing, category, expenseCategories, setValue]);
 
   // Default to the user's first active account once accounts load, and
   // auto-select the account just created via the "add new account" flow.

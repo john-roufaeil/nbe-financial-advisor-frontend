@@ -14,7 +14,7 @@ export function BankStatementsTab() {
   const detailModalRef = useRef<HTMLDialogElement>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
 
-  const { data, isPending, isError, refetch } = useBankStatements({
+  const { data, isPending, isError, isFetching, refetch } = useBankStatements({
     type: f.filter === "all" ? undefined : f.filter,
     q: f.search.trim() || undefined,
     from: f.fromDate || undefined,
@@ -35,6 +35,10 @@ export function BankStatementsTab() {
         <DataToolbar
           search={f.searchInput}
           onSearchChange={f.updateSearch}
+          searching={
+            f.searchInput.trim() !== f.search.trim() ||
+            (isFetching && f.search.trim() !== "")
+          }
           fromDate={f.fromDate}
           onFromDateChange={f.updateFromDate}
           toDate={f.toDate}

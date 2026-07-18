@@ -3,7 +3,8 @@ import type { ToolCallMessagePartComponent } from "@assistant-ui/react";
 import { PieChart, BarChart3, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import type { SpendingBreakdownResult } from "@/lib/demo-financials";
-import { CATEGORY_BAR_COLORS } from "@/lib/constants/category-colors";
+import { useCategoryStyle } from "@/lib/use-category-style";
+import { categoryIcon } from "@/lib/constants/category-icons";
 import { CategoryDonutChart } from "@/components/dashboard/CategoryDonutChart";
 import { CategoryBarChart } from "@/components/chat/tools/CategoryBarChart";
 import { Money } from "@/components/shared/Money";
@@ -20,6 +21,7 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
   const [view, setView] = useState<View>("pie");
   const [selected, setSelected] = useState<string | null>(null);
   const formatN = useNumberDisplay();
+  const { barClass } = useCategoryStyle();
 
   function formatAmount(amount: number, currency: string) {
     return `${formatN(amount)} ${t(`currency.${currency}`, currency)}`;
@@ -107,32 +109,38 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
             onSelectName={toggleSelected}
           />
           <ul className="flex w-full min-w-0 flex-1 flex-col gap-3">
-            {data.categories.map((cat, i) => (
-              <li key={cat.name}>
-                <button
-                  type="button"
-                  onClick={() => toggleSelected(cat.name)}
-                  className={`focus-visible:outline-primary/50 flex w-full cursor-pointer flex-col gap-1 rounded-md p-1 text-start transition-opacity duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 ${
-                    selected != null && selected !== cat.name
-                      ? "opacity-40"
-                      : "opacity-100"
-                  }`}
-                >
-                  <div className="flex items-center justify-between text-sm">
-                    <span className="font-medium">{categoryLabel(cat.name)}</span>
-                    <Money className="text-base-content/70 tabular-nums">
-                      {formatAmount(cat.amount, data.currency)} · {cat.pct}%
-                    </Money>
-                  </div>
-                  <div className="bg-base-200 h-2 w-full overflow-hidden rounded-full">
-                    <div
-                      className={`h-full rounded-full ${CATEGORY_BAR_COLORS[i % CATEGORY_BAR_COLORS.length]}`}
-                      style={{ width: `${cat.pct}%` }}
-                    />
-                  </div>
-                </button>
-              </li>
-            ))}
+            {data.categories.map((cat) => {
+              const Icon = categoryIcon(cat.name);
+              return (
+                <li key={cat.name}>
+                  <button
+                    type="button"
+                    onClick={() => toggleSelected(cat.name)}
+                    className={`focus-visible:outline-primary/50 flex w-full cursor-pointer flex-col gap-1 rounded-md p-1 text-start transition-opacity duration-200 focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                      selected != null && selected !== cat.name
+                        ? "opacity-40"
+                        : "opacity-100"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="flex items-center gap-1.5 font-medium">
+                        <Icon data-no-flip className="size-3.5 shrink-0 opacity-60" />
+                        {categoryLabel(cat.name)}
+                      </span>
+                      <Money className="text-base-content/70 tabular-nums">
+                        {formatAmount(cat.amount, data.currency)} · {cat.pct}%
+                      </Money>
+                    </div>
+                    <div className="bg-base-200 h-2 w-full overflow-hidden rounded-full">
+                      <div
+                        className={`h-full rounded-full ${barClass(cat.name)}`}
+                        style={{ width: `${cat.pct}%` }}
+                      />
+                    </div>
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         </div>
       ) : (

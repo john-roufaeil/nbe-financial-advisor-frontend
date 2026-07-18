@@ -17,6 +17,7 @@ import enBankStatements from "./locales/en/bankStatements.json";
 import enShared from "./locales/en/common.json";
 import enSettings from "./locales/en/settings.json";
 import enNotFound from "./locales/en/notFound.json";
+import enAdmin from "./locales/en/admin.json";
 
 import arApp from "./locales/ar/app.json";
 import arNav from "./locales/ar/nav.json";
@@ -33,6 +34,7 @@ import arBankStatements from "./locales/ar/bankStatements.json";
 import arShared from "./locales/ar/common.json";
 import arSettings from "./locales/ar/settings.json";
 import arNotFound from "./locales/ar/notFound.json";
+import arAdmin from "./locales/ar/admin.json";
 
 export const SUPPORTED_LANGUAGES = ["en", "ar"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
@@ -60,6 +62,7 @@ const enCommon = {
   ...enShared,
   ...enSettings,
   ...enNotFound,
+  ...enAdmin,
 };
 
 const arCommon = {
@@ -78,6 +81,7 @@ const arCommon = {
   ...arShared,
   ...arSettings,
   ...arNotFound,
+  ...arAdmin,
 };
 
 export const resources = {

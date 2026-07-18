@@ -22,7 +22,7 @@ interface BaseModalProps {
 /**
  * Shared shell for every dialog in the app: fixed header, a body that scrolls
  * on its own so the box never grows past the `.modal-box` 75vh cap, and an
- * optional sticky footer for actions. All modals share the same width via the
+ * optional footer for actions. All modals share the same width via the
  * `.modal-box` max-width rule in app.css.
  */
 export const BaseModal = forwardRef<HTMLDialogElement, BaseModalProps>(function BaseModal(
@@ -39,7 +39,7 @@ export const BaseModal = forwardRef<HTMLDialogElement, BaseModalProps>(function 
   return (
     <dialog ref={ref} className="modal" onClose={onClose}>
       <div
-        className={`modal-box relative flex max-h-[75vh] flex-col gap-0 p-0 ${className ?? ""}`}
+        className={`modal-box relative isolate flex max-h-[75vh] flex-col gap-0 p-0 ${className ?? ""}`}
       >
         <div className="flex items-center gap-3 p-6 pb-4">
           <div className="flex flex-1 items-center gap-3">
@@ -63,7 +63,15 @@ export const BaseModal = forwardRef<HTMLDialogElement, BaseModalProps>(function 
         </div>
         <div className="flex-1 overflow-y-auto px-6 pb-6">{children}</div>
         {actions && (
-          <div className="modal-action border-base-200 bg-base-100 sticky bottom-0 mt-0 items-center justify-between border-t p-4">
+          // Not `sticky`: modal-box itself never scrolls (only the content div
+          // above does, independently), so sticky positioning here was inert —
+          // it just sits at the flex column's end regardless. Worse, Chromium
+          // has a compositing quirk where a `position: sticky` element can
+          // visually paint above a later `position: fixed` sibling (e.g. a
+          // category picker's portaled menu) even though hit-testing still
+          // correctly resolves clicks to the menu — a static footer avoids
+          // that compositor promotion entirely.
+          <div className="modal-action border-base-200 bg-base-100 mt-0 items-center justify-between border-t p-4">
             <div>{actionsStart}</div>
             <div className="flex flex-row-reverse items-center gap-2">{actions}</div>
           </div>

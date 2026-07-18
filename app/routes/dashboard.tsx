@@ -1,5 +1,9 @@
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useParams, Link } from "react-router";
+import type { DashboardFilters } from "@/types/dashboard";
+import { DashboardToolbar } from "@/components/dashboard/DashboardToolbar";
+import { useDashboardPrefsStore } from "@/store/use-dashboard-prefs-store";
 import {
   Bot,
   LayoutDashboard,
@@ -57,7 +61,10 @@ export default function Dashboard() {
   const { t } = useTranslation();
   const { lang } = useParams<{ lang: string }>();
   usePageTitle(t("nav.dashboard"));
-  const { data, isPending, isError, refetch } = useDashboard();
+  const [filters, setFilters] = useState<DashboardFilters>({ period: "thisMonth" });
+  const hiddenCards = useDashboardPrefsStore((s) => s.hiddenCards);
+  const show = (card: (typeof hiddenCards)[number]) => !hiddenCards.includes(card);
+  const { data, isPending, isError, refetch } = useDashboard(filters);
 
   return (
     <div className="mx-auto mb-16 flex w-full max-w-7xl flex-col gap-4 p-4 md:p-6 xl:mb-0">
@@ -78,46 +85,63 @@ export default function Dashboard() {
         }
       />
 
+      <DashboardToolbar filters={filters} onFiltersChange={setFilters} />
+
       {isPending ? (
         <DashboardSkeleton />
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
       ) : (
         <div className="flex flex-col gap-4">
-          <StatsGrid currency={data.currency} stats={data.stats} />
+          {show("stats") && (
+            <StatsGrid currency={data.currency} stats={data.stats} filters={filters} />
+          )}
 
           {/* Net worth and cash flow are real without a budget, so the stats
               stay. Goals, allocations and recent activity all share a single
               row so the whole dashboard fits without scrolling on laptops.
               A plan whose allocations are all zero (e.g. reset by the user)
               reads the same as no plan at all, so it gets the same empty
-              state prompting a chat with the advisor. */}
+              state prompting a chat with the advisor.
+              Each card can be hidden from the Customize menu; the remaining
+              cards stretch to reclaim the row via auto-sized flex tracks. */}
           {data.hasPlan && data.budget.categories.some((c) => c.budget > 0) ? (
-            <div className="grid items-stretch gap-4 md:grid-cols-3 xl:grid-cols-12">
-              <div className="md:col-span-1 xl:col-span-3">
-                <GoalCard currency={data.currency} />
-              </div>
-              <div className="md:col-span-2 xl:col-span-6">
-                <BudgetSplitCard
-                  categories={data.budget.categories}
-                  currency={data.currency}
-                />
-              </div>
-              <div className="md:col-span-3 xl:col-span-3 xl:self-start">
-                <RecentActivityCard />
-              </div>
+            <div className="flex flex-col items-stretch gap-4 xl:flex-row">
+              {show("goal") && (
+                <div className="xl:w-1/4">
+                  <GoalCard currency={data.currency} />
+                </div>
+              )}
+              {show("budget") && (
+                <div className="min-w-0 flex-1">
+                  <BudgetSplitCard
+                    categories={data.budget.categories}
+                    currency={data.currency}
+                    period={filters.period}
+                  />
+                </div>
+              )}
+              {show("activity") && (
+                <div className="xl:w-1/4 xl:self-start">
+                  <RecentActivityCard filters={filters} />
+                </div>
+              )}
             </div>
           ) : (
-            <div className="grid items-stretch gap-4 md:grid-cols-3 xl:grid-cols-12">
-              <div className="md:col-span-1 xl:col-span-3">
-                <GoalCard currency={data.currency} />
-              </div>
-              <div className="md:col-span-2 xl:col-span-6">
+            <div className="flex flex-col items-stretch gap-4 xl:flex-row">
+              {show("goal") && (
+                <div className="xl:w-1/4">
+                  <GoalCard currency={data.currency} />
+                </div>
+              )}
+              <div className="min-w-0 flex-1">
                 <NoPlanCard />
               </div>
-              <div className="md:col-span-1 xl:col-span-3 xl:self-start">
-                <RecentActivityCard stacked />
-              </div>
+              {show("activity") && (
+                <div className="xl:w-1/4 xl:self-start">
+                  <RecentActivityCard stacked filters={filters} />
+                </div>
+              )}
             </div>
           )}
         </div>

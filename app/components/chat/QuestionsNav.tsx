@@ -67,7 +67,7 @@ export function QuestionsNav({
     >
       {hiddenCount > 0 && (
         <div className="group/dot relative flex shrink-0 cursor-default items-center justify-center rounded-full p-1.5">
-          <MoreVertical className="text-base-content/30 size-3.5" />
+          <MoreVertical data-no-flip className="text-base-content/30 size-3.5" />
           <div className="border-base-300 bg-base-100 text-base-content pointer-events-none absolute inset-e-full top-1/2 me-3 -translate-y-1/2 rounded-lg border px-2.5 py-1.5 text-xs font-medium whitespace-nowrap opacity-0 shadow-md transition-opacity group-hover/dot:opacity-100">
             {t("chat.nav.moreQuestions", { count: hiddenCount })}
           </div>

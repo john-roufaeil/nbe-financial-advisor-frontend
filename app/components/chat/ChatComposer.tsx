@@ -61,7 +61,7 @@ export function ChatComposer() {
                     className="btn btn-primary btn-circle btn-sm"
                     aria-label={t("chat.send")}
                   >
-                    <ArrowUp className="size-5" />
+                    <ArrowUp data-no-flip className="size-5" />
                   </button>
                 </ComposerPrimitive.Send>
               </Tooltip>
