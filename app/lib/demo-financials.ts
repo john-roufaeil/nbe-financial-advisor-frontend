@@ -1,4 +1,4 @@
-import type { ChatToolCall } from "@/store/use-chat-store";
+import type { ChatToolCall } from "@/types/chat";
 
 export interface SpendingCategory {
   name: string;
@@ -186,6 +186,11 @@ const SUGGESTIONS_BY_TOOL: Record<string, string[]> = {
     "What if I save 20% more each month?",
     "How does this affect my emergency fund?",
     "Set this as my new savings goal",
+  ],
+  allocation_slider: [
+    "Why this split?",
+    "Suggest a more aggressive savings split",
+    "Revert to my last confirmed allocation",
   ],
   default: [
     "Show my spending breakdown",

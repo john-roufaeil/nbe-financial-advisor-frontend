@@ -1,4 +1,4 @@
-import { Landmark, SlidersHorizontal } from "lucide-react";
+import { Landmark, RotateCcw, SlidersHorizontal } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { DASHBOARD_PERIODS, type DashboardFilters } from "@/types/dashboard";
 import type { BankAccount } from "@/types/account";
@@ -52,6 +52,7 @@ export function DashboardToolbar({
   const { data: accounts } = useAccounts();
   const hiddenCards = useDashboardPrefsStore((s) => s.hiddenCards);
   const toggleCard = useDashboardPrefsStore((s) => s.toggleCard);
+  const showAllCards = useDashboardPrefsStore((s) => s.showAllCards);
 
   return (
     // animate-entry leaves a transform behind (fill-mode: both), turning this
@@ -128,6 +129,18 @@ export function DashboardToolbar({
               </button>
             </li>
           ))}
+          <li className="divider my-1 h-0.5"></li>
+          <li>
+            <button
+              type="button"
+              onClick={showAllCards}
+              disabled={hiddenCards.length === 0}
+              className="text-sm"
+            >
+              <RotateCcw size={16} />
+              {t("dashboard.toolbar.reset")}
+            </button>
+          </li>
         </ul>
       </div>
     </div>

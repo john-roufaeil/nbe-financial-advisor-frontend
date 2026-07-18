@@ -45,5 +45,5 @@ export interface UpdateBudgetBody {
   name?: string;
   /** Percentages, must sum to 100 when provided (backend rejects with 422 otherwise). */
   allocations?: AllocationInput[];
-  changed_via: "dashboard";
+  changed_via: "dashboard" | "chat";
 }
