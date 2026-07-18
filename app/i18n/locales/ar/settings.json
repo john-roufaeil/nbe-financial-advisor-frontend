@@ -31,6 +31,15 @@
       "full": "أرقام كاملة",
       "compact": "مختصرة (1.2K)"
     },
+    "notifications": {
+      "title": "الإشعارات",
+      "empty": "لا يوجد شيء هنا بعد.",
+      "tabs": {
+        "everyone": "عام",
+        "account": "شخصي"
+      },
+      "newCount": "{{count}} جديد"
+    },
     "accessibility": {
       "menuLabel": "خيارات إمكانية الوصول",
       "title": "إمكانية الوصول",

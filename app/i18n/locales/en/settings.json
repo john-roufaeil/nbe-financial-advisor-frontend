@@ -31,6 +31,15 @@
       "full": "Full digits",
       "compact": "Abbreviated (1.2K)"
     },
+    "notifications": {
+      "title": "Notifications",
+      "empty": "Nothing here yet.",
+      "tabs": {
+        "everyone": "General",
+        "account": "Personal"
+      },
+      "newCount": "{{count}} new"
+    },
     "accessibility": {
       "menuLabel": "Accessibility options",
       "title": "Accessibility",

@@ -2,6 +2,7 @@ import { useState } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import {
+  Bell,
   FolderTree,
   LogOut,
   Menu,
@@ -20,9 +21,10 @@ import { CategoriesPanel } from "@/components/admin/CategoriesPanel";
 import { ProductsPanel } from "@/components/admin/ProductsPanel";
 import { IssuesPanel } from "@/components/admin/IssuesPanel";
 import { FeedbackPanel } from "@/components/admin/FeedbackPanel";
+import { NotificationsPanel } from "@/components/admin/NotificationsPanel";
 import { Z_DROPDOWN } from "@/lib/z-index";
 
-const TABS = ["categories", "products", "issues", "feedback"] as const;
+const TABS = ["categories", "products", "issues", "feedback", "notifications"] as const;
 type Tab = (typeof TABS)[number];
 
 const TAB_ICONS: Record<Tab, typeof FolderTree> = {
@@ -30,6 +32,7 @@ const TAB_ICONS: Record<Tab, typeof FolderTree> = {
   products: Package,
   issues: TriangleAlert,
   feedback: MessageSquareText,
+  notifications: Bell,
 };
 
 export default function AdminDashboard() {
@@ -90,6 +93,7 @@ export default function AdminDashboard() {
           {tab === "products" && <ProductsPanel canWrite={canWrite} />}
           {tab === "issues" && <IssuesPanel />}
           {tab === "feedback" && <FeedbackPanel />}
+          {tab === "notifications" && <NotificationsPanel />}
         </main>
       </div>
 
@@ -125,7 +129,9 @@ export default function AdminDashboard() {
                     ? counts.productsCount
                     : name === "issues"
                       ? counts.openIssuesCount
-                      : counts.feedbackCount;
+                      : name === "feedback"
+                        ? counts.feedbackCount
+                        : undefined;
               return (
                 <button
                   key={name}

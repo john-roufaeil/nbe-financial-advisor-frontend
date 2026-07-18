@@ -9,4 +9,5 @@ export const QUERY_ROOTS = {
   goals: "goals",
   profile: "profile",
   admin: "admin",
+  chat: "chat",
 } as const;

@@ -22,11 +22,13 @@
       "account": "Account",
       "allAccounts": "All accounts",
       "customize": "Customize",
+      "reset": "Reset to default",
       "cards": {
         "stats": "Key figures",
         "goal": "Goal progress",
         "budget": "Budget split",
-        "activity": "Recent activity"
+        "activity": "Recent activity",
+        "notifications": "Notifications"
       }
     },
     "stats": {

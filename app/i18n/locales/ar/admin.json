@@ -19,7 +19,8 @@
       "categories": "الفئات",
       "products": "المنتجات",
       "issues": "البلاغات",
-      "feedback": "التقييمات"
+      "feedback": "التقييمات",
+      "notifications": "الإشعارات"
     },
     "columns": {
       "createdAt": "تاريخ الإنشاء",
@@ -112,6 +113,17 @@
         "rating": "التقييم",
         "comment": "التعليق",
         "target": "الموضوع"
+      }
+    },
+    "notifications": {
+      "composeTitle": "إرسال إشعار جماعي",
+      "sentTitle": "الإشعارات المرسلة",
+      "empty": "لم يتم إرسال أي إشعارات بعد.",
+      "send": "إرسال",
+      "toastSent": "تم إرسال الإشعار إلى جميع المستخدمين",
+      "fields": {
+        "title": "العنوان",
+        "body": "الرسالة"
       }
     },
     "toast": {
