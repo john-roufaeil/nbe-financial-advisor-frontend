@@ -26,4 +26,11 @@ export const API_ENDPOINTS = {
   adminFeedback: "/admin/feedback",
   adminIssues: "/admin/issues",
   adminIssue: (id: string) => `/admin/issues/${id}`,
+  chatConversations: "/chat/conversations",
+  chatConversation: (id: string) => `/chat/conversations/${id}`,
+  chatMessages: (conversationId: string) =>
+    `/chat/conversations/${conversationId}/messages`,
+  chatAttachments: (conversationId: string) =>
+    `/chat/conversations/${conversationId}/attachments`,
+  feedback: "/feedback",
 } as const;

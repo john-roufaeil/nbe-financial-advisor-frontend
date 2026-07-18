@@ -7,8 +7,15 @@
     "send": "Send message",
     "stop": "Stop",
     "copy": "Copy message",
-    "goodResponse": "Good response",
-    "badResponse": "Bad response",
+    "feedback": {
+      "give": "Give feedback",
+      "view": "View feedback",
+      "submit": "Submit feedback",
+      "rating": "Rating",
+      "comment": "Comment",
+      "commentPlaceholder": "What did you think of this response?",
+      "noComment": "No comment left"
+    },
     "nav": {
       "top": "Scroll to top",
       "bottom": "Scroll to latest",
@@ -36,6 +43,11 @@
         "title": "Savings projection",
         "projected": "Projected balance in {{months}} months",
         "monthly": "Monthly savings"
+      },
+      "allocation": {
+        "title": "Budget allocation",
+        "confirm": "Confirm changes",
+        "updated": "Updated"
       }
     }
   }

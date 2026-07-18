@@ -13,4 +13,8 @@ export const STORAGE_KEYS = {
   accessibility: "accessibility-settings",
   a11yPeekSeen: "nbe_a11y_peek_seen",
   adminAuth: "nbe_admin_auth",
+  messageFeedback: "nbe_message_feedback",
+  messageAttachments: "nbe_message_attachments",
+  conversationTitles: "nbe_conversation_titles",
+  notifications: "nbe_notifications",
 } as const;
