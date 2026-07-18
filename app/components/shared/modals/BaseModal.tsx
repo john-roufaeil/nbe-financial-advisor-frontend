@@ -15,6 +15,8 @@ interface BaseModalProps {
   actions?: ReactNode;
   /** Left-aligned footer content, e.g. a destructive action kept apart from actions. */
   actionsStart?: ReactNode;
+  /** Opt out of the default 40vh floor for short, content-driven dialogs like delete confirmations. */
+  fitHeight?: boolean;
   className?: string;
   children: ReactNode;
 }
@@ -26,7 +28,7 @@ interface BaseModalProps {
  * `.modal-box` max-width rule in app.css.
  */
 export const BaseModal = forwardRef<HTMLDialogElement, BaseModalProps>(function BaseModal(
-  { title, icon, onClose, actions, actionsStart, className, children },
+  { title, icon, onClose, actions, actionsStart, fitHeight, className, children },
   ref,
 ) {
   const { t } = useTranslation();
@@ -39,7 +41,7 @@ export const BaseModal = forwardRef<HTMLDialogElement, BaseModalProps>(function 
   return (
     <dialog ref={ref} className="modal" onClose={onClose}>
       <div
-        className={`modal-box relative isolate flex max-h-[75vh] flex-col gap-0 p-0 ${className ?? ""}`}
+        className={`modal-box relative isolate flex max-h-[75vh] flex-col gap-0 p-0 ${fitHeight ? "" : "min-h-[40vh]"} ${className ?? ""}`}
       >
         <div className="flex items-center gap-3 p-6 pb-4">
           <div className="flex flex-1 items-center gap-3">
