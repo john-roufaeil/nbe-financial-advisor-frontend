@@ -4,19 +4,13 @@ import {
   ActionBarPrimitive,
   useMessage,
 } from "@assistant-ui/react";
-import {
-  Copy,
-  Check,
-  Bot,
-  ThumbsUp,
-  ThumbsDown,
-  Image as ImageIcon,
-  FileText,
-} from "lucide-react";
+import { Copy, Check, Bot, Image as ImageIcon, FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { chatToolComponents } from "@/components/chat/tools";
+import { ChatFeedbackButton } from "@/components/chat/ChatFeedbackButton";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useChatStore } from "@/store/use-chat-store";
+import { useMessages } from "@/queries/chat";
 import { useSendChatMessage } from "@/lib/use-chat-runtime";
 import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 import { formatTime } from "@/lib/format";
@@ -37,7 +31,6 @@ function MessageAttachmentChip({
 
 function AssistantActionBar() {
   const { t } = useTranslation();
-  const feedback = useMessage((m) => m.metadata?.submittedFeedback?.type);
   return (
     <ActionBarPrimitive.Root
       hideWhenRunning
@@ -57,26 +50,7 @@ function AssistantActionBar() {
           </MessagePrimitive.If>
         </ActionBarPrimitive.Copy>
       </Tooltip>
-      <Tooltip content={t("chat.goodResponse")}>
-        <ActionBarPrimitive.FeedbackPositive
-          aria-label={t("chat.goodResponse")}
-          className={`btn btn-ghost btn-xs btn-square ${feedback === "positive" ? "text-success" : ""}`}
-        >
-          <ThumbsUp
-            className={`size-3.5 ${feedback === "positive" ? "fill-current" : ""}`}
-          />
-        </ActionBarPrimitive.FeedbackPositive>
-      </Tooltip>
-      <Tooltip content={t("chat.badResponse")}>
-        <ActionBarPrimitive.FeedbackNegative
-          aria-label={t("chat.badResponse")}
-          className={`btn btn-ghost btn-xs btn-square ${feedback === "negative" ? "text-error" : ""}`}
-        >
-          <ThumbsDown
-            className={`size-3.5 ${feedback === "negative" ? "fill-current" : ""}`}
-          />
-        </ActionBarPrimitive.FeedbackNegative>
-      </Tooltip>
+      <ChatFeedbackButton />
     </ActionBarPrimitive.Root>
   );
 }
@@ -183,11 +157,11 @@ export function EmptyState() {
 
 export function SuggestedQuestions() {
   const send = useSendChatMessage();
-  const isRunning = useChatStore((s) => s.isRunning);
-  const lastMessage = useChatStore((s) => {
-    const messages = s.threads[s.currentThreadId]?.messages ?? [];
-    return messages[messages.length - 1];
-  });
+  const conversationId = useChatStore((s) => s.currentConversationId);
+  const { data: messages } = useMessages(conversationId);
+  const lastMessage = messages?.[messages.length - 1];
+  const isRunning =
+    lastMessage?.role === "assistant" && lastMessage.stage === "generating";
 
   if (isRunning || !lastMessage || lastMessage.role !== "assistant") {
     return null;

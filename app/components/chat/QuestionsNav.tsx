@@ -2,6 +2,7 @@ import { useEffect, useState, type RefObject } from "react";
 import { MoreVertical } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useChatStore } from "@/store/use-chat-store";
+import { useMessages } from "@/queries/chat";
 
 const MAX_VISIBLE = 5;
 
@@ -17,9 +18,9 @@ export function QuestionsNav({
   viewportRef: RefObject<HTMLDivElement | null>;
 }) {
   const { t } = useTranslation();
-  const store = useChatStore();
-  const thread = store.threads[store.currentThreadId];
-  const allQuestions = (thread?.messages ?? []).filter((m) => m.role === "user");
+  const conversationId = useChatStore((s) => s.currentConversationId);
+  const { data: messages } = useMessages(conversationId);
+  const allQuestions = (messages ?? []).filter((m) => m.role === "user");
   const hiddenCount = Math.max(0, allQuestions.length - MAX_VISIBLE);
   const questions = allQuestions.slice(-MAX_VISIBLE);
   const questionIds = questions.map((q) => q.id).join(",");

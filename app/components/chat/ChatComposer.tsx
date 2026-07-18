@@ -1,11 +1,18 @@
+import { useEffect } from "react";
 import {
   ThreadPrimitive,
   ComposerPrimitive,
   AttachmentPrimitive,
+  useComposer,
+  useComposerRuntime,
 } from "@assistant-ui/react";
 import { ArrowUp, Paperclip, X, Square } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@/components/shared/Tooltip";
+import {
+  captureComposerTextForRestore,
+  registerComposerTextRestore,
+} from "@/lib/composer-text-recovery";
 
 function ComposerAttachment() {
   const { t } = useTranslation();
@@ -23,6 +30,34 @@ function ComposerAttachment() {
         </AttachmentPrimitive.Remove>
       </Tooltip>
     </AttachmentPrimitive.Root>
+  );
+}
+
+function ComposerSendButton() {
+  const { t } = useTranslation();
+  const composerRuntime = useComposerRuntime();
+  const canSend = useComposer((c) => c.canSend);
+
+  useEffect(() => {
+    registerComposerTextRestore((text) => composerRuntime.setText(text));
+    return () => registerComposerTextRestore(null);
+  }, [composerRuntime]);
+
+  return (
+    <Tooltip content={t("chat.send")} position="start" className="shrink-0">
+      <button
+        type="button"
+        disabled={!canSend}
+        onClick={() => {
+          captureComposerTextForRestore(composerRuntime.getState().text);
+          composerRuntime.send();
+        }}
+        className="btn btn-primary btn-circle btn-sm"
+        aria-label={t("chat.send")}
+      >
+        <ArrowUp data-no-flip className="size-5" />
+      </button>
+    </Tooltip>
   );
 }
 
@@ -55,16 +90,7 @@ export function ChatComposer() {
               className="max-h-40 min-h-9 flex-1 resize-none bg-transparent px-1 py-1.5 focus:outline-none"
             />
             <ThreadPrimitive.If running={false}>
-              <Tooltip content={t("chat.send")} position="start" className="shrink-0">
-                <ComposerPrimitive.Send asChild>
-                  <button
-                    className="btn btn-primary btn-circle btn-sm"
-                    aria-label={t("chat.send")}
-                  >
-                    <ArrowUp data-no-flip className="size-5" />
-                  </button>
-                </ComposerPrimitive.Send>
-              </Tooltip>
+              <ComposerSendButton />
             </ThreadPrimitive.If>
             <ThreadPrimitive.If running>
               <Tooltip content={t("chat.stop")} position="start" className="shrink-0">
