@@ -760,6 +760,40 @@ html[dir="rtl"] .animate-a11y-panel-in {
   animation: icon-shake 0.4s ease;
 }
 
+/* Bell "ring" cue when the notifications trigger is clicked — rotates around
+   the top of the icon (not its center) so it reads as a swing, not a spin. */
+@keyframes bell-ring {
+  0%,
+  100% {
+    rotate: 0deg;
+  }
+
+  15% {
+    rotate: 14deg;
+  }
+
+  30% {
+    rotate: -12deg;
+  }
+
+  45% {
+    rotate: 9deg;
+  }
+
+  60% {
+    rotate: -6deg;
+  }
+
+  75% {
+    rotate: 3deg;
+  }
+}
+
+.btn:hover svg.lucide-bell {
+  transform-origin: top center;
+  animation: bell-ring 0.5s ease;
+}
+
 .toggle,
 .checkbox {
   transition: all 0.2s ease;

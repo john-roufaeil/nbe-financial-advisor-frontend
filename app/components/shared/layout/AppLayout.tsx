@@ -9,6 +9,7 @@ import { useSidebarStore } from "@/store/use-sidebar-store";
 import { useSidebarResize } from "@/lib/use-sidebar-resize";
 import { useMe } from "@/queries/profile";
 import { ConfirmDialog } from "@/components/shared/modals/ConfirmDialog";
+import { NotificationsModal } from "@/components/shared/modals/NotificationsModal";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { Z_DROPDOWN } from "@/lib/z-index";
 import { useLayoutTier } from "@/lib/use-layout-tier";
@@ -21,7 +22,8 @@ export default function AppLayout() {
   const location = useLocation();
   const { t } = useTranslation();
   const { isOpen, toggle, close } = useDrawerStore();
-  const runtime = useAppChatRuntime();
+  const onChat = location.pathname.startsWith(`/${lang}/chat`);
+  const runtime = useAppChatRuntime(onChat);
   const { data: user } = useMe();
   const fullName = user?.name || "Profile";
   const initial = user?.name ? user.name.trim().charAt(0).toUpperCase() : "?";
@@ -39,8 +41,6 @@ export default function AppLayout() {
   // Forced-mobile has no collapse toggle to un-collapse it with, so a stale
   // manual collapse from a prior desktop session must never carry over here.
   const effectiveCollapsed = !isForcedMobile && isCollapsed;
-
-  const onChat = location.pathname.startsWith(`/${lang}/chat`);
 
   return (
     <AssistantRuntimeProvider runtime={runtime}>
@@ -158,6 +158,7 @@ export default function AppLayout() {
         </div>
       </div>
       <ConfirmDialog />
+      <NotificationsModal />
     </AssistantRuntimeProvider>
   );
 }

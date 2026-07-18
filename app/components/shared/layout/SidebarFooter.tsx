@@ -1,9 +1,13 @@
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
+import { Bell } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/preferences/LanguageSwitcher";
 import { BalanceVisibilityToggle } from "@/components/shared/preferences/BalanceVisibilityToggle";
 import { ThemeToggle } from "@/components/shared/preferences/ThemeToggle";
 import { DataSourceToggle } from "@/components/shared/preferences/DataSourceToggle";
+import { Tooltip } from "@/components/shared/Tooltip";
+import { useNotificationsStore } from "@/store/use-notifications-store";
+import { useNotificationsModalStore } from "@/store/use-notifications-modal-store";
 
 export function SidebarFooter({
   lang,
@@ -19,6 +23,10 @@ export function SidebarFooter({
   onNavigate: () => void;
 }) {
   const { t } = useTranslation();
+  const unreadCount = useNotificationsStore(
+    (s) => s.notifications.filter((n) => !n.read).length,
+  );
+  const openNotifications = useNotificationsModalStore((s) => s.open);
 
   return (
     <div
@@ -43,13 +51,13 @@ export function SidebarFooter({
       </div>
 
       <div
-        className={`border-base-300 flex w-full items-center gap-2 border-t pt-2 ${effectiveCollapsed ? "lg:justify-center" : ""}`}
+        className={`border-base-300 flex w-full items-center gap-2 border-t pt-2 ${effectiveCollapsed ? "lg:flex-col" : ""}`}
       >
         <NavLink
           to={`/${lang}/profile`}
           onClick={onNavigate}
           className={({ isActive }) =>
-            `flex w-full min-w-0 items-center rounded-md transition-colors ${
+            `flex min-w-0 flex-1 items-center rounded-md transition-colors ${
               effectiveCollapsed ? "gap-3 p-2 lg:justify-center lg:p-1" : "gap-3 p-2"
             } ${isActive ? "bg-base-300" : "hover:bg-base-300"}`
           }
@@ -68,6 +76,24 @@ export function SidebarFooter({
             </p>
           </div>
         </NavLink>
+
+        <Tooltip content={t("nav.notifications")} position="start">
+          <span className="relative inline-flex shrink-0">
+            <button
+              type="button"
+              onClick={() => openNotifications()}
+              aria-label={t("nav.notifications")}
+              className="btn btn-ghost btn-circle btn-sm"
+            >
+              <Bell className="size-4.5" />
+            </button>
+            {unreadCount > 0 && (
+              <span className="bg-error text-error-content pointer-events-none absolute -inset-e-0.5 -top-0.5 flex size-4 min-w-4 items-center justify-center rounded-full px-0.5 text-[10px] leading-none font-semibold">
+                {unreadCount > 9 ? "9+" : unreadCount}
+              </span>
+            )}
+          </span>
+        </Tooltip>
       </div>
     </div>
   );

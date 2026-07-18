@@ -2,7 +2,13 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
-export const DASHBOARD_CARDS = ["stats", "goal", "budget", "activity"] as const;
+export const DASHBOARD_CARDS = [
+  "stats",
+  "goal",
+  "budget",
+  "activity",
+  "notifications",
+] as const;
 export type DashboardCard = (typeof DASHBOARD_CARDS)[number];
 
 interface DashboardPrefsState {
