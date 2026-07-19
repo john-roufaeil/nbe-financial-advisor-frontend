@@ -10,6 +10,11 @@ export const apiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
   // Required so the browser sends/stores the httpOnly refresh-token cookie.
   withCredentials: true,
+  // axios defaults to no timeout at all — a blocked/blackholed connection
+  // (misconfigured host, dropped packets) then hangs forever with neither a
+  // response nor a rejection, which callers can't distinguish from "still
+  // loading". 20s bounds that so onError always eventually fires.
+  timeout: 20_000,
 });
 
 apiClient.interceptors.request.use((config) => {
