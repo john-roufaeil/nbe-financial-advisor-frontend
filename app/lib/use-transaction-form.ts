@@ -48,7 +48,14 @@ export function useTransactionForm(
   const { t } = useTranslation();
   const createTransaction = useCreateTransaction();
   const updateTransaction = useUpdateTransaction();
-  const { data: accounts } = useAccounts();
+  const { data: allAccounts } = useAccounts();
+  // Synced accounts are backend-rejected for manual transaction entry
+  // (assert_account_mutable()) — offer only manual accounts when adding new.
+  // An existing transaction being edited keeps whichever account it already
+  // has (the picker is disabled while editing, see TransactionFormFields).
+  const accounts = editing
+    ? allAccounts
+    : allAccounts?.filter((a) => a.link_type !== "synced");
   const accountModalRef = useRef<HTMLDialogElement>(null);
   const awaitingNewAccountRef = useRef(false);
 
@@ -164,7 +171,11 @@ export function useTransactionForm(
         // account_id is not patchable server-side, so it's excluded here.
         await updateTransaction.mutateAsync({ id: editing.id, patch });
       } else {
-        await createTransaction.mutateAsync({ ...patch, accountId: values.accountId });
+        await createTransaction.mutateAsync({
+          ...patch,
+          accountId: values.accountId,
+          source: "manual",
+        });
       }
       resetForm();
       closeDialog(ref);

@@ -7,6 +7,9 @@ export interface Transaction {
   amount: number;
   /** The linked bank account this transaction belongs to. Not patchable once created. */
   accountId?: string;
+  /** Where the backend got this row from, e.g. "manual" or "synchronized". Synced
+   * transactions are backend-rejected on edit/delete — see TransactionCard. */
+  source: string;
 }
 
 // The category vocabulary is NOT hardcoded here — it's the backend's

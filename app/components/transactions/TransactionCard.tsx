@@ -31,6 +31,12 @@ export function TransactionCard({
   const Icon = isIncome ? ArrowUpCircle : ArrowDownCircle;
   const { data: accounts } = useAccounts();
   const account = accounts?.find((a) => a.id === transaction.accountId);
+  // Synced-account transactions are backend-rejected on edit/delete
+  // (assert_account_mutable()) — hide the controls rather than let them 403.
+  // Individually-synchronized transactions (source === "synchronized") are
+  // rejected the same way regardless of the account's own link_type.
+  const isReadOnly =
+    account?.link_type === "synced" || transaction.source === "synchronized";
   const currencyLabel = t(
     `currency.${account?.currency ?? "EGP"}`,
     account?.currency ?? "EGP",
@@ -82,7 +88,13 @@ export function TransactionCard({
     </Money>
   );
 
-  const actions = (
+  const actions = isReadOnly ? (
+    <div className="relative z-10 flex shrink-0 items-center gap-1">
+      <Tooltip content={t("transactions.synced")}>
+        <span className="badge badge-ghost text-xs">{t("transactions.synced")}</span>
+      </Tooltip>
+    </div>
+  ) : (
     <div className="relative z-10 flex shrink-0 items-center gap-1">
       <Tooltip content={t("actions.edit")}>
         <button
