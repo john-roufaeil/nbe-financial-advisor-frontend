@@ -4,10 +4,11 @@ import {
   ActionBarPrimitive,
   useMessage,
 } from "@assistant-ui/react";
-import { Copy, Check, Bot, Image as ImageIcon, FileText } from "lucide-react";
+import { Copy, Check, Bot, Image as ImageIcon, FileText, Paperclip } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { chatToolComponents } from "@/components/chat/tools";
 import { ChatFeedbackButton } from "@/components/chat/ChatFeedbackButton";
+import { ChatStatementCard } from "@/components/chat/ChatStatementCard";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useChatStore } from "@/store/use-chat-store";
 import { useMessages } from "@/queries/chat";
@@ -25,6 +26,25 @@ function MessageAttachmentChip({
     <span className="bg-primary-content/10 flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs">
       <Icon className="size-3.5 shrink-0" />
       <span className="truncate">{attachment.name}</span>
+    </span>
+  );
+}
+
+// The backend records a chat-uploaded statement as a user message whose text is
+// a "📎 <filename>" line (plus the caption below, if any) — a stopgap until the
+// message model carries real attachments. Pull that line out and render it as a
+// chip that reads as clickable; wiring an actual click target waits on that
+// backend change.
+const FILE_LINE_PREFIX = /^📎\s*/;
+
+function UserUploadChip({ name }: { name: string }) {
+  return (
+    <span
+      title={name}
+      className="bg-primary-content/10 hover:bg-primary-content/20 group flex max-w-full cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs transition-colors"
+    >
+      <Paperclip className="size-3.5 shrink-0" />
+      <span className="truncate group-hover:underline">{name}</span>
     </span>
   );
 }
@@ -59,7 +79,19 @@ export function UserMessage() {
   const { t } = useTranslation();
   const id = useMessage((m) => m.id);
   const createdAt = useMessage((m) => m.createdAt);
+  const content = useMessage((m) => m.content);
   const timeFormat = useDisplayPreferencesStore((s) => s.timeFormat);
+
+  // Split the "📎 <filename>" line(s) the upload flow prepends off from the rest
+  // of the text, so the file renders as a chip above the caption (a plain text
+  // message has no such line and just renders as the caption).
+  const text = content.map((p) => (p.type === "text" ? p.text : "")).join("");
+  const lines = text.split("\n");
+  const fileNames = lines
+    .filter((l) => FILE_LINE_PREFIX.test(l))
+    .map((l) => l.replace(FILE_LINE_PREFIX, ""));
+  const caption = lines.filter((l) => !FILE_LINE_PREFIX.test(l)).join("\n");
+
   return (
     <MessagePrimitive.Root id={`msg-${id}`} className="flex justify-end">
       <div className="animate-message-in flex max-w-[80%] min-w-0 flex-col items-end">
@@ -68,10 +100,11 @@ export function UserMessage() {
             <MessagePrimitive.Attachments>
               {({ attachment }) => <MessageAttachmentChip attachment={attachment} />}
             </MessagePrimitive.Attachments>
+            {fileNames.map((name, i) => (
+              <UserUploadChip key={i} name={name} />
+            ))}
           </div>
-          <div className="wrap-anywhere whitespace-pre-wrap">
-            <MessagePrimitive.Content />
-          </div>
+          {caption && <div className="wrap-anywhere whitespace-pre-wrap">{caption}</div>}
         </div>
         <span className="text-base-content/40 mt-1 px-1 text-xs">
           {formatTime(createdAt, timeFormat, t)}
@@ -87,6 +120,14 @@ export function AssistantMessage() {
   const createdAt = useMessage((m) => m.createdAt);
   const isLast = useMessage((m) => m.isLast);
   const timeFormat = useDisplayPreferencesStore((s) => s.timeFormat);
+  // assistant-ui's runtime message carries no references, so look this message
+  // up in our own cache by id (same approach SuggestedQuestions uses) to find a
+  // statement attachment the assistant posted, and surface its pipeline status.
+  const conversationId = useChatStore((s) => s.currentConversationId);
+  const { data: messages } = useMessages(conversationId);
+  const statementId = messages
+    ?.find((m) => m.id === id)
+    ?.references?.find((r) => r.targetType === "statement")?.targetId;
   return (
     <MessagePrimitive.Root id={`msg-${id}`} className="group">
       <MessagePrimitive.If hasContent>
@@ -100,6 +141,7 @@ export function AssistantMessage() {
                 components={{ tools: { by_name: chatToolComponents } }}
               />
             </div>
+            {statementId && <ChatStatementCard statementId={statementId} />}
             <span className="text-base-content/40 mt-1 px-1 text-xs">
               {formatTime(createdAt, timeFormat, t)}
             </span>

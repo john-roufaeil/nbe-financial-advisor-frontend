@@ -40,9 +40,17 @@ export function useBankStatement(id: string | null) {
     queryKey: bankStatementKeys.detail(id ?? "", source),
     queryFn: () => impl(source).getBankStatement(id as string),
     enabled: id !== null,
+    // Stop polling when the statement no longer exists (deleted) or terminal status
     refetchInterval: (query) => {
+      if (query.state.error) return false;
       const status = query.state.data?.status;
       return status === "uploading" || status === "processing" ? 1000 : false;
+    },
+    // Don't retry 404s — the statement was deleted, retrying won't help
+    retry: (failureCount, error: unknown) => {
+      const status = (error as { response?: { status?: number } })?.response?.status;
+      if (status === 404) return false;
+      return failureCount < 3;
     },
   });
 }
@@ -106,6 +114,12 @@ export function useApproveBankStatement() {
 export function useDeleteBankStatement() {
   return useInvalidatingMutation({
     mutationFn: (source, id: string) => impl(source).deleteBankStatement(id),
+    // Evict the detail entry before the list invalidation refetches — prevents
+    // a 404 console error from the detail query trying to reload a deleted resource.
+    removes: (id) => [
+      bankStatementKeys.detail(id, "backend"),
+      bankStatementKeys.detail(id, "mock"),
+    ],
     // An approved statement's committed rows are removed with it, so the
     // ledger and dashboard totals need restating too.
     invalidates: [
