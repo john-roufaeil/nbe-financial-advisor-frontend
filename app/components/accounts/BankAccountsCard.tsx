@@ -1,5 +1,6 @@
-import { useRef } from "react";
-import { Trash2, CreditCard, Plus } from "lucide-react";
+import { useEffect, useRef } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { Trash2, CreditCard, Plus, Landmark, RefreshCw } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAccounts, useDeleteAccount } from "@/queries/accounts";
 import { useConfirmStore } from "@/store/use-confirm-store";
@@ -10,9 +11,24 @@ import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
 import type { BankAccount } from "@/types/account";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { useNumberDisplay } from "@/lib/use-number-display";
+import { useCreateBankConnection } from "@/queries/bank-connections";
+import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
+import { QUERY_ROOTS } from "@/lib/constants/query-keys";
+import {
+  openOAuthPopup,
+  isBankOAuthResult,
+  watchForUnhandledClose,
+} from "@/lib/oauth-popup";
+import { toastSuccess, toastError } from "@/lib/toast";
+
+/** Slug of the (currently only) registered bank connector — see services/bank_connectors/mock_bank.py on the backend. */
+const MOCK_BANK_PROVIDER_SLUG = "mock_bank";
 
 // `current_balance` is derived server-side from the account's latest transaction
 // and is read-only, so there is no edit action here — only add and remove.
+// Synced accounts (link_type "synced") are entirely read-only server-side
+// (assert_account_mutable() rejects edit/delete/manual transactions), so they
+// get a badge instead of a remove button rather than a button that would 403.
 function AccountRow({
   account,
   onDelete,
@@ -23,6 +39,7 @@ function AccountRow({
   const { t } = useTranslation();
   const formatN = useNumberDisplay();
   const currencyLabel = t(`currency.${account.currency}`, account.currency);
+  const isSynced = account.link_type === "synced";
 
   return (
     <li className="border-base-300 bg-base-100 flex min-w-0 items-center gap-3 rounded-lg border p-3">
@@ -42,17 +59,26 @@ function AccountRow({
       <Money className="shrink-0 text-sm font-semibold tabular-nums">
         {formatN(Number(account.current_balance))} {currencyLabel}
       </Money>
-      <div className="flex shrink-0 gap-1">
-        <Tooltip content={t("actions.remove")}>
-          <button
-            type="button"
-            onClick={onDelete}
-            className="btn btn-ghost btn-sm btn-square text-error"
-            aria-label={t("actions.remove")}
-          >
-            <Trash2 data-no-flip className="size-4" />
-          </button>
-        </Tooltip>
+      <div className="flex shrink-0 items-center gap-1">
+        {isSynced ? (
+          <Tooltip content={t("common.sections.accounts.synced")}>
+            <span className="badge badge-ghost gap-1 text-xs">
+              <RefreshCw data-no-flip className="size-3" />
+              {t("common.sections.accounts.synced")}
+            </span>
+          </Tooltip>
+        ) : (
+          <Tooltip content={t("actions.remove")}>
+            <button
+              type="button"
+              onClick={onDelete}
+              className="btn btn-ghost btn-sm btn-square text-error"
+              aria-label={t("actions.remove")}
+            >
+              <Trash2 data-no-flip className="size-4" />
+            </button>
+          </Tooltip>
+        )}
       </div>
     </li>
   );
@@ -64,6 +90,34 @@ export function BankAccountsCard() {
   const deleteAccount = useDeleteAccount();
   const confirm = useConfirmStore((s) => s.confirm);
   const addRef = useRef<HTMLDialogElement>(null);
+  const createConnection = useCreateBankConnection();
+  const queryClient = useQueryClient();
+  // Set inside handleMessage once a result actually arrives — lets the
+  // popup-closed watcher below tell "closed after delivering its result"
+  // apart from "closed without ever delivering one" (lost message, or the
+  // user just closing it by hand).
+  const bankConnectHandledRef = useRef(false);
+
+  // Listens for the popup opened by handleConnectBank (see lib/oauth-popup.ts)
+  // to hand back its result — the confirm call itself runs in the popup, in a
+  // separate React Query cache, so this tab's own accounts/dashboard data
+  // needs its own invalidation once that's done.
+  useEffect(() => {
+    function handleMessage(event: MessageEvent) {
+      if (!isBankOAuthResult(event) || event.data.kind !== "bank-connect") return;
+      bankConnectHandledRef.current = true;
+      if (event.data.ok) {
+        queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.accounts] });
+        queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
+        queryClient.invalidateQueries({ queryKey: ["bank-connections"] });
+        toastSuccess("toast.bankConnected");
+      } else {
+        toastError();
+      }
+    }
+    window.addEventListener("message", handleMessage);
+    return () => window.removeEventListener("message", handleMessage);
+  }, [queryClient]);
 
   function confirmDelete(account: BankAccount) {
     confirm({
@@ -71,6 +125,31 @@ export function BankAccountsCard() {
       message: t("confirm.deleteMessage"),
       onConfirm: () => deleteAccount.mutate(account.id),
     });
+  }
+
+  async function handleConnectBank() {
+    try {
+      const { connection_id, authorize_url } = await createConnection.mutateAsync({
+        provider_slug: MOCK_BANK_PROVIDER_SLUG,
+      });
+      sessionStorage.setItem(STORAGE_KEYS.pendingBankConnectionId, connection_id);
+      // Falls back to a full-tab redirect if the popup was blocked — still
+      // works via bank-connect-callback.tsx's no-opener branch, it just
+      // navigates this tab away and back instead of staying on it.
+      const popup = openOAuthPopup(authorize_url, "bank-connect");
+      if (!popup) {
+        window.location.href = authorize_url;
+        return;
+      }
+      bankConnectHandledRef.current = false;
+      watchForUnhandledClose(
+        popup,
+        () => bankConnectHandledRef.current,
+        () => toastError(),
+      );
+    } catch {
+      // onError already toasted.
+    }
   }
 
   if (isPending) {
@@ -103,6 +182,17 @@ export function BankAccountsCard() {
           <h2 className="card-title flex-1 text-base">
             {t("common.sections.accounts.title")}
           </h2>
+          <Tooltip content={t("common.addAccount.connectBank")}>
+            <button
+              type="button"
+              onClick={handleConnectBank}
+              disabled={createConnection.isPending}
+              className="btn btn-ghost btn-sm btn-square"
+              aria-label={t("common.addAccount.connectBank")}
+            >
+              <Landmark data-no-flip className="size-4" />
+            </button>
+          </Tooltip>
           <Tooltip content={t("common.addAccount.add")}>
             <button
               type="button"

@@ -29,7 +29,11 @@ export const BankStatementDetailModal = forwardRef<
   const uploadBankStatements = useUploadBankStatements();
   const deleteBankStatement = useDeleteBankStatement();
   const approveBankStatement = useApproveBankStatement();
-  const { data: accounts, isLoading: accountsLoading } = useAccounts();
+  const { data: allAccounts, isLoading: accountsLoading } = useAccounts();
+  // A synced account is read-only server-side (assert_account_mutable()) —
+  // statement approval would write transactions onto it, so it's excluded
+  // from the account a statement can be filed against, same as manual entry.
+  const accounts = allAccounts?.filter((a) => a.link_type !== "synced");
   const accountModalRef = useRef<HTMLDialogElement>(null);
   const reuploadInputRef = useRef<HTMLInputElement>(null);
   const { icon, title } = useBankStatementModalHeader(doc);

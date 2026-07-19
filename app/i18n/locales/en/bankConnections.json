@@ -1,0 +1,15 @@
+{
+  "bankConnections": {
+    "title": "Linked banks",
+    "error": "Couldn't load your linked banks. Please try again.",
+    "providers": {
+      "mock_bank": "Mock Bank"
+    },
+    "status": {
+      "pending_otp": "Pending verification",
+      "linked": "Linked",
+      "revoked": "Revoked",
+      "failed": "Failed"
+    }
+  }
+}

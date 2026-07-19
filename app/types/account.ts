@@ -1,3 +1,6 @@
+export const BANK_ACCOUNT_LINK_TYPES = ["manual", "synced"] as const;
+export type BankAccountLinkType = (typeof BANK_ACCOUNT_LINK_TYPES)[number];
+
 /** A linked bank account, as returned by GET /accounts (BankAccountSerializer). */
 export interface BankAccount {
   id: string;
@@ -6,6 +9,13 @@ export interface BankAccount {
   masked_account_number: string;
   currency: string;
   is_active: boolean;
+  /**
+   * "synced" accounts come from a linked bank connection (auto-updated,
+   * read-only) — edit/delete/manual transactions are backend-rejected for
+   * them. "manual" is the pre-existing user-entered kind.
+   */
+  link_type: BankAccountLinkType;
+  external_account_id: string | null;
   /** Derived server-side from the latest transaction's balance. DRF serializes decimals as strings. */
   current_balance: string | number;
   created_at: string;
