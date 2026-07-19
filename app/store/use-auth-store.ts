@@ -1,7 +1,15 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useDataSourceStore } from "./use-data-source-store";
+import { useChatStore } from "./use-chat-store";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
+import { queryClient } from "@/lib/query-client";
+
+/** Wipes cached server state tied to the previous user (e.g. chat conversations) so it can't leak to the next login in the same tab. */
+function clearUserScopedState() {
+  queryClient.clear();
+  useChatStore.getState().setCurrentConversationId(null);
+}
 
 interface AuthTokens {
   accessToken: string;
@@ -40,14 +48,17 @@ export const useAuthStore = create<AuthState>()(
       login: () => set({ isAuthenticated: true }),
       logout: () => {
         useDataSourceStore.getState().setSource("backend");
+        clearUserScopedState();
         set({ isAuthenticated: false, accessToken: null, sessionExpired: false });
       },
       expireSession: () => {
         useDataSourceStore.getState().setSource("backend");
+        clearUserScopedState();
         set({ isAuthenticated: false, accessToken: null, sessionExpired: true });
       },
       clearStaleAuth: () => {
         useDataSourceStore.getState().setSource("backend");
+        clearUserScopedState();
         set({ isAuthenticated: false, accessToken: null });
       },
       clearSessionExpired: () => set({ sessionExpired: false }),
