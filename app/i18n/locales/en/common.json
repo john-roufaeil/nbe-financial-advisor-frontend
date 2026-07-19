@@ -58,6 +58,8 @@
     "addAccount": {
       "title": "Add Bank Account",
       "add": "Add Bank Account",
+      "connectBank": "Connect bank account",
+      "connecting": "Connecting your account…",
       "accountType": "Account type",
       "accountTypes": {
         "checking": "Checking",
@@ -79,10 +81,15 @@
         "accountNumberMismatch": "Account numbers don't match."
       }
     },
+    "verifyEmail": {
+      "message": "Verify your email address to secure your account.",
+      "send": "Send verification email"
+    },
     "sections": {
       "errors": {
         "phoneInvalid": "Enter a valid phone number.",
         "nameRequired": "Enter your name.",
+        "nameInvalid": "Name can only contain letters and spaces.",
         "incomeNegative": "Monthly income can't be negative."
       },
       "profile": {
@@ -117,7 +124,8 @@
         "title": "Bank accounts",
         "empty": "No linked bank accounts yet.",
         "error": "Couldn't load your bank accounts. Please try again.",
-        "inactive": "Inactive"
+        "inactive": "Inactive",
+        "synced": "Synced"
       },
       "preferences": {
         "title": "Preferences"

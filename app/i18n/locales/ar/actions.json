@@ -5,6 +5,8 @@
     "continue": "متابعة",
     "skip": "تخطي",
     "back": "رجوع",
+    "goHome": "الذهاب للرئيسية",
+    "goToSignIn": "الذهاب لتسجيل الدخول",
     "upload": "رفع",
     "delete": "حذف {{name}}",
     "done": "تم",

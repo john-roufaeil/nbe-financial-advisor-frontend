@@ -28,7 +28,7 @@
         "goal": "Goal progress",
         "budget": "Budget split",
         "activity": "Recent activity",
-        "notifications": "Notifications"
+        "anomalies": "Anomalies"
       }
     },
     "stats": {

@@ -20,7 +20,16 @@ export function useLanguageSwitch() {
   const setPendingLang = useLanguageSwitchStore((s) => s.setPendingLang);
   const setPendingToast = useLanguageSwitchStore((s) => s.setPendingToast);
 
-  const current = (lang as SupportedLanguage) ?? SUPPORTED_LANGUAGES[0];
+  // Driven by the actual active i18n language, not the :lang route param —
+  // the two are normally kept in sync by LangLayout, but the param is
+  // undefined outright on unprefixed pages (verify-email, reset-password),
+  // and relying on it left the toggle showing/targeting the wrong language
+  // whenever it briefly lagged the real one. i18n.language is what every
+  // t() call in the app is actually rendering from, so it can't disagree
+  // with what's on screen.
+  const current = SUPPORTED_LANGUAGES.includes(i18n.language as SupportedLanguage)
+    ? (i18n.language as SupportedLanguage)
+    : SUPPORTED_LANGUAGES[0];
   const labels: Record<SupportedLanguage, string> = {
     en: t("settings.languageNames.en"),
     ar: t("settings.languageNames.ar"),
@@ -37,8 +46,16 @@ export function useLanguageSwitch() {
       localStorage.setItem(STORAGE_KEYS.lang, next);
       await i18n.changeLanguage(next);
       setPendingToast(t("toast.languageChanged"));
-      const rest = location.pathname.replace(`/${current}`, "");
-      navigate(`/${next}${rest}${location.search}`);
+      // Unprefixed pages (no :lang segment at all — verify-email,
+      // reset-password, the links emailed to a user with no locale
+      // context) have no path segment to rewrite; changing the i18n
+      // language alone re-renders them in place. Rewriting to
+      // `/${next}${rest}` here would build a `/ar/verify-email`-style path
+      // that doesn't exist as a route and 404s via the :lang/* catch-all.
+      if (lang !== undefined) {
+        const rest = location.pathname.replace(`/${current}`, "");
+        navigate(`/${next}${rest}${location.search}`);
+      }
     } catch {
       setPendingLang(null);
     }

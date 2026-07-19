@@ -5,6 +5,8 @@
     "continue": "Continue",
     "skip": "Skip",
     "back": "Back",
+    "goHome": "Go to home",
+    "goToSignIn": "Go to sign in",
     "upload": "Upload",
     "delete": "Delete {{name}}",
     "done": "Done",

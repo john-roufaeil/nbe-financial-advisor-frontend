@@ -1,5 +1,5 @@
 import { useEffect } from "react";
-import { useParams } from "react-router";
+import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 import { useToastStore } from "@/store/use-toast-store";
 import { useLanguageSwitchStore } from "@/store/use-language-switch-store";
@@ -15,8 +15,15 @@ import { useLanguageSwitchStore } from "@/store/use-language-switch-store";
  * mounted at once, so a single switch produced two stacked toasts.
  */
 export function useLanguageSwitchWatcher() {
-  const { lang } = useParams<{ lang: string }>();
-  const current = (lang as SupportedLanguage) ?? SUPPORTED_LANGUAGES[0];
+  // Same i18n.language-based source of truth as useLanguageSwitch's
+  // `current` — see that hook's comment for why this can't be the :lang
+  // route param (undefined on unprefixed pages, and can otherwise lag the
+  // actual active language, which left this watcher never observing the
+  // switch "land" and so never clearing the in-flight lock).
+  const { i18n } = useTranslation();
+  const current = SUPPORTED_LANGUAGES.includes(i18n.language as SupportedLanguage)
+    ? (i18n.language as SupportedLanguage)
+    : SUPPORTED_LANGUAGES[0];
   const showToast = useToastStore((s) => s.show);
   const pendingLang = useLanguageSwitchStore((s) => s.pendingLang);
   const pendingToast = useLanguageSwitchStore((s) => s.pendingToast);
