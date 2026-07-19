@@ -1,3 +1,4 @@
+import { useEffect, useRef } from "react";
 import { ThreadPrimitive } from "@assistant-ui/react";
 import { Bot } from "lucide-react";
 import { QuestionsNav } from "@/components/chat/QuestionsNav";
@@ -10,9 +11,28 @@ import {
 } from "@/components/chat/ChatMessages";
 import { ChatScrollButtons } from "@/components/chat/ChatScrollButtons";
 import { ChatComposer } from "@/components/chat/ChatComposer";
+import { BankStatementDetailModal } from "@/components/bank-statements/BankStatementDetailModal";
+import { useStatementReviewStore } from "@/store/use-statement-review-store";
 
 export function ChatThread() {
   const { ref: viewportRef, atTop, atBottom } = useScrollEdges<HTMLDivElement>();
+
+  // One review modal for the whole thread, opened by any message's statement
+  // card via the store. Native <dialog>'s "close" event (Esc / backdrop / the
+  // modal's own close button) resets the store so the same statement can be
+  // reopened later.
+  const reviewModalRef = useRef<HTMLDialogElement>(null);
+  const reviewStatementId = useStatementReviewStore((s) => s.statementId);
+  const closeReview = useStatementReviewStore((s) => s.close);
+  useEffect(() => {
+    if (reviewStatementId) reviewModalRef.current?.showModal();
+  }, [reviewStatementId]);
+  useEffect(() => {
+    const dialog = reviewModalRef.current;
+    if (!dialog) return;
+    dialog.addEventListener("close", closeReview);
+    return () => dialog.removeEventListener("close", closeReview);
+  }, [closeReview]);
 
   return (
     <ThreadPrimitive.Root className="bg-base-100 flex h-full min-w-0 flex-col overflow-hidden">
@@ -46,6 +66,11 @@ export function ChatThread() {
       </div>
 
       <ChatComposer />
+
+      <BankStatementDetailModal
+        ref={reviewModalRef}
+        bankStatementId={reviewStatementId}
+      />
     </ThreadPrimitive.Root>
   );
 }

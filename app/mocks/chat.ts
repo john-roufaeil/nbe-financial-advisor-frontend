@@ -119,7 +119,19 @@ export function sendMessage(
 export function uploadChatAttachment(
   conversationId: string,
   file: File,
+  caption?: string,
 ): Promise<ChatMessage> {
+  // Mirror the real backend: the upload records the user's own message — always
+  // the file name, with the typed caption above it when present — then the
+  // assistant announcement.
+  const fileLine = `📎 ${file.name}`;
+  ensure(conversationId).push({
+    id: crypto.randomUUID(),
+    role: "user",
+    text: caption?.trim() ? `${fileLine}\n${caption.trim()}` : fileLine,
+    createdAt: Date.now(),
+    stage: "complete",
+  });
   const message: ChatMessage = {
     id: crypto.randomUUID(),
     role: "assistant",

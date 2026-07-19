@@ -19,18 +19,30 @@ export function pickImpl<T>(source: DataSource, api: T, mock: T): T {
 export function useInvalidatingMutation<TVars, TData>({
   mutationFn,
   invalidates,
+  removes,
   successToastKey,
 }: {
   mutationFn: (source: DataSource, vars: TVars) => Promise<TData>;
   /** Query keys to invalidate on success — root-level keys hit every source. */
   invalidates: readonly QueryKey[];
+  /**
+   * Query keys to *remove* (evict) from cache on success — use for deletes
+   * so the cache entry is gone before invalidated list queries refetch,
+   * preventing a 404 refetch on the now-missing resource.
+   */
+  removes?: (vars: TVars) => QueryKey[];
   successToastKey: string;
 }) {
   const queryClient = useQueryClient();
   const source = useDataSourceStore((s) => s.source);
   return useMutation({
     mutationFn: (vars: TVars) => mutationFn(source, vars),
-    onSuccess: () => {
+    onSuccess: (_data, vars) => {
+      if (removes) {
+        for (const queryKey of removes(vars)) {
+          queryClient.removeQueries({ queryKey });
+        }
+      }
       for (const queryKey of invalidates) {
         queryClient.invalidateQueries({ queryKey });
       }

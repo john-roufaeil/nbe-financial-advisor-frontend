@@ -49,6 +49,13 @@
         "confirm": "Confirm changes",
         "updated": "Updated"
       }
+    },
+    "statement": {
+      "processing": "Extracting transactions…",
+      "ready": "Ready to review",
+      "failed": "Couldn't process this file",
+      "added": "Transactions added",
+      "review": "Review"
     }
   }
 }

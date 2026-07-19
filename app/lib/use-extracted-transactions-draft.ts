@@ -14,7 +14,7 @@ export function useExtractedTransactionsDraft(doc: BankStatement | undefined) {
 
   useEffect(() => {
     setDraft(doc?.extractedTransactions ?? []);
-  }, [doc?.id]);
+  }, [doc?.id, doc?.status]);
 
   function updateDraftTransaction(
     txId: string,
