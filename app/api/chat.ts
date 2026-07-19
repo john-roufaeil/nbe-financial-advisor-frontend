@@ -131,9 +131,14 @@ export async function sendMessage(
 export async function uploadChatAttachment(
   conversationId: string,
   file: File,
+  caption?: string,
 ): Promise<ChatMessage> {
   const formData = new FormData();
   formData.append("file", file, file.name);
+  // A caption typed alongside the file rides on THIS request so the backend can
+  // record it as the user's message — sending it separately would race the
+  // upload's "I've started processing" announcement.
+  if (caption?.trim()) formData.append("text", caption.trim());
   const res = await apiClient.post<RawMessage>(
     API_ENDPOINTS.chatAttachments(conversationId),
     formData,

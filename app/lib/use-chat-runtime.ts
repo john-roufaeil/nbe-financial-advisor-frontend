@@ -10,7 +10,10 @@ import {
 import { useChatStore } from "@/store/use-chat-store";
 import { useDataSourceStore } from "@/store/use-data-source-store";
 import { useConversationTitleStore } from "@/store/use-conversation-title-store";
-import { createChatAttachmentsAdapter } from "@/lib/attachments";
+import {
+  createChatAttachmentsAdapter,
+  sendPendingChatAttachments,
+} from "@/lib/attachments";
 import {
   useConversations,
   useMessages,
@@ -123,10 +126,7 @@ export function useAppChatRuntime(active = true) {
     }
   }, [currentConversationId, messages, derivedTitles, setConversationTitle]);
 
-  const attachmentsAdapter = useMemo(
-    () => createChatAttachmentsAdapter(ensureConversation, source, queryClient),
-    [ensureConversation, source, queryClient],
-  );
+  const attachmentsAdapter = useMemo(() => createChatAttachmentsAdapter(), []);
 
   const isRunning = sendMessage.isPending || isAwaitingReply(messages);
 
@@ -134,16 +134,31 @@ export function useAppChatRuntime(active = true) {
     const text = extractText(message);
     const attachments = extractAttachments(message);
 
+    // A send that carries an attachment is uploaded HERE (not in the adapter's
+    // send()), because this is the one place that has both the stashed file(s)
+    // and the caption `text` — for every send path (Enter and button), unlike
+    // the composer's button-only text snapshot. The upload records the user's
+    // own message (the caption, or the file name when blank) followed by the
+    // "I've started processing" announcement — one request, no separate racing
+    // send. The typed caption is NOT also sent as its own chat message.
+    if (attachments?.length) {
+      const conversationId = await ensureConversation();
+      await sendPendingChatAttachments(
+        conversationId,
+        text,
+        attachments.map((a) => a.id),
+        source,
+        queryClient,
+      );
+      return;
+    }
+
     if (!text.trim()) {
-      // Attachment-only send (no caption typed): the file already uploaded
-      // via the attachments adapter, which creates its own assistant
-      // announcement message — there's no text message left to send.
-      if (attachments?.length) return;
       throw new Error("Only text messages are supported for now");
     }
 
     const conversationId = await ensureConversation();
-    await sendMessage.mutateAsync({ conversationId, content: text, attachments });
+    await sendMessage.mutateAsync({ conversationId, content: text });
   };
 
   const threadListAdapter: ExternalStoreThreadListAdapter = {
