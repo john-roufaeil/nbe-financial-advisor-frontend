@@ -17,7 +17,7 @@ import {
 import { PageBanner } from "@/components/shared/layout/PageBanner";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
-import { NotificationsCard } from "@/components/dashboard/NotificationsCard";
+import { AnomaliesCard } from "@/components/dashboard/AnomaliesCard";
 import { GoalCard, GoalCardSkeleton } from "@/components/dashboard/GoalCard";
 import { BudgetSplitCard } from "@/components/dashboard/BudgetSplitCard";
 import { NoPlanCard } from "@/components/dashboard/NoPlanCard";
@@ -122,10 +122,9 @@ export default function Dashboard() {
                   />
                 </div>
               )}
-              {(show("activity") || show("notifications")) && (
+              {show("activity") && (
                 <div className="flex flex-col gap-4 xl:w-1/4 xl:self-start">
-                  {show("activity") && <RecentActivityCard filters={filters} />}
-                  {show("notifications") && <NotificationsCard />}
+                  <RecentActivityCard filters={filters} />
                 </div>
               )}
             </div>
@@ -139,14 +138,15 @@ export default function Dashboard() {
               <div className="min-w-0 flex-1">
                 <NoPlanCard />
               </div>
-              {(show("activity") || show("notifications")) && (
+              {show("activity") && (
                 <div className="flex flex-col gap-4 xl:w-1/4 xl:self-start">
-                  {show("activity") && <RecentActivityCard stacked filters={filters} />}
-                  {show("notifications") && <NotificationsCard />}
+                  <RecentActivityCard stacked filters={filters} />
                 </div>
               )}
             </div>
           )}
+
+          {show("anomalies") && <AnomaliesCard />}
         </div>
       )}
 

@@ -1,0 +1,11 @@
+{
+  "anomalies": {
+    "title": "Flagged activity",
+    "resolve": "Mark resolved",
+    "severity": {
+      "low": "Low",
+      "medium": "Medium",
+      "high": "High"
+    }
+  }
+}

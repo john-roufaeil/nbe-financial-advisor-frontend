@@ -7,7 +7,7 @@ export const DASHBOARD_CARDS = [
   "goal",
   "budget",
   "activity",
-  "notifications",
+  "anomalies",
 ] as const;
 export type DashboardCard = (typeof DASHBOARD_CARDS)[number];
 
