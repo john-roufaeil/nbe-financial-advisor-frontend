@@ -18,6 +18,14 @@ export const API_ENDPOINTS = {
   authLogin: "/auth/login",
   authRefresh: "/auth/refresh",
   authLogout: "/auth/logout",
+  authVerifyEmailRequest: "/auth/verify-email/request",
+  authVerifyEmailConfirm: "/auth/verify-email/confirm",
+  authPasswordResetRequest: "/auth/password-reset/request",
+  authPasswordResetConfirm: "/auth/password-reset/confirm",
+  authBankLoginInitiate: "/auth/bank-login/initiate",
+  authBankLoginCallback: "/auth/bank-login/callback",
+  bankConnections: "/bank-connections",
+  bankConnectionCallback: (id: string) => `/bank-connections/${id}/callback`,
   adminAuthLogin: "/admin/auth/login",
   adminCategories: "/admin/categories",
   adminCategory: (id: string) => `/admin/categories/${id}`,
@@ -33,4 +41,6 @@ export const API_ENDPOINTS = {
   chatAttachments: (conversationId: string) =>
     `/chat/conversations/${conversationId}/attachments`,
   feedback: "/feedback",
+  anomalies: "/analytics/anomalies",
+  anomaly: (id: string) => `/analytics/anomalies/${id}`,
 } as const;

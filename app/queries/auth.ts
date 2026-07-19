@@ -1,10 +1,18 @@
 import { useMutation } from "@tanstack/react-query";
 import * as authApi from "@/api/auth";
 import * as authMock from "@/mocks/auth";
-import type { SignupBody, LoginBody } from "@/types/auth";
+import type {
+  SignupBody,
+  LoginBody,
+  VerifyEmailConfirmBody,
+  PasswordResetRequestBody,
+  PasswordResetConfirmBody,
+  BankLoginInitiateBody,
+  BankLoginCallbackBody,
+} from "@/types/auth";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { useAuthStore } from "@/store/use-auth-store";
-import { toastApiError } from "@/lib/toast";
+import { toastApiError, toastSuccess } from "@/lib/toast";
 import { pickImpl } from "@/queries/shared";
 
 function impl(source: DataSource) {
@@ -41,5 +49,61 @@ export function useLogout() {
     // equivalent). Local state is cleared by the caller regardless of
     // success/failure (offline, already expired, etc.).
     mutationFn: () => impl(source).logout(),
+  });
+}
+
+export function useRequestEmailVerification() {
+  const source = useDataSourceStore((s) => s.source);
+  return useMutation({
+    mutationFn: () => impl(source).requestEmailVerification(),
+    onSuccess: () => toastSuccess("toast.verificationEmailSent"),
+    onError: (error) => toastApiError(error),
+  });
+}
+
+/**
+ * No onError toast: the /verify-email page renders its own success/invalid-link
+ * state from the result rather than a transient toast.
+ */
+export function useConfirmEmailVerification() {
+  const source = useDataSourceStore((s) => s.source);
+  return useMutation({
+    mutationFn: (body: VerifyEmailConfirmBody) =>
+      impl(source).confirmEmailVerification(body),
+  });
+}
+
+export function useRequestPasswordReset() {
+  const source = useDataSourceStore((s) => s.source);
+  return useMutation({
+    mutationFn: (body: PasswordResetRequestBody) =>
+      impl(source).requestPasswordReset(body),
+  });
+}
+
+/** No onError toast — see useConfirmEmailVerification. */
+export function useConfirmPasswordReset() {
+  const source = useDataSourceStore((s) => s.source);
+  return useMutation({
+    mutationFn: (body: PasswordResetConfirmBody) =>
+      impl(source).confirmPasswordReset(body),
+  });
+}
+
+export function useBankLoginInitiate() {
+  const source = useDataSourceStore((s) => s.source);
+  return useMutation({
+    mutationFn: (body: BankLoginInitiateBody) => impl(source).bankLoginInitiate(body),
+    onError: (error) => toastApiError(error),
+  });
+}
+
+export function useBankLoginCallback() {
+  const source = useDataSourceStore((s) => s.source);
+  const setTokens = useAuthStore((s) => s.setTokens);
+  return useMutation({
+    mutationFn: (body: BankLoginCallbackBody) => impl(source).bankLoginCallback(body),
+    onSuccess: (tokens) => setTokens({ accessToken: tokens.access_token }),
+    onError: (error) => toastApiError(error),
   });
 }

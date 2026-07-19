@@ -9,6 +9,8 @@ export const ROUTE_SEGMENTS = {
   signIn: "sign-in",
   admin: "admin",
   adminDashboard: "admin/dashboard",
+  verifyEmail: "verify-email",
+  resetPassword: "reset-password",
 } as const;
 
 /** Builds an in-app path for the given language. */
