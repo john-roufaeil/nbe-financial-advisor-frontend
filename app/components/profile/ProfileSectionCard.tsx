@@ -11,6 +11,7 @@ import { useToastStore } from "@/store/use-toast-store";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { FieldEditor, type FormFieldConfig } from "@/components/shared/forms/FieldEditor";
 import { FieldValue } from "@/components/shared/forms/FieldValue";
+import { NAME_PATTERN } from "@/lib/name-validation";
 import type { UpdateProfileBody, User as UserType } from "@/types/profile";
 
 export type Field = FormFieldConfig<keyof UserType>;
@@ -60,6 +61,12 @@ export function ProfileSectionCard({
           code: "custom",
           path: [nameField.key],
           message: t("common.sections.errors.nameRequired"),
+        });
+      } else if (!NAME_PATTERN.test(value.trim())) {
+        ctx.addIssue({
+          code: "custom",
+          path: [nameField.key],
+          message: t("common.sections.errors.nameInvalid"),
         });
       }
     }

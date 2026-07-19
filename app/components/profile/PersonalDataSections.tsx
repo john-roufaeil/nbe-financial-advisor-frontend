@@ -5,6 +5,7 @@ import {
   type Section,
 } from "@/components/profile/ProfileSectionCard";
 import { BankAccountsCard } from "@/components/accounts/BankAccountsCard";
+import { LinkedBanksCard } from "@/components/accounts/LinkedBanksCard";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { ErrorState } from "@/components/shared/QueryState";
 
@@ -115,6 +116,7 @@ export function PersonalDataSections() {
         <ProfileSectionCard key={s.key} section={s} user={user} />
       ))}
       <BankAccountsCard />
+      <LinkedBanksCard />
     </div>
   );
 }
