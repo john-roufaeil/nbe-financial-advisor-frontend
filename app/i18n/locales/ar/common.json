@@ -58,6 +58,8 @@
     "addAccount": {
       "title": "إضافة حساب بنكي",
       "add": "إضافة حساب بنكي",
+      "connectBank": "ربط حساب بنكي",
+      "connecting": "جارٍ ربط حسابك…",
       "accountType": "نوع الحساب",
       "accountTypes": {
         "checking": "حساب جاري",
@@ -79,10 +81,15 @@
         "accountNumberMismatch": "أرقام الحساب غير متطابقة."
       }
     },
+    "verifyEmail": {
+      "message": "تحقق من بريدك الإلكتروني لتأمين حسابك.",
+      "send": "إرسال بريد التحقق"
+    },
     "sections": {
       "errors": {
         "phoneInvalid": "أدخل رقم هاتف صحيحًا.",
         "nameRequired": "أدخل اسمك.",
+        "nameInvalid": "يجب أن يحتوي الاسم على حروف ومسافات فقط.",
         "incomeNegative": "لا يمكن أن يكون الدخل الشهري سالبًا."
       },
       "profile": {
@@ -117,7 +124,8 @@
         "title": "الحسابات البنكية",
         "empty": "لا توجد حسابات بنكية مرتبطة بعد.",
         "error": "تعذّر تحميل حساباتك البنكية. حاول مرة أخرى.",
-        "inactive": "غير نشط"
+        "inactive": "غير نشط",
+        "synced": "متزامن"
       },
       "preferences": {
         "title": "التفضيلات"

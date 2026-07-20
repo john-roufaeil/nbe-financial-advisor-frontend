@@ -268,6 +268,7 @@ export async function approveBankStatement(
         category: tx.category,
         type: tx.type,
         amount: tx.amount,
+        source: "synchronized",
       }),
     ),
   );

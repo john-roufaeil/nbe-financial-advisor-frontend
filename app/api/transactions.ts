@@ -77,6 +77,7 @@ function toTransaction(raw: RawTransaction): Transaction {
     type: toUiType(raw.transaction_type),
     amount: Math.abs(Number(raw.amount)),
     accountId: raw.account_id,
+    source: raw.source,
   };
 }
 

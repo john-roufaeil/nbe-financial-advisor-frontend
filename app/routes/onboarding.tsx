@@ -239,7 +239,9 @@ export default function Onboarding() {
       setPassword("");
       setAgreed(false);
       completedRef.current = { signup: false, profile: false, budget: false };
-      navigate(localizedPath(lang!, ROUTE_SEGMENTS.signIn));
+      navigate(localizedPath(lang!, ROUTE_SEGMENTS.signIn), {
+        state: { justSignedUp: true },
+      });
     } catch (error) {
       // Writes (signup, profile, budget) must NOT fake success. The mutation's
       // onError already surfaced a toast; stay on the current step, don't advance.
@@ -353,7 +355,7 @@ export default function Onboarding() {
 
             <div className="mt-1 flex items-center justify-between">
               <button
-                className="btn btn-ghost gap-1.5"
+                className="btn btn-ghost group gap-1.5"
                 disabled={isSubmitting}
                 onClick={() => {
                   setAttempted(false);
@@ -361,19 +363,19 @@ export default function Onboarding() {
                   else back();
                 }}
               >
-                <ArrowLeft className="size-4" />
+                <ArrowLeft className="size-4 transition-transform ltr:group-hover:-translate-x-0.5 rtl:group-hover:translate-x-0.5" />
                 {t("actions.back")}
               </button>
               <div className="flex items-center gap-2">
                 {optionalStepKey !== null && isStepSkippable(optionalStepKey) && (
                   <button
                     type="button"
-                    className="btn btn-ghost gap-1.5"
+                    className="btn btn-ghost group gap-1.5"
                     disabled={isSubmitting}
                     onClick={handleSkip}
                   >
                     {t("actions.skip")}
-                    <ChevronsRight className="size-4" />
+                    <ChevronsRight className="size-4 transition-transform ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
                   </button>
                 )}
                 <Tooltip
@@ -388,7 +390,7 @@ export default function Onboarding() {
                   }
                 >
                   <Button
-                    className={`btn btn-primary gap-1.5 ${
+                    className={`btn btn-primary group gap-1.5 ${
                       canContinue ? "" : "cursor-not-allowed opacity-50"
                     }`}
                     aria-disabled={!canContinue}
@@ -403,7 +405,7 @@ export default function Onboarding() {
                     ) : (
                       <>
                         {t("actions.continue")}
-                        <ArrowRight className="size-4" />
+                        <ArrowRight className="size-4 transition-transform ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
                       </>
                     )}
                   </Button>

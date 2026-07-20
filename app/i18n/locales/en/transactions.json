@@ -5,6 +5,7 @@
     "empty": "No transactions yet. Add one manually, or upload a bank statement and we'll pull them out for you.",
     "emptyShort": "No transactions",
     "emptyCta": "Add your first transaction",
+    "synced": "Synced",
     "pagination": {
       "total_zero": "No transactions",
       "total_one": "{{count}} transaction",

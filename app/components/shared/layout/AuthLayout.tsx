@@ -43,7 +43,7 @@ export function AuthLayout({
     >
       <div className={`absolute inset-e-8 top-8 flex items-center gap-2 ${Z_DROPDOWN}`}>
         <ThemeToggle />
-        <LanguageSwitcher variant="btn-ghost" className="btn-sm" />
+        <LanguageSwitcher variant="btn-ghost" className="btn-sm bg-base-200" />
       </div>
 
       {/* Branded image panel — full-height column on desktop, banner on mobile. */}

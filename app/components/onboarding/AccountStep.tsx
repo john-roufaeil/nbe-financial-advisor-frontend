@@ -9,6 +9,7 @@ import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { PrivacyPolicyModal } from "@/components/shared/modals/PrivacyPolicyModal";
 import { PasswordInput } from "@/components/shared/forms/PasswordInput";
 import { RequiredMark } from "@/components/onboarding/RequiredMark";
+import { NAME_PATTERN } from "@/lib/name-validation";
 
 interface AccountFormValues {
   name: string;
@@ -56,7 +57,8 @@ export function AccountStep({
           .string()
           .trim()
           .min(1, t("onboarding.account.errors.nameRequired"))
-          .max(20, t("onboarding.account.errors.nameTooLong")),
+          .max(20, t("onboarding.account.errors.nameTooLong"))
+          .regex(NAME_PATTERN, t("onboarding.account.errors.nameInvalid")),
         email: z
           .string()
           .trim()

@@ -23,7 +23,6 @@ export function ConfirmDialog() {
     <BaseModal
       ref={ref}
       onClose={close}
-      fitHeight
       title={title}
       icon={
         <span className="bg-error/10 text-error grid size-9 shrink-0 place-items-center rounded-full">

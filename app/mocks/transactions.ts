@@ -11,6 +11,7 @@ let transactions: Transaction[] = [
     type: "income",
     amount: 42000,
     accountId: "acc-nbe-1",
+    source: "synchronized",
   },
   {
     id: "t2",
@@ -20,6 +21,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 650,
     accountId: "acc-nbe-1",
+    source: "manual",
   },
   {
     id: "t3",
@@ -29,6 +31,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 120,
     accountId: "acc-nbe-1",
+    source: "manual",
   },
   {
     id: "t4",
@@ -38,6 +41,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 380,
     accountId: "acc-cib-1",
+    source: "manual",
   },
   {
     id: "t5",
@@ -47,6 +51,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 540,
     accountId: "acc-nbe-1",
+    source: "synchronized",
   },
   {
     id: "t6",
@@ -56,6 +61,7 @@ let transactions: Transaction[] = [
     type: "income",
     amount: 6500,
     accountId: "acc-cib-1",
+    source: "manual",
   },
   {
     id: "t7",
@@ -65,6 +71,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 890,
     accountId: "acc-nbe-1",
+    source: "manual",
   },
   {
     id: "t8",
@@ -74,6 +81,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 210,
     accountId: "acc-nbe-1",
+    source: "manual",
   },
   {
     id: "t9",
@@ -83,6 +91,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 150,
     accountId: "acc-cib-1",
+    source: "manual",
   },
   {
     id: "t10",
@@ -92,6 +101,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 400,
     accountId: "acc-nbe-1",
+    source: "manual",
   },
   {
     id: "t11",
@@ -101,6 +111,7 @@ let transactions: Transaction[] = [
     type: "income",
     amount: 1200,
     accountId: "acc-cib-1",
+    source: "synchronized",
   },
   {
     id: "t12",
@@ -110,6 +121,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 720,
     accountId: "acc-nbe-1",
+    source: "manual",
   },
   {
     id: "t13",
@@ -119,6 +131,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 950,
     accountId: "acc-nbe-1",
+    source: "manual",
   },
   {
     id: "t14",
@@ -128,6 +141,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 180,
     accountId: "acc-cib-1",
+    source: "manual",
   },
   {
     id: "t15",
@@ -137,6 +151,7 @@ let transactions: Transaction[] = [
     type: "expense",
     amount: 260,
     accountId: "acc-nbe-1",
+    source: "manual",
   },
 ];
 

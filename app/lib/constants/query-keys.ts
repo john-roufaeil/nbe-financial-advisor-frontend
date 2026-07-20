@@ -10,4 +10,5 @@ export const QUERY_ROOTS = {
   profile: "profile",
   admin: "admin",
   chat: "chat",
+  anomalies: "anomalies",
 } as const;

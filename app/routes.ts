@@ -3,6 +3,13 @@ import { ROUTE_SEGMENTS } from "./lib/constants/routes";
 
 export default [
   index("routes/root-redirect.tsx"),
+  // Unprefixed (no :lang) — landing pages for links sent by email, where the
+  // backend has no locale context for the user who'll click them.
+  route("verify-email", "routes/verify-email.tsx"),
+  route("reset-password", "routes/reset-password.tsx"),
+  // Fixed redirect_uri the backend hands the bank connector — see
+  // routes/bank-connect-callback.tsx for why this can't live under :lang.
+  route("bank-connect/callback", "routes/bank-connect-callback.tsx"),
   layout("routes/lang-layout.tsx", [
     // Splash, onboarding, and sign-in are public but guest-only: an already
     // authenticated user is redirected straight to the dashboard. Onboarding
@@ -30,6 +37,30 @@ export default [
     layout("routes/require-admin.tsx", [
       route(`:lang/${ROUTE_SEGMENTS.adminDashboard}`, "routes/admin-dashboard.tsx"),
     ]),
+    // Same pages as the unprefixed /verify-email and /reset-password routes
+    // above (the ones the emailed links actually point to — that never
+    // changes, the backend has no locale context when composing them).
+    // These :lang-prefixed twins exist purely so a user already browsing
+    // the app at /en/... or /ar/... — or who switches language while on
+    // one of these pages — gets a URL that matches the rest of the app,
+    // instead of an inconsistent bare path. Outside require-guest: an
+    // already-signed-in user (e.g. verifying email from a second tab)
+    // shouldn't be bounced away from either page.
+    // Explicit `id`s: react-router derives a route's id from its file path
+    // by default, and these share a file with the unprefixed routes above
+    // (same component, two paths) — without an override that's a duplicate
+    // id, which doesn't just fail to register these two, it breaks the
+    // ENTIRE route manifest build. Confirmed the hard way: that failure mode
+    // makes the client-side POST to /verify-email get treated as a
+    // full-page form submission with no resource-route action to handle it,
+    // which is what an indefinitely "Verifying your email…" spinner
+    // actually was — not a network or backend issue.
+    route(`:lang/${ROUTE_SEGMENTS.verifyEmail}`, "routes/verify-email.tsx", {
+      id: "routes/verify-email-localized",
+    }),
+    route(`:lang/${ROUTE_SEGMENTS.resetPassword}`, "routes/reset-password.tsx", {
+      id: "routes/reset-password-localized",
+    }),
     route(":lang/*", "routes/not-found.tsx"),
   ]),
   route("*", "routes/root-redirect.tsx", { id: "catch-all-redirect" }),

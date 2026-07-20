@@ -33,7 +33,7 @@ export function toastApiError(error: unknown) {
 }
 
 /** Pulls a human-readable message out of a failed API call, if the backend sent one. */
-function extractApiErrorMessage(error: unknown): string | undefined {
+export function extractApiErrorMessage(error: unknown): string | undefined {
   if (!isAxiosError(error)) return undefined;
 
   const data: unknown = error.response?.data;
