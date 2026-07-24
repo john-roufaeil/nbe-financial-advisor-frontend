@@ -39,7 +39,7 @@ export function confirmBankConnection(
       // Matches mock-bank-sync/app/models.py's default bank_name exactly.
       bank_name: "Mock National Bank",
       account_type: "checking",
-      masked_account_number: "****0042",
+      account_number: "****0042",
       currency: "EGP",
       is_active: true,
       link_type: "synced",

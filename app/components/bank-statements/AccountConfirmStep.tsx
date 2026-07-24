@@ -52,7 +52,7 @@ export function AccountConfirmStep({
                   >
                     <BankBadge
                       bank={account.bank_name}
-                      subtitle={<span dir="ltr">{account.masked_account_number}</span>}
+                      subtitle={<span dir="ltr">{account.account_number}</span>}
                       className="flex-1"
                     />
                     {selected && (

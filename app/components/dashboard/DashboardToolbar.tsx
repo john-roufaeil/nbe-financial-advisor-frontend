@@ -30,7 +30,7 @@ function AccountOption({ account }: { account?: BankAccount }) {
       <img src={logo} alt="" className="size-4.5 shrink-0 rounded-full object-cover" />
       <span className="truncate">{label ?? account.bank_name}</span>
       <span className="text-base-content/40 shrink-0 text-xs" dir="ltr">
-        {account.masked_account_number}
+        {account.account_number}
       </span>
     </span>
   );

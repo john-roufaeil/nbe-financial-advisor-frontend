@@ -6,7 +6,7 @@ export interface BankAccount {
   id: string;
   bank_name: string;
   account_type: string | null;
-  masked_account_number: string;
+  account_number: string;
   currency: string;
   is_active: boolean;
   /**

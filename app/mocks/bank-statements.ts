@@ -30,7 +30,7 @@ async function generatePerceivedAccountNumber(): Promise<string> {
   const accounts = await getAccounts();
   if (accounts.length > 0 && Math.random() > 0.3) {
     const pick = accounts[Math.floor(Math.random() * accounts.length)];
-    return pick.masked_account_number.slice(-4);
+    return pick.account_number.slice(-4);
   }
   return String(Math.floor(1000 + Math.random() * 9000));
 }

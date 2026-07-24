@@ -2,14 +2,14 @@ import { useEffect, useRef, useState } from "react";
 import type { BankAccount } from "@/types/account";
 import type { BankStatement } from "@/types/bank-statement";
 
-/** Matches by the last 4 digits so a perceived account number lines up with `masked_account_number` (e.g. "****4821"). */
+/** Matches by the last 4 digits so a perceived account number lines up with `account_number` (e.g. "****4821"). */
 function findMatchingAccount(
   accounts: BankAccount[] | undefined,
   perceivedAccountNumber: string | undefined,
 ): BankAccount | undefined {
   if (!accounts || !perceivedAccountNumber) return undefined;
   return accounts.find((a) =>
-    a.masked_account_number.endsWith(perceivedAccountNumber.slice(-4)),
+    a.account_number.endsWith(perceivedAccountNumber.slice(-4)),
   );
 }
 
