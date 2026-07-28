@@ -23,16 +23,19 @@ const SAMPLE_POOL: Omit<ExtractedTransaction, "id" | "datetime">[] = [
 
 /**
  * Simulates OCR reading an account number off the statement: most of the time
- * it "reads" the last 4 digits of one of the user's existing accounts (so step 1
- * can demo the auto-match path), otherwise a random non-matching 4-digit string.
+ * it "reads" one of the user's existing accounts (so step 1 can demo the
+ * auto-match path), otherwise a random non-matching number.
+ *
+ * Full numbers, not last-4 — the real normalizer returns the account number as
+ * printed on the statement (services/ai_service.py's normalized_json contract).
  */
 async function generatePerceivedAccountNumber(): Promise<string> {
   const accounts = await getAccounts();
   if (accounts.length > 0 && Math.random() > 0.3) {
     const pick = accounts[Math.floor(Math.random() * accounts.length)];
-    return pick.account_number.slice(-4);
+    return pick.account_number;
   }
-  return String(Math.floor(1000 + Math.random() * 9000));
+  return Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join("");
 }
 
 function generateExtractedTransactions(uploadDate: string): ExtractedTransaction[] {

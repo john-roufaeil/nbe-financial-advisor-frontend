@@ -72,12 +72,12 @@
       "bankPlaceholder": "اختر بنكًا",
       "bankSearchPlaceholder": "ابحث عن بنك...",
       "addCustomBank": "إضافة \"{{name}}\" كبنك جديد",
-      "accountNumber": "آخر 4 أرقام من رقم الحساب",
+      "accountNumber": "رقم الحساب",
       "accountNumberConfirm": "تأكيد رقم الحساب",
-      "accountNumberPlaceholder": "1234",
+      "accountNumberPlaceholder": "1234567890123456",
       "errors": {
         "bankRequired": "اختر بنكًا أو أضف واحدًا.",
-        "accountNumberInvalid": "أدخل 4 أرقام بالضبط.",
+        "accountNumberInvalid": "أدخل رقم حسابك كاملًا (من {{min}} إلى {{max}} رقمًا).",
         "accountNumberMismatch": "أرقام الحساب غير متطابقة."
       }
     },

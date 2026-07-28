@@ -29,7 +29,10 @@ function AccountOption({ account }: { account?: BankAccount }) {
     <span className="flex min-w-0 items-center gap-2">
       <img src={logo} alt="" className="size-4.5 shrink-0 rounded-full object-cover" />
       <span className="truncate">{label ?? account.bank_name}</span>
-      <span className="text-base-content/40 shrink-0 text-xs" dir="ltr">
+      {/* Truncates rather than shrink-0: account numbers are full-length now,
+          and a 16-digit one pinned at its natural width would push the bank
+          name out of this toolbar chip on narrow viewports. */}
+      <span className="text-base-content/40 min-w-0 truncate text-xs" dir="ltr">
         {account.account_number}
       </span>
     </span>

@@ -2,21 +2,32 @@ import { useEffect, useRef, useState } from "react";
 import type { BankAccount } from "@/types/account";
 import type { BankStatement } from "@/types/bank-statement";
 
-/** Matches by the last 4 digits so a perceived account number lines up with `account_number` (e.g. "****4821"). */
+/** Statements print account numbers with spaces or dashes; the stored value has
+ * neither, so both sides are reduced to digits before comparing. */
+function digitsOnly(value: string): string {
+  return value.replace(/\D/g, "");
+}
+
+/**
+ * Matches on the whole number, not a trailing fragment: every account now
+ * stores the real number regardless of origin (manual, statement, or synced
+ * via the connector contract), so a partial match would only serve to
+ * false-match two genuinely different accounts that happen to share digits.
+ */
 function findMatchingAccount(
   accounts: BankAccount[] | undefined,
   perceivedAccountNumber: string | undefined,
 ): BankAccount | undefined {
   if (!accounts || !perceivedAccountNumber) return undefined;
-  return accounts.find((a) =>
-    a.account_number.endsWith(perceivedAccountNumber.slice(-4)),
-  );
+  const perceived = digitsOnly(perceivedAccountNumber);
+  if (!perceived) return undefined;
+  return accounts.find((a) => digitsOnly(a.account_number) === perceived);
 }
 
 /**
  * Step 1 (confirm bank account) selection state for the statement review flow:
  * resets whenever a different statement opens, pre-selects the account whose
- * masked number matches the perceived account number once per statement, and
+ * number matches the perceived account number once per statement, and
  * auto-selects an account just created via the stacked "add new account" modal.
  */
 export function useAccountPreselect(
