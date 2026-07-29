@@ -1,6 +1,6 @@
 import { delay } from "@/mocks/shared";
 import { createTransaction } from "@/mocks/transactions";
-import { getAccounts } from "@/mocks/accounts";
+import { getAccounts, createAccount } from "@/mocks/accounts";
 import { BANK_CODES } from "@/lib/banks";
 import type {
   BankStatementFilters,
@@ -22,20 +22,41 @@ const SAMPLE_POOL: Omit<ExtractedTransaction, "id" | "datetime">[] = [
 ];
 
 /**
- * Simulates OCR reading an account number off the statement: most of the time
- * it "reads" one of the user's existing accounts (so step 1 can demo the
- * auto-match path), otherwise a random non-matching number.
+ * Simulates OCR reading an account number off the statement, then mirrors the
+ * backend's `_finalize_normalization_phase()`: it resolves that number against
+ * the user's accounts with a get-or-create, so a never-seen number gets a new
+ * BankAccount right here — before the user ever reaches the confirm-account
+ * step. Most of the time it "reads" an existing account (so step 1 can demo
+ * the auto-match path); the rest of the time it's a fresh number, which is
+ * exactly the case that creates a new account mid-processing.
  *
  * Full numbers, not last-4 — the real normalizer returns the account number as
  * printed on the statement (services/ai_service.py's normalized_json contract).
  */
-async function generatePerceivedAccountNumber(): Promise<string> {
-  const accounts = await getAccounts();
-  if (accounts.length > 0 && Math.random() > 0.3) {
-    const pick = accounts[Math.floor(Math.random() * accounts.length)];
-    return pick.account_number;
+async function resolveAccountForStatement(
+  fallbackBankName?: string,
+): Promise<{ perceivedAccountNumber: string; accountId: string; bankName: string }> {
+  const existing = await getAccounts();
+  if (existing.length > 0 && Math.random() > 0.3) {
+    const pick = existing[Math.floor(Math.random() * existing.length)];
+    return {
+      perceivedAccountNumber: pick.account_number,
+      accountId: pick.id,
+      bankName: pick.bank_name,
+    };
   }
-  return Array.from({ length: 16 }, () => Math.floor(Math.random() * 10)).join("");
+  const perceivedAccountNumber = Array.from({ length: 16 }, () =>
+    Math.floor(Math.random() * 10),
+  ).join("");
+  const bankName =
+    fallbackBankName ?? BANK_CODES[Math.floor(Math.random() * BANK_CODES.length)];
+  const created = await createAccount({
+    bank_name: bankName,
+    account_type: "checking",
+    account_number: perceivedAccountNumber,
+    currency: "EGP",
+  });
+  return { perceivedAccountNumber, accountId: created.id, bankName };
 }
 
 function generateExtractedTransactions(uploadDate: string): ExtractedTransaction[] {
@@ -159,21 +180,21 @@ function runProcessing(id: string) {
       const doc = bankStatements.find((d) => d.id === id);
       if (!doc) return;
       const succeeded = Math.random() > 0.15;
-      const perceivedAccountNumber = succeeded
-        ? await generatePerceivedAccountNumber()
+      const resolved = succeeded
+        ? await resolveAccountForStatement(doc.bankName)
         : undefined;
       bankStatements = bankStatements.map((d) =>
         d.id === id
-          ? succeeded
+          ? succeeded && resolved
             ? {
                 ...d,
                 status: "processed",
                 errorMessage: undefined,
                 failedStage: undefined,
-                bankName:
-                  d.bankName ?? BANK_CODES[Math.floor(Math.random() * BANK_CODES.length)],
+                bankName: resolved.bankName,
+                accountId: resolved.accountId,
                 extractedTransactions: generateExtractedTransactions(d.uploadDate),
-                perceivedAccountNumber,
+                perceivedAccountNumber: resolved.perceivedAccountNumber,
                 accountConfirmed: false,
               }
             : {
