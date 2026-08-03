@@ -6,7 +6,12 @@ export interface BankAccount {
   id: string;
   bank_name: string;
   account_type: string | null;
-  masked_account_number: string;
+  /**
+   * The full account number, returned exactly as stored with no display-side
+   * masking — the same value whether the account was added by hand, derived
+   * from a statement, or synced from the bank.
+   */
+  account_number: string;
   currency: string;
   is_active: boolean;
   /**
@@ -28,8 +33,9 @@ export const CURRENCIES = ["EGP", "SAR", "EUR", "USD"] as const;
 export type Currency = (typeof CURRENCIES)[number];
 
 /**
- * Body for POST /accounts. `account_number` is the last 4 digits, entered twice
- * client-side to confirm.
+ * Body for POST /accounts. `account_number` is the full account number, entered
+ * twice client-side to confirm — the backend stores and returns it verbatim
+ * (no masking), so a typo here is what every screen shows afterwards.
  *
  * There is deliberately no balance field: the backend derives `current_balance`
  * from the account's most recent transaction and refuses to accept it as input.

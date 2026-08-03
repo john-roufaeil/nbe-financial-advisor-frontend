@@ -35,7 +35,7 @@ interface RawStatement {
   file_size: number | null;
   file_type: string | null;
   bank_name: string | null;
-  account_hint: string | null;
+  account_number: string | null;
   start_transaction_date: string | null;
   last_transaction_date: string | null;
   upload_date: string;
@@ -46,9 +46,12 @@ interface RawStatement {
 interface RawStatementTransaction {
   transaction_date: string;
   merchant_raw: string | null;
+  merchant_normalized: string | null;
   category: string | null;
   amount: string | number;
   transaction_type: string | null;
+  balance: string | number | null;
+  extra_fields?: unknown;
 }
 
 interface PaginatedStatements {
@@ -84,10 +87,14 @@ function toExtractedTransaction(
     // this is a client-side key for the review draft only — never sent back.
     id: String(index),
     datetime: `${raw.transaction_date}T00:00:00`,
-    title: raw.merchant_raw ?? "",
+    // Same precedence as the committed ledger (api/transactions.ts's toTransaction()).
+    title: raw.merchant_normalized || raw.merchant_raw || "",
     category: raw.category ?? "",
     type: raw.transaction_type === "credit" ? "income" : "expense",
     amount: Math.abs(Number(raw.amount)),
+    merchantNormalized: raw.merchant_normalized,
+    balance: raw.balance === null ? null : Number(raw.balance),
+    extraFields: raw.extra_fields,
   };
 }
 
@@ -109,9 +116,9 @@ function toBankStatement(raw: RawStatement): BankStatement {
     errorMessage: raw.failure_reason ?? undefined,
     approved,
     accountId: raw.account_id ?? undefined,
-    // bank_name/account_hint come straight off the statement — no extra lookups.
+    // bank_name/account_number come straight off the statement — no extra lookups.
     bankName: raw.bank_name ?? undefined,
-    perceivedAccountNumber: raw.account_hint ?? undefined,
+    perceivedAccountNumber: raw.account_number ?? undefined,
     // There is no "confirm the account" call: the account reaches the server only
     // as the optional `account_id` on approve. Confirming is therefore a purely
     // client-side review step, tracked in the modal — all this flag says is that
@@ -223,6 +230,11 @@ export async function approveBankStatement(
       category: tx.category,
       amount: tx.amount,
       transaction_type: tx.type === "income" ? "credit" : "debit",
+      ...(tx.merchantNormalized != null
+        ? { merchant_normalized: tx.merchantNormalized }
+        : {}),
+      ...(tx.balance != null ? { balance: tx.balance } : {}),
+      ...(tx.extraFields != null ? { extra_fields: tx.extraFields } : {}),
     })),
   };
   if (accountId) body.account_id = accountId;

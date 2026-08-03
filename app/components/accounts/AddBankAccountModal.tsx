@@ -10,7 +10,8 @@ import { Button } from "@/components/shared/Button";
 import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { BankAccountFields } from "@/components/accounts/BankAccountFields";
 import {
-  ACCOUNT_NUMBER_LENGTH,
+  ACCOUNT_NUMBER_MAX_LENGTH,
+  ACCOUNT_NUMBER_MIN_LENGTH,
   emptyBankAccountForm,
   type BankAccountFormValues,
 } from "@/lib/bank-account-form";
@@ -26,18 +27,23 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
         accountType: z.enum(ACCOUNT_TYPES),
         bankName: z.string().trim().min(1, t("common.addAccount.errors.bankRequired")),
         currency: z.enum(CURRENCIES),
-        accountNumber: z
-          .string()
-          .regex(
-            new RegExp(`^\\d{${ACCOUNT_NUMBER_LENGTH}}$`),
-            t("common.addAccount.errors.accountNumberInvalid"),
-          ),
+        accountNumber: z.string().regex(
+          new RegExp(`^\\d{${ACCOUNT_NUMBER_MIN_LENGTH},${ACCOUNT_NUMBER_MAX_LENGTH}}$`),
+          t("common.addAccount.errors.accountNumberInvalid", {
+            min: ACCOUNT_NUMBER_MIN_LENGTH,
+            max: ACCOUNT_NUMBER_MAX_LENGTH,
+          }),
+        ),
         accountNumberConfirm: z.string(),
       })
       .superRefine((values, ctx) => {
+        // Only raise the mismatch once the primary field is itself valid —
+        // otherwise every keystroke of a 16-digit number reports a mismatch
+        // against the not-yet-typed confirmation.
         if (
           /^\d+$/.test(values.accountNumber) &&
-          values.accountNumber.length === ACCOUNT_NUMBER_LENGTH &&
+          values.accountNumber.length >= ACCOUNT_NUMBER_MIN_LENGTH &&
+          values.accountNumber.length <= ACCOUNT_NUMBER_MAX_LENGTH &&
           values.accountNumber !== values.accountNumberConfirm
         ) {
           ctx.addIssue({

@@ -8,12 +8,14 @@ import {
 } from "@/types/account";
 import { BankPicker } from "@/components/shared/forms/BankPicker";
 import {
-  ACCOUNT_NUMBER_LENGTH,
+  ACCOUNT_NUMBER_MAX_LENGTH,
   type BankAccountFormValues,
 } from "@/lib/bank-account-form";
 
 /** The account-number field and its confirmation twin: digits-only input
- * capped at ACCOUNT_NUMBER_LENGTH, with the field's own error underneath. */
+ * capped at ACCOUNT_NUMBER_MAX_LENGTH, with the field's own error underneath.
+ * Only the ceiling is enforced while typing — the minimum is left to the
+ * schema, so a half-typed number doesn't error under the cursor. */
 function AccountNumberField({
   name,
   label,
@@ -41,11 +43,11 @@ function AccountNumberField({
             value={field.value}
             onChange={(e) =>
               field.onChange(
-                e.target.value.replace(/\D/g, "").slice(0, ACCOUNT_NUMBER_LENGTH),
+                e.target.value.replace(/\D/g, "").slice(0, ACCOUNT_NUMBER_MAX_LENGTH),
               )
             }
             placeholder={t("common.addAccount.accountNumberPlaceholder")}
-            maxLength={ACCOUNT_NUMBER_LENGTH}
+            maxLength={ACCOUNT_NUMBER_MAX_LENGTH}
             className={`input input-bordered input-sm w-full ${error ? "input-error" : ""}`}
           />
         )}

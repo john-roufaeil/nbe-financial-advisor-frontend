@@ -72,12 +72,12 @@
       "bankPlaceholder": "Select a bank",
       "bankSearchPlaceholder": "Search banks...",
       "addCustomBank": "Add \"{{name}}\" as a new bank",
-      "accountNumber": "Last 4 digits of account number",
+      "accountNumber": "Account number",
       "accountNumberConfirm": "Confirm account number",
-      "accountNumberPlaceholder": "1234",
+      "accountNumberPlaceholder": "1234567890123456",
       "errors": {
         "bankRequired": "Select or add a bank.",
-        "accountNumberInvalid": "Enter exactly 4 digits.",
+        "accountNumberInvalid": "Enter your full account number ({{min}}–{{max}} digits).",
         "accountNumberMismatch": "Account numbers don't match."
       }
     },

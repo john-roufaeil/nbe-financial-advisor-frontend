@@ -17,6 +17,10 @@ export interface ExtractedTransaction {
   category: string;
   type: "income" | "expense";
   amount: number;
+  /** Carried through from normalization for round-trip on approve; not shown or editable. */
+  merchantNormalized?: string | null;
+  balance?: number | null;
+  extraFields?: unknown;
 }
 
 export interface BankStatement {

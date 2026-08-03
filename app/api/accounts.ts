@@ -14,12 +14,7 @@ export async function getAccounts(): Promise<BankAccount[]> {
 }
 
 export async function createAccount(body: CreateBankAccountBody): Promise<BankAccount> {
-  // The backend's create field is `masked_account_number`, not `account_number`.
-  const { account_number, ...rest } = body;
-  const res = await apiClient.post<BankAccount>(API_ENDPOINTS.accounts, {
-    ...rest,
-    masked_account_number: account_number,
-  });
+  const res = await apiClient.post<BankAccount>(API_ENDPOINTS.accounts, body);
   return res.data;
 }
 

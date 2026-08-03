@@ -39,8 +39,7 @@ export function AccountPicker({
       const code = getBankCode(a.bank_name);
       const label = t(`banks.${code}`, getBankName(code) ?? a.bank_name);
       return (
-        label.toLowerCase().includes(q) ||
-        a.masked_account_number.toLowerCase().includes(q)
+        label.toLowerCase().includes(q) || a.account_number.toLowerCase().includes(q)
       );
     });
   }, [accounts, query, t]);
@@ -81,7 +80,7 @@ export function AccountPicker({
           )}
           <span className={`truncate ${selected ? "" : "text-base-content/40"}`}>
             {selected
-              ? `${selectedLabel} ${selected.masked_account_number}`
+              ? `${selectedLabel} ${selected.account_number}`
               : (placeholder ?? "")}
           </span>
         </span>
@@ -97,7 +96,7 @@ export function AccountPicker({
               className="size-5 shrink-0 rounded-full object-cover"
             />
             <span className="flex-1 truncate">
-              {label} {a.masked_account_number}
+              {label} {a.account_number}
             </span>
             {value === a.id && <Check data-no-flip className="size-4 shrink-0" />}
           </>

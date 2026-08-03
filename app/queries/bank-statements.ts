@@ -1,8 +1,13 @@
-import { useQuery, keepPreviousData } from "@tanstack/react-query";
+import { useEffect, useRef } from "react";
+import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import * as bankStatementsApi from "@/api/bank-statements";
 import * as bankStatementsMock from "@/mocks/bank-statements";
 import type { BankStatementFilters } from "@/api/bank-statements";
-import type { BankStatementType, ExtractedTransaction } from "@/types/bank-statement";
+import type {
+  BankStatementStatus,
+  BankStatementType,
+  ExtractedTransaction,
+} from "@/types/bank-statement";
 import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 import { pickImpl, useInvalidatingMutation } from "@/queries/shared";
@@ -19,9 +24,40 @@ export const bankStatementKeys = {
     [...bankStatementKeys.all, "detail", source, id] as const,
 };
 
+/**
+ * OCR finishing (status -> "processed") is when the backend resolves/creates
+ * the BankAccount for the statement (get_or_create on bank name + account
+ * number) — well before the user ever hits approve. So the accounts list can
+ * go stale right at that transition, not just on approve. This watches each
+ * polled statement for a processing -> processed edge and invalidates
+ * accounts exactly once per statement when it fires.
+ */
+function useInvalidateAccountsOnProcessed(
+  statuses: { id: string; status: BankStatementStatus }[],
+) {
+  const queryClient = useQueryClient();
+  const prevStatuses = useRef(new Map<string, BankStatementStatus>());
+  // A single joined key, not one dep per status: the list's length changes as
+  // statements are added/removed, and useEffect's dep array must stay a fixed
+  // size across renders of the same hook instance.
+  const statusesKey = statuses.map((s) => `${s.id}:${s.status}`).join(",");
+  useEffect(() => {
+    let becameProcessed = false;
+    for (const { id, status } of statuses) {
+      if (status === "processed" && prevStatuses.current.get(id) === "processing") {
+        becameProcessed = true;
+      }
+      prevStatuses.current.set(id, status);
+    }
+    if (becameProcessed) {
+      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.accounts] });
+    }
+  }, [queryClient, statusesKey]);
+}
+
 export function useBankStatements(filters: BankStatementFilters) {
   const source = useDataSourceStore((s) => s.source);
-  return useQuery({
+  const query = useQuery({
     queryKey: bankStatementKeys.list(filters, source),
     queryFn: () => impl(source).getBankStatements(filters),
     placeholderData: keepPreviousData,
@@ -32,11 +68,15 @@ export function useBankStatements(filters: BankStatementFilters) {
       return hasInFlight ? 1000 : false;
     },
   });
+  useInvalidateAccountsOnProcessed(
+    query.data?.items?.map((d) => ({ id: d.id, status: d.status })) ?? [],
+  );
+  return query;
 }
 
 export function useBankStatement(id: string | null) {
   const source = useDataSourceStore((s) => s.source);
-  return useQuery({
+  const query = useQuery({
     queryKey: bankStatementKeys.detail(id ?? "", source),
     queryFn: () => impl(source).getBankStatement(id as string),
     enabled: id !== null,
@@ -53,6 +93,10 @@ export function useBankStatement(id: string | null) {
       return failureCount < 3;
     },
   });
+  useInvalidateAccountsOnProcessed(
+    id && query.data ? [{ id, status: query.data.status }] : [],
+  );
+  return query;
 }
 
 export function useUploadBankStatements() {
@@ -82,9 +126,10 @@ export function useRetryBankStatement() {
  * review (see BankStatementDetailModal) — the only request this screen ever sends
  * is the approve call below, with the user's final edited rows attached.
  *
- * Approving commits rows straight into the ledger, so the transactions list
- * and the dashboard's spend, deltas, savings rate and per-category usage are
- * all restated by it.
+ * Approving commits rows straight into the ledger, so the transactions list,
+ * the accounts list (a new account may have been created/confirmed for this
+ * statement) and the dashboard's spend, deltas, savings rate and per-category
+ * usage are all restated by it.
  */
 export function useApproveBankStatement() {
   return useInvalidatingMutation({
@@ -105,6 +150,7 @@ export function useApproveBankStatement() {
     invalidates: [
       bankStatementKeys.all,
       [QUERY_ROOTS.transactions],
+      [QUERY_ROOTS.accounts],
       [QUERY_ROOTS.dashboard],
     ],
     successToastKey: "toast.bankStatementApproved",
@@ -121,10 +167,12 @@ export function useDeleteBankStatement() {
       bankStatementKeys.detail(id, "mock"),
     ],
     // An approved statement's committed rows are removed with it, so the
-    // ledger and dashboard totals need restating too.
+    // ledger, accounts (e.g. current_balance) and dashboard totals need
+    // restating too.
     invalidates: [
       bankStatementKeys.all,
       [QUERY_ROOTS.transactions],
+      [QUERY_ROOTS.accounts],
       [QUERY_ROOTS.dashboard],
     ],
     successToastKey: "toast.bankStatementDeleted",
