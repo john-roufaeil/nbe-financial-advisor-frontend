@@ -8,6 +8,7 @@ import {
   type ExternalStoreThreadListAdapter,
 } from "@assistant-ui/react";
 import { useChatStore } from "@/store/use-chat-store";
+import { useChatStopStore } from "@/store/use-chat-stop-store";
 import { useDataSourceStore } from "@/store/use-data-source-store";
 import { useConversationTitleStore } from "@/store/use-conversation-title-store";
 import {
@@ -20,6 +21,7 @@ import {
   useCreateConversation,
   useDeleteConversation,
   useSendMessage,
+  stopChatGeneration,
   isAwaitingReply,
 } from "@/queries/chat";
 import type { ChatConversation } from "@/types/chat";
@@ -96,6 +98,16 @@ export function useAppChatRuntime(active = true) {
   const source = useDataSourceStore((s) => s.source);
   const currentConversationId = useChatStore((s) => s.currentConversationId);
   const setCurrentConversationId = useChatStore((s) => s.setCurrentConversationId);
+  // Subscribed (not just read via getState()) so a stop click re-renders
+  // this hook — useMessages' `select` (queries/chat.ts) already derives the
+  // "Stopped generating." placeholder from this same store, but that
+  // derivation only re-runs when something causes this component tree to
+  // re-render in the first place.
+  const isStoppedForCurrent = useChatStopStore((s) =>
+    currentConversationId !== null
+      ? s.stoppedConversationIds.has(currentConversationId)
+      : false,
+  );
   const derivedTitles = useConversationTitleStore((s) => s.byConversationId);
   const setConversationTitle = useConversationTitleStore((s) => s.setTitle);
 
@@ -128,7 +140,8 @@ export function useAppChatRuntime(active = true) {
 
   const attachmentsAdapter = useMemo(() => createChatAttachmentsAdapter(), []);
 
-  const isRunning = sendMessage.isPending || isAwaitingReply(messages);
+  const isRunning =
+    !isStoppedForCurrent && (sendMessage.isPending || isAwaitingReply(messages));
 
   const onNew = async (message: AppendMessage) => {
     const text = extractText(message);
@@ -161,6 +174,15 @@ export function useAppChatRuntime(active = true) {
     await sendMessage.mutateAsync({ conversationId, content: text });
   };
 
+  // Wired to ComposerPrimitive.Cancel (ChatComposer.tsx) via the runtime's
+  // `running` state — assistant-ui only shows/enables that button while
+  // isRunning is true, so currentConversationId is guaranteed set here.
+  // Client-side only (queries/chat.ts's stopChatGeneration) — there's no
+  // backend endpoint to actually cancel generation.
+  const onCancel = async () => {
+    if (currentConversationId) stopChatGeneration(currentConversationId);
+  };
+
   const threadListAdapter: ExternalStoreThreadListAdapter = {
     threadId: currentConversationId ?? "",
     threads: conversations.map((c) => ({
@@ -187,6 +209,7 @@ export function useAppChatRuntime(active = true) {
     messages,
     isRunning,
     onNew,
+    onCancel,
     convertMessage: (m): ThreadMessageLike => ({
       role: m.role,
       id: m.id,

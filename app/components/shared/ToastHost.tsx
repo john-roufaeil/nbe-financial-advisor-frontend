@@ -50,7 +50,7 @@ function ToastItem({ toast }: { toast: Toast }) {
         <button
           type="button"
           onClick={() => dismiss(toast.id)}
-          className="btn btn-ghost btn-xs btn-square text-current"
+          className="btn btn-ghost btn-xs btn-square hover:text-base-content text-current"
           aria-label="Dismiss"
         >
           <X data-no-flip className="size-3.5" />

@@ -6,6 +6,7 @@ import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 import { pickImpl } from "@/queries/shared";
 import { toastApiError } from "@/lib/toast";
 import { useMessageAttachmentsStore } from "@/store/use-message-attachments-store";
+import { useChatStopStore } from "@/store/use-chat-stop-store";
 import type { ChatAttachment, ChatMessage } from "@/types/chat";
 
 export function impl(source: DataSource) {
@@ -62,17 +63,50 @@ export function useMessages(conversationId: string | null, active = true) {
     queryKey: chatKeys.messages(conversationId ?? "", source),
     queryFn: () => impl(source).getMessages(conversationId as string),
     enabled: conversationId !== null && active,
+    // There's no backend endpoint to actually cancel an in-flight reply
+    // (see stopChatGeneration) — once a conversation is marked stopped
+    // locally, polling for the reply that's still being generated
+    // server-side just stops here so the UI doesn't keep waiting on it.
     refetchInterval: (query) =>
-      active && isAwaitingReply(query.state.data) ? 1000 : false,
-    // The server never echoes attachments back on a message (see
-    // useSendMessage) — restore them from the local store keyed by real
-    // message id, so the chip a user sent alongside a file survives the
-    // refetch that replaces the optimistic entry.
+      active &&
+      conversationId !== null &&
+      !useChatStopStore.getState().stoppedConversationIds.has(conversationId) &&
+      isAwaitingReply(query.state.data)
+        ? 1000
+        : false,
     select: (messages) => {
+      // The server never echoes attachments back on a message (see
+      // useSendMessage) — restore them from the local store keyed by real
+      // message id, so the chip a user sent alongside a file survives the
+      // refetch that replaces the optimistic entry.
       const stored = useMessageAttachmentsStore.getState().byMessageId;
-      return messages.map((m) =>
+      const withAttachments = messages.map((m) =>
         m.attachments?.length || !stored[m.id] ? m : { ...m, attachments: stored[m.id] },
       );
+
+      // Once stopped, a still-pending (empty-text) last message is relabeled
+      // locally so isAwaitingReply() and the running/loading UI treat it as
+      // finished — the real reply may still land server-side later, but this
+      // stops the UI from looking like it's still generating.
+      if (
+        conversationId &&
+        useChatStopStore.getState().stoppedConversationIds.has(conversationId)
+      ) {
+        const last = withAttachments[withAttachments.length - 1];
+        if (last && isAwaitingReply(withAttachments)) {
+          const stoppedMessage: ChatMessage = {
+            id: `stopped-${conversationId}`,
+            role: "assistant",
+            text: "Stopped generating.",
+            createdAt: Date.now(),
+            stage: "complete",
+          };
+          return last.role === "assistant"
+            ? [...withAttachments.slice(0, -1), stoppedMessage]
+            : [...withAttachments, stoppedMessage];
+        }
+      }
+      return withAttachments;
     },
   });
 }
@@ -125,6 +159,9 @@ export function useSendMessage() {
       attachments?: ChatAttachment[];
     }) => impl(source).sendMessage(conversationId, content),
     onMutate: async ({ conversationId, content, attachments }) => {
+      // Sending into a conversation that was previously stopped resumes
+      // normal polling/loading UI for this new reply.
+      useChatStopStore.getState().resume(conversationId);
       const key = chatKeys.messages(conversationId, source);
       await queryClient.cancelQueries({ queryKey: key });
       const previous = queryClient.getQueryData<ChatMessage[]>(key);
@@ -154,6 +191,21 @@ export function useSendMessage() {
       });
     },
   });
+}
+
+/**
+ * Stops an in-flight assistant reply — client-side only. There's no backend
+ * endpoint to cancel generation (the backend runs the whole reply as one
+ * Celery task with no cancellation hook), so this can't stop the assistant
+ * from actually finishing its reply server-side. It only stops *this
+ * client* from polling for and displaying that reply: the
+ * "generating" indicator ends immediately, and useMessages' `select` swaps
+ * the still-pending message for a local "Stopped generating." placeholder.
+ * Sending a new message into the conversation (useSendMessage) resumes
+ * normal polling.
+ */
+export function stopChatGeneration(conversationId: string): void {
+  useChatStopStore.getState().stop(conversationId);
 }
 
 /**
