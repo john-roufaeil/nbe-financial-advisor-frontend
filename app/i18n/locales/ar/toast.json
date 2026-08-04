@@ -25,7 +25,7 @@
     "numberFormatChanged": "تم ضبط صيغة الأرقام على {{format}}",
     "dateFormatChanged": "تم ضبط صيغة التاريخ على {{format}}",
     "compactNumbersChanged": "تم ضبط عرض الأرقام على {{format}}",
-    "languageChanged": "Language set to English",
+    "languageChanged": "تم ضبط اللغة للعربية",
     "dataSourceChanged": "تم ضبط مصدر البيانات على {{source}}"
   }
 }

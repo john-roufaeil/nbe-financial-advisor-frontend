@@ -25,7 +25,7 @@
     "numberFormatChanged": "Number format set to {{format}}",
     "dateFormatChanged": "Date format set to {{format}}",
     "compactNumbersChanged": "Number display set to {{format}}",
-    "languageChanged": "تم ضبط اللغة للعربية",
+    "languageChanged": "Language set to English",
     "dataSourceChanged": "Data source set to {{source}}"
   }
 }
