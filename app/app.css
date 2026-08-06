@@ -817,6 +817,144 @@ html[dir="rtl"] .animate-a11y-panel-in {
   animation: message-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
 }
 
+/* Assistant chat replies (see MarkdownText.tsx) — the advisor's LLM output is
+   markdown (headings, lists, tables, bold figures), so this covers what it
+   actually produces rather than pulling in @tailwindcss/typography's full,
+   more opinionated reset. Built on the same --color-* tokens as the rest of
+   the app, so it tracks the active theme (including html.dark) for free —
+   no separate dark-mode block needed. Logical properties (*-inline-start)
+   so it also flips correctly under html[dir="rtl"]. */
+.md-content {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75em;
+}
+
+.md-content > *:first-child {
+  margin-top: 0;
+}
+
+.md-content > *:last-child {
+  margin-bottom: 0;
+}
+
+.md-content p {
+  margin: 0;
+  line-height: 1.65;
+}
+
+.md-content h1,
+.md-content h2,
+.md-content h3,
+.md-content h4 {
+  margin: 0.3em 0 0.1em;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+.md-content h1 {
+  font-size: 1.25em;
+}
+
+.md-content h2 {
+  font-size: 1.15em;
+}
+
+.md-content h3 {
+  font-size: 1.05em;
+}
+
+.md-content h4 {
+  font-size: 1em;
+}
+
+.md-content ul,
+.md-content ol {
+  margin: 0;
+  padding-inline-start: 1.4em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25em;
+}
+
+.md-content ul {
+  list-style: disc;
+}
+
+.md-content ol {
+  list-style: decimal;
+}
+
+.md-content li > p {
+  margin: 0;
+}
+
+.md-content a {
+  color: var(--color-primary);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.md-content strong {
+  font-weight: 600;
+}
+
+.md-content blockquote {
+  margin: 0;
+  padding-inline-start: 0.75em;
+  border-inline-start: 2px solid var(--color-base-300);
+  color: color-mix(in oklab, var(--color-base-content) 75%, transparent);
+}
+
+.md-content hr {
+  border: none;
+  border-top: 1px solid var(--color-base-300);
+  margin: 0.25em 0;
+}
+
+.md-content code {
+  font-family: ui-monospace, "SF Mono", "Cascadia Code", monospace;
+  font-size: 0.875em;
+  background: var(--color-base-300);
+  padding: 0.15em 0.4em;
+  border-radius: 0.3em;
+}
+
+.md-content pre {
+  margin: 0;
+  padding: 0.75em 1em;
+  border-radius: 0.5em;
+  background: var(--color-base-300);
+  overflow-x: auto;
+}
+
+.md-content pre code {
+  background: none;
+  padding: 0;
+  font-size: 0.8125em;
+}
+
+.md-content table {
+  display: block;
+  overflow-x: auto;
+  border-collapse: collapse;
+  width: max-content;
+  max-width: 100%;
+  font-size: 0.9em;
+}
+
+.md-content th,
+.md-content td {
+  border: 1px solid var(--color-base-300);
+  padding: 0.4em 0.6em;
+  text-align: start;
+}
+
+.md-content th {
+  background: var(--color-base-200);
+  font-weight: 600;
+}
+
 /* Strip away layout-breaking native input spin buttons cross-browser */
 .no-spin-buttons::-webkit-outer-spin-button,
 .no-spin-buttons::-webkit-inner-spin-button {

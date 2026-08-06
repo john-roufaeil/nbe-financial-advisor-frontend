@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { chatToolComponents } from "@/components/chat/tools";
 import { ChatFeedbackButton } from "@/components/chat/ChatFeedbackButton";
 import { ChatStatementCard } from "@/components/chat/ChatStatementCard";
+import { MarkdownText } from "@/components/chat/MarkdownText";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useChatStore } from "@/store/use-chat-store";
 import { useMessages } from "@/queries/chat";
@@ -136,9 +137,12 @@ export function AssistantMessage() {
             <Bot className="size-4.5" />
           </span>
           <div className="flex max-w-[80%] min-w-0 flex-col items-start">
-            <div className="w-full min-w-0 overflow-hidden leading-relaxed wrap-anywhere whitespace-pre-wrap">
+            <div className="w-full min-w-0 overflow-hidden wrap-anywhere">
               <MessagePrimitive.Parts
-                components={{ tools: { by_name: chatToolComponents } }}
+                components={{
+                  Text: MarkdownText,
+                  tools: { by_name: chatToolComponents },
+                }}
               />
             </div>
             {statementId && <ChatStatementCard statementId={statementId} />}
