@@ -11,7 +11,6 @@ export const STORAGE_KEYS = {
   displayPreferences: "nbe_display_preferences",
   dashboardPreferences: "nbe_dashboard_preferences",
   accessibility: "accessibility-settings",
-  a11yPeekSeen: "nbe_a11y_peek_seen",
   adminAuth: "nbe_admin_auth",
   messageFeedback: "nbe_message_feedback",
   messageAttachments: "nbe_message_attachments",

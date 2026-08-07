@@ -2,7 +2,6 @@
 export const TOAST_DURATION_MS = 3500;
 export const RIPPLE_DURATION_MS = 500;
 export const RIPPLE_CLEANUP_EXTRA_MS = 100;
-export const PEEK_DURATION_MS = 2500;
 export const PROCESSED_BADGE_DURATION_MS = 5000;
 export const PROCESSED_BADGE_FADE_MS = 400;
 export const DEBOUNCE_DELAY_MS = 300;

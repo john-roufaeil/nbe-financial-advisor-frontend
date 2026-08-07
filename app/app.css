@@ -222,7 +222,7 @@ html[data-a11y-font-scale] {
 /* A tiny chevron sits on the collapsed strip as a permanent "there's more
    here" affordance — it's what's actually visible before any interaction,
    unlike the full Accessibility icon above which only fades in on
-   hover/focus/peek. Swaps out for that icon the moment the trigger expands. */
+   hover/focus. Swaps out for that icon the moment the trigger expands. */
 .a11y-trigger-hint {
   position: absolute;
   inset: 0;
@@ -233,49 +233,26 @@ html[data-a11y-font-scale] {
 
 .a11y-trigger:hover .a11y-trigger-hint,
 .a11y-trigger:focus-visible .a11y-trigger-hint,
-.a11y-trigger.a11y-trigger-peek .a11y-trigger-hint {
+.a11y-trigger.a11y-trigger-open .a11y-trigger-hint {
   opacity: 0;
 }
 
 /* Mouse hover OR keyboard focus (Tab) both expand it to its full labeled
    size — :focus-visible fires on real keyboard focus, not on mouse-driven
-   focus, so clicking doesn't awkwardly "stick" it open. */
+   focus, so clicking doesn't awkwardly "stick" it open. `a11y-trigger-open`
+   (set from React while the panel is open) keeps it expanded even once the
+   pointer leaves and focus moves into the panel, so it doesn't collapse to
+   a sliver right next to the open panel it triggered. */
 .a11y-trigger:hover,
 .a11y-trigger:focus-visible,
-.a11y-trigger.a11y-trigger-peek {
+.a11y-trigger.a11y-trigger-open {
   width: var(--size, 2.5rem);
   min-width: var(--size, 2.5rem);
 }
 
-/* The one-time first-visit "peek" (see AccessibilityMenu.tsx) gets its own
-   explicit keyframe animation rather than relying only on the width
-   transition above — a dedicated animation guarantees a visibly eased
-   pop-open. Its removal (JS clears the class after PEEK_DURATION_MS) still
-   falls back to the plain `.a11y-trigger` width transition above for a
-   smooth slide-shut. Wrapped in `no-preference` (rather than trusting the
-   catch-all reduced-motion rule further down) so a user with motion
-   reduction enabled never sees the button move at all — the trigger effect
-   in AccessibilityMenu.tsx also checks the same media query before ever
-   setting the peek flag, so this is belt-and-suspenders. */
-@media (prefers-reduced-motion: no-preference) {
-  .a11y-trigger.a11y-trigger-peek {
-    animation: a11y-trigger-peek-in 0.4s cubic-bezier(0.25, 0.8, 0.25, 1) both;
-  }
-}
-
-@keyframes a11y-trigger-peek-in {
-  from {
-    width: 12px;
-  }
-
-  to {
-    width: var(--size, 2.5rem);
-  }
-}
-
 .a11y-trigger:hover svg,
 .a11y-trigger:focus-visible svg,
-.a11y-trigger.a11y-trigger-peek svg {
+.a11y-trigger.a11y-trigger-open svg {
   opacity: 1;
   scale: 1;
 }
