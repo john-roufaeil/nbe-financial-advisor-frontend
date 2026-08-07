@@ -7,6 +7,6 @@ services:
       - "5173:5173"
     volumes:
       - .:/app
-      - /app/node_modules # keep the container's own node_modules, not the host's
+      - /app/node_modules # keep the container's own node_modules,not the host's
     env_file:
       - .env
