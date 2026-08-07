@@ -9,4 +9,4 @@ services:
       - .:/app
       - /app/node_modules # keep the container's own node_modules, not the host's
     env_file:
-      - .env.local
+      - .env
