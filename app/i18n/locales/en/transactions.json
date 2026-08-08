@@ -33,7 +33,8 @@
         "nameRequired": "Enter a name for this transaction.",
         "nameTooLong": "Name must be 20 characters or fewer.",
         "amountInvalid": "Enter an amount greater than 0.",
-        "accountRequired": "Select an account."
+        "accountRequired": "Select an account.",
+        "categoryRequired": "Select a category."
       }
     },
     "detail": {

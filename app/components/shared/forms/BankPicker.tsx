@@ -16,10 +16,14 @@ export function BankPicker({
   value,
   onChange,
   className = "",
+  error,
+  ariaDescribedBy,
 }: {
   value: string;
   onChange: (bankCodeOrName: string) => void;
   className?: string;
+  error?: boolean;
+  ariaDescribedBy?: string;
 }) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
@@ -57,6 +61,8 @@ export function BankPicker({
   return (
     <EntityPicker
       className={className}
+      error={error}
+      ariaDescribedBy={ariaDescribedBy}
       items={results}
       getKey={(code) => code}
       onSelect={select}

@@ -143,7 +143,7 @@ export default function SignIn() {
         <h1 className="text-2xl font-semibold">{t("signIn.title")}</h1>
         {justSignedUp && (
           <div className="alert alert-info items-start gap-3 text-sm sm:items-center">
-            <MailCheck className="size-5 shrink-0" />
+            <MailCheck data-no-flip className="size-5 shrink-0" />
             <span>{t("signIn.justSignedUp")}</span>
           </div>
         )}

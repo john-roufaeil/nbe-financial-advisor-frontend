@@ -14,6 +14,7 @@ export function AccountPicker({
   disabled,
   placeholder,
   error,
+  ariaDescribedBy,
 }: {
   accounts: BankAccount[] | undefined;
   value: string;
@@ -22,6 +23,7 @@ export function AccountPicker({
   disabled?: boolean;
   placeholder?: string;
   error?: boolean;
+  ariaDescribedBy?: string;
 }) {
   const { t } = useTranslation();
   const [query, setQuery] = useState("");
@@ -55,6 +57,7 @@ export function AccountPicker({
       }}
       disabled={disabled}
       error={error}
+      ariaDescribedBy={ariaDescribedBy}
       emptyMessage={t("common.noResults")}
       search={
         <label className="input input-bordered input-sm flex items-center gap-2">

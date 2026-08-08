@@ -28,6 +28,7 @@ function AccountNumberField({
   error?: { message?: string };
 }) {
   const { t } = useTranslation();
+  const errorId = `${name}-error`;
 
   return (
     <label className="flex flex-col gap-1">
@@ -48,11 +49,17 @@ function AccountNumberField({
             }
             placeholder={t("common.addAccount.accountNumberPlaceholder")}
             maxLength={ACCOUNT_NUMBER_MAX_LENGTH}
+            aria-invalid={!!error}
+            aria-describedby={error ? errorId : undefined}
             className={`input input-bordered input-sm w-full ${error ? "input-error" : ""}`}
           />
         )}
       />
-      {error && <span className="text-error text-xs">{error.message}</span>}
+      {error && (
+        <span id={errorId} className="text-error text-xs">
+          {error.message}
+        </span>
+      )}
     </label>
   );
 }
@@ -119,11 +126,18 @@ export function BankAccountFields({
           name="bankName"
           control={control}
           render={({ field }) => (
-            <BankPicker value={field.value} onChange={field.onChange} />
+            <BankPicker
+              value={field.value}
+              onChange={field.onChange}
+              error={!!errors.bankName}
+              ariaDescribedBy={errors.bankName ? "bankName-error" : undefined}
+            />
           )}
         />
         {errors.bankName && (
-          <span className="text-error text-xs">{errors.bankName.message}</span>
+          <span id="bankName-error" className="text-error text-xs">
+            {errors.bankName.message}
+          </span>
         )}
       </label>
 

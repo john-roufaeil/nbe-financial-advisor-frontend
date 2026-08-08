@@ -72,7 +72,7 @@ export function useTransactionForm(
         .max(20, t("transactions.add.errors.nameTooLong")),
       accountId: z.string(),
       // Non-empty guard: the default is "" until the fetched taxonomy fills it in.
-      category: z.string().min(1),
+      category: z.string().min(1, t("transactions.add.errors.categoryRequired")),
       type: z.enum(["income", "expense"]),
       amount: z.union([z.number(), z.literal("")]),
       date: z.string(),

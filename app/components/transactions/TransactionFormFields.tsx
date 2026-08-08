@@ -54,13 +54,17 @@ export function TransactionFormFields({
               type="text"
               placeholder={t("transactions.add.namePlaceholder")}
               maxLength={20}
+              aria-invalid={!!errors.transactionTitle}
+              aria-describedby={errors.transactionTitle ? "transactionTitle-error" : undefined}
               className={`input input-bordered input-sm w-full ${errors.transactionTitle ? "input-error" : ""}`}
               {...field}
             />
           )}
         />
         {errors.transactionTitle && (
-          <span className="text-error text-xs">{errors.transactionTitle.message}</span>
+          <span id="transactionTitle-error" className="text-error text-xs">
+            {errors.transactionTitle.message}
+          </span>
         )}
       </label>
 
@@ -78,11 +82,14 @@ export function TransactionFormFields({
               disabled={editing}
               placeholder={t("transactions.add.accountPlaceholder")}
               error={!!errors.accountId}
+              ariaDescribedBy={errors.accountId ? "accountId-error" : undefined}
             />
           )}
         />
         {errors.accountId && (
-          <span className="text-error text-xs">{errors.accountId.message}</span>
+          <span id="accountId-error" className="text-error text-xs">
+            {errors.accountId.message}
+          </span>
         )}
         {!editing && accounts && accounts.length === 0 && (
           <span className="text-base-content/50 text-xs">
@@ -104,12 +111,16 @@ export function TransactionFormFields({
               placeholder={t("transactions.add.amountPlaceholder")}
               unit={currencyLabel}
               aria-label={t("transactions.add.amount")}
+              aria-invalid={!!errors.amount}
+              aria-describedby={errors.amount ? "amount-error" : undefined}
               className={`w-full ${errors.amount ? "input-error" : ""}`}
             />
           )}
         />
         {errors.amount && (
-          <span className="text-error text-xs">{errors.amount.message}</span>
+          <span id="amount-error" className="text-error text-xs">
+            {errors.amount.message}
+          </span>
         )}
       </label>
 
@@ -123,7 +134,14 @@ export function TransactionFormFields({
             if (fallback) setValue("category", fallback, { shouldValidate: true });
           }}
           onCategoryChange={(c) => setValue("category", c, { shouldValidate: true })}
+          error={!!errors.category}
+          ariaDescribedBy={errors.category ? "category-error" : undefined}
         />
+        {errors.category && (
+          <span id="category-error" className="text-error text-xs">
+            {errors.category.message}
+          </span>
+        )}
       </div>
 
       <label className="flex w-full flex-col gap-1">
