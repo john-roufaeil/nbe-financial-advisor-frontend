@@ -1,10 +1,12 @@
+import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { ChipPicker } from "@/components/onboarding/ChipPicker";
 import { SliderField } from "@/components/onboarding/SliderField";
-import type { STEP_FIELDS, OnboardingStepProps } from "@/lib/onboarding-fields";
+import type { OnboardingStepProps } from "@/lib/onboarding-fields";
 import { isFieldUnset, isStepDirty } from "@/lib/onboarding-fields";
 import { EMPLOYMENT_OPTIONS, STEADINESS_OPTIONS } from "@/lib/constants/options";
+import { ONBOARDING_MISSING_FIELD_DELAY_MS } from "@/lib/constants/time";
 import {
   MONTHLY_INCOME_MIN,
   MONTHLY_INCOME_MAX,
@@ -18,16 +20,32 @@ export function IncomeStep({ attempted }: OnboardingStepProps) {
   const data = useOnboardingStore((s) => s.data);
   const setField = useOnboardingStore((s) => s.setField);
 
-  // Once the user has started this step (or tried to leave it incomplete),
-  // every remaining unfilled field is flagged — the step is "all or nothing"
-  // (see onboarding.tsx's Continue gating), so a partial fill needs to show
-  // exactly what's still missing.
-  const dirty = isStepDirty("income", data) || attempted;
-  const missing = (field: (typeof STEP_FIELDS)["income"][number]) =>
-    dirty && isFieldUnset(field, data[field])
-      ? t("onboarding.errors.missing")
+  // Once the user fills in one field, give them a moment to reach the other
+  // before flagging it — showing it the instant one field changes was
+  // jarring (see git history), but waiting only for an explicit Continue
+  // click meant a user who filled one field and stalled got no feedback at
+  // all. This settles the difference: reveal after a pause, same as
+  // clicking Continue does immediately.
+  const dirty = isStepDirty("income", data);
+  const [settled, setSettled] = useState(false);
+  useEffect(() => {
+    if (!dirty) {
+      setSettled(false);
+      return;
+    }
+    const timer = setTimeout(() => setSettled(true), ONBOARDING_MISSING_FIELD_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [dirty]);
+
+  const reveal = attempted || settled;
+  const statusMissing =
+    reveal && isFieldUnset("employment_status", data.employment_status)
+      ? t("onboarding.income.errors.statusRequired")
       : undefined;
-  const statusMissing = missing("employment_status");
+  const incomeMissing =
+    reveal && isFieldUnset("monthly_income", data.monthly_income)
+      ? t("onboarding.income.errors.monthlyIncomeRequired")
+      : undefined;
 
   return (
     <div className="flex flex-col gap-4">
@@ -65,6 +83,8 @@ export function IncomeStep({ attempted }: OnboardingStepProps) {
         max={MONTHLY_INCOME_MAX}
         step={MONTHLY_INCOME_STEP}
         unit={t("currency.EGP")}
+        error={incomeMissing}
+        required
       />
 
       <ChipPicker

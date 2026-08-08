@@ -33,7 +33,7 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
   email: "",
   phone: "",
   employment_status: "",
-  monthly_income: "",
+  monthly_income: "0",
   income_steadiness: "",
   dependents_count: "0",
   goal_name: "",
