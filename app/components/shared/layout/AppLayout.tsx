@@ -10,6 +10,7 @@ import { useSidebarResize } from "@/lib/use-sidebar-resize";
 import { useMe } from "@/queries/profile";
 import { ConfirmDialog } from "@/components/shared/modals/ConfirmDialog";
 import { NotificationsModal } from "@/components/shared/modals/NotificationsModal";
+import { CompleteProfileModal } from "@/components/profile/CompleteProfileModal";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { Z_DROPDOWN } from "@/lib/z-index";
 import { useLayoutTier } from "@/lib/use-layout-tier";
@@ -172,6 +173,7 @@ export default function AppLayout() {
       </div>
       <ConfirmDialog />
       <NotificationsModal />
+      <CompleteProfileModal />
     </AssistantRuntimeProvider>
   );
 }

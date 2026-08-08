@@ -13,6 +13,7 @@ import { useAuthStore } from "@/store/use-auth-store";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useLogin, useBankLoginInitiate } from "@/queries/auth";
+import { useCheckProfileCompletion } from "@/queries/profile";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 import {
   openOAuthPopup,
@@ -44,6 +45,7 @@ export default function SignIn() {
   const begin = useOnboardingStore((s) => s.begin);
   const loginMutation = useLogin();
   const bankLoginInitiate = useBankLoginInitiate();
+  const checkProfileCompletion = useCheckProfileCompletion();
   const forgotPasswordRef = useRef<HTMLDialogElement>(null);
   // Set inside handleMessage once a result actually arrives — lets the
   // popup-closed watcher below tell "closed after delivering its result" (a
@@ -61,6 +63,7 @@ export default function SignIn() {
       if (event.data.ok) {
         setTokens({ accessToken: event.data.accessToken });
         login();
+        void checkProfileCompletion();
         navigate(from ?? localizedPath(lang!, ROUTE_SEGMENTS.dashboard), {
           replace: true,
         });
@@ -70,7 +73,7 @@ export default function SignIn() {
     }
     window.addEventListener("message", handleMessage);
     return () => window.removeEventListener("message", handleMessage);
-  }, [lang, from, navigate, setTokens, login]);
+  }, [lang, from, navigate, setTokens, login, checkProfileCompletion]);
 
   const signInSchema = z.object({
     email: z.string().email({ message: t("signIn.errors.emailInvalid") }),
@@ -88,6 +91,7 @@ export default function SignIn() {
     try {
       await loginMutation.mutateAsync(values);
       login();
+      void checkProfileCompletion();
       navigate(from ?? localizedPath(lang!, ROUTE_SEGMENTS.dashboard), { replace: true });
     } catch {
       // loginMutation.onError already surfaced a toast; stay on page.

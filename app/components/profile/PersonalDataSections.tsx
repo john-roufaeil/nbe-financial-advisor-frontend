@@ -8,6 +8,7 @@ import { BankAccountsCard } from "@/components/accounts/BankAccountsCard";
 import { LinkedBanksCard } from "@/components/accounts/LinkedBanksCard";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { ErrorState } from "@/components/shared/QueryState";
+import { DEPENDENTS_MAX, MONTHLY_INCOME_STEP } from "@/lib/constants/limits";
 
 // ── Derived display sections from the User API shape ─────────────────────────
 
@@ -66,6 +67,7 @@ const SECTIONS: Section[] = [
         labelKey: "common.sections.financial.fields.monthlyIncome",
         writable: true,
         currency: true,
+        step: MONTHLY_INCOME_STEP,
         placeholderKey: "common.sections.financial.fields.monthlyIncomePlaceholder",
       },
       {
@@ -76,6 +78,14 @@ const SECTIONS: Section[] = [
           value: opt,
           labelKey: `onboarding.income.steadinessOptions.${opt}`,
         })),
+      },
+      {
+        key: "dependents_count",
+        labelKey: "common.sections.financial.fields.dependentsCount",
+        writable: true,
+        count: true,
+        max: DEPENDENTS_MAX,
+        placeholderKey: "common.sections.financial.fields.dependentsCountPlaceholder",
       },
     ],
   },

@@ -6,6 +6,7 @@ import { usePageTitle } from "@/lib/use-page-title";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useConfirmBankConnection } from "@/queries/bank-connections";
 import { useBankLoginCallback } from "@/queries/auth";
+import { useCheckProfileCompletion } from "@/queries/profile";
 import { postOAuthResult, closePopupAfterResult } from "@/lib/oauth-popup";
 import { extractApiErrorMessage } from "@/lib/toast";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
@@ -42,6 +43,7 @@ export default function BankConnectCallback() {
   const setTokens = useAuthStore((s) => s.setTokens);
   const confirmConnection = useConfirmBankConnection();
   const bankLoginCallback = useBankLoginCallback();
+  const checkProfileCompletion = useCheckProfileCompletion();
   const submitted = useRef(false);
   // TEMPORARY debugging aid: on failure inside a popup, show the real error
   // instead of closing immediately — closePopupAfterResult() normally runs
@@ -144,6 +146,7 @@ export default function BankConnectCallback() {
         }
         setTokens({ accessToken: tokens.access_token });
         login();
+        void checkProfileCompletion();
         navigate(localizedPath(DEFAULT_LANGUAGE, ROUTE_SEGMENTS.dashboard), {
           replace: true,
         });
@@ -166,6 +169,7 @@ export default function BankConnectCallback() {
     setTokens,
     confirmConnection,
     bankLoginCallback,
+    checkProfileCompletion,
   ]);
 
   if (debugError) {

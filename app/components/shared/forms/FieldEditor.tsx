@@ -19,6 +19,13 @@ export type FormFieldConfig<Key extends string = string> = {
   labelKey: string;
   writable: boolean;
   currency?: boolean;
+  /** Plain numeric stepper (e.g. a headcount) — same MoneyInput control as
+   * `currency` but with no currency unit appended. */
+  count?: boolean;
+  /** Ceiling for `currency`/`count` fields. Defaults to MAX_MONEY_VALUE. */
+  max?: number;
+  /** +/- step size for `currency`/`count` fields. Defaults to MoneyInput's own (1). */
+  step?: number;
   ltr?: boolean;
   phone?: boolean;
   placeholderKey?: string;
@@ -92,7 +99,7 @@ export function FieldEditor({
     );
   }
 
-  if (field.currency) {
+  if (field.currency || field.count) {
     return (
       <>
         <Controller
@@ -102,8 +109,9 @@ export function FieldEditor({
             <MoneyInput
               value={rhfField.value === "" ? "" : Number(rhfField.value)}
               onChange={(v) => rhfField.onChange(v === "" ? "" : String(v))}
-              max={MAX_MONEY_VALUE}
-              unit={t("currency.EGP")}
+              max={field.max ?? MAX_MONEY_VALUE}
+              step={field.step}
+              unit={field.currency ? t("currency.EGP") : undefined}
               placeholder={t(field.placeholderKey ?? field.labelKey)}
               aria-label={t(field.labelKey)}
               className={`input-sm w-full ${error ? "input-error" : ""}`}

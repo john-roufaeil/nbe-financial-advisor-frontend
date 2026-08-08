@@ -11,6 +11,10 @@
     "clearFilters": "مسح الفلاتر",
     "category": "الفئة",
     "allCategories": "كل الفئات",
+    "completeProfile": {
+      "title": "أكمل ملفك الشخصي",
+      "description": "بضعة تفاصيل سريعة تساعدنا على تخصيص ميزانيتك ونصائحك."
+    },
     "categories": {
       "housing": "السكن والمرافق",
       "food": "الطعام والبقالة",
@@ -117,7 +121,9 @@
           "monthlyIncome": "الدخل الشهري",
           "monthlyIncomePlaceholder": "مثال: 5000.00",
           "incomeSteadiness": "استقرار الدخل",
-          "riskTolerance": "تحمل المخاطر"
+          "riskTolerance": "تحمل المخاطر",
+          "dependentsCount": "عدد المعالين",
+          "dependentsCountPlaceholder": "مثال: 2"
         }
       },
       "accounts": {

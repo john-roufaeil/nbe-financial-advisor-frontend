@@ -11,6 +11,10 @@
     "clearFilters": "Clear filters",
     "category": "Category",
     "allCategories": "All categories",
+    "completeProfile": {
+      "title": "Complete your profile",
+      "description": "A couple of quick details help us tailor your budget and advice."
+    },
     "categories": {
       "housing": "Housing & Utilities",
       "food": "Food & Groceries",
@@ -117,7 +121,9 @@
           "monthlyIncome": "Monthly income",
           "monthlyIncomePlaceholder": "e.g. 5000.00",
           "incomeSteadiness": "Income steadiness",
-          "riskTolerance": "Risk tolerance"
+          "riskTolerance": "Risk tolerance",
+          "dependentsCount": "Number of dependents",
+          "dependentsCountPlaceholder": "e.g. 2"
         }
       },
       "accounts": {

@@ -32,6 +32,12 @@ export function FieldValue({ field, value }: { field: FormFieldConfig; value?: s
     );
   }
 
+  if (field.count) {
+    const numeric = Number(value);
+    const formatted = Number.isFinite(numeric) ? formatN(numeric) : value;
+    return <span className="text-sm font-medium tabular-nums">{formatted}</span>;
+  }
+
   if (field.ltr) {
     // Stripped of spaces this becomes one long unbreakable token (e.g. a
     // phone number) — break-all lets it wrap mid-string instead of forcing
