@@ -16,6 +16,7 @@ import { useLayoutTier } from "@/lib/use-layout-tier";
 import { SidebarHeader } from "@/components/shared/layout/SidebarHeader";
 import { SidebarNav } from "@/components/shared/layout/SidebarNav";
 import { SidebarFooter } from "@/components/shared/layout/SidebarFooter";
+import { SkipLinks } from "@/components/shared/layout/SkipLinks";
 
 export default function AppLayout() {
   const { lang } = useParams<{ lang: string }>();
@@ -67,6 +68,16 @@ export default function AppLayout() {
 
         {/* Main content surface — base-100 */}
         <div className="drawer-content bg-base-100 flex h-screen min-w-0 flex-col">
+          {/* Part of this column (not a page-wide bar) so revealing it pushes
+              only the content here down — the sidebar in drawer-side is a
+              separate grid cell and stays exactly where it is. */}
+          <SkipLinks
+            links={[
+              { href: "#main-content", label: t("nav.skipToMainContent") },
+              { href: "#main-navigation", label: t("nav.skipToNavigation") },
+            ]}
+          />
+
           {/* No bar chrome on mobile — just a floating hamburger button over
               the page content, so the header row's height/background/logo
               don't eat screen space on small viewports. */}
@@ -98,7 +109,9 @@ export default function AppLayout() {
           <label htmlFor="app-drawer" className="drawer-overlay" onClick={close} />
 
           <aside
-            className={`responsive-sidebar border-base-300 bg-base-200 relative flex h-screen w-72 flex-col overflow-visible border-e ${
+            id="main-navigation"
+            tabIndex={-1}
+            className={`responsive-sidebar border-base-300 bg-base-200 focus:outline-primary/50 relative flex h-screen w-72 flex-col overflow-visible border-e focus:outline-2 focus:outline-offset-2 ${
               isDragging ? "duration-0!" : "transition-[width] duration-300 ease-in-out"
             }`}
           >

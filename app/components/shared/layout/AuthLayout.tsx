@@ -4,6 +4,7 @@ import { ThemeToggle } from "@/components/shared/preferences/ThemeToggle";
 import { Z_DROPDOWN } from "@/lib/z-index";
 import { useLayoutTier } from "@/lib/use-layout-tier";
 import { useThemeStore } from "@/store/use-theme-store";
+import { SkipLinks } from "@/components/shared/layout/SkipLinks";
 
 /**
  * Split-screen shell for the auth/onboarding pages (splash, sign-in, onboarding).
@@ -103,16 +104,26 @@ export function AuthLayout({
         </div>
       </div>
 
-      {/* Content panel. On mobile it scrolls with the page; on desktop (lg+) it scrolls
-          independently while the image panel stays fixed. */}
-      <div
-        id="main-content"
-        tabIndex={-1}
-        className={`flex flex-1 justify-center p-4 focus:outline-none ${lg("lg:h-full lg:overflow-y-auto lg:p-10")} ${
-          align === "start" ? "items-start" : "items-center"
-        }`}
-      >
-        <div className="w-full max-w-md">{children}</div>
+      {/* Content column. On mobile it scrolls with the page; on desktop (lg+) it
+          scrolls independently while the image panel stays fixed. Wrapping
+          SkipLinks + the actual #main-content target in their own flex-col
+          here (rather than at the row-level root) keeps a revealed skip bar
+          from becoming a rogue column when the root switches to lg:flex-row,
+          and from disturbing the hero panel beside it. */}
+      <div className={`flex flex-1 flex-col ${lg("lg:h-full lg:overflow-y-auto")}`}>
+        <SkipLinks
+          links={[{ href: "#main-content", label: t("nav.skipToMainContent") }]}
+        />
+
+        <div
+          id="main-content"
+          tabIndex={-1}
+          className={`flex flex-1 justify-center p-4 focus:outline-none ${lg("lg:p-10")} ${
+            align === "start" ? "items-start" : "items-center"
+          }`}
+        >
+          <div className="w-full max-w-md">{children}</div>
+        </div>
       </div>
     </div>
   );
