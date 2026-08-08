@@ -7,6 +7,7 @@ import { pickImpl } from "@/queries/shared";
 import { toastApiError } from "@/lib/toast";
 import { useMessageAttachmentsStore } from "@/store/use-message-attachments-store";
 import { useChatStopStore } from "@/store/use-chat-stop-store";
+import { CHAT_REPLY_TIMEOUT_MS } from "@/lib/constants/time";
 import type { ChatAttachment, ChatMessage } from "@/types/chat";
 
 export function impl(source: DataSource) {
@@ -35,6 +36,22 @@ export function isAwaitingReply(messages: ChatMessage[] | undefined): boolean {
   if (!last) return false;
   if (last.role === "user") return true;
   return last.text.trim().length === 0 && !last.toolCall;
+}
+
+/**
+ * Whether an awaited reply has gone on long enough to treat as failed rather
+ * than just slow. Judged by the still-unanswered message's own createdAt,
+ * not separate client state, so it resolves itself if the reply actually
+ * does land before the timeout — nothing to reset. A silent backend/AI
+ * service failure (see CHATBOT_BACKEND_INTEGRATION.md) currently reports
+ * only via an SSE event this app doesn't consume, so without this the poll
+ * (and the loading indicator) would otherwise run forever with no error ever
+ * surfacing.
+ */
+export function hasChatTimedOut(messages: ChatMessage[] | undefined): boolean {
+  const last = messages?.[messages.length - 1];
+  if (!last || !isAwaitingReply(messages)) return false;
+  return Date.now() - last.createdAt > CHAT_REPLY_TIMEOUT_MS;
 }
 
 export function useConversations() {
@@ -71,7 +88,8 @@ export function useMessages(conversationId: string | null, active = true) {
       active &&
       conversationId !== null &&
       !useChatStopStore.getState().stoppedConversationIds.has(conversationId) &&
-      isAwaitingReply(query.state.data)
+      isAwaitingReply(query.state.data) &&
+      !hasChatTimedOut(query.state.data)
         ? 1000
         : false,
     select: (messages) => {
@@ -106,6 +124,21 @@ export function useMessages(conversationId: string | null, active = true) {
             : [...withAttachments, stoppedMessage];
         }
       }
+
+      if (hasChatTimedOut(withAttachments)) {
+        const last = withAttachments[withAttachments.length - 1];
+        const timedOutMessage: ChatMessage = {
+          id: `timed-out-${conversationId}`,
+          role: "assistant",
+          text: "Something went wrong and no reply arrived. Please try sending your message again.",
+          createdAt: Date.now(),
+          stage: "complete",
+        };
+        return last.role === "assistant"
+          ? [...withAttachments.slice(0, -1), timedOutMessage]
+          : [...withAttachments, timedOutMessage];
+      }
+
       return withAttachments;
     },
   });

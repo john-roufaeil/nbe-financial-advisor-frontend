@@ -48,6 +48,10 @@
         "title": "توزيع الميزانية",
         "confirm": "تأكيد التغييرات",
         "updated": "تم التحديث"
+      },
+      "products": {
+        "title": "موصى به لك",
+        "match": "تطابق {{percent}}%"
       }
     },
     "statement": {
