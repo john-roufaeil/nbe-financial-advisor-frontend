@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { useSearchParams, useNavigate, useParams } from "react-router";
+import { useSearchParams, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { AuthLayout } from "@/components/shared/layout/AuthLayout";
@@ -16,10 +16,10 @@ import { useConfirmPasswordReset } from "@/queries/auth";
 
 /**
  * Landing page for the password-reset email link
- * (`{FRONTEND_URL}/reset-password?t=<opaque ticket>`) — reachable both
- * unprefixed and as `:lang/reset-password`; see VerifyEmail's docstring for
- * why both exist. `t` is a single-use opaque ticket, not the raw user
- * id/token — the backend resolves it server-side.
+ * (`{FRONTEND_URL}/reset-password?t=<opaque ticket>`), unprefixed because
+ * the backend has no locale context when composing it. `t` is a single-use
+ * opaque ticket, not the raw user id/token — the backend resolves it
+ * server-side.
  */
 export default function ResetPassword() {
   const { t } = useTranslation();
@@ -27,7 +27,6 @@ export default function ResetPassword() {
   useSyncHtmlDir();
   const navigate = useNavigate();
   const canGoBack = useCanGoBack();
-  const { lang } = useParams<{ lang: string }>();
   const [searchParams] = useSearchParams();
   const confirmMutation = useConfirmPasswordReset();
   const [status, setStatus] = useState<"form" | "success" | "invalid">("form");
@@ -70,12 +69,7 @@ export default function ResetPassword() {
   if (!ticket) {
     return (
       <AuthLayout>
-        <InvalidState
-          t={t}
-          lang={lang}
-          onBack={() => navigate(-1)}
-          canGoBack={canGoBack}
-        />
+        <InvalidState t={t} onBack={() => navigate(-1)} canGoBack={canGoBack} />
       </AuthLayout>
     );
   }
@@ -87,16 +81,11 @@ export default function ResetPassword() {
           <CheckCircle2 className="text-success size-12" />
           <h1 className="text-xl font-semibold">{t("resetPassword.successTitle")}</h1>
           <p className="text-base-content/70">{t("resetPassword.successMessage")}</p>
-          <GoHomeOrSignInLink lang={lang} className="btn btn-primary" />
+          <GoHomeOrSignInLink className="btn btn-primary" />
         </div>
       )}
       {status === "invalid" && (
-        <InvalidState
-          t={t}
-          lang={lang}
-          onBack={() => navigate(-1)}
-          canGoBack={canGoBack}
-        />
+        <InvalidState t={t} onBack={() => navigate(-1)} canGoBack={canGoBack} />
       )}
       {status === "form" && (
         <div className="flex flex-col gap-4">
@@ -156,12 +145,10 @@ export default function ResetPassword() {
 
 function InvalidState({
   t,
-  lang,
   onBack,
   canGoBack,
 }: {
   t: (key: string) => string;
-  lang?: string;
   onBack: () => void;
   canGoBack: boolean;
 }) {
@@ -179,7 +166,7 @@ function InvalidState({
         >
           {t("resetPassword.goBack")}
         </button>
-        <GoHomeOrSignInLink lang={lang} className="btn btn-primary" />
+        <GoHomeOrSignInLink className="btn btn-primary" />
       </div>
     </div>
   );

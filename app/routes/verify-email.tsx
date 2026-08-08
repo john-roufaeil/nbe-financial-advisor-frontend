@@ -1,5 +1,5 @@
 import { useEffect, useRef, useState } from "react";
-import { useSearchParams, useNavigate, useParams } from "react-router";
+import { useSearchParams, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { CheckCircle2, XCircle } from "lucide-react";
 import { AuthLayout } from "@/components/shared/layout/AuthLayout";
@@ -11,14 +11,10 @@ import { useConfirmEmailVerification } from "@/queries/auth";
 
 /**
  * Landing page for the verification email link
- * (`{FRONTEND_URL}/verify-email?t=<opaque ticket>`) — reachable both
- * unprefixed (what the emailed link actually points to; the backend has no
- * locale context when composing it, so it can't target `/en/...`/`/ar/...`)
- * and as `:lang/verify-email` (routes.ts), so a user already browsing the
- * app in a given language, or who switches language while here, gets a URL
- * consistent with the rest of the app. `t` is a single-use opaque ticket,
- * not the raw user id/token — the backend resolves it server-side
- * (services/link_tickets.py).
+ * (`{FRONTEND_URL}/verify-email?t=<opaque ticket>`), unprefixed because the
+ * backend has no locale context when composing it. `t` is a single-use
+ * opaque ticket, not the raw user id/token — the backend resolves it
+ * server-side (services/link_tickets.py).
  */
 export default function VerifyEmail() {
   const { t } = useTranslation();
@@ -26,7 +22,6 @@ export default function VerifyEmail() {
   useSyncHtmlDir();
   const navigate = useNavigate();
   const canGoBack = useCanGoBack();
-  const { lang } = useParams<{ lang: string }>();
   const [searchParams] = useSearchParams();
   const confirmMutation = useConfirmEmailVerification();
   const [status, setStatus] = useState<"pending" | "success" | "invalid">("pending");
@@ -61,7 +56,7 @@ export default function VerifyEmail() {
             <CheckCircle2 className="text-success size-12" />
             <h1 className="text-xl font-semibold">{t("verifyEmail.successTitle")}</h1>
             <p className="text-base-content/70">{t("verifyEmail.successMessage")}</p>
-            <GoHomeOrSignInLink lang={lang} className="btn btn-primary" />
+            <GoHomeOrSignInLink className="btn btn-primary" />
           </>
         )}
         {status === "invalid" && (
@@ -78,7 +73,7 @@ export default function VerifyEmail() {
               >
                 {t("verifyEmail.goBack")}
               </button>
-              <GoHomeOrSignInLink lang={lang} className="btn btn-primary" />
+              <GoHomeOrSignInLink className="btn btn-primary" />
             </div>
           </>
         )}

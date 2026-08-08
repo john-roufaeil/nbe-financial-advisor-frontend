@@ -3,14 +3,24 @@ import { useTranslation } from "react-i18next";
 import { Compass, ArrowLeft } from "lucide-react";
 import { useAuthStore } from "@/store/use-auth-store";
 import { usePageTitle } from "@/lib/use-page-title";
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 
 export default function NotFound() {
   const { lang } = useParams<{ lang: string }>();
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const navigate = useNavigate();
   usePageTitle("404");
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const home = isAuthenticated ? `/${lang}/dashboard` : `/${lang}`;
+  // lang is the invalid raw segment (e.g. "foo") when LangLayout renders this
+  // directly for a bad language prefix, not a real language — fall back to
+  // the actual active i18n language (what the page is genuinely rendering
+  // in) rather than linking into a /foo/... URL that doesn't exist either.
+  const homeLang = SUPPORTED_LANGUAGES.includes(lang as SupportedLanguage)
+    ? (lang as SupportedLanguage)
+    : SUPPORTED_LANGUAGES.includes(i18n.language as SupportedLanguage)
+      ? (i18n.language as SupportedLanguage)
+      : DEFAULT_LANGUAGE;
+  const home = isAuthenticated ? `/${homeLang}/dashboard` : `/${homeLang}`;
 
   return (
     <div className="bg-base-200 flex min-h-screen flex-col items-center justify-center gap-6 p-6">
