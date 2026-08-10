@@ -15,6 +15,14 @@ interface BaseModalProps {
   actions?: ReactNode;
   /** Left-aligned footer content, e.g. a destructive action kept apart from actions. */
   actionsStart?: ReactNode;
+  /**
+   * Set false to make this a true gate: no header X, no backdrop-click
+   * dismiss, and Escape is swallowed (the native `<dialog>` `cancel` event is
+   * prevented). The only way out is whatever `actions` does — e.g. a submit
+   * handler that calls the imperative `close()`/`showModal()` ref itself.
+   * Defaults true (every other modal in the app).
+   */
+  dismissible?: boolean;
   className?: string;
   children: ReactNode;
 }
@@ -26,7 +34,16 @@ interface BaseModalProps {
  * `.modal-box` max-width rule in app.css.
  */
 export const BaseModal = forwardRef<HTMLDialogElement, BaseModalProps>(function BaseModal(
-  { title, icon, onClose, actions, actionsStart, className, children },
+  {
+    title,
+    icon,
+    onClose,
+    actions,
+    actionsStart,
+    dismissible = true,
+    className,
+    children,
+  },
   ref,
 ) {
   const { t } = useTranslation();
@@ -37,7 +54,16 @@ export const BaseModal = forwardRef<HTMLDialogElement, BaseModalProps>(function 
   }
 
   return (
-    <dialog ref={ref} className="modal" onClose={onClose}>
+    <dialog
+      ref={ref}
+      className="modal"
+      onClose={onClose}
+      onCancel={(e) => {
+        // Native `<dialog>` fires `cancel` (then `close`) on Escape — block
+        // it here so a gated modal can't be dismissed by keyboard either.
+        if (!dismissible) e.preventDefault();
+      }}
+    >
       <div
         className={`modal-box relative isolate flex max-h-[75vh] flex-col gap-0 p-0 ${className ?? ""}`}
       >
@@ -46,20 +72,22 @@ export const BaseModal = forwardRef<HTMLDialogElement, BaseModalProps>(function 
             {icon}
             {title && <h3 className="text-lg font-semibold">{title}</h3>}
           </div>
-          <Tooltip
-            content={t("actions.close")}
-            position="start"
-            className="-me-2 shrink-0"
-          >
-            <button
-              type="button"
-              onClick={handleClose}
-              className="btn btn-ghost btn-sm btn-circle"
-              aria-label={t("actions.close")}
+          {dismissible && (
+            <Tooltip
+              content={t("actions.close")}
+              position="start"
+              className="-me-2 shrink-0"
             >
-              <X data-no-flip className="size-4" />
-            </button>
-          </Tooltip>
+              <button
+                type="button"
+                onClick={handleClose}
+                className="btn btn-ghost btn-sm btn-circle"
+                aria-label={t("actions.close")}
+              >
+                <X data-no-flip className="size-4" />
+              </button>
+            </Tooltip>
+          )}
         </div>
         <div className="flex-1 overflow-y-auto px-6 pb-6">{children}</div>
         {actions && (
@@ -77,9 +105,11 @@ export const BaseModal = forwardRef<HTMLDialogElement, BaseModalProps>(function 
           </div>
         )}
       </div>
-      <form method="dialog" className="modal-backdrop">
-        <button className="cursor-default">{t("actions.close")}</button>
-      </form>
+      {dismissible && (
+        <form method="dialog" className="modal-backdrop">
+          <button className="cursor-default">{t("actions.close")}</button>
+        </form>
+      )}
     </dialog>
   );
 });

@@ -12,8 +12,9 @@
     "category": "Category",
     "allCategories": "All categories",
     "completeProfile": {
-      "title": "Complete your profile",
-      "description": "A couple of quick details help us tailor your budget and advice."
+      "title": "Welcome aboard!",
+      "description": "Let's finish setting up your profile — a couple of quick details help us tailor your budget and advice.",
+      "required": "This step is required to continue."
     },
     "categories": {
       "housing": "Housing & Utilities",
@@ -29,7 +30,7 @@
       "freelance": "Freelance",
       "investment": "Investment",
       "gift": "Gift",
-      "other_income": "Other Income"
+      "other_income": "Income"
     },
     "filtersLabel": "Filters",
     "amountRange": "Amount range",
