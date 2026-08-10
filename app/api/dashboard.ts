@@ -1,3 +1,4 @@
+import axios from "axios";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/lib/constants/api";
 import type {
@@ -73,8 +74,11 @@ async function getAllocatedAmounts(): Promise<Map<string, number>> {
         Number(alloc.allocated_amount) || 0,
       ]),
     );
-  } catch {
-    return new Map();
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return new Map();
+    }
+    throw error;
   }
 }
 

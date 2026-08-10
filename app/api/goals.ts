@@ -1,3 +1,4 @@
+import axios from "axios";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/lib/constants/api";
 import type { FinancialGoal } from "@/types/goal";
@@ -38,8 +39,11 @@ export async function getGoals(): Promise<FinancialGoal[]> {
       ];
     }
     return [];
-  } catch {
-    return [];
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) {
+      return [];
+    }
+    throw error;
   }
 }
 
