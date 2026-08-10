@@ -69,8 +69,8 @@ function toChatMessage(raw: RawMessage): ChatMessage {
       targetId: r.target_id,
     })),
     // The backend doesn't supply follow-up suggestions itself — fall back to
-    // the same static, topic-keyed chips the mock uses so the "continue the
-    // conversation" chips still show for real replies too.
+    // static, topic-keyed chips so the "continue the conversation" chips still
+    // show for real replies.
     ...(role === "assistant"
       ? { suggestions: buildSuggestions(toolCall?.toolName) }
       : {}),

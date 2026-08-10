@@ -1,6 +1,5 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import { useDataSourceStore } from "./use-data-source-store";
 import { useChatStore } from "./use-chat-store";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 import { queryClient } from "@/lib/query-client";
@@ -47,17 +46,14 @@ export const useAuthStore = create<AuthState>()(
       setAccessToken: (accessToken) => set({ accessToken }),
       login: () => set({ isAuthenticated: true }),
       logout: () => {
-        useDataSourceStore.getState().setSource("backend");
         clearUserScopedState();
         set({ isAuthenticated: false, accessToken: null, sessionExpired: false });
       },
       expireSession: () => {
-        useDataSourceStore.getState().setSource("backend");
         clearUserScopedState();
         set({ isAuthenticated: false, accessToken: null, sessionExpired: true });
       },
       clearStaleAuth: () => {
-        useDataSourceStore.getState().setSource("backend");
         clearUserScopedState();
         set({ isAuthenticated: false, accessToken: null });
       },

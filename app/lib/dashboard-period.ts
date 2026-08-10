@@ -10,8 +10,8 @@ function toIsoDate(date: Date): string {
 /**
  * The inclusive from/to date range (local time, "YYYY-MM-DD") a dashboard
  * period covers. Shared by the drill-down links into the transactions page
- * and the mock dashboard, so what a stat card shows and what its drill-down
- * lists always agree on the window.
+ * and the dashboard summary request, so what a stat card shows and what its
+ * drill-down lists always agree on the window.
  */
 export function dashboardPeriodRange(period: DashboardPeriod): {
   from: string;

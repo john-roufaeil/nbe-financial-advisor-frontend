@@ -9,7 +9,6 @@ import {
 } from "@assistant-ui/react";
 import { useChatStore } from "@/store/use-chat-store";
 import { useChatStopStore } from "@/store/use-chat-stop-store";
-import { useDataSourceStore } from "@/store/use-data-source-store";
 import { useConversationTitleStore } from "@/store/use-conversation-title-store";
 import {
   createChatAttachmentsAdapter,
@@ -96,7 +95,6 @@ function resolveConversationTitle(
 export function useAppChatRuntime(active = true) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
   const currentConversationId = useChatStore((s) => s.currentConversationId);
   const setCurrentConversationId = useChatStore((s) => s.setCurrentConversationId);
   // Subscribed (not just read via getState()) so a stop click re-renders
@@ -161,7 +159,6 @@ export function useAppChatRuntime(active = true) {
         conversationId,
         text,
         attachments.map((a) => a.id),
-        source,
         queryClient,
       );
       return;

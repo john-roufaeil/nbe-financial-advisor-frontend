@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import * as authMock from "@/mocks/auth";
 import { refreshAccessTokenOnce } from "@/api/client";
 import { useAuthStore } from "@/store/use-auth-store";
-import { useDataSourceStore } from "@/store/use-data-source-store";
 
 export type SessionStatus = "restoring" | "settled";
 
@@ -19,7 +17,6 @@ export type SessionStatus = "restoring" | "settled";
  * the app nor a redirect — hence "restoring" rather than a boolean.
  */
 export function useSessionRestore(): SessionStatus {
-  const source = useDataSourceStore((s) => s.source);
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
   const accessToken = useAuthStore((s) => s.accessToken);
 
@@ -39,22 +36,14 @@ export function useSessionRestore(): SessionStatus {
     }
 
     let cancelled = false;
-    // Real backend: routed through the same single-flight refreshPromise the
-    // 401 interceptor uses (see api/client.ts) rather than firing an
-    // independent POST /auth/refresh — two uncoordinated callers presenting
-    // the same pre-rotation refresh cookie is exactly what caused the
-    // spurious "silently signed out" bug (ROTATE_REFRESH_TOKENS +
-    // BLACKLIST_AFTER_ROTATION means the loser of that race gets a 401 for a
-    // token the winner already rotated away, even with a perfectly healthy
-    // session). Mock source has no such backend, no rotation, no race.
-    const restore =
-      source === "mock"
-        ? authMock.refresh().then(({ access_token }) => {
-            useAuthStore.getState().setAccessToken(access_token);
-          })
-        : refreshAccessTokenOnce().then(() => {});
-
-    restore
+    // Routed through the same single-flight refreshPromise the 401
+    // interceptor uses (see api/client.ts) rather than firing an independent
+    // POST /auth/refresh — two uncoordinated callers presenting the same
+    // pre-rotation refresh cookie is exactly what caused the spurious
+    // "silently signed out" bug (ROTATE_REFRESH_TOKENS + BLACKLIST_AFTER_ROTATION
+    // means the loser of that race gets a 401 for a token the winner already
+    // rotated away, even with a perfectly healthy session).
+    refreshAccessTokenOnce()
       .catch(() => {
         // No cookie, or it expired or was already used — the session is genuinely
         // over. `isAuthenticated` was true going into this (that's what made
@@ -71,7 +60,7 @@ export function useSessionRestore(): SessionStatus {
     return () => {
       cancelled = true;
     };
-  }, [needsRestore, source]);
+  }, [needsRestore]);
 
   return status;
 }

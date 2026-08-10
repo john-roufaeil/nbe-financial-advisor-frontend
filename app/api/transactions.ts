@@ -99,7 +99,7 @@ function toQueryParams(filters: TransactionFilters): Record<string, string | num
   // ASSUMED BACKEND CHANGE: GET /transactions must accept `?type=income|expense`
   // using the same mapping as toUiType (income = credit rows, expense = every
   // other transaction_type). Until it exists, the backend ignores the param and
-  // the type filter only narrows mock data.
+  // the type filter is a no-op.
   if (filters.type) params.type = filters.type;
   if (filters.category) params.category = filters.category;
   if (filters.accountId) params.account_id = filters.accountId;

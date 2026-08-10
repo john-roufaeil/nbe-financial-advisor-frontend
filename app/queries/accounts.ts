@@ -1,24 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import * as accountsApi from "@/api/accounts";
-import * as accountsMock from "@/mocks/accounts";
 import type { CreateBankAccountBody } from "@/types/account";
-import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
-import { pickImpl, useInvalidatingMutation } from "@/queries/shared";
-
-function impl(source: DataSource) {
-  return pickImpl(source, accountsApi, accountsMock);
-}
+import { useInvalidatingMutation } from "@/queries/shared";
 
 export const accountKeys = {
-  all: (source: DataSource) => [QUERY_ROOTS.accounts, source] as const,
+  all: [QUERY_ROOTS.accounts] as const,
 };
 
 export function useAccounts() {
-  const source = useDataSourceStore((s) => s.source);
   return useQuery({
-    queryKey: accountKeys.all(source),
-    queryFn: () => impl(source).getAccounts(),
+    queryKey: accountKeys.all,
+    queryFn: () => accountsApi.getAccounts(),
     // Accounts only change via the mutations below, which already
     // invalidate this key (that refetches regardless of staleTime) — so
     // there's nothing to gain from the default 30s staleTime expiring and
@@ -34,7 +27,7 @@ export function useAccounts() {
 
 export function useCreateAccount() {
   return useInvalidatingMutation({
-    mutationFn: (source, body: CreateBankAccountBody) => impl(source).createAccount(body),
+    mutationFn: (body: CreateBankAccountBody) => accountsApi.createAccount(body),
     invalidates: [[QUERY_ROOTS.accounts], [QUERY_ROOTS.dashboard]],
     successToastKey: "toast.accountCreated",
   });
@@ -42,7 +35,7 @@ export function useCreateAccount() {
 
 export function useDeleteAccount() {
   return useInvalidatingMutation({
-    mutationFn: (source, id: string) => impl(source).deleteAccount(id),
+    mutationFn: (id: string) => accountsApi.deleteAccount(id),
     invalidates: [[QUERY_ROOTS.accounts], [QUERY_ROOTS.dashboard]],
     successToastKey: "toast.accountDeleted",
   });

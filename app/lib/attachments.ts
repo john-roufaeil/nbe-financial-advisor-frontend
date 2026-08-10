@@ -6,9 +6,8 @@ import {
   type CompleteAttachment,
 } from "@assistant-ui/react";
 import type { QueryClient } from "@tanstack/react-query";
-import { impl, chatKeys } from "@/queries/chat";
+import { chatApi, chatKeys } from "@/queries/chat";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
-import type { DataSource } from "@/store/use-data-source-store";
 import { toastApiError } from "@/lib/toast";
 
 /**
@@ -85,7 +84,6 @@ export async function sendPendingChatAttachments(
   conversationId: string,
   caption: string,
   attachmentIds: string[],
-  source: DataSource,
   queryClient: QueryClient,
 ): Promise<void> {
   let uploadedCount = 0;
@@ -95,7 +93,7 @@ export async function sendPendingChatAttachments(
     const file = pendingUploadFiles.get(id);
     if (!file) continue;
     try {
-      await impl(source).uploadChatAttachment(
+      await chatApi.uploadChatAttachment(
         conversationId,
         file,
         index === 0 ? caption : undefined,
@@ -109,7 +107,7 @@ export async function sendPendingChatAttachments(
 
   if (uploadedCount > 0) {
     queryClient.invalidateQueries({
-      queryKey: chatKeys.messages(conversationId, source),
+      queryKey: chatKeys.messages(conversationId),
     });
     queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.bankStatements] });
     queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.transactions] });

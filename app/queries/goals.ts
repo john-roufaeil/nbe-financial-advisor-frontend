@@ -1,24 +1,17 @@
 import { useQuery } from "@tanstack/react-query";
 import * as goalsApi from "@/api/goals";
-import * as goalsMock from "@/mocks/goals";
 import type { FinancialGoal } from "@/types/goal";
-import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
-import { pickImpl, useInvalidatingMutation } from "@/queries/shared";
-
-function impl(source: DataSource) {
-  return pickImpl(source, goalsApi, goalsMock);
-}
+import { useInvalidatingMutation } from "@/queries/shared";
 
 export const goalKeys = {
-  all: (source: DataSource) => [QUERY_ROOTS.goals, source] as const,
+  all: [QUERY_ROOTS.goals] as const,
 };
 
 export function useGoals() {
-  const source = useDataSourceStore((s) => s.source);
   return useQuery({
-    queryKey: goalKeys.all(source),
-    queryFn: () => impl(source).getGoals(),
+    queryKey: goalKeys.all,
+    queryFn: () => goalsApi.getGoals(),
   });
 }
 
@@ -27,8 +20,7 @@ export function useGoals() {
 
 export function useCreateGoal() {
   return useInvalidatingMutation({
-    mutationFn: (source, body: Omit<FinancialGoal, "id">) =>
-      impl(source).createGoal(body),
+    mutationFn: (body: Omit<FinancialGoal, "id">) => goalsApi.createGoal(body),
     invalidates: [[QUERY_ROOTS.goals], [QUERY_ROOTS.dashboard]],
     successToastKey: "toast.goalCreated",
   });
@@ -36,10 +28,8 @@ export function useCreateGoal() {
 
 export function useUpdateGoal() {
   return useInvalidatingMutation({
-    mutationFn: (
-      source,
-      { id, patch }: { id: string; patch: Omit<FinancialGoal, "id"> },
-    ) => impl(source).updateGoal(id, patch),
+    mutationFn: ({ id, patch }: { id: string; patch: Omit<FinancialGoal, "id"> }) =>
+      goalsApi.updateGoal(id, patch),
     invalidates: [[QUERY_ROOTS.goals], [QUERY_ROOTS.dashboard]],
     successToastKey: "toast.goalUpdated",
   });
@@ -47,7 +37,7 @@ export function useUpdateGoal() {
 
 export function useDeleteGoal() {
   return useInvalidatingMutation({
-    mutationFn: (source, id: string) => impl(source).deleteGoal(id),
+    mutationFn: (id: string) => goalsApi.deleteGoal(id),
     invalidates: [[QUERY_ROOTS.goals], [QUERY_ROOTS.dashboard]],
     successToastKey: "toast.goalDeleted",
   });

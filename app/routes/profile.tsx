@@ -27,7 +27,7 @@ export default function Profile() {
   const showVerifyEmail = user?.has_password !== false && user?.email_verified !== true;
 
   function handleSignOut() {
-    // Best-effort: invalidate the refresh token server-side (or mock).
+    // Best-effort: invalidate the refresh token server-side.
     // Local state is cleared regardless, even if the request fails.
     signOutRemote();
     logout();

@@ -27,8 +27,8 @@ export interface BankStatement {
   id: string;
   /**
    * Optional: StatementFileSerializer carries no original filename, MIME type or
-   * byte size, so these are populated only in mock mode. The backend needs
-   * `original_filename` / `mime_type` / `file_size` before the real API can.
+   * byte size — the backend needs to add `original_filename` / `mime_type` /
+   * `file_size` before these can be populated.
    */
   name?: string;
   type?: BankStatementType;
