@@ -170,7 +170,7 @@ export function Tooltip({
             id={tooltipId}
             popover="manual"
             role="tooltip"
-            className={`bg-neutral text-neutral-content animate-fade-in pointer-events-none fixed inset-auto ${Z_TOOLTIP} m-0 max-w-[min(80vw,16rem)] rounded-(--radius-field) border-0 px-2 py-1 text-xs font-medium text-wrap shadow-lg`}
+            className={`bg-neutral text-neutral-content animate-fade-in pointer-events-none fixed inset-auto ${Z_TOOLTIP} m-0 w-max max-w-[min(80vw,16rem)] rounded-(--radius-field) border-0 px-2 py-1 text-xs font-medium text-wrap shadow-lg`}
             style={
               coords
                 ? { top: coords.top, left: coords.left, transform: coords.transform }

@@ -1,13 +1,13 @@
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
-import { Trash2, CreditCard, Plus, Landmark, RefreshCw } from "lucide-react";
+import { CreditCard, Plus, Landmark, RefreshCw, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useAccounts, useDeleteAccount } from "@/queries/accounts";
-import { useConfirmStore } from "@/store/use-confirm-store";
+import { useAccounts } from "@/queries/accounts";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
+import { AccountDetailModal } from "@/components/accounts/AccountDetailModal";
 import type { BankAccount } from "@/types/account";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { useNumberDisplay } from "@/lib/use-number-display";
@@ -25,17 +25,13 @@ import { toastSuccess, toastError } from "@/lib/toast";
 const MOCK_BANK_PROVIDER_SLUG = "mock_bank";
 
 // `current_balance` is derived server-side from the account's latest transaction
-// and is read-only, so there is no edit action here — only add and remove.
-// Synced accounts (link_type "synced") are entirely read-only server-side
-// (assert_account_mutable() rejects edit/delete/manual transactions), so they
-// get a badge instead of a remove button rather than a button that would 403.
-function AccountRow({
-  account,
-  onDelete,
-}: {
-  account: BankAccount;
-  onDelete: () => void;
-}) {
+// and is read-only, so there is no edit action here — only add and remove, the
+// latter tucked into the details modal (AccountDetailModal) rather than this
+// row. Synced accounts (link_type "synced") are entirely read-only server-side
+// (assert_account_mutable() rejects edit/delete/manual transactions), so the
+// modal shows a badge instead of a remove button for them rather than one
+// that would 403.
+function AccountRow({ account, onView }: { account: BankAccount; onView: () => void }) {
   const { t } = useTranslation();
   const formatN = useNumberDisplay();
   const currencyLabel = t(`currency.${account.currency}`, account.currency);
@@ -60,25 +56,24 @@ function AccountRow({
         {formatN(Number(account.current_balance))} {currencyLabel}
       </Money>
       <div className="flex shrink-0 items-center gap-1">
-        {isSynced ? (
-          <Tooltip content={t("common.sections.accounts.synced")}>
+        {isSynced && (
+          <Tooltip content={t("common.sections.accounts.syncedTooltip")}>
             <span className="badge badge-ghost gap-1 text-xs">
               <RefreshCw data-no-flip className="size-3" />
               {t("common.sections.accounts.synced")}
             </span>
           </Tooltip>
-        ) : (
-          <Tooltip content={t("actions.remove")}>
-            <button
-              type="button"
-              onClick={onDelete}
-              className="btn btn-ghost btn-sm btn-square text-error"
-              aria-label={t("actions.remove")}
-            >
-              <Trash2 data-no-flip className="size-4" />
-            </button>
-          </Tooltip>
         )}
+        <Tooltip content={t("common.sections.accounts.detail.title")}>
+          <button
+            type="button"
+            onClick={onView}
+            className="btn btn-ghost btn-sm btn-square"
+            aria-label={t("common.sections.accounts.detail.title")}
+          >
+            <Info data-no-flip className="size-4" />
+          </button>
+        </Tooltip>
       </div>
     </li>
   );
@@ -87,9 +82,9 @@ function AccountRow({
 export function BankAccountsCard() {
   const { t } = useTranslation();
   const { data: accounts, isPending, isError } = useAccounts();
-  const deleteAccount = useDeleteAccount();
-  const confirm = useConfirmStore((s) => s.confirm);
   const addRef = useRef<HTMLDialogElement>(null);
+  const detailRef = useRef<HTMLDialogElement>(null);
+  const [viewedAccount, setViewedAccount] = useState<BankAccount | null>(null);
   const createConnection = useCreateBankConnection();
   const queryClient = useQueryClient();
   // Set inside handleMessage once a result actually arrives — lets the
@@ -119,12 +114,9 @@ export function BankAccountsCard() {
     return () => window.removeEventListener("message", handleMessage);
   }, [queryClient]);
 
-  function confirmDelete(account: BankAccount) {
-    confirm({
-      title: t("confirm.deleteAccountTitle"),
-      message: t("confirm.deleteMessage"),
-      onConfirm: () => deleteAccount.mutate(account.id),
-    });
+  function handleView(account: BankAccount) {
+    setViewedAccount(account);
+    detailRef.current?.showModal();
   }
 
   async function handleConnectBank() {
@@ -211,7 +203,7 @@ export function BankAccountsCard() {
               <AccountRow
                 key={account.id}
                 account={account}
-                onDelete={() => confirmDelete(account)}
+                onView={() => handleView(account)}
               />
             ))}
           </ul>
@@ -223,6 +215,7 @@ export function BankAccountsCard() {
       </div>
 
       <AddBankAccountModal ref={addRef} />
+      <AccountDetailModal ref={detailRef} account={viewedAccount} />
     </div>
   );
 }

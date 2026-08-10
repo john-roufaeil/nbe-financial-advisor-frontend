@@ -60,8 +60,8 @@ function AnomalyRow({ anomaly }: { anomaly: AnomalyFlag }) {
 /**
  * Unresolved anomalies flagged by the backend's post-ingestion analysis pass
  * (large/unusual charges, duplicate-looking entries). Renders nothing when
- * there's nothing unresolved, same as LinkedBanksCard — this is a heads-up,
- * not a permanent dashboard fixture.
+ * there's nothing unresolved — this is a heads-up, not a permanent dashboard
+ * fixture.
  */
 export function AnomaliesCard() {
   const { t } = useTranslation();
