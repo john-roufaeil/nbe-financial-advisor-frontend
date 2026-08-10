@@ -238,7 +238,7 @@ export function EntityPicker<T>({
             // configuration Chromium can leave the layer's paint order wrong
             // after the animation ends, even though hit-testing stays correct
             // (a real compositor bug, not a stacking bug).
-            className={`menu bg-base-100 border-base-300 fixed ${Z_POPOVER} flex-col gap-1 overflow-hidden rounded-xl border p-2 shadow-lg`}
+            className={`menu bg-base-100 border-base-300 fixed ${Z_POPOVER} flex-col flex-nowrap gap-1 overflow-hidden rounded-xl border p-2 shadow-lg`}
           >
             {search}
             <ul
