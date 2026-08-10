@@ -48,7 +48,7 @@ function AccountRow({
         className="flex-1"
         subtitle={
           <>
-            <span dir="ltr">{account.account_number}</span>
+            <span dir="ltr">{account.masked_account_number}</span>
             {account.account_type
               ? ` · ${t(`common.addAccount.accountTypes.${account.account_type}`, account.account_type)}`
               : ""}

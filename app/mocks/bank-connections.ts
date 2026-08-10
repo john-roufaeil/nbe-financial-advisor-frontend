@@ -42,7 +42,7 @@ export function confirmBankConnection(
       // Full number, not a mask: the connector contract hands the real one
       // through (services/bank_connectors/base.py), so synced accounts are
       // indistinguishable in format from manual ones.
-      account_number: "1000200030000042",
+      masked_account_number: "1000200030000042",
       currency: "EGP",
       is_active: true,
       link_type: "synced",

@@ -8,7 +8,7 @@ let accounts: BankAccount[] = [
     account_type: "checking",
     // Manually-added and statement-derived accounts carry the full number;
     // only bank-synced ones stay masked (see mocks/bank-connections.ts).
-    account_number: "1000200030004821",
+    masked_account_number: "1000200030004821",
     currency: "EGP",
     is_active: true,
     link_type: "manual",
@@ -20,7 +20,7 @@ let accounts: BankAccount[] = [
     id: "acc-cib-1",
     bank_name: "Commercial International Bank",
     account_type: "savings",
-    account_number: "5500660077009137",
+    masked_account_number: "5500660077009137",
     currency: "EGP",
     is_active: true,
     link_type: "manual",
@@ -40,7 +40,7 @@ export function createAccount(body: CreateBankAccountBody): Promise<BankAccount>
     bank_name: body.bank_name,
     account_type: body.account_type,
     // Stored and echoed verbatim, mirroring BankAccountSerializer.
-    account_number: body.account_number,
+    masked_account_number: body.masked_account_number,
     currency: body.currency,
     is_active: true,
     link_type: "manual",

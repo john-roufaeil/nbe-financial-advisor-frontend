@@ -21,7 +21,7 @@ function findMatchingAccount(
   if (!accounts || !perceivedAccountNumber) return undefined;
   const perceived = digitsOnly(perceivedAccountNumber);
   if (!perceived) return undefined;
-  return accounts.find((a) => digitsOnly(a.account_number) === perceived);
+  return accounts.find((a) => digitsOnly(a.masked_account_number) === perceived);
 }
 
 /**
