@@ -50,21 +50,30 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
               {t("dashboard.goals.current")}
             </span>
           </span>
-          {goal.onTrack !== undefined && (
-            <span
-              className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
-                goal.onTrack ? "bg-success/10 text-success" : "bg-warning/10 text-warning"
-              }`}
-            >
-              {goal.onTrack ? (
-                <TrendingUp data-no-flip className="size-3" />
-              ) : (
-                <TriangleAlert data-no-flip className="size-3" />
-              )}
-              {goal.onTrack
-                ? t("dashboard.goals.onTrack")
-                : t("dashboard.goals.behindSchedule")}
+          {currentPct >= 100 ? (
+            <span className="bg-success/10 text-success inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold">
+              <CheckCircle2 data-no-flip className="size-3" />
+              {t("dashboard.goals.completed")}
             </span>
+          ) : (
+            goal.onTrack !== undefined && (
+              <span
+                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                  goal.onTrack
+                    ? "bg-success/10 text-success"
+                    : "bg-warning/10 text-warning"
+                }`}
+              >
+                {goal.onTrack ? (
+                  <TrendingUp data-no-flip className="size-3" />
+                ) : (
+                  <TriangleAlert data-no-flip className="size-3" />
+                )}
+                {goal.onTrack
+                  ? t("dashboard.goals.onTrack")
+                  : t("dashboard.goals.behindSchedule")}
+              </span>
+            )
           )}
         </div>
         <p className="text-base-content/60 text-xs">

@@ -59,6 +59,7 @@
       "monthsPlaceholder": "Months",
       "onTrack": "On track",
       "behindSchedule": "Behind schedule",
+      "completed": "Completed",
       "projectedCompletion": "Projected to finish {{date}}",
       "errors": {
         "nameRequired": "Enter a name for this goal.",

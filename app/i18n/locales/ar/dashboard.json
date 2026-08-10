@@ -59,6 +59,7 @@
       "monthsPlaceholder": "أشهر",
       "onTrack": "على المسار الصحيح",
       "behindSchedule": "متأخر عن الجدول",
+      "completed": "مكتمل",
       "projectedCompletion": "من المتوقع الانتهاء في {{date}}",
       "errors": {
         "nameRequired": "أدخل اسمًا لهذا الهدف.",
