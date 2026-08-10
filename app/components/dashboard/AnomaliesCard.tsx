@@ -7,6 +7,7 @@ import { useDisplayPreferencesStore } from "@/store/use-display-preferences-stor
 import { CategoryLabel } from "@/components/shared/CategoryLabel";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
+import { ErrorState } from "@/components/shared/QueryState";
 import type { AnomalyFlag, AnomalySeverity } from "@/types/anomaly";
 
 const SEVERITY_BADGE_CLASS: Record<AnomalySeverity, string> = {
@@ -65,7 +66,12 @@ function AnomalyRow({ anomaly }: { anomaly: AnomalyFlag }) {
  */
 export function AnomaliesCard() {
   const { t } = useTranslation();
-  const { data: anomalies, isPending, isError } = useAnomalies({ resolved: false });
+  const {
+    data: anomalies,
+    isPending,
+    isError,
+    refetch,
+  } = useAnomalies({ resolved: false });
 
   if (isPending) {
     return (
@@ -77,7 +83,11 @@ export function AnomaliesCard() {
     );
   }
 
-  if (isError || anomalies.length === 0) return null;
+  if (isError) {
+    return <ErrorState onRetry={() => refetch()} className="animate-entry h-40" />;
+  }
+
+  if (anomalies.length === 0) return null;
 
   return (
     <div className="card border-base-300 bg-base-100 animate-entry min-w-0 border shadow-sm">

@@ -12,7 +12,7 @@ export function AddItemFab() {
 
   return (
     <div
-      className={`dropdown dropdown-top dropdown-end fixed inset-e-6 bottom-6 ${Z_FLOATING_ACTION} h-12 w-12 cursor-pointer`}
+      className={`dropdown dropdown-left dropdown-end fixed inset-e-6 bottom-6 ${Z_FLOATING_ACTION} h-12 w-12 cursor-pointer`}
     >
       <Tooltip
         content={t("dashboard.addItem")}
@@ -41,7 +41,7 @@ export function AddItemFab() {
       </Tooltip>
       <ul
         tabIndex={0}
-        className={`dropdown-content menu bg-base-100 border-base-300 rounded-box ${Z_FLOATING_ACTION} mb-2 max-h-[70vh] w-56 max-w-[90vw] overflow-y-auto border-2 p-2 shadow-2xl`}
+        className={`dropdown-content menu bg-base-100 border-base-300 rounded-box ${Z_FLOATING_ACTION} me-2 max-h-[70vh] w-56 max-w-[90vw] overflow-y-auto border-2 p-2 shadow-2xl`}
       >
         <li>
           <Link to={`/${lang}/transactions`} state={{ openAdd: true }}>
