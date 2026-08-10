@@ -61,7 +61,12 @@ export function useBankStatements(filters: BankStatementFilters) {
     queryKey: bankStatementKeys.list(filters, source),
     queryFn: () => impl(source).getBankStatements(filters),
     placeholderData: keepPreviousData,
+    // Stop polling once the request itself is erroring — otherwise stale
+    // data left over from the last successful fetch (kept around by
+    // keepPreviousData) can still show an item mid-processing and keep this
+    // returning 1000 forever, hammering a broken endpoint every second.
     refetchInterval: (query) => {
+      if (query.state.error) return false;
       const hasInFlight = query.state.data?.items?.some(
         (d) => d.status === "uploading" || d.status === "processing",
       );
