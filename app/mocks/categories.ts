@@ -10,7 +10,7 @@ const categories: Category[] = [
   { name: "other", label: "Other", type: "expense", isFallback: true },
   { name: "savings", label: "Savings", type: "expense", isFallback: false },
   { name: "transport", label: "Transport", type: "expense", isFallback: false },
-  { name: "other_income", label: "Other Income", type: "income", isFallback: true },
+  { name: "other_income", label: "Income", type: "income", isFallback: true },
   { name: "salary", label: "Salary", type: "income", isFallback: false },
   { name: "transfers_in", label: "Transfers In", type: "income", isFallback: false },
 ];
