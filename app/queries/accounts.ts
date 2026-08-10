@@ -19,6 +19,13 @@ export function useAccounts() {
   return useQuery({
     queryKey: accountKeys.all(source),
     queryFn: () => impl(source).getAccounts(),
+    // Accounts only change via the mutations below, which already
+    // invalidate this key (that refetches regardless of staleTime) — so
+    // there's nothing to gain from the default 30s staleTime expiring and
+    // silently refetching on every remount as the user browses between
+    // pages, same reasoning as useCategories.
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 }
 

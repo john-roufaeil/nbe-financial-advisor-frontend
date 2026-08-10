@@ -22,6 +22,12 @@ export function useMe() {
   return useQuery({
     queryKey: profileKeys.me(source),
     queryFn: () => impl(source).getMe(),
+    // useUpdateProfile below writes its response straight into this cache
+    // entry rather than invalidating, so there's no passive-refetch path
+    // that ever needs the default 30s staleTime to expire — same reasoning
+    // as useCategories/useAccounts.
+    staleTime: Infinity,
+    gcTime: Infinity,
   });
 }
 
