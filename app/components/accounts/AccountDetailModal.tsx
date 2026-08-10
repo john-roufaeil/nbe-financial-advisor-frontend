@@ -30,6 +30,9 @@ export const AccountDetailModal = forwardRef<
   const formatN = useNumberDisplay(true);
   const confirm = useConfirmStore((s) => s.confirm);
   const deleteAccount = useDeleteAccount();
+  const currencyFullLabel = account
+    ? t(`currency.${account.currency}_full`, account.currency)
+    : "";
   const currencyLabel = account
     ? t(`currency.${account.currency}`, account.currency)
     : "";
@@ -97,7 +100,7 @@ export const AccountDetailModal = forwardRef<
               </DetailRow>
             )}
             <DetailRow label={t("common.sections.accounts.detail.currency")}>
-              {currencyLabel}
+              {currencyFullLabel}
             </DetailRow>
             <DetailRow label={t("common.sections.accounts.detail.balance")}>
               <Money>

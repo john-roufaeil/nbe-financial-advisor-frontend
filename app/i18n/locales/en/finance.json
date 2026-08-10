@@ -1,10 +1,25 @@
 {
   "currency": {
     "EGP": "EGP",
-    "EGP_full": "Egyptian pounds",
+    "EGP_full": "Egyptian Pound",
     "USD": "USD",
+    "USD_full": "US Dollar",
     "EUR": "EUR",
-    "SAR": "SAR"
+    "EUR_full": "Euro",
+    "GBP": "GBP",
+    "GBP_full": "Great British Pound",
+    "SAR": "SAR",
+    "SAR_full": "Saudi Riyal",
+    "AED": "AED",
+    "AED_full": "UAE Dirham",
+    "KWD": "KWD",
+    "KWD_full": "Kuwaiti Dinar",
+    "CHF": "CHF",
+    "CHF_full": "Swiss Franc",
+    "JPY": "JPY",
+    "JPY_full": "Japanese Yen",
+    "CNY": "CNY",
+    "CNY_full": "Chinese Yuan"
   },
   "units": {
     "b": "B",

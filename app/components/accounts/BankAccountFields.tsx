@@ -111,7 +111,7 @@ export function BankAccountFields({
               >
                 {CURRENCIES.map((currency) => (
                   <option key={currency} value={currency}>
-                    {t(`currency.${currency}`, currency)}
+                    {t(`currency.${currency}_full`, currency)}
                   </option>
                 ))}
               </select>
