@@ -1,18 +1,40 @@
+import { z } from "zod";
 import type { ToolCallMessagePartComponent } from "@assistant-ui/react";
 import { ArrowDownCircle, ArrowUpCircle, Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { TransactionsListResult } from "@/lib/demo-financials";
 import { formatDate } from "@/lib/format";
 import { Money } from "@/components/shared/Money";
 import { HighlightStatCard } from "@/components/chat/tools/HighlightStatCard";
+import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
 import { useNumberDisplay } from "@/lib/use-number-display";
 import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 
+/** Validated at runtime, not just asserted: `result` is LLM-originated, a
+ * meaningfully less trustworthy source than a typed REST response. */
+const TransactionsListResultSchema = z.object({
+  currency: z.string(),
+  transactions: z.array(
+    z.object({
+      id: z.string(),
+      title: z.string(),
+      category: z.string(),
+      type: z.enum(["income", "expense"]),
+      amount: z.number(),
+      datetime: z.string(),
+    }),
+  ),
+});
+
 export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) => {
   const { t } = useTranslation();
-  const data = result as TransactionsListResult | undefined;
+  const parsed = TransactionsListResultSchema.safeParse(result);
+  const data = parsed.success ? parsed.data : undefined;
   const formatN = useNumberDisplay();
   const dateFormat = useDisplayPreferencesStore((s) => s.dateFormat);
+
+  // undefined result: still streaming in, render nothing yet. Present but
+  // malformed: a genuine payload/shape mismatch worth surfacing.
+  if (result !== undefined && !parsed.success) return <ToolPayloadError />;
   if (!data) return null;
 
   const currencyLabel = t(`currency.${data.currency}`, data.currency);

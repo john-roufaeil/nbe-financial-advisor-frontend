@@ -10,6 +10,8 @@ import { chatToolComponents } from "@/components/chat/tools";
 import { ChatFeedbackButton } from "@/components/chat/ChatFeedbackButton";
 import { ChatStatementCard } from "@/components/chat/ChatStatementCard";
 import { MarkdownText } from "@/components/chat/MarkdownText";
+import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
+import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useChatStore } from "@/store/use-chat-store";
 import { useMessages } from "@/queries/chat";
@@ -140,12 +142,21 @@ export function AssistantMessage() {
           </span>
           <div className="flex max-w-[80%] min-w-0 flex-col items-start">
             <div className="w-full min-w-0 overflow-hidden wrap-anywhere select-text">
-              <MessagePrimitive.Parts
-                components={{
-                  Text: MarkdownText,
-                  tools: { by_name: chatToolComponents },
-                }}
-              />
+              {/* Thread-wide <ErrorBoundary> in chat.tsx only catches a crash
+                  once — reopening this same conversation re-fetches the same
+                  bad payload and crashes again, with no recovery short of
+                  abandoning the conversation. Scoped here instead, a bad
+                  widget's crash only takes out this one message's content;
+                  the rest of the thread (and this message's own avatar/
+                  timestamp/action bar around it) keeps rendering. */}
+              <ErrorBoundary fallback={<ToolPayloadError />}>
+                <MessagePrimitive.Parts
+                  components={{
+                    Text: MarkdownText,
+                    tools: { by_name: chatToolComponents },
+                  }}
+                />
+              </ErrorBoundary>
             </div>
             {statementId && <ChatStatementCard statementId={statementId} />}
             <span className="text-base-content/40 mt-1 px-1 text-xs">

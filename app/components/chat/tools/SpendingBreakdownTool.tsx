@@ -1,23 +1,39 @@
 import { useState } from "react";
+import { z } from "zod";
 import type { ToolCallMessagePartComponent } from "@assistant-ui/react";
 import { PieChart, BarChart3, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { SpendingBreakdownResult } from "@/lib/demo-financials";
 import { useCategoryStyle } from "@/lib/use-category-style";
 import { categoryIcon } from "@/lib/constants/category-icons";
 import { CategoryDonutChart } from "@/components/dashboard/CategoryDonutChart";
 import { CategoryBarChart } from "@/components/chat/tools/CategoryBarChart";
 import { Money } from "@/components/shared/Money";
+import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
 import { useNumberDisplay } from "@/lib/use-number-display";
 
 type View = "pie" | "bar";
+
+/** Validated at runtime, not just asserted: `result` is LLM-originated, a
+ * meaningfully less trustworthy source than a typed REST response. */
+const SpendingBreakdownResultSchema = z.object({
+  currency: z.string(),
+  month: z.string(),
+  total: z.number(),
+  categories: z.array(
+    z.object({
+      name: z.string(),
+      amount: z.number(),
+      pct: z.number(),
+    }),
+  ),
+});
 
 export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
   result,
   status,
 }) => {
   const { t } = useTranslation();
-  const data = result as SpendingBreakdownResult | undefined;
+  const parsed = SpendingBreakdownResultSchema.safeParse(result);
   const [view, setView] = useState<View>("pie");
   const [selected, setSelected] = useState<string | null>(null);
   const formatN = useNumberDisplay();
@@ -31,7 +47,10 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
     return t(`common.categories.${name}`, name);
   }
 
-  if (!data || status.type === "running") {
+  // Still streaming in (no result yet) or genuinely running: show the
+  // loading state. A present-but-malformed result is a different case,
+  // handled separately below rather than folded into this same branch.
+  if (status.type === "running" || result === undefined) {
     return (
       <div className="border-base-300 bg-base-100 text-base-content/60 my-2 flex items-center gap-2 rounded-xl border px-4 py-3 text-sm">
         <Loader2 data-no-flip className="size-4 animate-spin" />
@@ -39,6 +58,8 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
       </div>
     );
   }
+  if (!parsed.success) return <ToolPayloadError />;
+  const data = parsed.data;
 
   function toggleSelected(name: string) {
     setSelected((s) => (s === name ? null : name));

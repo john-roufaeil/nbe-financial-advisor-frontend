@@ -1,11 +1,20 @@
 import { useId, useState, useRef, useEffect } from "react";
+import { z } from "zod";
 import type { ToolCallMessagePartComponent } from "@assistant-ui/react";
 import { PiggyBank } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import type { SavingsSliderResult } from "@/lib/demo-financials";
 import { Money } from "@/components/shared/Money";
 import { HighlightStatCard } from "@/components/chat/tools/HighlightStatCard";
+import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
 import { useNumberDisplay } from "@/lib/use-number-display";
+
+/** Validated at runtime, not just asserted: `result` is LLM-originated, a
+ * meaningfully less trustworthy source than a typed REST response. */
+const SavingsSliderResultSchema = z.object({
+  currency: z.string(),
+  currentBalance: z.number(),
+  defaultMonthlySavings: z.number(),
+});
 
 const HORIZON_MONTHS = 12;
 const MAX_MONTHLY = 10000;
@@ -114,9 +123,14 @@ function ProjectionChart({
 
 export const SavingsSliderTool: ToolCallMessagePartComponent = ({ result }) => {
   const { t } = useTranslation();
-  const data = result as SavingsSliderResult | undefined;
+  const parsed = SavingsSliderResultSchema.safeParse(result);
+  const data = parsed.success ? parsed.data : undefined;
   const [monthly, setMonthly] = useState(data?.defaultMonthlySavings ?? 0);
   const formatN = useNumberDisplay();
+
+  // undefined result: still streaming in, render nothing yet. Present but
+  // malformed: a genuine payload/shape mismatch worth surfacing.
+  if (result !== undefined && !parsed.success) return <ToolPayloadError />;
   if (!data) return null;
 
   const projected = data.currentBalance + monthly * HORIZON_MONTHS;

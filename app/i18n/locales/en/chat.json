@@ -32,6 +32,7 @@
       "transactions": "What are my recent transactions?"
     },
     "tools": {
+      "payloadError": "Couldn't display this.",
       "spending": {
         "title": "Spending breakdown",
         "total": "Total",
