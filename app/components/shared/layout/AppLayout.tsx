@@ -79,21 +79,31 @@ export default function AppLayout() {
             ]}
           />
 
-          {/* No bar chrome on mobile — just a floating hamburger button over
-              the page content, so the header row's height/background/logo
-              don't eat screen space on small viewports. */}
+          {/* Mobile top bar — an actual header row (own height + background)
+              rather than a button floating over the page content, so it no
+              longer overlaps whatever's at the top of the page. The logo
+              sits next to the hamburger so the bar isn't mostly blank
+              space. */}
           <div
-            className={`fixed inset-s-2 top-2 ${Z_DROPDOWN} ${isForcedMobile ? "" : "lg:hidden"}`}
+            className={`border-base-300 bg-base-100 flex h-14 shrink-0 items-center gap-3 border-b px-3 ${isForcedMobile ? "" : "lg:hidden"}`}
           >
             <Tooltip content={t("nav.menu")} position="bottom">
               <button
-                className="btn btn-square btn-ghost bg-base-200/80 shadow-sm backdrop-blur-sm"
+                className="btn btn-square btn-ghost btn-sm"
                 onClick={toggle}
                 aria-label={t("nav.menu")}
               >
                 <Menu className="size-5" />
               </button>
             </Tooltip>
+            <img
+              src="/logo-collapsed.webp"
+              alt={t("app.name")}
+              className="size-7 object-contain"
+            />
+            <span className="text-base-content truncate font-semibold">
+              {t("app.name")}
+            </span>
           </div>
 
           <main

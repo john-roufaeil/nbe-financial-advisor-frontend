@@ -8,6 +8,8 @@ import {
   Hash,
   CalendarDays,
   Minimize2,
+  Database,
+  Cloud,
 } from "lucide-react";
 import { TimeFormatSwitcher } from "@/components/shared/preferences/TimeFormatSwitcher";
 import { NumberFormatSwitcher } from "@/components/shared/preferences/NumberFormatSwitcher";
@@ -17,8 +19,11 @@ import { ToggleSwitch } from "@/components/shared/forms/ToggleSwitch";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { useLanguageSwitch } from "@/lib/use-language-switch";
 import { useThemeStore, type Theme } from "@/store/use-theme-store";
+import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
+import { useToastStore } from "@/store/use-toast-store";
 
 const THEME_OPTIONS: readonly [Theme, Theme] = ["light", "dark"];
+const DATA_SOURCE_OPTIONS: readonly [DataSource, DataSource] = ["mock", "backend"];
 
 function LanguageToggle() {
   const { t } = useTranslation();
@@ -33,6 +38,33 @@ function LanguageToggle() {
       onChange={(next) => void switchTo(next)}
       aria-label={t("settings.language")}
       loading={isSwitching}
+    />
+  );
+}
+
+function DataSourceSwitch() {
+  const { t } = useTranslation();
+  const source = useDataSourceStore((s) => s.source);
+  const setSource = useDataSourceStore((s) => s.setSource);
+  const showToast = useToastStore((s) => s.show);
+
+  const labels: Record<DataSource, string> = {
+    mock: t("dashboard.dataSource.mock"),
+    backend: t("dashboard.dataSource.backend"),
+  };
+
+  return (
+    <ToggleSwitch
+      value={source}
+      options={DATA_SOURCE_OPTIONS}
+      labels={labels}
+      icons={{ mock: Database, backend: Cloud }}
+      forceLtrOrder
+      onChange={(next) => {
+        setSource(next);
+        showToast(t("toast.dataSourceChanged", { source: labels[next] }), "info");
+      }}
+      aria-label={t("dashboard.dataSource.title")}
     />
   );
 }
@@ -123,6 +155,14 @@ export function PreferencesMenu() {
               {t("settings.compactNumbers.label")}
             </span>
             <CompactNumbersSwitcher />
+          </label>
+
+          <label className="flex flex-col gap-1.5">
+            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
+              <Database className="size-3.5" />
+              {t("dashboard.dataSource.title")}
+            </span>
+            <DataSourceSwitch />
           </label>
         </div>
       </div>

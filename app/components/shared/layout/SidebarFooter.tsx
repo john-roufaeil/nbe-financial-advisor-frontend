@@ -1,10 +1,9 @@
 import { NavLink } from "react-router";
 import { useTranslation } from "react-i18next";
-import { Bell } from "lucide-react";
+import { Bell, Globe } from "lucide-react";
 import { LanguageSwitcher } from "@/components/shared/preferences/LanguageSwitcher";
 import { BalanceVisibilityToggle } from "@/components/shared/preferences/BalanceVisibilityToggle";
 import { ThemeToggle } from "@/components/shared/preferences/ThemeToggle";
-import { DataSourceToggle } from "@/components/shared/preferences/DataSourceToggle";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useNotificationsStore } from "@/store/use-notifications-store";
 import { useNotificationsModalStore } from "@/store/use-notifications-modal-store";
@@ -33,21 +32,17 @@ export function SidebarFooter({
       className={`flex shrink-0 p-4 ${effectiveCollapsed ? "flex-col gap-1 lg:flex-col lg:items-center lg:gap-4" : "flex-col gap-1"}`}
     >
       <div
-        className={`flex min-w-0 items-center justify-between gap-2 ${effectiveCollapsed ? "w-full lg:flex-col lg:justify-center" : "w-full"}`}
+        className={`flex min-w-0 items-center gap-2 ${effectiveCollapsed ? "w-full justify-center lg:flex-col" : "w-full justify-around"}`}
       >
         <ThemeToggle className="shrink-0" />
         <BalanceVisibilityToggle className="btn-square shrink-0" />
-      </div>
-
-      <div
-        className={`flex w-full items-center gap-2 ${effectiveCollapsed ? "lg:hidden" : ""}`}
-      >
-        <div className="flex w-full flex-col gap-2">
-          <div className="flex min-w-0 items-center justify-between gap-2">
-            <DataSourceToggle />
-            <LanguageSwitcher onSelect={onNavigate} />
-          </div>
-        </div>
+        <LanguageSwitcher
+          onSelect={onNavigate}
+          variant="btn-ghost"
+          icons={{ en: Globe, ar: Globe }}
+          showLabel={!effectiveCollapsed}
+          className="btn-sm shrink-0"
+        />
       </div>
 
       <div
@@ -88,7 +83,7 @@ export function SidebarFooter({
               <Bell className="size-4.5" />
             </button>
             {unreadCount > 0 && (
-              <span className="bg-error text-error-content pointer-events-none absolute -inset-e-0.5 -top-0.5 flex size-4 min-w-4 items-center justify-center rounded-full px-0.5 text-[10px] leading-none font-semibold">
+              <span className="bg-secondary text-secondary-content pointer-events-none absolute -inset-e-0.5 -top-0.5 flex size-4 min-w-4 items-center justify-center rounded-full px-0.5 text-[10px] leading-none font-semibold">
                 {unreadCount > 9 ? "9+" : unreadCount}
               </span>
             )}
