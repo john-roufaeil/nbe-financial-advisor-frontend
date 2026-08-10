@@ -9,9 +9,10 @@ export interface BankAccount {
   /**
    * The full account number, returned exactly as stored with no display-side
    * masking — the same value whether the account was added by hand, derived
-   * from a statement, or synced from the bank.
+   * from a statement, or synced from the bank. Named `masked_account_number`
+   * by BankAccountSerializer despite holding the unmasked value.
    */
-  account_number: string;
+  masked_account_number: string;
   currency: string;
   is_active: boolean;
   /**
@@ -33,9 +34,9 @@ export const CURRENCIES = ["EGP", "SAR", "EUR", "USD"] as const;
 export type Currency = (typeof CURRENCIES)[number];
 
 /**
- * Body for POST /accounts. `account_number` is the full account number, entered
- * twice client-side to confirm — the backend stores and returns it verbatim
- * (no masking), so a typo here is what every screen shows afterwards.
+ * Body for POST /accounts. `masked_account_number` is the full account number,
+ * entered twice client-side to confirm — the backend stores and returns it
+ * verbatim (no masking), so a typo here is what every screen shows afterwards.
  *
  * There is deliberately no balance field: the backend derives `current_balance`
  * from the account's most recent transaction and refuses to accept it as input.
@@ -44,5 +45,5 @@ export interface CreateBankAccountBody {
   bank_name: string;
   account_type: AccountType;
   currency: Currency;
-  account_number: string;
+  masked_account_number: string;
 }

@@ -105,7 +105,9 @@ export function UserMessage() {
               <UserUploadChip key={i} name={name} />
             ))}
           </div>
-          {caption && <div className="wrap-anywhere whitespace-pre-wrap">{caption}</div>}
+          {caption && (
+            <div className="wrap-anywhere whitespace-pre-wrap select-text">{caption}</div>
+          )}
         </div>
         <span className="text-base-content/40 mt-1 px-1 text-xs">
           {formatTime(createdAt, timeFormat, t)}
@@ -137,7 +139,7 @@ export function AssistantMessage() {
             <Bot className="size-4.5" />
           </span>
           <div className="flex max-w-[80%] min-w-0 flex-col items-start">
-            <div className="w-full min-w-0 overflow-hidden wrap-anywhere">
+            <div className="w-full min-w-0 overflow-hidden wrap-anywhere select-text">
               <MessagePrimitive.Parts
                 components={{
                   Text: MarkdownText,

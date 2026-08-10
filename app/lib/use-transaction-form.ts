@@ -20,7 +20,11 @@ function minDate() {
 }
 
 export interface TransactionFormValues {
-  title: string;
+  // Not "title": <form>.title is a native HTMLElement property (the tooltip
+  // attribute), which shadows the named-child lookup react-hook-form's
+  // register()/Controller ref wiring relies on — a field named "title"
+  // silently never syncs into form state no matter how it's registered.
+  transactionTitle: string;
   accountId: string;
   category: string;
   type: "income" | "expense";
@@ -30,7 +34,7 @@ export interface TransactionFormValues {
 
 function emptyValues(): TransactionFormValues {
   return {
-    title: "",
+    transactionTitle: "",
     accountId: "",
     // Filled in from the fetched taxonomy once categories load (see effect below).
     category: "",
@@ -61,7 +65,7 @@ export function useTransactionForm(
 
   const schema = z
     .object({
-      title: z
+      transactionTitle: z
         .string()
         .trim()
         .min(1, t("transactions.add.errors.nameRequired"))
@@ -95,12 +99,12 @@ export function useTransactionForm(
     mode: "onChange",
     defaultValues: emptyValues(),
   });
-  const { control, register, handleSubmit, watch, setValue, reset, formState } = form;
+  const { control, handleSubmit, watch, setValue, reset, formState } = form;
 
   useEffect(() => {
     if (editing) {
       reset({
-        title: editing.title,
+        transactionTitle: editing.title,
         accountId: editing.accountId ?? "",
         category: editing.category,
         type: editing.type,
@@ -161,7 +165,7 @@ export function useTransactionForm(
   async function onSubmit(values: TransactionFormValues) {
     const patch = {
       datetime: `${values.date}T00:00:00`,
-      title: values.title.trim(),
+      title: values.transactionTitle.trim(),
       category: values.category,
       type: values.type,
       amount: values.amount as number,
@@ -188,7 +192,6 @@ export function useTransactionForm(
 
   return {
     control,
-    register,
     setValue,
     errors: formState.errors,
     isValid: formState.isValid,

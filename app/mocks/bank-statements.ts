@@ -40,7 +40,7 @@ async function resolveAccountForStatement(
   if (existing.length > 0 && Math.random() > 0.3) {
     const pick = existing[Math.floor(Math.random() * existing.length)];
     return {
-      perceivedAccountNumber: pick.account_number,
+      perceivedAccountNumber: pick.masked_account_number,
       accountId: pick.id,
       bankName: pick.bank_name,
     };
@@ -53,7 +53,7 @@ async function resolveAccountForStatement(
   const created = await createAccount({
     bank_name: bankName,
     account_type: "checking",
-    account_number: perceivedAccountNumber,
+    masked_account_number: perceivedAccountNumber,
     currency: "EGP",
   });
   return { perceivedAccountNumber, accountId: created.id, bankName };

@@ -3,7 +3,6 @@ import {
   useWatch,
   type Control,
   type FieldErrors,
-  type UseFormRegister,
   type UseFormSetValue,
 } from "react-hook-form";
 import { useTranslation } from "react-i18next";
@@ -18,7 +17,6 @@ export function TransactionFormFields({
   formId,
   onSubmit,
   control,
-  register,
   setValue,
   errors,
   accounts,
@@ -31,7 +29,6 @@ export function TransactionFormFields({
   formId: string;
   onSubmit: () => void;
   control: Control<TransactionFormValues>;
-  register: UseFormRegister<TransactionFormValues>;
   setValue: UseFormSetValue<TransactionFormValues>;
   errors: FieldErrors<TransactionFormValues>;
   accounts: BankAccount[] | undefined;
@@ -49,15 +46,21 @@ export function TransactionFormFields({
     <form id={formId} onSubmit={onSubmit} className="flex flex-col gap-3">
       <label className="flex flex-col gap-1">
         <span className="label-text text-xs">{t("transactions.add.name")}</span>
-        <input
-          type="text"
-          placeholder={t("transactions.add.namePlaceholder")}
-          maxLength={20}
-          className={`input input-bordered input-sm w-full ${errors.title ? "input-error" : ""}`}
-          {...register("title")}
+        <Controller
+          name="transactionTitle"
+          control={control}
+          render={({ field }) => (
+            <input
+              type="text"
+              placeholder={t("transactions.add.namePlaceholder")}
+              maxLength={20}
+              className={`input input-bordered input-sm w-full ${errors.transactionTitle ? "input-error" : ""}`}
+              {...field}
+            />
+          )}
         />
-        {errors.title && (
-          <span className="text-error text-xs">{errors.title.message}</span>
+        {errors.transactionTitle && (
+          <span className="text-error text-xs">{errors.transactionTitle.message}</span>
         )}
       </label>
 
@@ -125,12 +128,18 @@ export function TransactionFormFields({
 
       <label className="flex w-full flex-col gap-1">
         <span className="label-text text-xs">{t("transactions.add.date")}</span>
-        <input
-          type="date"
-          min={minDate()}
-          max={today()}
-          className="input input-bordered input-sm w-full"
-          {...register("date")}
+        <Controller
+          name="date"
+          control={control}
+          render={({ field }) => (
+            <input
+              type="date"
+              min={minDate()}
+              max={today()}
+              className="input input-bordered input-sm w-full"
+              {...field}
+            />
+          )}
         />
       </label>
     </form>
