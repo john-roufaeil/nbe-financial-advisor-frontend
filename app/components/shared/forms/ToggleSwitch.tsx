@@ -47,52 +47,73 @@ export function ToggleSwitch<T extends string>({
       disabled={disabled || loading}
       aria-label={ariaLabel}
       aria-busy={disabled || loading}
-      className={`border-base-300 bg-base-200 focus-visible:outline-primary/50 relative flex w-full min-w-0 cursor-pointer items-center rounded-md border p-1 focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
+      className={`group/toggle focus-visible:outline-primary/50 relative flex w-full min-w-0 cursor-pointer items-center focus-visible:outline-2 focus-visible:outline-offset-2 disabled:cursor-not-allowed disabled:opacity-50 ${
         forceLtrOrder ? "rtl:flex-row-reverse" : ""
       }`}
     >
-      {loading && (
-        <span className="bg-base-200/70 absolute inset-0 z-20 grid place-items-center rounded-md">
+      {loading ? (
+        <span className="flex w-full items-center justify-center py-1.5">
           <span className="loading loading-spinner loading-xs" />
         </span>
-      )}
-      <span
-        className={`bg-primary absolute inset-y-1 ${forceLtrOrder ? "left-1" : "inset-s-1"} w-[calc(50%-0.375rem)] rounded-lg shadow-sm transition-transform duration-200 ease-out ${
-          active === 1
-            ? forceLtrOrder
-              ? "translate-x-[calc(100%+0.25rem)]"
-              : "translate-x-[calc(100%+0.25rem)] rtl:-translate-x-[calc(100%+0.25rem)]"
-            : ""
-        }`}
-      />
-      {options.map((opt) => {
-        const Icon: IconComponent | undefined = icons?.[opt];
-        const isActive = opt === value;
-        const content = (
+      ) : (
+        <>
+          {/* Faint full-width baseline under both options, with a solid
+              primary segment overlaid on the active half — a tab-style
+              underline instead of a filled pill, so the control stays flat
+              and minimal rather than a colored block. On hover, the segment
+              stays anchored under the active option but leans slightly
+              toward the other one — a hint that it's switchable, not a full
+              preview — and eases back on mouse-leave. */}
+          <span className="bg-base-300 absolute inset-x-0 bottom-0 h-px" />
           <span
-            className={`relative z-10 flex min-w-0 flex-1 items-center justify-center gap-1.5 px-2 py-1.5 text-sm leading-tight font-medium wrap-break-word transition-colors ${
-              isActive ? "text-primary-content" : "text-base-content/50"
+            className={`bg-primary absolute bottom-0 h-0.5 w-1/2 transition-transform duration-200 ease-out ${forceLtrOrder ? "left-0" : "inset-s-0"} ${
+              active === 1
+                ? forceLtrOrder
+                  ? "translate-x-full"
+                  : "translate-x-full rtl:-translate-x-full"
+                : ""
+            } ${
+              active === 1
+                ? forceLtrOrder
+                  ? "group-hover/toggle:translate-x-[90%]"
+                  : "group-hover/toggle:translate-x-[90%] group-hover/toggle:rtl:translate-x-[-90%]"
+                : forceLtrOrder
+                  ? "group-hover/toggle:translate-x-[10%]"
+                  : "group-hover/toggle:translate-x-[10%] group-hover/toggle:rtl:translate-x-[-10%]"
             }`}
-          >
-            {Icon && <Icon className="size-3.5 shrink-0" />}
-            {showLabels ? (
-              <span className="min-w-0 text-center">{labels[opt]}</span>
-            ) : (
-              <span className="sr-only">{labels[opt]}</span>
-            )}
-          </span>
-        );
+          />
+          {options.map((opt) => {
+            const Icon: IconComponent | undefined = icons?.[opt];
+            const isActive = opt === value;
+            const content = (
+              <span
+                className={`relative flex min-w-0 flex-1 items-center justify-center gap-1.5 px-2 pt-1 pb-2 text-sm leading-tight font-medium transition-colors duration-200 ease-out ${
+                  isActive
+                    ? "text-primary group-hover/toggle:text-primary/75"
+                    : "text-base-content/45 group-hover/toggle:text-base-content/70"
+                }`}
+              >
+                {Icon && <Icon className="size-3.5 shrink-0" />}
+                {showLabels ? (
+                  <span className="min-w-0 truncate text-center">{labels[opt]}</span>
+                ) : (
+                  <span className="sr-only">{labels[opt]}</span>
+                )}
+              </span>
+            );
 
-        return showLabels ? (
-          <span key={opt} className="flex min-w-0 flex-1">
-            {content}
-          </span>
-        ) : (
-          <Tooltip key={opt} content={labels[opt]} className="min-w-0 flex-1">
-            {content}
-          </Tooltip>
-        );
-      })}
+            return showLabels ? (
+              <span key={opt} className="flex min-w-0 flex-1">
+                {content}
+              </span>
+            ) : (
+              <Tooltip key={opt} content={labels[opt]} className="min-w-0 flex-1">
+                {content}
+              </Tooltip>
+            );
+          })}
+        </>
+      )}
     </button>
   );
 }
