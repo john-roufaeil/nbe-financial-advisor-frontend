@@ -1,12 +1,8 @@
 import { useEffect, useState } from "react";
-import * as authApi from "@/api/auth";
 import * as authMock from "@/mocks/auth";
+import { refreshAccessTokenOnce } from "@/api/client";
 import { useAuthStore } from "@/store/use-auth-store";
-import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
-
-function impl(source: DataSource) {
-  return source === "mock" ? authMock : authApi;
-}
+import { useDataSourceStore } from "@/store/use-data-source-store";
 
 export type SessionStatus = "restoring" | "settled";
 
@@ -43,16 +39,30 @@ export function useSessionRestore(): SessionStatus {
     }
 
     let cancelled = false;
-    impl(source)
-      .refresh()
-      .then(({ access_token }) => {
-        if (!cancelled) useAuthStore.getState().setAccessToken(access_token);
-      })
+    // Real backend: routed through the same single-flight refreshPromise the
+    // 401 interceptor uses (see api/client.ts) rather than firing an
+    // independent POST /auth/refresh — two uncoordinated callers presenting
+    // the same pre-rotation refresh cookie is exactly what caused the
+    // spurious "silently signed out" bug (ROTATE_REFRESH_TOKENS +
+    // BLACKLIST_AFTER_ROTATION means the loser of that race gets a 401 for a
+    // token the winner already rotated away, even with a perfectly healthy
+    // session). Mock source has no such backend, no rotation, no race.
+    const restore =
+      source === "mock"
+        ? authMock.refresh().then(({ access_token }) => {
+            useAuthStore.getState().setAccessToken(access_token);
+          })
+        : refreshAccessTokenOnce().then(() => {});
+
+    restore
       .catch(() => {
         // No cookie, or it expired or was already used — the session is genuinely
-        // over. Reset quietly: the user did not click logout, so there is nothing
-        // to announce, and RequireAuth will send them to sign-in.
-        if (!cancelled) useAuthStore.getState().clearStaleAuth();
+        // over. `isAuthenticated` was true going into this (that's what made
+        // needsRestore true), so this is a real, previously-live session ending,
+        // not "there was never one" — expireSession() over clearStaleAuth() so
+        // the SessionExpiredModal explains why RequireAuth is about to bounce
+        // them to sign-in, instead of that redirect just happening silently.
+        if (!cancelled) useAuthStore.getState().expireSession();
       })
       .finally(() => {
         if (!cancelled) setStatus("settled");

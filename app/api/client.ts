@@ -43,8 +43,17 @@ function isAuthEndpoint(url?: string) {
   return !!url && AUTH_ENDPOINTS.some((path) => url.includes(path));
 }
 
-// Single in-flight refresh shared by every request that races into a 401, so a
-// burst of parallel calls doesn't fire multiple refresh requests.
+// Single in-flight refresh shared by every caller that might race into one —
+// every request that hits a 401 below, AND useSessionRestore's reload-time
+// restore (see refreshAccessTokenOnce) — so a burst of parallel callers
+// shares one request instead of each presenting the same pre-rotation
+// refresh cookie. That matters because the backend's SIMPLE_JWT config
+// rotates + blacklists the refresh token on every successful use: two
+// requests racing in with the same cookie (React StrictMode's dev-only
+// double effect invoke was one real way this happened) means whichever the
+// backend processes second gets a 401 for an already-used token, even though
+// the session was perfectly healthy — exactly the "silently signed out"
+// symptom this dedup exists to prevent.
 let refreshPromise: Promise<string> | null = null;
 
 /**
@@ -58,6 +67,14 @@ async function refreshAccessToken(): Promise<string> {
   const accessToken = res.data.access_token;
   useAuthStore.getState().setAccessToken(accessToken);
   return accessToken;
+}
+
+/** Shared single-flight entry point — see refreshPromise above. */
+export function refreshAccessTokenOnce(): Promise<string> {
+  refreshPromise ??= refreshAccessToken().finally(() => {
+    refreshPromise = null;
+  });
+  return refreshPromise;
 }
 
 apiClient.interceptors.response.use(
@@ -78,10 +95,7 @@ apiClient.interceptors.response.use(
     originalRequest._retried = true;
 
     try {
-      refreshPromise ??= refreshAccessToken().finally(() => {
-        refreshPromise = null;
-      });
-      const accessToken = await refreshPromise;
+      const accessToken = await refreshAccessTokenOnce();
       originalRequest.headers.Authorization = `Bearer ${accessToken}`;
       return apiClient(originalRequest);
     } catch {
