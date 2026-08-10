@@ -54,11 +54,18 @@ export function hasChatTimedOut(messages: ChatMessage[] | undefined): boolean {
   return Date.now() - last.createdAt > CHAT_REPLY_TIMEOUT_MS;
 }
 
-export function useConversations() {
+/**
+ * `active` gates this the same way it gates useMessages below — the chat
+ * runtime is mounted app-wide (AppLayout hosts it so the sidebar thread list
+ * and AssistantRuntimeProvider survive route changes), so without this every
+ * page, not just /chat, would fetch the conversation list on load.
+ */
+export function useConversations(active = true) {
   const source = useDataSourceStore((s) => s.source);
   return useQuery({
     queryKey: chatKeys.conversations(source),
     queryFn: () => impl(source).getConversations(),
+    enabled: active,
   });
 }
 

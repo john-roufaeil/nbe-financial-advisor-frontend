@@ -90,7 +90,8 @@ function resolveConversationTitle(
  * this runtime is created once in AppLayout (so the sidebar thread list and
  * AssistantRuntimeProvider survive navigating away from /chat), and without
  * this flag its message poll would keep hitting the backend every second
- * from every other route too.
+ * from every other route too, and the conversation list would fetch on
+ * every page load regardless of whether chat is ever opened.
  */
 export function useAppChatRuntime(active = true) {
   const { t } = useTranslation();
@@ -111,7 +112,7 @@ export function useAppChatRuntime(active = true) {
   const derivedTitles = useConversationTitleStore((s) => s.byConversationId);
   const setConversationTitle = useConversationTitleStore((s) => s.setTitle);
 
-  const { data: conversations = [] } = useConversations();
+  const { data: conversations = [] } = useConversations(active);
   const { data: rawMessages } = useMessages(currentConversationId, active);
   const messages = rawMessages ?? [];
 
