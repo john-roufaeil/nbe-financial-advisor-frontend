@@ -14,7 +14,6 @@ export const AddTransactionModal = forwardRef<
   const { t } = useTranslation();
   const {
     control,
-    register,
     setValue,
     errors,
     isValid,
@@ -64,7 +63,6 @@ export const AddTransactionModal = forwardRef<
           formId="add-transaction-form"
           onSubmit={handleFormSubmit}
           control={control}
-          register={register}
           setValue={setValue}
           errors={errors}
           accounts={accounts}
