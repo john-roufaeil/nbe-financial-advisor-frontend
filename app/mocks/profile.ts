@@ -9,6 +9,8 @@ let user: User = {
   employment_status: "employed",
   monthly_income: "42000.00",
   income_steadiness: "steady",
+  has_password: true,
+  email_verified: true,
 };
 
 export function getMe(): Promise<User> {

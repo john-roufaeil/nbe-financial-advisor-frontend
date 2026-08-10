@@ -8,6 +8,7 @@ import { PreferencesMenu } from "@/components/shared/preferences/PreferencesMenu
 import { useAuthStore } from "@/store/use-auth-store";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useLogout } from "@/queries/auth";
+import { useMe } from "@/queries/profile";
 import { localizedPath } from "@/lib/constants/routes";
 
 export default function Profile() {
@@ -17,6 +18,13 @@ export default function Profile() {
   const navigate = useNavigate();
   const logout = useAuthStore((s) => s.logout);
   const { mutate: signOutRemote } = useLogout();
+  const { data: user } = useMe();
+  // Default to showing while user is still loading (undefined), same as the
+  // banner's own prior unconditional-show behavior — hide only once we
+  // positively know either applies: no password (bank-login account, whose
+  // identity was already proven by bank OTP) or the email link was actually
+  // clicked.
+  const showVerifyEmail = user?.has_password !== false && user?.email_verified !== true;
 
   function handleSignOut() {
     // Best-effort: invalidate the refresh token server-side (or mock).
@@ -44,7 +52,7 @@ export default function Profile() {
         }
       />
 
-      <VerifyEmailBanner />
+      {showVerifyEmail && <VerifyEmailBanner />}
       <PreferencesMenu />
       <PersonalDataSections />
     </div>

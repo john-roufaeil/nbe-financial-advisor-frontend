@@ -14,7 +14,13 @@ import { FieldValue } from "@/components/shared/forms/FieldValue";
 import { NAME_PATTERN } from "@/lib/name-validation";
 import type { UpdateProfileBody, User as UserType } from "@/types/profile";
 
-export type Field = FormFieldConfig<keyof UserType>;
+// `has_password`/`email_verified` are excluded: both are internal flags
+// (drive VerifyEmailBanner visibility), not displayable/editable
+// personal-data fields, and their boolean type would otherwise widen
+// FieldValue's `value` prop away from `string | undefined`.
+export type Field = FormFieldConfig<
+  Exclude<keyof UserType, "has_password" | "email_verified">
+>;
 
 type Draft = Record<string, string>;
 
