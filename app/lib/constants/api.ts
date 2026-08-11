@@ -51,4 +51,5 @@ export const API_ENDPOINTS = {
   recommendations: "/recommendations",
   recommendationFeedback: (id: string) => `/recommendations/${id}/feedback`,
   monthlySummaries: "/analytics/monthly-summaries",
+  issues: "/issues",
 } as const;

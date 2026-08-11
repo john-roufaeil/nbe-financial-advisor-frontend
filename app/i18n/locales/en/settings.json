@@ -36,6 +36,27 @@
       "empty": "Nothing here yet.",
       "anomalyTitle": "Unusual activity detected"
     },
+    "issues": {
+      "title": "Support",
+      "subtitle": "Report a bug or ask for help — an admin will follow up.",
+      "reportButton": "Report an issue",
+      "reportTitle": "Report an issue",
+      "reportDescription": "Describe what happened. Our team reviews every report.",
+      "fields": {
+        "description": "What went wrong?"
+      },
+      "errors": {
+        "tooShort": "Please add a few more details (at least 10 characters)."
+      },
+      "submit": "Send report",
+      "empty": "No issues reported yet.",
+      "statuses": {
+        "open": "Open",
+        "in_review": "In review",
+        "resolved": "Resolved",
+        "dismissed": "Dismissed"
+      }
+    },
     "accessibility": {
       "menuLabel": "Accessibility options",
       "title": "Accessibility",

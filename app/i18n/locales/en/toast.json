@@ -16,6 +16,7 @@
     "accountDeleted": "Bank account deleted",
     "bankConnected": "Bank account connected",
     "anomalyResolved": "Anomaly resolved",
+    "issueReported": "Issue reported — thanks for letting us know",
     "verificationEmailSent": "Verification email sent — check your inbox.",
     "genericError": "Something went wrong. Please try again.",
     "emailTaken": "This email is already registered.",
