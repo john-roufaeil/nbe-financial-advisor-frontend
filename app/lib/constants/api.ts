@@ -18,6 +18,7 @@ export const API_ENDPOINTS = {
   usersMe: "/users/me",
   usersMeConsent: "/users/me/consent",
   usersMeConsentRevoke: (id: string) => `/users/me/consent/${id}`,
+  usersMePreferences: "/users/me/preferences",
   authSignup: "/auth/signup",
   authLogin: "/auth/login",
   authRefresh: "/auth/refresh",

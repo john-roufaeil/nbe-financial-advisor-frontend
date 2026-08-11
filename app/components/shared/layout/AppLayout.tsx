@@ -8,6 +8,7 @@ import { useEventStream } from "@/lib/use-event-stream";
 import { useDrawerStore } from "@/store/use-drawer-store";
 import { useSidebarStore } from "@/store/use-sidebar-store";
 import { useSidebarResize } from "@/lib/use-sidebar-resize";
+import { useSyncPreferencesFromServer } from "@/lib/use-sync-preferences";
 import { useMe } from "@/queries/profile";
 import { ConfirmDialog } from "@/components/shared/modals/ConfirmDialog";
 import { NotificationsModal } from "@/components/shared/modals/NotificationsModal";
@@ -31,6 +32,7 @@ export default function AppLayout() {
   // bank-sync events) — lives here rather than per-route so it survives
   // navigation, same reasoning as useAppChatRuntime above.
   useEventStream();
+  useSyncPreferencesFromServer();
   const { data: user } = useMe();
   const fullName = user?.name || "Profile";
   const initial = user?.name ? user.name.trim().charAt(0).toUpperCase() : "?";
