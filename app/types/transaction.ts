@@ -7,7 +7,7 @@ export interface Transaction {
   amount: number;
   /** The linked bank account this transaction belongs to. Not patchable once created. */
   accountId?: string;
-  /** Where the backend got this row from, e.g. "manual" or "synchronized". Synced
+  /** Where the backend got this row from — one of TRANSACTION_SOURCES. Synced
    * transactions are backend-rejected on edit/delete — see TransactionCard. */
   source: string;
 }
@@ -18,17 +18,6 @@ export interface Transaction {
 // bucket by EXACT string equality on Category.name, so only fetched names are
 // ever stored.
 
-export interface AmountRange {
-  key: string;
-  min?: number;
-  max?: number;
-}
-
-/** Preset amount buckets for the amount-range filter — bounds are EGP. */
-export const AMOUNT_RANGES: readonly AmountRange[] = [
-  { key: "any" },
-  { key: "under500", max: 500 },
-  { key: "500to1000", min: 500, max: 1000 },
-  { key: "1000to5000", min: 1000, max: 5000 },
-  { key: "over5000", min: 5000 },
-] as const;
+/** Mirrors the backend's TRANSACTION_SOURCES (core/constants.py). */
+export const TRANSACTION_SOURCES = ["statement", "manual", "synced"] as const;
+export type TransactionSource = (typeof TRANSACTION_SOURCES)[number];

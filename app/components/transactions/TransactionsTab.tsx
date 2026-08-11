@@ -1,9 +1,11 @@
 import { forwardRef } from "react";
 import { Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { AMOUNT_RANGES } from "@/types/transaction";
 import { useTransactions, useDeleteTransaction } from "@/queries/transactions";
 import { useCategories } from "@/queries/categories";
+import { useAccounts } from "@/queries/accounts";
+import { getBankCode, getBankName } from "@/lib/banks";
+import { TRANSACTION_SOURCES } from "@/types/transaction";
 import { AddTransactionModal } from "@/components/transactions/AddTransactionModal";
 import { TransactionDetailModal } from "@/components/transactions/TransactionDetailModal";
 import { TransactionCard } from "@/components/transactions/TransactionCard";
@@ -47,6 +49,18 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
       const namespace = category?.type === "income" ? "incomeCategories" : "categories";
       return t(`common.${namespace}.${name}`, category?.label ?? name);
     };
+
+    const { data: accounts } = useAccounts();
+    const accountOptions = (accounts ?? []).map((a) => {
+      const code = getBankCode(a.bank_name);
+      const bankLabel = t(`banks.${code}`, getBankName(code) ?? a.bank_name);
+      return { key: a.id, label: `${bankLabel} ${a.masked_account_number}` };
+    });
+
+    const sourceOptions = TRANSACTION_SOURCES.map((s) => ({
+      key: s,
+      label: t(`common.transactionSource.${s}`),
+    }));
     // Switching to a type that doesn't have the currently-selected category
     // clears it back to "All categories" instead of leaving a dangling filter
     // that no longer appears in the (now-narrowed) dropdown.
@@ -64,11 +78,14 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
     const { data, isPending, isError, isFetching, refetch } = useTransactions({
       type: f.filter === "all" ? undefined : f.filter,
       category: f.category || undefined,
+      accountId: f.account || undefined,
+      source: f.source || undefined,
+      isRecurring: f.isRecurring || undefined,
       q: f.search.trim() || undefined,
       from: f.fromDate || undefined,
       to: f.toDate || undefined,
-      minAmount: f.selectedAmountRange?.min,
-      maxAmount: f.selectedAmountRange?.max,
+      minAmount: f.amountMin,
+      maxAmount: f.amountMax,
       sort: f.sort,
       offset: (f.page - 1) * f.pageSize,
       limit: f.pageSize,
@@ -99,12 +116,18 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
             category={f.category}
             onCategoryChange={f.updateCategory}
             categoryLabel={categoryLabel}
-            amountRanges={AMOUNT_RANGES.map((r) => ({
-              key: r.key,
-              label: t(`common.amountRanges.${r.key}`),
-            }))}
-            amountRange={f.amountRange}
-            onAmountRangeChange={f.updateAmountRange}
+            accounts={accountOptions}
+            account={f.account}
+            onAccountChange={f.updateAccount}
+            sources={sourceOptions}
+            source={f.source}
+            onSourceChange={f.updateSource}
+            recurringOnly={f.isRecurring}
+            onRecurringOnlyChange={f.updateIsRecurring}
+            amountMin={f.amountMinInput}
+            onAmountMinChange={f.updateAmountMin}
+            amountMax={f.amountMaxInput}
+            onAmountMaxChange={f.updateAmountMax}
             sort={f.sort}
             onSortChange={f.setSort}
             hasActiveFilters={f.hasActiveFilters}
