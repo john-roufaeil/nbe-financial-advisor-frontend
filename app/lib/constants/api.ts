@@ -11,6 +11,8 @@ export const API_ENDPOINTS = {
   budget: "/budget",
   categories: "/categories",
   budgetStarterTemplates: "/budget/starter-templates",
+  budgetHistory: "/budget/history",
+  budgetProgress: "/budget/progress",
   savingsProgress: "/budget/savings-progress",
   goal: "/goal",
   usersMe: "/users/me",
@@ -44,4 +46,7 @@ export const API_ENDPOINTS = {
   anomalies: "/analytics/anomalies",
   anomaly: (id: string) => `/analytics/anomalies/${id}`,
   eventsTicket: "/events/ticket",
+  recommendations: "/recommendations",
+  recommendationFeedback: (id: string) => `/recommendations/${id}/feedback`,
+  monthlySummaries: "/analytics/monthly-summaries",
 } as const;
