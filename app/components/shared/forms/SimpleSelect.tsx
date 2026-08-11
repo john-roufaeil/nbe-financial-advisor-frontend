@@ -29,6 +29,8 @@ export function SimpleSelect({
   placeholder,
   className,
   triggerSize,
+  error,
+  ariaDescribedBy,
 }: {
   value: string;
   options: readonly SimpleSelectOption[];
@@ -38,6 +40,8 @@ export function SimpleSelect({
   placeholder?: string;
   className?: string;
   triggerSize?: EntityPickerProps<SimpleSelectOption>["triggerSize"];
+  error?: boolean;
+  ariaDescribedBy?: string;
 }) {
   const selected = options.find((o) => o.value === value);
 
@@ -49,6 +53,8 @@ export function SimpleSelect({
       className={className}
       ariaLabel={ariaLabel}
       triggerSize={triggerSize}
+      error={error}
+      ariaDescribedBy={ariaDescribedBy}
       itemClassName={(o) => (o.value === value ? "bg-primary/10" : "")}
       trigger={
         <span

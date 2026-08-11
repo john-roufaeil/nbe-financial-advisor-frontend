@@ -1,3 +1,4 @@
+import { useId } from "react";
 import { ChevronUp, ChevronDown, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@/components/shared/Tooltip";
@@ -34,10 +35,12 @@ export function SliderField({
   step,
   presets,
   unit,
+  error,
   required,
   info,
 }: SliderFieldProps) {
   const { t } = useTranslation();
+  const errorId = useId();
 
   function clamp(v: number) {
     return Math.min(max, Math.max(min, v));
@@ -94,7 +97,7 @@ export function SliderField({
             paired with. */}
         <label
           style={{ height: THUMB_SIZE }}
-          className="input input-bordered flex w-max shrink-0 items-center gap-1 px-2"
+          className={`input input-bordered flex w-max shrink-0 items-center gap-1 px-2 ${error ? "input-error" : ""}`}
         >
           <input
             type="text"
@@ -102,6 +105,8 @@ export function SliderField({
             aria-valuemin={min}
             aria-valuemax={max}
             aria-valuenow={value}
+            aria-invalid={!!error}
+            aria-describedby={error ? errorId : undefined}
             value={formattedValue}
             onChange={(e) => {
               const digits = e.target.value.replace(/[^\d]/g, "");
@@ -145,6 +150,12 @@ export function SliderField({
           </span>
         </label>
       </div>
+
+      {error && (
+        <span id={errorId} role="alert" className="text-error text-xs">
+          {error}
+        </span>
+      )}
 
       {presets && presets.length > 0 && (
         <div className="flex flex-wrap gap-1.5">

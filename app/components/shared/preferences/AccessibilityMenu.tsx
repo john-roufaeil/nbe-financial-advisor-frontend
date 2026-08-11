@@ -6,7 +6,6 @@ import { Tooltip } from "@/components/shared/Tooltip";
 import { useDismissablePanel } from "@/lib/use-dismissable-panel";
 import { Z_FLOATING_ACTION } from "@/lib/z-index";
 import { useAccessibilityStore } from "@/store/use-accessibility-store";
-import { useAccessibilityPeek } from "@/lib/use-accessibility-peek";
 import { useA11yPanelPosition } from "@/lib/use-a11y-panel-position";
 import { FontSizeControl } from "@/components/shared/preferences/FontSizeControl";
 import { HighContrastToggle } from "@/components/shared/preferences/HighContrastToggle";
@@ -16,7 +15,6 @@ export function AccessibilityMenu() {
   const [open, setOpen] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
   const triggerRef = useRef<HTMLButtonElement>(null);
-  const peeking = useAccessibilityPeek();
 
   const fontScale = useAccessibilityStore((s) => s.fontScale);
   const highContrast = useAccessibilityStore((s) => s.highContrast);
@@ -66,7 +64,7 @@ export function AccessibilityMenu() {
             aria-expanded={open}
             aria-haspopup="dialog"
             aria-label={t("settings.accessibility.menuLabel")}
-            className={`a11y-trigger btn btn-primary btn-square focus-visible:outline-primary/50 relative w-3 rounded-s-none rounded-e-md shadow-lg focus-visible:outline-4 focus-visible:outline-offset-2 ${peeking ? "a11y-trigger-peek" : ""}`}
+            className={`a11y-trigger btn btn-primary btn-square focus-visible:outline-primary/50 relative w-3 rounded-s-none rounded-e-md shadow-lg focus-visible:outline-4 focus-visible:outline-offset-2 ${open ? "a11y-trigger-open" : ""}`}
           >
             <ChevronRight aria-hidden="true" className="a11y-trigger-hint size-3" />
             <Accessibility className="size-5" />

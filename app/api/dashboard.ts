@@ -5,6 +5,7 @@ import type {
   DashboardPeriod,
   DashboardSummary,
 } from "@/types/dashboard";
+import type { Budget } from "@/types/budget";
 
 /** UI period keys → the backend's `?period=` values (ASSUMED BACKEND CHANGE:
  * GET /dashboard must accept `period` and `account_id` query params and
@@ -24,17 +25,6 @@ interface RawAllocation {
   percentage_used: number;
 }
 
-/** GET /budget's allocation shape — the only place the API exposes the plan's
- * budgeted amount per category. GET /dashboard deliberately omits it. */
-interface RawBudgetAllocation {
-  category: string;
-  allocated_amount: number | string;
-}
-
-interface RawBudget {
-  allocations?: RawBudgetAllocation[];
-}
-
 interface RawDashboard {
   net_worth?: { total_across_accounts?: number };
   metrics?: {
@@ -51,45 +41,37 @@ interface RawDashboard {
 }
 
 /**
- * The plan's budgeted amount per category, keyed by category.
+ * `budget` carries the plan's budgeted amount per category. GET /dashboard
+ * reports each allocation's `allocated_percentage` and `percentage_used` but
+ * NOT its `allocated_amount` — and the amount cannot be rebuilt from the
+ * dashboard payload alone (multiplying the percentage by this month's inflow,
+ * the obvious guess, collapses to 0 for a user who has a plan but no
+ * transactions yet, which then reads as "no plan"). The backend derives the
+ * amount from the user's declared monthly income at plan time, and GET
+ * /budget is the only endpoint that hands it back.
  *
- * This needs a second request because GET /dashboard reports each allocation's
- * `allocated_percentage` and `percentage_used` but NOT its `allocated_amount` —
- * and the amount cannot be rebuilt from the dashboard payload alone. Multiplying
- * the percentage by this month's inflow (the obvious guess) collapses to 0 for a
- * user who has a plan but no transactions yet, which then reads as "no plan".
- * The backend derives the amount from the user's declared monthly income at plan
- * time, and GET /budget is the only endpoint that hands it back.
- *
- * A planless user has no budget to fetch, so a failure here is expected, not
- * exceptional: fall back to an empty map and let `has_plan` drive the UI.
+ * The caller fetches it via the same query key `useBudget()` uses (see
+ * `useDashboard`) so the two consumers share one request instead of each
+ * firing an independent GET /budget/. `null` means a planless user (an
+ * expected 404 there, not an error) — allocated amounts fall back to empty
+ * and `has_plan` drives the UI.
  */
-async function getAllocatedAmounts(): Promise<Map<string, number>> {
-  try {
-    const res = await apiClient.get<RawBudget>(API_ENDPOINTS.budget);
-    return new Map(
-      (res.data.allocations ?? []).map((alloc) => [
-        alloc.category,
-        Number(alloc.allocated_amount) || 0,
-      ]),
-    );
-  } catch {
-    return new Map();
-  }
-}
-
 export async function getDashboardSummary(
   filters: DashboardFilters,
+  budget: Budget | null,
 ): Promise<DashboardSummary> {
-  const [res, allocatedAmounts] = await Promise.all([
-    apiClient.get<RawDashboard>(API_ENDPOINTS.dashboard, {
-      params: {
-        period: PERIOD_PARAM[filters.period],
-        account_id: filters.accountId,
-      },
-    }),
-    getAllocatedAmounts(),
-  ]);
+  const allocatedAmounts = new Map(
+    (budget?.allocations ?? []).map((alloc) => [
+      alloc.category,
+      Number(alloc.allocated_amount) || 0,
+    ]),
+  );
+  const res = await apiClient.get<RawDashboard>(API_ENDPOINTS.dashboard, {
+    params: {
+      period: PERIOD_PARAM[filters.period],
+      account_id: filters.accountId,
+    },
+  });
   const data = res.data;
 
   // A planless user still gets a 200 with `has_plan: false` and null budget/goal.

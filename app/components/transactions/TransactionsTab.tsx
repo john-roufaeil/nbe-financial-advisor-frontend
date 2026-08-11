@@ -112,6 +112,7 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
           />
         }
         isPending={isPending}
+        isFetching={isFetching}
         isError={isError}
         onRetry={() => refetch()}
         items={data?.items}

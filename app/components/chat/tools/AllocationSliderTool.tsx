@@ -1,16 +1,26 @@
 import { useState } from "react";
+import { z } from "zod";
 import type { ToolCallMessagePartComponent } from "@assistant-ui/react";
 import { SlidersHorizontal, Check } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useUpdateBudget } from "@/queries/budget";
 import { categoryIcon } from "@/lib/constants/category-icons";
+import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
 
 /** Matches the real `widget.payload` for `allocation_slider` — a slimmer
  * shape than the dashboard's `Allocation` type (no amount/currency, just the
- * percentages the chat widget lets the user adjust and confirm). */
-interface AllocationSliderPayload {
-  allocations: { category: string; allocated_percentage: number }[];
-}
+ * percentages the chat widget lets the user adjust and confirm). Validated
+ * at runtime, not just asserted: `result` is LLM-originated, a meaningfully
+ * less trustworthy source than a typed REST response. */
+const AllocationSliderPayloadSchema = z.object({
+  allocations: z.array(
+    z.object({
+      category: z.string(),
+      allocated_percentage: z.number(),
+    }),
+  ),
+});
+type AllocationSliderPayload = z.infer<typeof AllocationSliderPayloadSchema>;
 
 /** Guards against float drift (e.g. 33.33 + 33.33 + 33.34 = 100.00000000000001). */
 function round2(n: number): number {
@@ -19,7 +29,10 @@ function round2(n: number): number {
 
 export const AllocationSliderTool: ToolCallMessagePartComponent = ({ result }) => {
   const { t } = useTranslation();
-  const data = result as AllocationSliderPayload | undefined;
+  const parsed = AllocationSliderPayloadSchema.safeParse(result);
+  const data: AllocationSliderPayload | undefined = parsed.success
+    ? parsed.data
+    : undefined;
   const updateBudget = useUpdateBudget();
   const [draft, setDraft] = useState<Record<string, number>>(() =>
     Object.fromEntries(
@@ -28,6 +41,9 @@ export const AllocationSliderTool: ToolCallMessagePartComponent = ({ result }) =
   );
   const [dirty, setDirty] = useState(false);
 
+  // undefined result: still streaming in, render nothing yet. Present but
+  // malformed: a genuine payload/shape mismatch worth surfacing.
+  if (result !== undefined && !parsed.success) return <ToolPayloadError />;
   if (!data) return null;
 
   const categories = data.allocations.map((a) => a.category);

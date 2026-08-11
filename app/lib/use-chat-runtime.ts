@@ -9,7 +9,6 @@ import {
 } from "@assistant-ui/react";
 import { useChatStore } from "@/store/use-chat-store";
 import { useChatStopStore } from "@/store/use-chat-stop-store";
-import { useDataSourceStore } from "@/store/use-data-source-store";
 import { useConversationTitleStore } from "@/store/use-conversation-title-store";
 import {
   createChatAttachmentsAdapter,
@@ -25,6 +24,15 @@ import {
   isAwaitingReply,
 } from "@/queries/chat";
 import type { ChatConversation } from "@/types/chat";
+
+/**
+ * Referentially stable empty array for ExternalStoreThreadListAdapter's
+ * archivedThreads — nothing in this app supports archiving conversations,
+ * but a fresh `[]` literal recreated inside threadListAdapter's useMemo below
+ * would still count as a "changed" reference on every recompute, same
+ * problem the memo itself exists to avoid.
+ */
+const NO_ARCHIVED_THREADS: ExternalStoreThreadListAdapter["archivedThreads"] = [];
 
 /**
  * Resolves the conversation to send/upload into, creating one on first use.
@@ -90,12 +98,12 @@ function resolveConversationTitle(
  * this runtime is created once in AppLayout (so the sidebar thread list and
  * AssistantRuntimeProvider survive navigating away from /chat), and without
  * this flag its message poll would keep hitting the backend every second
- * from every other route too.
+ * from every other route too, and the conversation list would fetch on
+ * every page load regardless of whether chat is ever opened.
  */
 export function useAppChatRuntime(active = true) {
   const { t } = useTranslation();
   const queryClient = useQueryClient();
-  const source = useDataSourceStore((s) => s.source);
   const currentConversationId = useChatStore((s) => s.currentConversationId);
   const setCurrentConversationId = useChatStore((s) => s.setCurrentConversationId);
   // Subscribed (not just read via getState()) so a stop click re-renders
@@ -111,7 +119,7 @@ export function useAppChatRuntime(active = true) {
   const derivedTitles = useConversationTitleStore((s) => s.byConversationId);
   const setConversationTitle = useConversationTitleStore((s) => s.setTitle);
 
-  const { data: conversations = [] } = useConversations();
+  const { data: conversations = [] } = useConversations(active);
   const { data: rawMessages } = useMessages(currentConversationId, active);
   const messages = rawMessages ?? [];
 
@@ -119,6 +127,16 @@ export function useAppChatRuntime(active = true) {
   const deleteConversation = useDeleteConversation();
   const sendMessage = useSendMessage();
   const ensureConversation = useEnsureConversation();
+
+  // Same ref-indirection as useEnsureConversation above: these mutation
+  // functions aren't referentially stable across renders, so threadListAdapter's
+  // useMemo below reads the latest one through a ref instead of listing it as
+  // a dependency — otherwise the memo would recompute on effectively every
+  // render, defeating the point of memoizing at all.
+  const createConversationRef = useRef(createConversation.mutateAsync);
+  createConversationRef.current = createConversation.mutateAsync;
+  const deleteConversationRef = useRef(deleteConversation.mutate);
+  deleteConversationRef.current = deleteConversation.mutate;
 
   // Land on an existing conversation once the list loads, instead of sitting
   // on an unselected thread when the user already has history.
@@ -160,7 +178,6 @@ export function useAppChatRuntime(active = true) {
         conversationId,
         text,
         attachments.map((a) => a.id),
-        source,
         queryClient,
       );
       return;
@@ -183,27 +200,39 @@ export function useAppChatRuntime(active = true) {
     if (currentConversationId) stopChatGeneration(currentConversationId);
   };
 
-  const threadListAdapter: ExternalStoreThreadListAdapter = {
-    threadId: currentConversationId ?? "",
-    threads: conversations.map((c) => ({
-      id: c.id,
-      title: resolveConversationTitle(c, derivedTitles, t("chat.newChat")),
-      status: "regular" as const,
-    })),
-    archivedThreads: [],
-    onSwitchToNewThread: async () => {
-      const conversation = await createConversation.mutateAsync();
-      setCurrentConversationId(conversation.id);
-    },
-    onSwitchToThread: (id) => setCurrentConversationId(id),
-    // No rename endpoint in the current /chat contract.
-    onRename: () => {},
-    onArchive: () => {},
-    onDelete: (id) => {
-      deleteConversation.mutate(id);
-      if (id === currentConversationId) setCurrentConversationId(null);
-    },
-  };
+  // Memoized because assistant-ui's thread-list core reference-compares
+  // `threads`/`archivedThreads` on every setAdapter call (which runs every
+  // render regardless) and rebuilds its internal thread-data map plus
+  // notifies every subscriber whenever either differs — without this, a
+  // fresh `conversations.map(...)` array on every render triggers that
+  // rebuild continuously while useMessages polls during an awaited reply,
+  // even though conversations/currentConversationId/derivedTitles are
+  // themselves stable across those renders (React Query structural sharing,
+  // zustand selectors) and nothing actually changed.
+  const threadListAdapter: ExternalStoreThreadListAdapter = useMemo(
+    () => ({
+      threadId: currentConversationId ?? "",
+      threads: conversations.map((c) => ({
+        id: c.id,
+        title: resolveConversationTitle(c, derivedTitles, t("chat.newChat")),
+        status: "regular" as const,
+      })),
+      archivedThreads: NO_ARCHIVED_THREADS,
+      onSwitchToNewThread: async () => {
+        const conversation = await createConversationRef.current();
+        setCurrentConversationId(conversation.id);
+      },
+      onSwitchToThread: (id) => setCurrentConversationId(id),
+      // No rename endpoint in the current /chat contract.
+      onRename: () => {},
+      onArchive: () => {},
+      onDelete: (id) => {
+        deleteConversationRef.current(id);
+        if (id === currentConversationId) setCurrentConversationId(null);
+      },
+    }),
+    [currentConversationId, conversations, derivedTitles, t, setCurrentConversationId],
+  );
 
   return useExternalStoreRuntime({
     messages,

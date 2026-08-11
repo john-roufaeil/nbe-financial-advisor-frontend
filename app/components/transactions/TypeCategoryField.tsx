@@ -32,6 +32,8 @@ export function TypeCategoryField({
   onTypeChange,
   onCategoryChange,
   size = "sm",
+  error,
+  ariaDescribedBy,
 }: {
   type: "income" | "expense";
   category: string;
@@ -40,6 +42,10 @@ export function TypeCategoryField({
   onTypeChange: (next: "income" | "expense", fallbackCategory: string | null) => void;
   onCategoryChange: (category: string) => void;
   size?: keyof typeof SIZES;
+  /** The expense/income toggle can't be invalid (always one of two fixed
+   * values) — only the category select can, so these apply to it alone. */
+  error?: boolean;
+  ariaDescribedBy?: string;
 }) {
   const { t } = useTranslation();
   const classes = SIZES[size];
@@ -77,6 +83,8 @@ export function TypeCategoryField({
         onChange={onCategoryChange}
         triggerSize={classes.triggerSize}
         className="flex-1"
+        error={error}
+        ariaDescribedBy={ariaDescribedBy}
         options={categoryOptions.map((c) => ({
           value: c.name,
           label: t(`common.${categoryNamespace}.${c.name}`, c.label),

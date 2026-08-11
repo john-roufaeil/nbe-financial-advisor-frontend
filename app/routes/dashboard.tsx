@@ -68,7 +68,7 @@ export default function Dashboard() {
   const { data, isPending, isError, refetch } = useDashboard(filters);
 
   return (
-    <div className="mx-auto mb-16 flex w-full max-w-7xl flex-col gap-4 p-4 md:p-6 xl:mb-0">
+    <div className="mx-auto mb-16 flex w-full max-w-7xl flex-col gap-4 p-4 md:p-6">
       <PageBanner
         title={t("nav.dashboard")}
         subtitle={t("dashboard.subtitle")}
@@ -93,7 +93,7 @@ export default function Dashboard() {
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
       ) : (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-4 xl:grid xl:grid-cols-4">
           {show("stats") && (
             <StatsGrid currency={data.currency} stats={data.stats} filters={filters} />
           )}
@@ -104,17 +104,20 @@ export default function Dashboard() {
               A plan whose allocations are all zero (e.g. reset by the user)
               reads the same as no plan at all, so it gets the same empty
               state prompting a chat with the advisor.
-              Each card can be hidden from the Customize menu; the remaining
-              cards stretch to reclaim the row via auto-sized flex tracks. */}
+              Each card can be hidden from the Customize menu.
+              At xl+ this row joins a single 4-column grid shared with the
+              stats above it (goal/activity = 1 column each, budget = 2) so
+              every "unit" card is the same width; below xl everything just
+              stacks in the outer flex column. */}
           {data.hasPlan && data.budget.categories.some((c) => c.budget > 0) ? (
-            <div className="flex flex-col items-stretch gap-4 xl:flex-row">
+            <>
               {show("goal") && (
-                <div className="xl:w-1/4">
+                <div className="xl:col-start-1 xl:row-start-2">
                   <GoalCard currency={data.currency} />
                 </div>
               )}
               {show("budget") && (
-                <div className="min-w-0 flex-1">
+                <div className="min-w-0 xl:col-span-2 xl:col-start-2 xl:row-start-2">
                   <BudgetSplitCard
                     categories={data.budget.categories}
                     currency={data.currency}
@@ -123,30 +126,34 @@ export default function Dashboard() {
                 </div>
               )}
               {show("activity") && (
-                <div className="flex flex-col gap-4 xl:w-1/4 xl:self-start">
+                <div className="xl:col-start-4 xl:row-start-2">
                   <RecentActivityCard filters={filters} />
                 </div>
               )}
-            </div>
+            </>
           ) : (
-            <div className="flex flex-col items-stretch gap-4 xl:flex-row">
+            <>
               {show("goal") && (
-                <div className="xl:w-1/4">
+                <div className="xl:col-start-1 xl:row-start-2">
                   <GoalCard currency={data.currency} />
                 </div>
               )}
-              <div className="min-w-0 flex-1">
+              <div className="min-w-0 xl:col-span-2 xl:col-start-2 xl:row-start-2">
                 <NoPlanCard />
               </div>
               {show("activity") && (
-                <div className="flex flex-col gap-4 xl:w-1/4 xl:self-start">
+                <div className="xl:col-start-4 xl:row-start-2">
                   <RecentActivityCard stacked filters={filters} />
                 </div>
               )}
-            </div>
+            </>
           )}
 
-          {show("anomalies") && <AnomaliesCard />}
+          {show("anomalies") && (
+            <div className="xl:col-span-4 xl:row-start-3">
+              <AnomaliesCard />
+            </div>
+          )}
         </div>
       )}
 

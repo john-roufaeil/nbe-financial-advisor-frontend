@@ -4,30 +4,34 @@ import { useTranslation } from "react-i18next";
 export function ErrorState({
   message,
   onRetry,
+  className = "",
 }: {
   message?: string;
   onRetry: () => void;
+  className?: string;
 }) {
   const { t } = useTranslation();
   return (
     <div
       role="alert"
       aria-live="assertive"
-      className="border-error/20 bg-error/5 flex flex-col items-center gap-3 rounded-xl border border-dashed py-14 text-center"
+      className={`border-error/20 bg-error/5 flex size-full flex-col items-center justify-center rounded-xl border border-dashed py-14 text-center ${className}`}
     >
-      <span className="bg-error/10 text-error grid size-11 place-items-center rounded-full">
-        <TriangleAlert className="size-5" />
-      </span>
-      <p className="text-base-content/70 max-w-xs text-sm">
-        {message ?? t("common.loadError")}
-      </p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="btn btn-error btn-outline btn-sm"
-      >
-        {t("common.retry")}
-      </button>
+      <div className="flex flex-col items-center gap-3">
+        <span className="bg-error/10 text-error grid size-11 place-items-center rounded-full">
+          <TriangleAlert className="size-5" />
+        </span>
+        <p className="text-base-content/70 w-4/5 text-sm text-balance">
+          {message ?? t("common.loadError")}
+        </p>
+        <button
+          type="button"
+          onClick={onRetry}
+          className="btn btn-error btn-outline btn-sm"
+        >
+          {t("common.retry")}
+        </button>
+      </div>
     </div>
   );
 }
@@ -44,7 +48,7 @@ export function EmptyState({
   const { t } = useTranslation();
   return (
     <div
-      className={`border-base-300 flex flex-col items-center gap-2 rounded-xl border border-dashed py-14 text-center ${className}`}
+      className={`border-base-300 flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed py-14 text-center ${className}`}
     >
       {Icon && (
         <span className="bg-base-200 text-base-content/40 grid size-11 place-items-center rounded-full">

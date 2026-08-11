@@ -7,7 +7,7 @@ import { INITIAL_ONBOARDING_DATA } from "@/store/use-onboarding-store";
 // by the route (for the Continue/Skip buttons) and by each step's own
 // component (for the individual field borders/messages).
 export const STEP_FIELDS = {
-  income: ["employment_status"],
+  income: ["employment_status", "monthly_income"],
   goal: ["goal_name", "goal_target_amount", "goal_target_months"],
   template: ["selected_template_key"],
 } as const satisfies Record<string, readonly (keyof OnboardingData)[]>;

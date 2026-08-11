@@ -13,6 +13,10 @@ const TRIGGER_SIZE_CLASSES = {
   md: "input-md",
 } as const;
 
+// How long a pause between keystrokes before type-ahead starts a fresh
+// search instead of appending to the current one — matches native <select>.
+const TYPEAHEAD_RESET_MS = 600;
+
 export interface EntityPickerProps<T> {
   items: readonly T[];
   getKey: (item: T) => string;
@@ -26,6 +30,9 @@ export interface EntityPickerProps<T> {
   itemClassName?: (item: T) => string;
   disabled?: boolean;
   error?: boolean;
+  /** id of an element (e.g. a field's error message) describing this picker
+   * for screen readers — same wiring a plain input's aria-describedby would get. */
+  ariaDescribedBy?: string;
   className?: string;
   ariaLabel?: string;
   /** daisyUI input size suffix for the trigger button — matches whatever
@@ -54,6 +61,7 @@ export function EntityPicker<T>({
   itemClassName,
   disabled,
   error,
+  ariaDescribedBy,
   className = "",
   ariaLabel,
   triggerSize = "sm",
@@ -75,6 +83,80 @@ export function EntityPicker<T>({
   const triggerRef = useRef<HTMLButtonElement>(null);
   const panelRef = useRef<HTMLDivElement>(null);
   const close = () => setOpen(false);
+  const typeaheadQueryRef = useRef("");
+  const typeaheadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  // role="listbox"/role="option" promises arrow-key navigation *and*
+  // type-ahead between options (WAI-ARIA listbox pattern) — Tab already
+  // reaches each option (they're real buttons, trapped inside the panel by
+  // useDismissablePanel), this adds the rest: Up/Down/Home/End roving focus,
+  // plus jumping to options by typing their (rendered, via textContent —
+  // renderItem returns arbitrary nodes, not a plain label prop) text.
+  const handleListKeyDown = useCallback((e: React.KeyboardEvent<HTMLUListElement>) => {
+    const options = Array.from(
+      e.currentTarget.querySelectorAll<HTMLButtonElement>(
+        ':scope > li[role="option"] > button',
+      ),
+    );
+    if (options.length === 0) return;
+    const activeIndex = options.indexOf(document.activeElement as HTMLButtonElement);
+
+    if (
+      e.key === "ArrowDown" ||
+      e.key === "ArrowUp" ||
+      e.key === "Home" ||
+      e.key === "End"
+    ) {
+      e.preventDefault();
+      const lastIndex = options.length - 1;
+      const nextIndex =
+        e.key === "ArrowDown"
+          ? activeIndex < 0
+            ? 0
+            : Math.min(activeIndex + 1, lastIndex)
+          : e.key === "ArrowUp"
+            ? activeIndex <= 0
+              ? 0
+              : activeIndex - 1
+            : e.key === "Home"
+              ? 0
+              : lastIndex;
+      options[nextIndex].focus();
+      return;
+    }
+
+    // Ctrl/Alt/Meta combos are shortcuts, not typing — e.key for those is
+    // still often a single printable character (e.g. Ctrl+A -> "a"), so
+    // they'd otherwise misfire this.
+    if (e.key.length !== 1 || e.ctrlKey || e.altKey || e.metaKey) return;
+
+    if (typeaheadTimeoutRef.current) clearTimeout(typeaheadTimeoutRef.current);
+    typeaheadQueryRef.current += e.key.toLowerCase();
+    typeaheadTimeoutRef.current = setTimeout(() => {
+      typeaheadQueryRef.current = "";
+    }, TYPEAHEAD_RESET_MS);
+
+    const query = typeaheadQueryRef.current;
+    // Repeating a single letter ("b", "b", "b" — same key, still within the
+    // reset window) cycles through every match one at a time instead of
+    // sticking to the first: search from just after the active option and
+    // wrap, rather than from the top.
+    const isRepeatedSingleChar =
+      query.length > 1 && [...query].every((c) => c === query[0]);
+    const effectiveQuery = isRepeatedSingleChar ? query[0] : query;
+    const searchStart = isRepeatedSingleChar ? activeIndex + 1 : 0;
+
+    const matchIndex = options
+      .map((_, i) => (i + searchStart) % options.length)
+      .find((i) =>
+        options[i].textContent?.trim().toLowerCase().startsWith(effectiveQuery),
+      );
+
+    if (matchIndex !== undefined) {
+      e.preventDefault();
+      options[matchIndex].focus();
+    }
+  }, []);
 
   // Portal-rendered and positioned from the trigger's live rect (not a
   // `relative`-parent `absolute` child) so the open menu overlays the page —
@@ -116,6 +198,8 @@ export function EntityPicker<T>({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}
+        aria-invalid={!!error}
+        aria-describedby={ariaDescribedBy}
         className={`input input-bordered ${TRIGGER_SIZE_CLASSES[triggerSize]} relative flex w-full items-center justify-between gap-2 before:absolute before:inset-x-0 before:-inset-y-1.5 before:content-[''] ${error ? "input-error" : ""} ${disabled ? "cursor-not-allowed opacity-60" : "cursor-pointer"}`}
       >
         {trigger}
@@ -154,10 +238,14 @@ export function EntityPicker<T>({
             // configuration Chromium can leave the layer's paint order wrong
             // after the animation ends, even though hit-testing stays correct
             // (a real compositor bug, not a stacking bug).
-            className={`menu bg-base-100 border-base-300 fixed ${Z_POPOVER} flex-col gap-1 overflow-hidden rounded-xl border p-2 shadow-lg`}
+            className={`menu bg-base-100 border-base-300 fixed ${Z_POPOVER} flex-col flex-nowrap gap-1 overflow-hidden rounded-xl border p-2 shadow-lg`}
           >
             {search}
-            <ul role="listbox" className={`${listClassName} min-h-0 overflow-y-auto`}>
+            <ul
+              role="listbox"
+              onKeyDown={handleListKeyDown}
+              className={`${listClassName} min-h-0 overflow-y-auto`}
+            >
               {items.map((item) => (
                 <li key={getKey(item)} role="option">
                   <button

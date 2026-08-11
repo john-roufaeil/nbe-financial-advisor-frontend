@@ -11,6 +11,11 @@
     "clearFilters": "مسح الفلاتر",
     "category": "الفئة",
     "allCategories": "كل الفئات",
+    "completeProfile": {
+      "title": "أهلاً بك!",
+      "description": "لنكمل إعداد ملفك الشخصي — بضعة تفاصيل سريعة تساعدنا على تخصيص ميزانيتك ونصائحك.",
+      "required": "هذه الخطوة مطلوبة للمتابعة."
+    },
     "categories": {
       "housing": "السكن والمرافق",
       "food": "الطعام والبقالة",
@@ -25,7 +30,7 @@
       "freelance": "عمل حر",
       "investment": "استثمار",
       "gift": "هدية",
-      "other_income": "دخل آخر"
+      "other_income": "دخل"
     },
     "filtersLabel": "الفلاتر",
     "amountRange": "نطاق المبلغ",
@@ -117,7 +122,9 @@
           "monthlyIncome": "الدخل الشهري",
           "monthlyIncomePlaceholder": "مثال: 5000.00",
           "incomeSteadiness": "استقرار الدخل",
-          "riskTolerance": "تحمل المخاطر"
+          "riskTolerance": "تحمل المخاطر",
+          "dependentsCount": "عدد المعالين",
+          "dependentsCountPlaceholder": "مثال: 2"
         }
       },
       "accounts": {
@@ -125,10 +132,30 @@
         "empty": "لا توجد حسابات بنكية مرتبطة بعد.",
         "error": "تعذّر تحميل حساباتك البنكية. حاول مرة أخرى.",
         "inactive": "غير نشط",
-        "synced": "متزامن"
+        "active": "نشط",
+        "synced": "متزامن",
+        "syncedTooltip": "تتم مزامنته تلقائيًا من بنكك المرتبط — الرصيد والمعاملات للقراءة فقط.",
+        "manual": "يدوي",
+        "detail": {
+          "title": "تفاصيل الحساب",
+          "accountNumber": "رقم الحساب",
+          "accountType": "نوع الحساب",
+          "currency": "العملة",
+          "balance": "الرصيد",
+          "status": "الحالة",
+          "linkType": "نوع الربط",
+          "externalAccountId": "مرجع مزود الخدمة",
+          "addedOn": "تمت الإضافة في",
+          "remove": "حذف الحساب"
+        }
       },
       "preferences": {
-        "title": "التفضيلات"
+        "title": "التفضيلات",
+        "groups": {
+          "dateTime": "التاريخ والوقت",
+          "numbers": "الأرقام",
+          "display": "اللغة والمظهر"
+        }
       }
     },
     "view": {

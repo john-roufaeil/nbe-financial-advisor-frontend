@@ -1,27 +1,20 @@
 import { useEffect, useRef } from "react";
 import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
 import * as bankStatementsApi from "@/api/bank-statements";
-import * as bankStatementsMock from "@/mocks/bank-statements";
 import type { BankStatementFilters } from "@/api/bank-statements";
 import type {
   BankStatementStatus,
   BankStatementType,
   ExtractedTransaction,
 } from "@/types/bank-statement";
-import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
-import { pickImpl, useInvalidatingMutation } from "@/queries/shared";
-
-function impl(source: DataSource) {
-  return pickImpl(source, bankStatementsApi, bankStatementsMock);
-}
+import { useInvalidatingMutation } from "@/queries/shared";
 
 export const bankStatementKeys = {
   all: [QUERY_ROOTS.bankStatements] as const,
-  list: (filters: BankStatementFilters, source: DataSource) =>
-    [...bankStatementKeys.all, "list", source, filters] as const,
-  detail: (id: string, source: DataSource) =>
-    [...bankStatementKeys.all, "detail", source, id] as const,
+  list: (filters: BankStatementFilters) =>
+    [...bankStatementKeys.all, "list", filters] as const,
+  detail: (id: string) => [...bankStatementKeys.all, "detail", id] as const,
 };
 
 /**
@@ -56,12 +49,16 @@ function useInvalidateAccountsOnProcessed(
 }
 
 export function useBankStatements(filters: BankStatementFilters) {
-  const source = useDataSourceStore((s) => s.source);
   const query = useQuery({
-    queryKey: bankStatementKeys.list(filters, source),
-    queryFn: () => impl(source).getBankStatements(filters),
+    queryKey: bankStatementKeys.list(filters),
+    queryFn: () => bankStatementsApi.getBankStatements(filters),
     placeholderData: keepPreviousData,
+    // Stop polling once the request itself is erroring — otherwise stale
+    // data left over from the last successful fetch (kept around by
+    // keepPreviousData) can still show an item mid-processing and keep this
+    // returning 1000 forever, hammering a broken endpoint every second.
     refetchInterval: (query) => {
+      if (query.state.error) return false;
       const hasInFlight = query.state.data?.items?.some(
         (d) => d.status === "uploading" || d.status === "processing",
       );
@@ -75,10 +72,9 @@ export function useBankStatements(filters: BankStatementFilters) {
 }
 
 export function useBankStatement(id: string | null) {
-  const source = useDataSourceStore((s) => s.source);
   const query = useQuery({
-    queryKey: bankStatementKeys.detail(id ?? "", source),
-    queryFn: () => impl(source).getBankStatement(id as string),
+    queryKey: bankStatementKeys.detail(id ?? ""),
+    queryFn: () => bankStatementsApi.getBankStatement(id as string),
     enabled: id !== null,
     // Stop polling when the statement no longer exists (deleted) or terminal status
     refetchInterval: (query) => {
@@ -102,12 +98,8 @@ export function useBankStatement(id: string | null) {
 export function useUploadBankStatements() {
   return useInvalidatingMutation({
     mutationFn: (
-      source,
       files: { name: string; type: BankStatementType; sizeKb: number; file: File }[],
-    ) =>
-      source === "mock"
-        ? bankStatementsMock.uploadBankStatements(files)
-        : bankStatementsApi.uploadBankStatements(files),
+    ) => bankStatementsApi.uploadBankStatements(files),
     invalidates: [bankStatementKeys.all],
     successToastKey: "toast.bankStatementUploaded",
   });
@@ -115,7 +107,7 @@ export function useUploadBankStatements() {
 
 export function useRetryBankStatement() {
   return useInvalidatingMutation({
-    mutationFn: (source, id: string) => impl(source).retryBankStatement(id),
+    mutationFn: (id: string) => bankStatementsApi.retryBankStatement(id),
     invalidates: [bankStatementKeys.all],
     successToastKey: "toast.bankStatementRetried",
   });
@@ -135,18 +127,15 @@ export function useApproveBankStatement() {
   return useInvalidatingMutation({
     // `accountId` is the account the user confirmed during review. There is no
     // separate confirm-account endpoint — approve is the one call that takes it.
-    mutationFn: (
-      source,
-      {
-        id,
-        transactions,
-        accountId,
-      }: {
-        id: string;
-        transactions: ExtractedTransaction[];
-        accountId?: string;
-      },
-    ) => impl(source).approveBankStatement(id, transactions, accountId),
+    mutationFn: ({
+      id,
+      transactions,
+      accountId,
+    }: {
+      id: string;
+      transactions: ExtractedTransaction[];
+      accountId?: string;
+    }) => bankStatementsApi.approveBankStatement(id, transactions, accountId),
     invalidates: [
       bankStatementKeys.all,
       [QUERY_ROOTS.transactions],
@@ -159,13 +148,10 @@ export function useApproveBankStatement() {
 
 export function useDeleteBankStatement() {
   return useInvalidatingMutation({
-    mutationFn: (source, id: string) => impl(source).deleteBankStatement(id),
+    mutationFn: (id: string) => bankStatementsApi.deleteBankStatement(id),
     // Evict the detail entry before the list invalidation refetches — prevents
     // a 404 console error from the detail query trying to reload a deleted resource.
-    removes: (id) => [
-      bankStatementKeys.detail(id, "backend"),
-      bankStatementKeys.detail(id, "mock"),
-    ],
+    removes: (id) => [bankStatementKeys.detail(id)],
     // An approved statement's committed rows are removed with it, so the
     // ledger, accounts (e.g. current_balance) and dashboard totals need
     // restating too.

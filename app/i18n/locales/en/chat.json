@@ -32,6 +32,7 @@
       "transactions": "What are my recent transactions?"
     },
     "tools": {
+      "payloadError": "Couldn't display this.",
       "spending": {
         "title": "Spending breakdown",
         "total": "Total",
@@ -48,6 +49,10 @@
         "title": "Budget allocation",
         "confirm": "Confirm changes",
         "updated": "Updated"
+      },
+      "products": {
+        "title": "Recommended for you",
+        "match": "{{percent}}% match"
       }
     },
     "statement": {

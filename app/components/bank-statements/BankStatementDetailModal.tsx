@@ -1,4 +1,4 @@
-import { forwardRef, useEffect, useRef, useState } from "react";
+import { forwardRef, useRef, useState } from "react";
 import { inferBankStatementType, BANK_STATEMENT_STATUS } from "@/types/bank-statement";
 import { useAccountPreselect } from "@/lib/use-account-preselect";
 import { useExtractedTransactionsDraft } from "@/lib/use-extracted-transactions-draft";
@@ -73,10 +73,10 @@ export const BankStatementDetailModal = forwardRef<
   // account on its own, so nothing about the statement changes server-side until
   // approve carries the chosen `accountId` along with the rows. Waiting on the
   // server to flip a flag here would leave the user stuck on step 1 forever.
+  // The caller keys this component on bankStatementId, so a fresh mount is
+  // what resets this (and the two hooks above) to a different statement —
+  // no explicit reset effect needed here.
   const [accountConfirmed, setAccountConfirmed] = useState(false);
-  useEffect(() => {
-    setAccountConfirmed(false);
-  }, [bankStatementId]);
 
   const isConfirmed = !!doc && (doc.accountConfirmed || accountConfirmed);
   const needsAccountConfirm =

@@ -18,6 +18,7 @@ import { useBankStatements } from "@/queries/bank-statements";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
+import { ErrorState } from "@/components/shared/QueryState";
 import { formatDate } from "@/lib/format";
 import { useNumberDisplay } from "@/lib/use-number-display";
 import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
@@ -62,7 +63,7 @@ function SummaryCard({
       // When empty, the whole card is the invitation to add the first item —
       // send it straight into the add flow instead of the (empty) list view.
       state={isEmpty ? { openAdd: true } : undefined}
-      className={`card border-base-300 bg-base-100 hover:border-primary group animate-entry border shadow-sm transition-colors ${controls ? "h-48" : "h-40"}`}
+      className="card border-base-300 bg-base-100 hover:border-primary group animate-entry h-48 border shadow-sm transition-colors xl:h-full"
     >
       <div className="card-body flex h-full min-h-0 flex-col gap-3 p-4">
         <div className="flex shrink-0 items-center gap-2">
@@ -110,7 +111,7 @@ function TransactionsSummary({ filters }: { filters: DashboardFilters }) {
   const { lang } = useParams<{ lang: string }>();
   const [typeChip, setTypeChip] = useState<TypeChip>("all");
   const range = dashboardPeriodRange(filters.period);
-  const { data, isPending } = useTransactions({
+  const { data, isPending, isError, refetch } = useTransactions({
     limit: RECENT_COUNT,
     type: typeChip === "all" ? undefined : typeChip,
     accountId: filters.accountId,
@@ -120,6 +121,12 @@ function TransactionsSummary({ filters }: { filters: DashboardFilters }) {
   const formatN = useNumberDisplay();
 
   if (isPending) return <CardSkeleton icon={ArrowLeftRight} className="animate-entry" />;
+
+  if (isError) {
+    return (
+      <ErrorState onRetry={() => refetch()} className="animate-entry h-48 xl:h-full" />
+    );
+  }
 
   return (
     <SummaryCard
@@ -185,10 +192,18 @@ function TransactionsSummary({ filters }: { filters: DashboardFilters }) {
 function BankStatementsSummary() {
   const { t } = useTranslation();
   const { lang } = useParams<{ lang: string }>();
-  const { data, isPending } = useBankStatements({ limit: RECENT_COUNT });
+  const { data, isPending, isError, refetch } = useBankStatements({
+    limit: RECENT_COUNT,
+  });
   const dateFormat = useDisplayPreferencesStore((s) => s.dateFormat);
 
   if (isPending) return <CardSkeleton icon={FileText} className="animate-entry" />;
+
+  if (isError) {
+    return (
+      <ErrorState onRetry={() => refetch()} className="animate-entry h-48 xl:h-full" />
+    );
+  }
 
   return (
     <SummaryCard
@@ -233,9 +248,13 @@ export function RecentActivityCard({
   filters: DashboardFilters;
 }) {
   return (
-    <div className="@container">
+    <div className="@container xl:h-full">
+      {/* At xl this column is a fixed 1/4-width grid cell (see dashboard.tsx),
+          narrow enough that the two cards always belong stacked — xl:grid-cols-1
+          pins that regardless of container width, and xl:grid-rows-2 xl:h-full
+          split the row's full height evenly between them. */}
       <div
-        className={`grid grid-cols-1 gap-4 ${stacked ? "" : "@sm:grid-cols-2 @sm:grid-rows-1"}`}
+        className={`grid h-full grid-cols-1 gap-4 xl:grid-rows-2 ${stacked ? "" : "xl:grid-cols-1 @sm:grid-cols-2 @sm:grid-rows-1"}`}
       >
         <TransactionsSummary filters={filters} />
         <BankStatementsSummary />

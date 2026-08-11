@@ -10,12 +10,14 @@ import { useSidebarResize } from "@/lib/use-sidebar-resize";
 import { useMe } from "@/queries/profile";
 import { ConfirmDialog } from "@/components/shared/modals/ConfirmDialog";
 import { NotificationsModal } from "@/components/shared/modals/NotificationsModal";
+import { CompleteProfileModal } from "@/components/profile/CompleteProfileModal";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { Z_DROPDOWN } from "@/lib/z-index";
 import { useLayoutTier } from "@/lib/use-layout-tier";
 import { SidebarHeader } from "@/components/shared/layout/SidebarHeader";
 import { SidebarNav } from "@/components/shared/layout/SidebarNav";
 import { SidebarFooter } from "@/components/shared/layout/SidebarFooter";
+import { SkipLinks } from "@/components/shared/layout/SkipLinks";
 
 export default function AppLayout() {
   const { lang } = useParams<{ lang: string }>();
@@ -67,21 +69,41 @@ export default function AppLayout() {
 
         {/* Main content surface — base-100 */}
         <div className="drawer-content bg-base-100 flex h-screen min-w-0 flex-col">
-          {/* No bar chrome on mobile — just a floating hamburger button over
-              the page content, so the header row's height/background/logo
-              don't eat screen space on small viewports. */}
+          {/* Part of this column (not a page-wide bar) so revealing it pushes
+              only the content here down — the sidebar in drawer-side is a
+              separate grid cell and stays exactly where it is. */}
+          <SkipLinks
+            links={[
+              { href: "#main-content", label: t("nav.skipToMainContent") },
+              { href: "#main-navigation", label: t("nav.skipToNavigation") },
+            ]}
+          />
+
+          {/* Mobile top bar — an actual header row (own height + background)
+              rather than a button floating over the page content, so it no
+              longer overlaps whatever's at the top of the page. The logo
+              sits next to the hamburger so the bar isn't mostly blank
+              space. */}
           <div
-            className={`fixed inset-s-2 top-2 ${Z_DROPDOWN} ${isForcedMobile ? "" : "lg:hidden"}`}
+            className={`border-base-300 bg-base-100 flex h-14 shrink-0 items-center gap-3 border-b px-3 ${isForcedMobile ? "" : "lg:hidden"}`}
           >
             <Tooltip content={t("nav.menu")} position="bottom">
               <button
-                className="btn btn-square btn-ghost bg-base-200/80 shadow-sm backdrop-blur-sm"
+                className="btn btn-square btn-ghost btn-sm"
                 onClick={toggle}
                 aria-label={t("nav.menu")}
               >
                 <Menu className="size-5" />
               </button>
             </Tooltip>
+            <img
+              src="/logo-collapsed.webp"
+              alt={t("app.name")}
+              className="size-7 object-contain"
+            />
+            <span className="text-base-content truncate font-semibold">
+              {t("app.name")}
+            </span>
           </div>
 
           <main
@@ -98,7 +120,9 @@ export default function AppLayout() {
           <label htmlFor="app-drawer" className="drawer-overlay" onClick={close} />
 
           <aside
-            className={`responsive-sidebar border-base-300 bg-base-200 relative flex h-screen w-72 flex-col overflow-visible border-e ${
+            id="main-navigation"
+            tabIndex={-1}
+            className={`responsive-sidebar border-base-300 bg-base-200 focus:outline-primary/50 relative flex h-screen w-72 flex-col overflow-visible border-e focus:outline-2 focus:outline-offset-2 ${
               isDragging ? "duration-0!" : "transition-[width] duration-300 ease-in-out"
             }`}
           >
@@ -159,6 +183,7 @@ export default function AppLayout() {
       </div>
       <ConfirmDialog />
       <NotificationsModal />
+      <CompleteProfileModal />
     </AssistantRuntimeProvider>
   );
 }

@@ -15,6 +15,7 @@ export function ChipPicker<T extends string>({
   options,
   value,
   onChange,
+  error,
   required,
 }: {
   label: string;
@@ -48,6 +49,11 @@ export function ChipPicker<T extends string>({
           </button>
         ))}
       </div>
+      {error && (
+        <span role="alert" className="text-error text-xs">
+          {error}
+        </span>
+      )}
     </div>
   );
 }

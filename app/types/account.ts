@@ -30,7 +30,18 @@ export interface BankAccount {
 export const ACCOUNT_TYPES = ["checking", "savings", "salary", "business"] as const;
 export type AccountType = (typeof ACCOUNT_TYPES)[number];
 
-export const CURRENCIES = ["EGP", "SAR", "EUR", "USD"] as const;
+export const CURRENCIES = [
+  "EGP",
+  "USD",
+  "EUR",
+  "GBP",
+  "SAR",
+  "AED",
+  "KWD",
+  "CHF",
+  "JPY",
+  "CNY",
+] as const;
 export type Currency = (typeof CURRENCIES)[number];
 
 /**

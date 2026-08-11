@@ -1,4 +1,4 @@
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -13,13 +13,9 @@ import { useAuthStore } from "@/store/use-auth-store";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useLogin, useBankLoginInitiate } from "@/queries/auth";
+import { useCheckProfileCompletion } from "@/queries/profile";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
-import {
-  openOAuthPopup,
-  isBankOAuthResult,
-  watchForUnhandledClose,
-} from "@/lib/oauth-popup";
-import { toastError } from "@/lib/toast";
+import { useBankOAuthPopup } from "@/lib/use-bank-oauth-popup";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
 /** Slug of the (currently only) registered bank connector — see services/bank_connectors/mock_bank.py on the backend. */
@@ -44,33 +40,18 @@ export default function SignIn() {
   const begin = useOnboardingStore((s) => s.begin);
   const loginMutation = useLogin();
   const bankLoginInitiate = useBankLoginInitiate();
+  const checkProfileCompletion = useCheckProfileCompletion();
   const forgotPasswordRef = useRef<HTMLDialogElement>(null);
-  // Set inside handleMessage once a result actually arrives — lets the
-  // popup-closed watcher below tell "closed after delivering its result" (a
-  // window.close() following a handled message) apart from "closed without
-  // ever delivering one" (lost message, or the user just closing it by hand).
-  const bankLoginHandledRef = useRef(false);
 
-  // Listens for the popup opened by onBankLogin to hand back its result —
-  // see lib/oauth-popup.ts for why this can't just be done from inside the
-  // popup itself (the access token has to land in *this* tab's in-memory store).
-  useEffect(() => {
-    function handleMessage(event: MessageEvent) {
-      if (!isBankOAuthResult(event) || event.data.kind !== "bank-login") return;
-      bankLoginHandledRef.current = true;
-      if (event.data.ok) {
-        setTokens({ accessToken: event.data.accessToken });
-        login();
-        navigate(from ?? localizedPath(lang!, ROUTE_SEGMENTS.dashboard), {
-          replace: true,
-        });
-      } else {
-        toastError();
-      }
-    }
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [lang, from, navigate, setTokens, login]);
+  // Handles the popup opened by onBankLogin, including why this can't just
+  // be done from inside the popup itself (the access token has to land in
+  // *this* tab's in-memory store) — see use-bank-oauth-popup.ts.
+  const { openPopup } = useBankOAuthPopup("bank-login", (result) => {
+    setTokens({ accessToken: result.accessToken });
+    login();
+    void checkProfileCompletion();
+    navigate(from ?? localizedPath(lang!, ROUTE_SEGMENTS.dashboard), { replace: true });
+  });
 
   const signInSchema = z.object({
     email: z.string().email({ message: t("signIn.errors.emailInvalid") }),
@@ -88,6 +69,7 @@ export default function SignIn() {
     try {
       await loginMutation.mutateAsync(values);
       login();
+      void checkProfileCompletion();
       navigate(from ?? localizedPath(lang!, ROUTE_SEGMENTS.dashboard), { replace: true });
     } catch {
       // loginMutation.onError already surfaced a toast; stay on page.
@@ -109,17 +91,7 @@ export default function SignIn() {
       // Falls back to a full-tab redirect if the popup was blocked — still
       // works, just loses the in-memory-only access token on the way back
       // (bank-login-callback.tsx's no-opener branch handles that case).
-      const popup = openOAuthPopup(authorize_url, "bank-login");
-      if (!popup) {
-        window.location.href = authorize_url;
-        return;
-      }
-      bankLoginHandledRef.current = false;
-      watchForUnhandledClose(
-        popup,
-        () => bankLoginHandledRef.current,
-        () => toastError(),
-      );
+      openPopup(authorize_url);
     } catch {
       // onError already surfaced a toast; stay on page.
     }
@@ -143,7 +115,7 @@ export default function SignIn() {
         <h1 className="text-2xl font-semibold">{t("signIn.title")}</h1>
         {justSignedUp && (
           <div className="alert alert-info items-start gap-3 text-sm sm:items-center">
-            <MailCheck className="size-5 shrink-0" />
+            <MailCheck data-no-flip className="size-5 shrink-0" />
             <span>{t("signIn.justSignedUp")}</span>
           </div>
         )}

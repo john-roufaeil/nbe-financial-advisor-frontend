@@ -28,8 +28,8 @@
     },
     "compactNumbers": {
       "label": "الأرقام المختصرة",
-      "full": "أرقام كاملة",
-      "compact": "مختصرة (1.2K)"
+      "full": "1,234,567",
+      "compact": "1.2M"
     },
     "notifications": {
       "title": "الإشعارات",

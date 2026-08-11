@@ -171,6 +171,11 @@ export default function Onboarding() {
   async function handlePrimary() {
     if (submittingRef.current) return;
     if (!canContinue) {
+      // Reveals each step's specific "missing" messages (see IncomeStep,
+      // GoalStep) — without this, clicking Continue on an incomplete step
+      // silently did nothing, since nothing else in this file ever sets
+      // `attempted` to true.
+      setAttempted(true);
       return;
     }
     submittingRef.current = true;

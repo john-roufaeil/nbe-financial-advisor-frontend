@@ -33,7 +33,8 @@
         "nameRequired": "أدخل اسمًا لهذه المعاملة.",
         "nameTooLong": "يجب ألا يتجاوز الاسم 20 حرفًا.",
         "amountInvalid": "أدخل مبلغًا أكبر من 0.",
-        "accountRequired": "اختر حسابًا."
+        "accountRequired": "اختر حسابًا.",
+        "categoryRequired": "اختر فئة."
       }
     },
     "detail": {

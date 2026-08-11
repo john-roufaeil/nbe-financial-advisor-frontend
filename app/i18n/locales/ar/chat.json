@@ -32,6 +32,7 @@
       "transactions": "ما هي معاملاتي الأخيرة؟"
     },
     "tools": {
+      "payloadError": "تعذر عرض هذا المحتوى.",
       "spending": {
         "title": "تفاصيل المصروفات",
         "total": "الإجمالي",
@@ -48,6 +49,10 @@
         "title": "توزيع الميزانية",
         "confirm": "تأكيد التغييرات",
         "updated": "تم التحديث"
+      },
+      "products": {
+        "title": "موصى به لك",
+        "match": "تطابق {{percent}}%"
       }
     },
     "statement": {

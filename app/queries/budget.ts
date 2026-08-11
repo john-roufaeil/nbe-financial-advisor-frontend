@@ -1,34 +1,25 @@
 import { useQuery } from "@tanstack/react-query";
 import * as budgetApi from "@/api/budget";
-import * as budgetMock from "@/mocks/budget";
 import type { CreateBudgetBody, UpdateBudgetBody } from "@/types/budget";
-import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
-import { pickImpl, useInvalidatingMutation } from "@/queries/shared";
-
-function impl(source: DataSource) {
-  return pickImpl(source, budgetApi, budgetMock);
-}
+import { useInvalidatingMutation } from "@/queries/shared";
 
 export const budgetKeys = {
-  starterTemplates: (source: DataSource) =>
-    [QUERY_ROOTS.budget, "starter-templates", source] as const,
-  detail: (source: DataSource) => [QUERY_ROOTS.budget, "detail", source] as const,
+  starterTemplates: [QUERY_ROOTS.budget, "starter-templates"] as const,
+  detail: [QUERY_ROOTS.budget, "detail"] as const,
 };
 
 export function useStarterTemplates() {
-  const source = useDataSourceStore((s) => s.source);
   return useQuery({
-    queryKey: budgetKeys.starterTemplates(source),
-    queryFn: () => impl(source).getStarterTemplates(),
+    queryKey: budgetKeys.starterTemplates,
+    queryFn: () => budgetApi.getStarterTemplates(),
   });
 }
 
 export function useBudget() {
-  const source = useDataSourceStore((s) => s.source);
   return useQuery({
-    queryKey: budgetKeys.detail(source),
-    queryFn: () => impl(source).getBudget(),
+    queryKey: budgetKeys.detail,
+    queryFn: () => budgetApi.getBudget(),
   });
 }
 
@@ -37,7 +28,7 @@ export function useBudget() {
 
 export function useCreateBudget() {
   return useInvalidatingMutation({
-    mutationFn: (source, body: CreateBudgetBody) => impl(source).createBudget(body),
+    mutationFn: (body: CreateBudgetBody) => budgetApi.createBudget(body),
     invalidates: [[QUERY_ROOTS.budget], [QUERY_ROOTS.dashboard]],
     successToastKey: "toast.budgetCreated",
   });
@@ -45,7 +36,7 @@ export function useCreateBudget() {
 
 export function useUpdateBudget() {
   return useInvalidatingMutation({
-    mutationFn: (source, body: UpdateBudgetBody) => impl(source).updateBudget(body),
+    mutationFn: (body: UpdateBudgetBody) => budgetApi.updateBudget(body),
     invalidates: [[QUERY_ROOTS.budget], [QUERY_ROOTS.dashboard], [QUERY_ROOTS.goals]],
     successToastKey: "toast.budgetUpdated",
   });

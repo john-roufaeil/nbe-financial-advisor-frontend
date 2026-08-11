@@ -28,8 +28,8 @@
     },
     "compactNumbers": {
       "label": "Compact numbers",
-      "full": "Full digits",
-      "compact": "Abbreviated (1.2K)"
+      "full": "1,234,567",
+      "compact": "1.2M"
     },
     "notifications": {
       "title": "Notifications",

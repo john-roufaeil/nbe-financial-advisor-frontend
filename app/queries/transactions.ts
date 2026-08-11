@@ -1,27 +1,20 @@
 import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import * as transactionsApi from "@/api/transactions";
-import * as transactionsMock from "@/mocks/transactions";
 import type { TransactionFilters } from "@/api/transactions";
 import type { Transaction } from "@/types/transaction";
-import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
-import { pickImpl, useInvalidatingMutation } from "@/queries/shared";
-
-function impl(source: DataSource) {
-  return pickImpl(source, transactionsApi, transactionsMock);
-}
+import { useInvalidatingMutation } from "@/queries/shared";
 
 export const transactionKeys = {
   all: [QUERY_ROOTS.transactions] as const,
-  list: (filters: TransactionFilters, source: DataSource) =>
-    [...transactionKeys.all, "list", source, filters] as const,
+  list: (filters: TransactionFilters) =>
+    [...transactionKeys.all, "list", filters] as const,
 };
 
 export function useTransactions(filters: TransactionFilters) {
-  const source = useDataSourceStore((s) => s.source);
   return useQuery({
-    queryKey: transactionKeys.list(filters, source),
-    queryFn: () => impl(source).getTransactions(filters),
+    queryKey: transactionKeys.list(filters),
+    queryFn: () => transactionsApi.getTransactions(filters),
     placeholderData: keepPreviousData,
   });
 }
@@ -39,8 +32,8 @@ const TRANSACTION_INVALIDATES = [
 
 export function useCreateTransaction() {
   return useInvalidatingMutation({
-    mutationFn: (source, body: Omit<Transaction, "id">) =>
-      impl(source).createTransaction(body),
+    mutationFn: (body: Omit<Transaction, "id">) =>
+      transactionsApi.createTransaction(body),
     invalidates: TRANSACTION_INVALIDATES,
     successToastKey: "toast.transactionCreated",
   });
@@ -48,10 +41,13 @@ export function useCreateTransaction() {
 
 export function useUpdateTransaction() {
   return useInvalidatingMutation({
-    mutationFn: (
-      source,
-      { id, patch }: { id: string; patch: Partial<Omit<Transaction, "id">> },
-    ) => impl(source).updateTransaction(id, patch),
+    mutationFn: ({
+      id,
+      patch,
+    }: {
+      id: string;
+      patch: Partial<Omit<Transaction, "id">>;
+    }) => transactionsApi.updateTransaction(id, patch),
     invalidates: TRANSACTION_INVALIDATES,
     successToastKey: "toast.transactionUpdated",
   });
@@ -59,7 +55,7 @@ export function useUpdateTransaction() {
 
 export function useDeleteTransaction() {
   return useInvalidatingMutation({
-    mutationFn: (source, id: string) => impl(source).deleteTransaction(id),
+    mutationFn: (id: string) => transactionsApi.deleteTransaction(id),
     invalidates: TRANSACTION_INVALIDATES,
     successToastKey: "toast.transactionDeleted",
   });

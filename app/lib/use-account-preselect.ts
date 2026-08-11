@@ -26,9 +26,12 @@ function findMatchingAccount(
 
 /**
  * Step 1 (confirm bank account) selection state for the statement review flow:
- * resets whenever a different statement opens, pre-selects the account whose
- * number matches the perceived account number once per statement, and
- * auto-selects an account just created via the stacked "add new account" modal.
+ * pre-selects the account whose number matches the perceived account number
+ * once per statement, and auto-selects an account just created via the
+ * stacked "add new account" modal. The caller (BankStatementDetailModal) is
+ * keyed on the statement id, so a fresh mount — and fresh initial state here —
+ * is what "resets whenever a different statement opens" now; this hook no
+ * longer needs its own reset effect for that.
  */
 export function useAccountPreselect(
   doc: BankStatement | undefined,
@@ -36,11 +39,6 @@ export function useAccountPreselect(
 ) {
   const [selectedAccountId, setSelectedAccountId] = useState<string | null>(null);
   const [awaitingNewAccount, setAwaitingNewAccount] = useState(false);
-
-  useEffect(() => {
-    setSelectedAccountId(null);
-    setAwaitingNewAccount(false);
-  }, [doc?.id]);
 
   const matchedStatementIdRef = useRef<string | null>(null);
   useEffect(() => {

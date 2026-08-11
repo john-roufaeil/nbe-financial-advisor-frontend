@@ -23,11 +23,7 @@ import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 import { toastSuccess, toastApiError } from "@/lib/toast";
 import { useAdminAuthStore } from "@/store/use-admin-auth-store";
 
-/**
- * Admin data hooks. Unlike the end-user queries there is no mock data source
- * to pick between (the admin app is backend-only), so these call the API
- * module directly instead of going through pickImpl/useInvalidatingMutation.
- */
+/** Admin data hooks — call the API module directly. */
 export const adminKeys = {
   all: [QUERY_ROOTS.admin] as const,
   categories: (params: AdminCategoryListParams) =>

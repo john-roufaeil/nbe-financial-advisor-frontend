@@ -6,6 +6,7 @@ import {
   ArrowUp,
   ArrowDown,
   Minus,
+  ChevronRight,
 } from "lucide-react";
 import { Link, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
@@ -56,6 +57,9 @@ function StatCard({
       ? "bg-success/10 text-success"
       : "bg-error/10 text-error";
 
+  const drillType =
+    stat.key === "income" || stat.key === "spending" ? DRILL_TYPE[stat.key] : undefined;
+
   const body = (
     <div className="card-body gap-3 p-4">
       <div className="flex items-center gap-2">
@@ -67,7 +71,12 @@ function StatCard({
             className="size-4.5"
           />
         </span>
-        <p className="text-base-content/60 text-sm">{t(`dashboard.stats.${stat.key}`)}</p>
+        <p className="text-base-content/60 flex-1 text-sm">
+          {t(`dashboard.stats.${stat.key}`)}
+        </p>
+        {drillType && (
+          <ChevronRight className="text-base-content/30 group-hover:text-primary size-4 shrink-0 transition-[color,translate] ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
+        )}
       </div>
       <p className="text-2xl font-semibold tabular-nums">
         {stat.key === "savingsRate" ? formattedValue : <Money>{formattedValue}</Money>}
@@ -88,9 +97,6 @@ function StatCard({
     </div>
   );
 
-  const drillType =
-    stat.key === "income" || stat.key === "spending" ? DRILL_TYPE[stat.key] : undefined;
-
   if (!drillType) {
     return (
       <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
@@ -106,7 +112,7 @@ function StatCard({
       aria-label={t("dashboard.stats.drillDown", {
         stat: t(`dashboard.stats.${stat.key}`),
       })}
-      className="card border-base-300 bg-base-100 animate-entry hover:border-primary border shadow-sm transition-colors"
+      className="card border-base-300 bg-base-100 hover:border-primary group animate-entry border shadow-sm transition-colors"
     >
       {body}
     </Link>
@@ -123,7 +129,7 @@ export function StatsGrid({
   filters: DashboardFilters;
 }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
+    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:contents">
       {stats.map((stat) => (
         <StatCard key={stat.key} stat={stat} currency={currency} filters={filters} />
       ))}

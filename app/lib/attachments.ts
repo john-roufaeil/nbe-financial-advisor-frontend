@@ -6,9 +6,8 @@ import {
   type CompleteAttachment,
 } from "@assistant-ui/react";
 import type { QueryClient } from "@tanstack/react-query";
-import { impl, chatKeys } from "@/queries/chat";
+import { chatApi, chatKeys } from "@/queries/chat";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
-import type { DataSource } from "@/store/use-data-source-store";
 import { toastApiError } from "@/lib/toast";
 
 /**
@@ -65,34 +64,59 @@ export function createChatAttachmentsAdapter() {
 }
 
 /**
- * Uploads the files the adapter stashed for this send, attaching `caption` as
- * the user's own message (the backend falls back to the file name when it is
- * blank), then refreshes the conversation plus the statements/ledger/dashboard
- * the pipeline restates. Called from onNew, so the caption is available for
- * every send path (Enter and button alike).
+ * Uploads the files the adapter stashed for this send, then refreshes the
+ * conversation plus the statements/ledger/dashboard the pipeline restates.
+ * Called from onNew, so the caption is available for every send path (Enter
+ * and button alike).
+ *
+ * Each upload call becomes its own backend message, so `caption` only rides
+ * on the FIRST attachment — reusing it on every call would duplicate the
+ * same caption into a separate message per attachment (the backend falls
+ * back to the file name for the rest, same as an uncaptioned upload).
+ *
+ * Uploads run independently: one failing doesn't stop the others from being
+ * attempted, a file is only dropped from the pending map once ITS upload
+ * actually succeeds (so a failure stays retryable instead of being silently
+ * lost), and the cache is refreshed for whatever did succeed even if
+ * something else in the same send failed.
  */
 export async function sendPendingChatAttachments(
   conversationId: string,
   caption: string,
   attachmentIds: string[],
-  source: DataSource,
   queryClient: QueryClient,
 ): Promise<void> {
-  try {
-    for (const id of attachmentIds) {
-      const file = pendingUploadFiles.get(id);
+  let uploadedCount = 0;
+  let failedCount = 0;
+
+  for (const [index, id] of attachmentIds.entries()) {
+    const file = pendingUploadFiles.get(id);
+    if (!file) continue;
+    try {
+      await chatApi.uploadChatAttachment(
+        conversationId,
+        file,
+        index === 0 ? caption : undefined,
+      );
       pendingUploadFiles.delete(id);
-      if (file) await impl(source).uploadChatAttachment(conversationId, file, caption);
+      uploadedCount++;
+    } catch {
+      failedCount++;
     }
-  } catch (error) {
+  }
+
+  if (uploadedCount > 0) {
+    queryClient.invalidateQueries({
+      queryKey: chatKeys.messages(conversationId),
+    });
+    queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.bankStatements] });
+    queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.transactions] });
+    queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
+  }
+
+  if (failedCount > 0) {
+    const error = new Error(`${failedCount} attachment(s) failed to upload`);
     toastApiError(error);
     throw error;
   }
-
-  queryClient.invalidateQueries({
-    queryKey: chatKeys.messages(conversationId, source),
-  });
-  queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.bankStatements] });
-  queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.transactions] });
-  queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
 }

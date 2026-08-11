@@ -1,4 +1,4 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useBankStatements } from "@/queries/bank-statements";
@@ -13,6 +13,10 @@ export function BankStatementsTab() {
   const f = useBankStatementFilters();
   const detailModalRef = useRef<HTMLDialogElement>(null);
   const [selectedId, setSelectedId] = useState<string | null>(null);
+  // Bumped on every openDetail call so the effect below always re-fires —
+  // including reopening the SAME statement after closing, where selectedId
+  // itself wouldn't change and so wouldn't retrigger the effect on its own.
+  const [openNonce, setOpenNonce] = useState(0);
 
   const { data, isPending, isError, isFetching, refetch } = useBankStatements({
     type: f.filter === "all" ? undefined : f.filter,
@@ -26,8 +30,20 @@ export function BankStatementsTab() {
 
   function openDetail(id: string) {
     setSelectedId(id);
-    detailModalRef.current?.showModal();
+    setOpenNonce((n) => n + 1);
   }
+
+  // BankStatementDetailModal below is keyed on selectedId, so switching to a
+  // different statement remounts it with a brand-new <dialog> node — calling
+  // showModal() synchronously in openDetail (as before) would fire on the
+  // OLD node just before it's replaced. Deferring to an effect guarantees
+  // detailModalRef already points at the current (post-remount) node.
+  useEffect(() => {
+    if (selectedId) detailModalRef.current?.showModal();
+    // openNonce is the real trigger (see its declaration) — selectedId is
+    // read, not re-triggered on, since re-selecting the same id shouldn't
+    // reopen on its own without a matching openDetail call.
+  }, [openNonce]);
 
   return (
     <PagedListSection
@@ -54,6 +70,7 @@ export function BankStatementsTab() {
         />
       }
       isPending={isPending}
+      isFetching={isFetching}
       isError={isError}
       onRetry={() => refetch()}
       items={data?.items}
@@ -74,7 +91,11 @@ export function BankStatementsTab() {
       onPageSizeChange={f.updatePageSize}
       totalLabelKey="bankStatements.pagination.total"
     >
-      <BankStatementDetailModal ref={detailModalRef} bankStatementId={selectedId} />
+      <BankStatementDetailModal
+        key={selectedId}
+        ref={detailModalRef}
+        bankStatementId={selectedId}
+      />
     </PagedListSection>
   );
 }

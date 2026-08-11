@@ -27,17 +27,17 @@ export function SidebarHeader({
           : ""
       }`}
     >
-      {/* Mobile Menu Close Button — fixed at the exact same viewport
-          position as the floating hamburger button above (same
-          `top-2 inset-s-2` + button classes), so the icon reads as
-          staying in place rather than jumping when the drawer opens. */}
+      {/* Mobile Menu Close Button — fixed at roughly the same spot the
+          hamburger sits in AppLayout's mobile top bar (`top-3 inset-s-3`,
+          `btn-sm`), so the icon reads as staying in place rather than
+          jumping when the drawer opens. */}
       <Tooltip
         content={t("nav.menu")}
         position="end"
-        className={`fixed inset-s-2 top-2 ${Z_DROPDOWN} ${isForcedMobile ? "" : "lg:hidden"}`}
+        className={`fixed inset-s-3 top-3 ${Z_DROPDOWN} ${isForcedMobile ? "" : "lg:hidden"}`}
       >
         <button
-          className="btn btn-square btn-ghost bg-base-200/80 shadow-sm backdrop-blur-sm"
+          className="btn btn-square btn-ghost btn-sm bg-base-200/80 shadow-sm backdrop-blur-sm"
           onClick={onCloseDrawer}
           aria-label={t("nav.menu")}
         >

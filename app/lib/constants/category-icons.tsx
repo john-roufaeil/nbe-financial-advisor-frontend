@@ -7,6 +7,7 @@ import {
   CircleEllipsis,
   Banknote,
   ArrowLeftRight,
+  BanknoteArrowUp,
 } from "lucide-react";
 import type { ComponentType } from "react";
 
@@ -26,7 +27,7 @@ export const CATEGORY_ICONS: Record<string, CategoryIcon> = {
   // Income taxonomy
   salary: Banknote,
   transfers_in: ArrowLeftRight,
-  other_income: CircleEllipsis,
+  other_income: BanknoteArrowUp,
 };
 
 /** Case-insensitive, with the "other" glyph for any value outside the known

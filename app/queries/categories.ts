@@ -1,14 +1,10 @@
 import { useQuery } from "@tanstack/react-query";
 import * as categoriesApi from "@/api/categories";
-import * as categoriesMock from "@/mocks/categories";
 import type { Category } from "@/types/category";
-import { useDataSourceStore, type DataSource } from "@/store/use-data-source-store";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
-import { pickImpl } from "@/queries/shared";
 
 export const categoryKeys = {
   all: [QUERY_ROOTS.categories] as const,
-  list: (source: DataSource) => [...categoryKeys.all, "list", source] as const,
 };
 
 /**
@@ -17,10 +13,9 @@ export const categoryKeys = {
  * screen shares the one fetch instead of refetching on mount/focus.
  */
 export function useCategories() {
-  const source = useDataSourceStore((s) => s.source);
   return useQuery({
-    queryKey: categoryKeys.list(source),
-    queryFn: () => pickImpl(source, categoriesApi, categoriesMock).getCategories(),
+    queryKey: categoryKeys.all,
+    queryFn: () => categoriesApi.getCategories(),
     staleTime: Infinity,
     gcTime: Infinity,
     select: sortFallbackLast,

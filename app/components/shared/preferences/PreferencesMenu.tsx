@@ -1,3 +1,4 @@
+import type { ComponentType } from "react";
 import { useTranslation } from "react-i18next";
 import {
   Settings2,
@@ -60,6 +61,44 @@ function ThemeSwitch() {
   );
 }
 
+/** A related pair of toggles, set off in its own soft panel so the grid reads as three coherent groups instead of six loose fields. */
+function PreferenceGroup({
+  title,
+  children,
+}: {
+  title: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="bg-base-200/40 flex flex-col gap-3 rounded-xl p-3">
+      <span className="text-base-content/50 text-[11px] font-semibold tracking-wide uppercase">
+        {title}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+function PreferenceField({
+  icon: Icon,
+  label,
+  children,
+}: {
+  icon: ComponentType<{ className?: string }>;
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <label className="flex flex-col gap-1.5">
+      <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
+        <Icon className="size-3.5" />
+        {label}
+      </span>
+      {children}
+    </label>
+  );
+}
+
 /** Inline settings card on the profile page — not a popover, so every preference stays visible at once. */
 export function PreferencesMenu() {
   const { t } = useTranslation();
@@ -76,54 +115,33 @@ export function PreferencesMenu() {
           </h2>
         </div>
 
-        <div className="grid gap-x-8 gap-y-4 sm:grid-cols-3">
-          <label className="flex flex-col gap-1.5">
-            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
-              <Clock className="size-3.5" />
-              {t("settings.timeFormat.label")}
-            </span>
-            <TimeFormatSwitcher />
-          </label>
+        <div className="grid gap-3 sm:grid-cols-3">
+          <PreferenceGroup title={t("common.sections.preferences.groups.display")}>
+            <PreferenceField icon={Globe} label={t("settings.language")}>
+              <LanguageToggle />
+            </PreferenceField>
+            <PreferenceField icon={Sun} label={t("settings.theme.label")}>
+              <ThemeSwitch />
+            </PreferenceField>
+          </PreferenceGroup>
 
-          <label className="flex flex-col gap-1.5">
-            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
-              <Globe className="size-3.5" />
-              {t("settings.language")}
-            </span>
-            <LanguageToggle />
-          </label>
+          <PreferenceGroup title={t("common.sections.preferences.groups.dateTime")}>
+            <PreferenceField icon={Clock} label={t("settings.timeFormat.label")}>
+              <TimeFormatSwitcher />
+            </PreferenceField>
+            <PreferenceField icon={CalendarDays} label={t("settings.dateFormat.label")}>
+              <DateFormatSwitcher />
+            </PreferenceField>
+          </PreferenceGroup>
 
-          <label className="flex flex-col gap-1.5">
-            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
-              <Sun className="size-3.5" />
-              {t("settings.theme.label")}
-            </span>
-            <ThemeSwitch />
-          </label>
-
-          <label className="flex flex-col gap-1.5">
-            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
-              <Hash className="size-3.5" />
-              {t("settings.numberFormat.label")}
-            </span>
-            <NumberFormatSwitcher />
-          </label>
-
-          <label className="flex flex-col gap-1.5">
-            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
-              <CalendarDays className="size-3.5" />
-              {t("settings.dateFormat.label")}
-            </span>
-            <DateFormatSwitcher />
-          </label>
-
-          <label className="flex flex-col gap-1.5">
-            <span className="text-base-content/70 flex items-center gap-1.5 text-xs font-medium">
-              <Minimize2 className="size-3.5" />
-              {t("settings.compactNumbers.label")}
-            </span>
-            <CompactNumbersSwitcher />
-          </label>
+          <PreferenceGroup title={t("common.sections.preferences.groups.numbers")}>
+            <PreferenceField icon={Hash} label={t("settings.numberFormat.label")}>
+              <NumberFormatSwitcher />
+            </PreferenceField>
+            <PreferenceField icon={Minimize2} label={t("settings.compactNumbers.label")}>
+              <CompactNumbersSwitcher />
+            </PreferenceField>
+          </PreferenceGroup>
         </div>
       </div>
     </div>

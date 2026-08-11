@@ -11,6 +11,11 @@
     "clearFilters": "Clear filters",
     "category": "Category",
     "allCategories": "All categories",
+    "completeProfile": {
+      "title": "Welcome aboard!",
+      "description": "Let's finish setting up your profile — a couple of quick details help us tailor your budget and advice.",
+      "required": "This step is required to continue."
+    },
     "categories": {
       "housing": "Housing & Utilities",
       "food": "Food & Groceries",
@@ -25,7 +30,7 @@
       "freelance": "Freelance",
       "investment": "Investment",
       "gift": "Gift",
-      "other_income": "Other Income"
+      "other_income": "Income"
     },
     "filtersLabel": "Filters",
     "amountRange": "Amount range",
@@ -117,7 +122,9 @@
           "monthlyIncome": "Monthly income",
           "monthlyIncomePlaceholder": "e.g. 5000.00",
           "incomeSteadiness": "Income steadiness",
-          "riskTolerance": "Risk tolerance"
+          "riskTolerance": "Risk tolerance",
+          "dependentsCount": "Number of dependents",
+          "dependentsCountPlaceholder": "e.g. 2"
         }
       },
       "accounts": {
@@ -125,10 +132,30 @@
         "empty": "No linked bank accounts yet.",
         "error": "Couldn't load your bank accounts. Please try again.",
         "inactive": "Inactive",
-        "synced": "Synced"
+        "active": "Active",
+        "synced": "Synced",
+        "syncedTooltip": "Synced automatically from your linked bank — balance and transactions are read-only.",
+        "manual": "Manual",
+        "detail": {
+          "title": "Account details",
+          "accountNumber": "Account number",
+          "accountType": "Account type",
+          "currency": "Currency",
+          "balance": "Balance",
+          "status": "Status",
+          "linkType": "Link type",
+          "externalAccountId": "Provider reference",
+          "addedOn": "Added on",
+          "remove": "Delete account"
+        }
       },
       "preferences": {
-        "title": "Preferences"
+        "title": "Preferences",
+        "groups": {
+          "dateTime": "Date & time",
+          "numbers": "Numbers",
+          "display": "Language & theme"
+        }
       }
     },
     "view": {

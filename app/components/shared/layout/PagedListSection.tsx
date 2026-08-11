@@ -1,4 +1,4 @@
-import type { ReactNode } from "react";
+import { useEffect, type ReactNode } from "react";
 import type { LucideIcon } from "lucide-react";
 import { Pagination } from "@/components/shared/layout/Pagination";
 import { ListSkeleton } from "@/components/shared/skeletons/ListSkeleton";
@@ -22,6 +22,7 @@ const VIEW_CONTAINER = {
 export function PagedListSection<T>({
   toolbar,
   isPending,
+  isFetching,
   isError,
   onRetry,
   items,
@@ -39,6 +40,9 @@ export function PagedListSection<T>({
   /** DataToolbar (or equivalent), already wired to this list's filters. */
   toolbar: ReactNode;
   isPending: boolean;
+  /** From the same useQuery as `total` — gates the page-clamp effect below so
+   * it never fires against a mid-refetch/placeholder total. */
+  isFetching: boolean;
   isError: boolean;
   onRetry: () => void;
   items: readonly T[] | undefined;
@@ -58,9 +62,23 @@ export function PagedListSection<T>({
   const viewMode = useDisplayPreferencesStore((s) => s.viewMode);
   const loadAnimation = useLoadAnimation(isPending);
 
+  const totalPages = Math.max(1, Math.ceil((total ?? 0) / pageSize));
+
+  // Deleting the last row on a page past the first shrinks `total` (and so
+  // `totalPages`) without ever moving `page` itself back down — nothing else
+  // owns that reconciliation, so without this a delete strands the user on
+  // an empty "page 2 of 1". Only clamp once the query has actually settled
+  // (not pending, not mid-refetch) so this doesn't fire against a stale
+  // placeholder total while a new page/filter is still loading.
+  useEffect(() => {
+    if (!isPending && !isFetching && page > totalPages) {
+      onPageChange(totalPages);
+    }
+  }, [isPending, isFetching, page, totalPages, onPageChange]);
+
   const paginationProps = {
     page,
-    totalPages: Math.max(1, Math.ceil((total ?? 0) / pageSize)),
+    totalPages,
     total: total ?? 0,
     pageSize,
     onPageChange,
