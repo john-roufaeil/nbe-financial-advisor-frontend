@@ -100,6 +100,17 @@
       "benefitGoal": "Track a savings goal",
       "benefitBudget": "See where your money goes",
       "cta": "Build a plan with the advisor"
+    },
+    "stability": {
+      "label": "Income stability",
+      "tooltip": "How consistent your income has been over the last 6 months.",
+      "stable": "Stable",
+      "variable": "Variable",
+      "unstable": "Unstable"
+    },
+    "categoryBreakdown": {
+      "title": "Top categories this month",
+      "empty": "No transactions yet this month."
     }
   }
 }

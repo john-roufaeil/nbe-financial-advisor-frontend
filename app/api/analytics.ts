@@ -1,6 +1,6 @@
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/lib/constants/api";
-import type { MonthlySummary } from "@/types/analytics";
+import type { CategoryBreakdown, MonthlySummary } from "@/types/analytics";
 
 interface RawTopMerchant {
   merchant: string | null;
@@ -35,4 +35,33 @@ export async function getMonthlySummaries(
     params: { ...(from ? { from } : {}), ...(to ? { to } : {}) },
   });
   return res.data.map(toMonthlySummary);
+}
+
+interface RawCategoryBreakdownEntry {
+  category: string;
+  amount: string | number;
+  percentage_of_total: number;
+}
+
+interface RawCategoryBreakdown {
+  period: string;
+  breakdown: RawCategoryBreakdownEntry[];
+}
+
+/** `period` (YYYY-MM) is required — unlike getMonthlySummaries, there's no "all time" mode. */
+export async function getCategoryBreakdown(
+  period: string,
+  accountId?: string,
+): Promise<CategoryBreakdown> {
+  const res = await apiClient.get<RawCategoryBreakdown>(API_ENDPOINTS.categoryBreakdown, {
+    params: { period, ...(accountId ? { account_id: accountId } : {}) },
+  });
+  return {
+    period: res.data.period,
+    breakdown: res.data.breakdown.map((b) => ({
+      category: b.category,
+      amount: Number(b.amount),
+      percentageOfTotal: b.percentage_of_total,
+    })),
+  };
 }

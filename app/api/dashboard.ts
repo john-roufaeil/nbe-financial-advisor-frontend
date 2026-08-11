@@ -4,6 +4,7 @@ import type {
   DashboardFilters,
   DashboardPeriod,
   DashboardSummary,
+  IncomeStability,
 } from "@/types/dashboard";
 import type { Budget } from "@/types/budget";
 
@@ -38,6 +39,13 @@ interface RawDashboard {
   };
   allocations_summary?: RawAllocation[];
   has_plan?: boolean;
+}
+
+/** Mirrors the backend's own StabilityScoreView thresholds exactly (compute_stability_score, core/views/aggregations.py) — not re-derived, just labeled the same way here. */
+function toStability(score: number | null | undefined): IncomeStability | null {
+  if (score === null || score === undefined) return null;
+  const label = score >= 70 ? "stable" : score >= 40 ? "variable" : "unstable";
+  return { score, label };
 }
 
 /**
@@ -141,5 +149,6 @@ export async function getDashboardSummary(
     hasPlan,
     stats,
     budget: { categories },
+    stability: toStability(data.metrics?.income_stability_score),
   };
 }

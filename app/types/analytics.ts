@@ -18,3 +18,20 @@ export interface MonthlySummary {
   totalInflow: number;
   topMerchants: TopMerchant[];
 }
+
+export interface CategoryBreakdownEntry {
+  category: string;
+  /** Same caveat as TopMerchant.total above — sums both transaction directions, not spend-only. */
+  amount: number;
+  percentageOfTotal: number;
+}
+
+/**
+ * GET /analytics/category-breakdown?period=YYYY-MM — every category's total
+ * for one calendar month, independent of any budget plan (unlike the
+ * dashboard's allocations_summary, which is empty for a planless user).
+ */
+export interface CategoryBreakdown {
+  period: string;
+  breakdown: CategoryBreakdownEntry[];
+}

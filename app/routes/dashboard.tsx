@@ -21,6 +21,7 @@ import { AnomaliesCard } from "@/components/dashboard/AnomaliesCard";
 import { GoalCard, GoalCardSkeleton } from "@/components/dashboard/GoalCard";
 import { BudgetSplitCard } from "@/components/dashboard/BudgetSplitCard";
 import { NoPlanCard } from "@/components/dashboard/NoPlanCard";
+import { IncomeStabilityBadge } from "@/components/dashboard/IncomeStabilityBadge";
 import { AddItemFab } from "@/components/dashboard/AddItemFab";
 import { useDashboard } from "@/queries/dashboard";
 import { usePageTitle } from "@/lib/use-page-title";
@@ -75,6 +76,7 @@ export default function Dashboard() {
         icon={LayoutDashboard}
         actions={
           <>
+            {data && <IncomeStabilityBadge stability={data.stability} />}
             <Link
               to={localizedPath(lang!, ROUTE_SEGMENTS.chat)}
               className="btn bg-secondary btn-sm text-secondary-content hover:bg-secondary/90 gap-2 border-none shadow-sm"

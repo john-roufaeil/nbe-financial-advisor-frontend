@@ -1,6 +1,46 @@
 import { Link, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Bot, ClipboardList, PieChart } from "lucide-react";
+import { useCategoryBreakdown } from "@/queries/analytics";
+import { currentPeriod } from "@/lib/budget-period";
+import { CategoryLabel } from "@/components/shared/CategoryLabel";
+import { useNumberDisplay } from "@/lib/use-number-display";
+
+const TOP_CATEGORIES_SHOWN = 3;
+
+/**
+ * A planless user still has real transaction history — GET
+ * /analytics/category-breakdown needs no budget plan, unlike the dashboard's
+ * own allocations_summary (empty when has_plan is false). Gives them
+ * something real to look at instead of just an upsell prompt.
+ */
+function TopCategoriesThisMonth() {
+  const { t } = useTranslation();
+  const formatN = useNumberDisplay();
+  const { data } = useCategoryBreakdown(currentPeriod());
+  const top = (data?.breakdown ?? []).slice(0, TOP_CATEGORIES_SHOWN);
+
+  if (top.length === 0) return null;
+
+  return (
+    <ul className="border-base-300 flex w-full max-w-xs flex-col gap-2 border-t pt-4 text-start">
+      <li className="text-base-content/50 text-xs font-medium">
+        {t("dashboard.categoryBreakdown.title")}
+      </li>
+      {top.map((entry) => (
+        <li
+          key={entry.category}
+          className="flex items-center justify-between gap-3 text-sm"
+        >
+          <CategoryLabel category={entry.category} className="min-w-0" />
+          <span className="text-base-content/70 shrink-0 tabular-nums">
+            {formatN(entry.amount)}
+          </span>
+        </li>
+      ))}
+    </ul>
+  );
+}
 
 /**
  * Shown instead of the goals + budget cards when the user has no plan yet.
@@ -42,6 +82,8 @@ export function NoPlanCard() {
           <Bot className="size-4" />
           {t("dashboard.noPlan.cta")}
         </Link>
+
+        <TopCategoriesThisMonth />
       </div>
     </div>
   );
