@@ -162,10 +162,21 @@ textarea,
 /* Text selection highlight follows the active theme's primary color instead
    of the browser default (black), which was invisible against dark-mode's
    already-dark surfaces. --color-primary/-content flip with the theme (see
-   html.dark above), so this stays legible in both. */
-::selection {
-  background-color: var(--color-primary);
-  color: var(--color-primary-content);
+   html.dark above), so this stays legible in both.
+
+   Wrapped in @layer utilities (not a bare top-level rule) specifically so a
+   more specific selector inside that same layer — e.g. ChatMessages.tsx's
+   `selection:bg-base-300 selection:text-base-content` on the user message
+   bubble, whose own resting colors ARE primary/primary-content and so need
+   a different selection color to stay visible — can actually win via normal
+   specificity. An unlayered rule beats EVERY layered rule regardless of
+   specificity (CSS cascade layers spec), which silently made that override
+   impossible before this was layered. */
+@layer utilities {
+  ::selection {
+    background-color: var(--color-primary);
+    color: var(--color-primary-content);
+  }
 }
 
 html[data-a11y-font-scale] {
@@ -792,6 +803,28 @@ html[dir="rtl"] .animate-a11y-panel-in {
    together — instead of the text popping in ahead of everything else around it. */
 .animate-message-in {
   animation: message-in 0.35s cubic-bezier(0.16, 1, 0.3, 1) both;
+}
+
+/* Flashed on a user message bubble when QuestionsNav scrolls to it, so the
+   destination of the jump is unambiguous even though it already sits at the
+   scroll target. Ring-based (not a literal background swap) so it reads
+   clearly on top of the bubble's own bg-primary in both themes. */
+@keyframes message-highlight {
+  0% {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-warning) 70%, transparent);
+  }
+
+  70% {
+    box-shadow: 0 0 0 4px color-mix(in oklab, var(--color-warning) 70%, transparent);
+  }
+
+  100% {
+    box-shadow: 0 0 0 4px transparent;
+  }
+}
+
+.animate-message-highlight {
+  animation: message-highlight 1.6s ease-out both;
 }
 
 /* Assistant chat replies (see MarkdownText.tsx) — the advisor's LLM output is
