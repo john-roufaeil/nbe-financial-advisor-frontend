@@ -5,8 +5,12 @@ import type { BankStatement, ExtractedTransaction } from "@/types/bank-statement
 /**
  * Client-side draft of a statement's extracted transactions — edited entirely
  * in local state while under review, since the only request the review modal
- * ever sends is the final approve call with this draft attached. Resynced
- * whenever a different statement is opened.
+ * ever sends is the final approve call with this draft attached. The caller
+ * (BankStatementDetailModal) is keyed on the statement id, so a fresh mount
+ * already resets this to []; this effect's job is narrower than that —
+ * populating `draft` once `doc` (an async query) actually resolves after
+ * mount, and picking up rows that arrive/change later within the SAME
+ * mount (e.g. processing finishing, or a future re-extraction).
  */
 export function useExtractedTransactionsDraft(doc: BankStatement | undefined) {
   const [draft, setDraft] = useState<ExtractedTransaction[]>([]);
@@ -14,7 +18,7 @@ export function useExtractedTransactionsDraft(doc: BankStatement | undefined) {
 
   useEffect(() => {
     setDraft(doc?.extractedTransactions ?? []);
-  }, [doc?.id, doc?.status, doc?.extractedTransactions]);
+  }, [doc?.status, doc?.extractedTransactions]);
 
   function updateDraftTransaction(
     txId: string,
