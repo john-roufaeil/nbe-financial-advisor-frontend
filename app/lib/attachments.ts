@@ -25,8 +25,9 @@ const pendingUploadFiles = new Map<string, File>();
 
 /**
  * Uploading a document in chat is a shortcut into the same bank-statement
- * ingestion pipeline `POST /statements` uses (same 202-and-poll contract) — the
- * upload lands as an assistant message referencing the new statement.
+ * ingestion pipeline `POST /statements` uses (same 202 contract, resolved via
+ * SSE — see api/chat.ts's uploadChatAttachment) — the upload lands as an
+ * assistant message referencing the new statement.
  */
 function createDocumentAdapter(): AttachmentAdapter {
   return {

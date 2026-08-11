@@ -8,7 +8,7 @@ interface RawConversation {
   title?: string | null;
 }
 
-interface RawReference {
+export interface RawReference {
   target_type: string;
   target_id: string;
 }
@@ -18,7 +18,7 @@ interface RawReference {
  * marker: it's plain prose alongside the widget, not referencing it. `stage`
  * turned out to be a topic label ("general"), not a lifecycle state — see
  * isAwaitingReply in queries/chat.ts, which no longer depends on it. */
-interface RawWidget {
+export interface RawWidget {
   type: string;
   payload: unknown;
 }
@@ -77,6 +77,34 @@ function toChatMessage(raw: RawMessage): ChatMessage {
   };
 }
 
+/**
+ * Builds the assistant's ChatMessage directly from the chat_message SSE
+ * event's payload (use-event-stream.ts), instead of a caller paying for a
+ * GET .../messages round trip to receive back what the event already told
+ * it. Safe to treat as equivalent to the REST shape: core/tasks/conversations.py
+ * publishes assistant_message.widget_json verbatim — the exact same value
+ * MessageSerializer reads for GET — so there's no separate payload-shape
+ * trust question here beyond what GET already carries. Only `created_at` is
+ * approximated as "now" (the event carries no timestamp); a later real
+ * fetch, if one ever happens, overwrites it with the server's true value.
+ */
+export function assistantMessageFromEvent(payload: {
+  id: string;
+  content: string;
+  widget: RawWidget | null;
+  references: RawReference[] | null;
+}): ChatMessage {
+  return toChatMessage({
+    id: payload.id,
+    sender: "assistant",
+    content: payload.content,
+    stage: null,
+    widget: payload.widget,
+    references: payload.references,
+    created_at: new Date().toISOString(),
+  });
+}
+
 function toConversation(raw: RawConversation): ChatConversation {
   return { id: raw.id, title: raw.title?.trim() || "" };
 }
@@ -106,8 +134,10 @@ export async function getMessages(conversationId: string): Promise<ChatMessage[]
 
 /**
  * POST returns 202: it creates the user message and enqueues reply generation,
- * it does NOT return the assistant's reply. Callers must poll `getMessages`
- * (see useMessages' refetchInterval) to observe the reply once it lands.
+ * it does NOT return the assistant's reply. Callers observe the reply once it
+ * lands via the chat_token/chat_message SSE events (see queries/chat.ts's
+ * useMessages and app/lib/use-event-stream.ts), not by refetching `getMessages`
+ * themselves.
  */
 export async function sendMessage(
   conversationId: string,
@@ -124,9 +154,10 @@ export async function sendMessage(
 
 /**
  * Shortcut into the same statement-ingestion pipeline as `POST /statements`
- * (same 202-and-poll contract), tagged to this conversation. Returns the
- * assistant message announcing the upload; the referenced statement is
- * tracked/polled through the normal bank-statements queries.
+ * (same 202 contract, resolved via the statement_status SSE event rather
+ * than polling), tagged to this conversation. Returns the assistant message
+ * announcing the upload; the referenced statement is tracked through the
+ * normal bank-statements queries.
  */
 export async function uploadChatAttachment(
   conversationId: string,

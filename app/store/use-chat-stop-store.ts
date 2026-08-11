@@ -3,10 +3,10 @@ import { create } from "zustand";
 /**
  * Client-only "stop generating" state, keyed by conversation id. There's no
  * backend endpoint to actually cancel an in-flight reply (the assistant's
- * message is still produced server-side, useMessages just polls for it) —
- * this only suppresses polling and the "generating" UI locally so the user
- * stops seeing/waiting for it. Cleared the next time a message is sent into
- * that conversation.
+ * message is still produced server-side and its chat_token/chat_message SSE
+ * events still arrive) — this only suppresses awaiting/streaming and the
+ * "generating" UI locally so the user stops seeing/waiting for it. Cleared
+ * the next time a message is sent into that conversation.
  */
 interface ChatStopState {
   stoppedConversationIds: Set<string>;

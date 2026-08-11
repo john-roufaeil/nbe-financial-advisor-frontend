@@ -43,4 +43,5 @@ export const API_ENDPOINTS = {
   feedback: "/feedback",
   anomalies: "/analytics/anomalies",
   anomaly: (id: string) => `/analytics/anomalies/${id}`,
+  eventsTicket: "/events/ticket",
 } as const;

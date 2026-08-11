@@ -9,8 +9,9 @@ import { BANK_STATEMENT_STATUS } from "@/types/bank-statement";
  * assistant's "I've started processing…" message, and — once the proposal is
  * ready — opens the SAME review modal the Bank Statements screen uses (via
  * use-statement-review-store, mounted once in ChatThread). It reuses
- * useBankStatement, which already polls while the statement is still
- * processing, so no extra polling logic lives here.
+ * useBankStatement, which already gets nudged to refetch by the
+ * statement_status SSE event (use-event-stream.ts), so no extra update
+ * logic lives here.
  */
 export function ChatStatementCard({ statementId }: { statementId: string }) {
   const { t } = useTranslation();

@@ -22,7 +22,9 @@ export const bankStatementKeys = {
  * the BankAccount for the statement (get_or_create on bank name + account
  * number) — well before the user ever hits approve. So the accounts list can
  * go stale right at that transition, not just on approve. This watches each
- * polled statement for a processing -> processed edge and invalidates
+ * statement across successive fetches (the initial one plus whichever ones
+ * the statement_status SSE event triggers — see useBankStatements/
+ * useBankStatement below) for a processing -> processed edge, and invalidates
  * accounts exactly once per statement when it fires.
  */
 function useInvalidateAccountsOnProcessed(
@@ -53,17 +55,10 @@ export function useBankStatements(filters: BankStatementFilters) {
     queryKey: bankStatementKeys.list(filters),
     queryFn: () => bankStatementsApi.getBankStatements(filters),
     placeholderData: keepPreviousData,
-    // Stop polling once the request itself is erroring — otherwise stale
-    // data left over from the last successful fetch (kept around by
-    // keepPreviousData) can still show an item mid-processing and keep this
-    // returning 1000 forever, hammering a broken endpoint every second.
-    refetchInterval: (query) => {
-      if (query.state.error) return false;
-      const hasInFlight = query.state.data?.items?.some(
-        (d) => d.status === "uploading" || d.status === "processing",
-      );
-      return hasInFlight ? 1000 : false;
-    },
+    // No refetchInterval — process_statement_pipeline (core/tasks/statements.py)
+    // publishes a statement_status SSE event when a statement's pipeline run
+    // finishes either way; use-event-stream.ts invalidates this query on that
+    // event instead of polling for the transition.
   });
   useInvalidateAccountsOnProcessed(
     query.data?.items?.map((d) => ({ id: d.id, status: d.status })) ?? [],
@@ -76,12 +71,9 @@ export function useBankStatement(id: string | null) {
     queryKey: bankStatementKeys.detail(id ?? ""),
     queryFn: () => bankStatementsApi.getBankStatement(id as string),
     enabled: id !== null,
-    // Stop polling when the statement no longer exists (deleted) or terminal status
-    refetchInterval: (query) => {
-      if (query.state.error) return false;
-      const status = query.state.data?.status;
-      return status === "uploading" || status === "processing" ? 1000 : false;
-    },
+    // No refetchInterval — same statement_status SSE event covers the detail
+    // query too (bankStatementKeys.all is a prefix of bankStatementKeys.detail,
+    // so use-event-stream.ts's invalidation reaches this one as well).
     // Don't retry 404s — the statement was deleted, retrying won't help
     retry: (failureCount, error: unknown) => {
       const status = (error as { response?: { status?: number } })?.response?.status;
