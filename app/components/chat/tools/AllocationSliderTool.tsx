@@ -11,12 +11,22 @@ import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
  * shape than the dashboard's `Allocation` type (no amount/currency, just the
  * percentages the chat widget lets the user adjust and confirm). Validated
  * at runtime, not just asserted: `result` is LLM-originated, a meaningfully
- * less trustworthy source than a typed REST response. */
+ * less trustworthy source than a typed REST response.
+ *
+ * Field is `percentage`, NOT `allocated_percentage` — confirmed against a
+ * live chat_message event (ai-service's `Allocation` model,
+ * app/features/chat/schemas/widgets.py). This was flagged as an open
+ * mismatch in CHATBOT_BACKEND_INTEGRATION.md; `allocated_percentage` here
+ * was simply wrong, which silently 100%-failed every allocation_slider
+ * render (safeParse failure -> ToolPayloadError). Not to be confused with
+ * `AllocationInput.allocated_percentage` (types/budget.ts) below, which IS
+ * still correct — that's the real Django PATCH /budget/ request shape, an
+ * entirely separate backend contract from this AI-service widget payload. */
 const AllocationSliderPayloadSchema = z.object({
   allocations: z.array(
     z.object({
       category: z.string(),
-      allocated_percentage: z.number(),
+      percentage: z.number(),
     }),
   ),
 });
@@ -35,9 +45,7 @@ export const AllocationSliderTool: ToolCallMessagePartComponent = ({ result }) =
     : undefined;
   const updateBudget = useUpdateBudget();
   const [draft, setDraft] = useState<Record<string, number>>(() =>
-    Object.fromEntries(
-      (data?.allocations ?? []).map((a) => [a.category, a.allocated_percentage]),
-    ),
+    Object.fromEntries((data?.allocations ?? []).map((a) => [a.category, a.percentage])),
   );
   const [dirty, setDirty] = useState(false);
 
@@ -119,7 +127,7 @@ export const AllocationSliderTool: ToolCallMessagePartComponent = ({ result }) =
           return (
             <label key={category} className="flex flex-col gap-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5 font-medium">
+                <span className="flex items-center gap-1.5 font-medium capitalize">
                   <Icon data-no-flip className="text-base-content/50 size-3.5 shrink-0" />
                   {t(`dashboard.budget.categoryNames.${category}`, category)}
                 </span>
