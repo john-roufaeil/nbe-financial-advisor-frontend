@@ -2,6 +2,20 @@ export type BankStatementType = "pdf" | "image" | "doc";
 
 export type BankStatementStatus = "uploading" | "processing" | "failed" | "processed";
 
+/** The backend's raw pipeline stage (StatementFile.status) — what
+ * StatementFileFilterSet's `status` filter actually matches on. Coarser and
+ * differently-shaped than BankStatementStatus above: there's no "failed"
+ * here (failure is a separate `failure_reason` field, orthogonal to status),
+ * and "processed" collapses normalized+approved into one badge state while
+ * this keeps them distinct. Used for the statements list's filter tabs. */
+export const BANK_STATEMENT_RAW_STATUSES = [
+  "uploaded",
+  "extracted",
+  "normalized",
+  "approved",
+] as const;
+export type BankStatementRawStatus = (typeof BANK_STATEMENT_RAW_STATUSES)[number];
+
 /** Non-translated status literals, deduplicated across bank-statement components. */
 export const BANK_STATEMENT_STATUS = {
   uploading: "uploading",

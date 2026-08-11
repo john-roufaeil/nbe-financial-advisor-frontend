@@ -2,13 +2,17 @@ import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/lib/constants/api";
 import type {
   BankStatement,
+  BankStatementRawStatus,
   BankStatementStatus,
   BankStatementType,
   ExtractedTransaction,
 } from "@/types/bank-statement";
 
 export interface BankStatementFilters {
-  type?: BankStatementType;
+  accountId?: string;
+  /** One of BANK_STATEMENT_RAW_STATUSES — the backend's own pipeline-stage
+   * vocabulary, not the UI's derived BankStatementStatus badge. */
+  status?: BankStatementRawStatus;
   q?: string;
   from?: string;
   to?: string;
@@ -135,15 +139,18 @@ function toBankStatement(raw: RawStatement): BankStatement {
 // ── Calls ─────────────────────────────────────────────────────────────────────
 
 /**
- * GET /statements supports ONLY account_id, status, limit, offset. The tab's
- * type/search/date controls have no server-side equivalent, so they are not sent
- * — filtering client-side would desync `total` from the server's unfiltered count
- * and silently break pagination.
+ * GET /statements supports ONLY account_id, status, limit, offset — search/
+ * date-range/sort have no server-side equivalent, so they stay unsent even
+ * though the tab still shows those controls: filtering them client-side
+ * would desync `total` from the server's unfiltered count and silently break
+ * pagination.
  */
 export async function getBankStatements(
   filters: BankStatementFilters,
 ): Promise<BankStatementListResponse> {
   const params: Record<string, string | number> = {};
+  if (filters.accountId) params.account_id = filters.accountId;
+  if (filters.status) params.status = filters.status;
   if (filters.offset !== undefined) params.offset = filters.offset;
   if (filters.limit !== undefined) params.limit = filters.limit;
 

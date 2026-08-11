@@ -2,6 +2,8 @@ import { useEffect, useRef, useState } from "react";
 import { FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useBankStatements } from "@/queries/bank-statements";
+import { useAccounts } from "@/queries/accounts";
+import { getBankCode, getBankName } from "@/lib/banks";
 import { BankStatementDetailModal } from "@/components/bank-statements/BankStatementDetailModal";
 import { BankStatementCard } from "@/components/bank-statements/BankStatementCard";
 import { DataToolbar } from "@/components/shared/layout/DataToolbar";
@@ -18,8 +20,16 @@ export function BankStatementsTab() {
   // itself wouldn't change and so wouldn't retrigger the effect on its own.
   const [openNonce, setOpenNonce] = useState(0);
 
+  const { data: accounts } = useAccounts();
+  const accountOptions = (accounts ?? []).map((a) => {
+    const code = getBankCode(a.bank_name);
+    const bankLabel = t(`banks.${code}`, getBankName(code) ?? a.bank_name);
+    return { key: a.id, label: `${bankLabel} ${a.masked_account_number}` };
+  });
+
   const { data, isPending, isError, isFetching, refetch } = useBankStatements({
-    type: f.filter === "all" ? undefined : f.filter,
+    accountId: f.account || undefined,
+    status: f.filter === "all" ? undefined : f.filter,
     q: f.search.trim() || undefined,
     from: f.fromDate || undefined,
     to: f.toDate || undefined,
@@ -63,10 +73,14 @@ export function BankStatementsTab() {
           filter={f.filter}
           onFilterChange={f.updateFilter}
           filterLabel={(value) => t(`common.filters.${value}`)}
+          accounts={accountOptions}
+          account={f.account}
+          onAccountChange={f.updateAccount}
           sort={f.sort}
           onSortChange={f.setSort}
           hasActiveFilters={f.hasActiveFilters}
           onClearAll={f.clearAllFilters}
+          showDividers={false}
         />
       }
       isPending={isPending}
