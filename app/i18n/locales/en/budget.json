@@ -1,0 +1,82 @@
+{
+  "budget": {
+    "title": "Budget",
+    "subtitle": "Track how your spending compares to your plan, spot trends, and review past changes.",
+    "nav": {
+      "previousMonth": "Previous month",
+      "nextMonth": "Next month"
+    },
+    "insights": {
+      "empty": "Not enough activity in this period to draw insights from.",
+      "overBudgetOne": "{{category}} is {{percent}}% over budget.",
+      "overBudgetMultiple": "{{count}} categories are over budget — {{category}} the most, at {{percent}}%.",
+      "approaching": "{{category}} is at {{percent}}% of its budget — getting close to the limit.",
+      "bestControlled": "{{category}} is your best-controlled category — only {{percent}}% used.",
+      "utilization": "You've used {{percent}}% of your total budget for this period.",
+      "topSpend": "{{category}} was your biggest spending category.",
+      "savingsReached": "You've reached your savings target — {{percent}}% funded.",
+      "savingsClose": "You're close to your savings target — {{percent}}% funded.",
+      "savingsBehind": "You've saved {{percent}}% of your target so far this period.",
+      "netUp": "You saved {{percent}}% more than the month before.",
+      "netDown": "Net savings dropped {{percent}}% from the month before.",
+      "netTurnedPositive": "You're back in the green this period, after a shortfall the month before."
+    },
+    "kpi": {
+      "income": "Income",
+      "spend": "Spent",
+      "net": "Net savings"
+    },
+    "progress": {
+      "title": "Spending progress",
+      "spent": "Spent",
+      "selectMonth": "Select month",
+      "previousYear": "Previous year",
+      "nextYear": "Next year",
+      "noBudget": "You don't have a budget plan yet.",
+      "empty": "This plan has no categories yet.",
+      "status": {
+        "spend": {
+          "good": "On track",
+          "watch": "Approaching limit",
+          "bad": "Over budget"
+        },
+        "savings": {
+          "good": "Target reached",
+          "watch": "Nearly there",
+          "bad": "Below target"
+        }
+      }
+    },
+    "topTransactions": {
+      "title": "Biggest activity",
+      "empty": "No transactions recorded for this period.",
+      "unknown": "Unknown"
+    },
+    "savingsChart": {
+      "title": "Savings per month",
+      "latest": "Most recent month",
+      "average": "6-month average",
+      "best": "Best month"
+    },
+    "history": {
+      "title": "Change history",
+      "empty": "No changes recorded yet.",
+      "current": "Current",
+      "currentAllocationsLabel": "Current allocations:",
+      "previousStateLabel": "Allocations before this change:",
+      "changedVia": {
+        "dashboard": "Dashboard",
+        "chat": "Advisor chat",
+        "onboarding": "Onboarding"
+      },
+      "pagination": {
+        "total_zero": "No changes",
+        "total_one": "{{count}} change",
+        "total_two": "{{count}} changes",
+        "total_few": "{{count}} changes",
+        "total_many": "{{count}} changes",
+        "total_other": "{{count}} changes"
+      }
+    }
+  }
+}
