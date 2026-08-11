@@ -14,4 +14,5 @@ export const QUERY_ROOTS = {
   recommendations: "recommendations",
   analytics: "analytics",
   issues: "issues",
+  recurringCharges: "recurringCharges",
 } as const;

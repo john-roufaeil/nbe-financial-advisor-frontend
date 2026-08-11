@@ -28,7 +28,8 @@
         "goal": "Goal progress",
         "budget": "Budget split",
         "activity": "Recent activity",
-        "anomalies": "Anomalies"
+        "anomalies": "Anomalies",
+        "recurringCharges": "Recurring charges"
       }
     },
     "stats": {
@@ -111,6 +112,10 @@
     "categoryBreakdown": {
       "title": "Top categories this month",
       "empty": "No transactions yet this month."
+    },
+    "recurringCharges": {
+      "title": "Recurring Charges",
+      "next": "Next {{date}}"
     }
   }
 }

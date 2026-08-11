@@ -18,6 +18,7 @@ import { PageBanner } from "@/components/shared/layout/PageBanner";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { AnomaliesCard } from "@/components/dashboard/AnomaliesCard";
+import { RecurringChargesCard } from "@/components/dashboard/RecurringChargesCard";
 import { GoalCard, GoalCardSkeleton } from "@/components/dashboard/GoalCard";
 import { BudgetSplitCard } from "@/components/dashboard/BudgetSplitCard";
 import { NoPlanCard } from "@/components/dashboard/NoPlanCard";
@@ -154,6 +155,12 @@ export default function Dashboard() {
           {show("anomalies") && (
             <div className="xl:col-span-4 xl:row-start-3">
               <AnomaliesCard />
+            </div>
+          )}
+
+          {show("recurringCharges") && (
+            <div className="xl:col-span-4 xl:row-start-4">
+              <RecurringChargesCard />
             </div>
           )}
         </div>
