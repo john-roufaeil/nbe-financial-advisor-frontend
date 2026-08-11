@@ -1,6 +1,7 @@
 import { useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Bell, Megaphone, User } from "lucide-react";
+import { useNotifications } from "@/lib/use-notifications";
 import { useNotificationsStore } from "@/store/use-notifications-store";
 import { useNotificationsModalStore } from "@/store/use-notifications-modal-store";
 import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
@@ -53,7 +54,7 @@ export function NotificationsModal() {
   const { t } = useTranslation();
   const ref = useRef<HTMLDialogElement>(null);
   const { isOpen, tab, close, setTab } = useNotificationsModalStore();
-  const notifications = useNotificationsStore((s) => s.notifications);
+  const notifications = useNotifications();
   const markRead = useNotificationsStore((s) => s.markRead);
 
   useEffect(() => {

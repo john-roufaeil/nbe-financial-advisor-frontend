@@ -38,7 +38,8 @@
         "everyone": "عام",
         "account": "شخصي"
       },
-      "newCount": "{{count}} جديد"
+      "newCount": "{{count}} جديد",
+      "anomalyTitle": "تم رصد نشاط غير معتاد"
     },
     "accessibility": {
       "menuLabel": "خيارات إمكانية الوصول",

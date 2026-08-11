@@ -3,33 +3,15 @@ import { persist } from "zustand/middleware";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 import type { AppNotification } from "@/types/notification";
 
-const SEED_NOTIFICATIONS: AppNotification[] = [
-  {
-    id: "seed-everyone-1",
-    audience: "everyone",
-    title: "Welcome to the new dashboard",
-    body: "We refreshed the dashboard layout — customize which cards you see from the toolbar.",
-    createdAt: "2026-07-10T09:00:00.000Z",
-    read: false,
-  },
-  {
-    id: "seed-everyone-2",
-    audience: "everyone",
-    title: "Scheduled maintenance",
-    body: "We're rolling out improvements tonight — you might see a brief reconnect in chat.",
-    createdAt: "2026-07-17T18:00:00.000Z",
-    read: false,
-  },
-  {
-    id: "seed-account-1",
-    audience: "account",
-    title: "Bank statement processed",
-    body: "Your latest uploaded bank statement finished processing.",
-    createdAt: "2026-07-15T14:30:00.000Z",
-    read: false,
-  },
-];
-
+/**
+ * "account"-audience notifications are no longer seeded/stored here at all
+ * — they're derived live from real backend data instead (unresolved
+ * anomalies today; see app/lib/use-notifications.ts's useNotifications,
+ * which is what SidebarFooter/NotificationsModal actually read). This store
+ * now only owns "everyone" broadcasts, which really are frontend-only until
+ * a real backend endpoint exists (see sendBroadcast below) — there's
+ * nothing server-side to derive those from.
+ */
 interface NotificationsState {
   notifications: AppNotification[];
   markRead: (id: string) => void;
@@ -42,7 +24,7 @@ interface NotificationsState {
 export const useNotificationsStore = create<NotificationsState>()(
   persist(
     (set) => ({
-      notifications: SEED_NOTIFICATIONS,
+      notifications: [],
       markRead: (id) =>
         set((s) => ({
           notifications: s.notifications.map((n) =>

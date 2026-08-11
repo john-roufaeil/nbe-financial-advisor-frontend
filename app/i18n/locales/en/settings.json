@@ -38,7 +38,8 @@
         "everyone": "General",
         "account": "Personal"
       },
-      "newCount": "{{count}} new"
+      "newCount": "{{count}} new",
+      "anomalyTitle": "Unusual activity detected"
     },
     "accessibility": {
       "menuLabel": "Accessibility options",
