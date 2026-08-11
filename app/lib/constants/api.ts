@@ -16,6 +16,8 @@ export const API_ENDPOINTS = {
   savingsProgress: "/budget/savings-progress",
   goal: "/goal",
   usersMe: "/users/me",
+  usersMeConsent: "/users/me/consent",
+  usersMeConsentRevoke: (id: string) => `/users/me/consent/${id}`,
   authSignup: "/auth/signup",
   authLogin: "/auth/login",
   authRefresh: "/auth/refresh",

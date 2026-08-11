@@ -18,6 +18,8 @@ import { useSignup } from "@/queries/auth";
 import { useUpdateProfile } from "@/queries/profile";
 import { useStarterTemplates, useCreateBudget } from "@/queries/budget";
 import { useCreateGoal } from "@/queries/goals";
+import { useGrantConsent } from "@/queries/consent";
+import { CONSENT_TYPES, CURRENT_POLICY_VERSION } from "@/types/consent";
 import { usePageTitle } from "@/lib/use-page-title";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 import { isEmailTakenError } from "@/lib/toast";
@@ -69,14 +71,21 @@ export default function Onboarding() {
   // after an earlier one already succeeded, retrying "Create plan" must not
   // redo the calls that already went through (e.g. signup can't be repeated
   // — the email is already registered), so completed steps are tracked here.
-  const completedRef = useRef({ signup: false, profile: false, budget: false });
+  const completedRef = useRef({
+    signup: false,
+    consent: false,
+    profile: false,
+    budget: false,
+  });
 
   const signup = useSignup();
+  const grantConsent = useGrantConsent();
   const updateProfile = useUpdateProfile();
   const createBudget = useCreateBudget();
   const saveGoal = useCreateGoal();
   const isSubmitting =
     signup.isPending ||
+    grantConsent.isPending ||
     updateProfile.isPending ||
     createBudget.isPending ||
     saveGoal.isPending;
@@ -202,6 +211,22 @@ export default function Onboarding() {
         completedRef.current.signup = true;
       }
 
+      // The account step's checkbox agrees to both the terms and the privacy
+      // policy in one gesture (PrivacyPolicyModal shows both), so it grants
+      // both consent types. Needs the just-issued access token, hence after
+      // signup — this endpoint 401s for an unauthenticated caller.
+      if (!completedRef.current.consent) {
+        await Promise.all(
+          CONSENT_TYPES.map((consentType) =>
+            grantConsent.mutateAsync({
+              consentType,
+              policyVersion: CURRENT_POLICY_VERSION,
+            }),
+          ),
+        );
+        completedRef.current.consent = true;
+      }
+
       if (isStepDirty("income", data) && !completedRef.current.profile) {
         await updateProfile.mutateAsync({
           employment_status: data.employment_status,
@@ -243,7 +268,12 @@ export default function Onboarding() {
       reset();
       setPassword("");
       setAgreed(false);
-      completedRef.current = { signup: false, profile: false, budget: false };
+      completedRef.current = {
+        signup: false,
+        consent: false,
+        profile: false,
+        budget: false,
+      };
       navigate(localizedPath(lang!, ROUTE_SEGMENTS.signIn), {
         state: { justSignedUp: true },
       });
