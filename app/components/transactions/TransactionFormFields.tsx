@@ -55,7 +55,9 @@ export function TransactionFormFields({
               placeholder={t("transactions.add.namePlaceholder")}
               maxLength={20}
               aria-invalid={!!errors.transactionTitle}
-              aria-describedby={errors.transactionTitle ? "transactionTitle-error" : undefined}
+              aria-describedby={
+                errors.transactionTitle ? "transactionTitle-error" : undefined
+              }
               className={`input input-bordered input-sm w-full ${errors.transactionTitle ? "input-error" : ""}`}
               {...field}
             />
