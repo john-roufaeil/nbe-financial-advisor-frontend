@@ -1,5 +1,12 @@
 import { NavLink } from "react-router";
-import { LayoutDashboard, Bot, ArrowLeftRight, FileText } from "lucide-react";
+import {
+  LayoutDashboard,
+  Bot,
+  ArrowLeftRight,
+  FileText,
+  BarChart3,
+  Sparkles,
+} from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@/components/shared/Tooltip";
 
@@ -19,6 +26,8 @@ export function SidebarNav({
     { to: `/${lang}/chat`, label: t("nav.chat"), icon: Bot },
     { to: `/${lang}/transactions`, label: t("transactions.title"), icon: ArrowLeftRight },
     { to: `/${lang}/bank-statements`, label: t("bankStatements.title"), icon: FileText },
+    { to: `/${lang}/budget`, label: t("budget.title"), icon: BarChart3 },
+    { to: `/${lang}/recommendations`, label: t("recommendations.title"), icon: Sparkles },
   ];
 
   const navLinkClassName = ({ isActive }: { isActive: boolean }) =>
