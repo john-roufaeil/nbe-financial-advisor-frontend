@@ -12,6 +12,11 @@ export const MONTHLY_INCOME_STEP = 500;
 export const DEPENDENTS_MIN = 0;
 export const DEPENDENTS_MAX = 10;
 
+// Upper bound for the transactions amount-filter sliders' thumb travel —
+// the paired number inputs still accept any value up to MAX_MONEY_VALUE;
+// this just caps where dragging the slider stays useful.
+export const TRANSACTION_AMOUNT_FILTER_MAX = 10_000;
+
 export const QUERY_RETRY_COUNT = 2;
 export const MUTATION_RETRY_COUNT = 0;
 export const BYTES_PER_KB = 1024;

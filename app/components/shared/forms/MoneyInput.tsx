@@ -8,6 +8,7 @@ import {
 import { Plus, Minus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatMoney, parseMoneyInput } from "@/lib/format";
+import { useHoldRepeat } from "@/lib/use-hold-repeat";
 
 interface MoneyInputProps extends Omit<
   InputHTMLAttributes<HTMLInputElement>,
@@ -26,6 +27,11 @@ interface MoneyInputProps extends Omit<
   /** Amount the spinner buttons/arrow keys move per step. Defaults to 1;
    * pass e.g. 1000 for a field whose presets are also in round thousands. */
   step?: number;
+  /** Hides the flanking minus/plus buttons, giving the digits the full box
+   * width — for narrow contexts (e.g. a half-width field next to a sibling)
+   * where the buttons would otherwise squeeze the value down to a sliver.
+   * ArrowUp/ArrowDown keyboard stepping still works either way. */
+  hideSteppers?: boolean;
   /** Applied to the outer bordered box (e.g. "input-sm", "input-error") —
    * this component owns the box now, not just the bare `<input>`. */
   className?: string;
@@ -62,6 +68,7 @@ export const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
       max,
       unit,
       step: stepAmount = 1,
+      hideSteppers = false,
       className = "",
       onKeyDown,
       ...props
@@ -100,18 +107,23 @@ export const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
     }, [value]);
 
     const numericValue = value === "" ? 0 : value;
+    const decrementHold = useHoldRepeat(() => step(-1));
+    const incrementHold = useHoldRepeat(() => step(1));
 
     return (
       <span className={`input input-bordered flex items-center gap-1 p-1 ${className}`}>
-        <button
-          type="button"
-          onClick={() => step(-1)}
-          disabled={numericValue <= 0}
-          aria-label={t("actions.decrease", { name: props["aria-label"] ?? "" })}
-          className="text-base-content/60 hover:bg-base-200 hover:text-primary flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-30"
-        >
-          <Minus data-no-flip className="size-4" />
-        </button>
+        {!hideSteppers && (
+          <button
+            type="button"
+            onClick={() => step(-1)}
+            {...decrementHold}
+            disabled={numericValue <= 0}
+            aria-label={t("actions.decrease", { name: props["aria-label"] ?? "" })}
+            className="text-base-content/60 hover:bg-base-200 hover:text-primary flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <Minus data-no-flip className="size-4" />
+          </button>
+        )}
         <input
           ref={ref}
           type="text"
@@ -139,15 +151,18 @@ export const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
           {...props}
         />
         {unit && <span className="text-base-content/50 shrink-0 text-xs">{unit}</span>}
-        <button
-          type="button"
-          onClick={() => step(1)}
-          disabled={max !== undefined && numericValue >= max}
-          aria-label={t("actions.increase", { name: props["aria-label"] ?? "" })}
-          className="text-base-content/60 hover:bg-base-200 hover:text-primary flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-30"
-        >
-          <Plus data-no-flip className="size-4" />
-        </button>
+        {!hideSteppers && (
+          <button
+            type="button"
+            onClick={() => step(1)}
+            {...incrementHold}
+            disabled={max !== undefined && numericValue >= max}
+            aria-label={t("actions.increase", { name: props["aria-label"] ?? "" })}
+            className="text-base-content/60 hover:bg-base-200 hover:text-primary flex size-7 shrink-0 cursor-pointer items-center justify-center rounded-md disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            <Plus data-no-flip className="size-4" />
+          </button>
+        )}
       </span>
     );
   },
