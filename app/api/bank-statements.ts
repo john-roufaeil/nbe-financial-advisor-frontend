@@ -1,3 +1,4 @@
+import axios from "axios";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/lib/constants/api";
 import type {
@@ -6,6 +7,7 @@ import type {
   BankStatementStatus,
   BankStatementType,
   ExtractedTransaction,
+  StatementOcrResult,
 } from "@/types/bank-statement";
 
 export interface BankStatementFilters {
@@ -257,4 +259,50 @@ export async function approveBankStatement(
       .map((r) => r.transaction_id)
       .filter((txId): txId is string => txId !== null),
   };
+}
+
+interface RawStatementOcrResult {
+  statement_id: string;
+  ocr_engine: string;
+  confidence_score: number | string | null;
+  processed_at: string;
+  artifact_url: string;
+}
+
+/**
+ * 404s both when the statement doesn't exist and when OCR hasn't completed
+ * yet (raw status still "uploaded") — that's the documented "not ready yet"
+ * answer, not an error, so it maps to null rather than throwing.
+ */
+export async function getStatementOcrResult(
+  id: string,
+): Promise<StatementOcrResult | null> {
+  try {
+    const res = await apiClient.get<RawStatementOcrResult>(
+      API_ENDPOINTS.statementOcrResult(id),
+    );
+    return {
+      ocrEngine: res.data.ocr_engine,
+      confidenceScore:
+        res.data.confidence_score === null ? null : Number(res.data.confidence_score),
+      processedAt: res.data.processed_at,
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) return null;
+    throw error;
+  }
+}
+
+/**
+ * Downloads the OCR artifact's extracted document.md as a Blob. This is a
+ * Bearer-authed endpoint like every other call in the app, not a public
+ * storage URL, so it can't be a plain `<a href>` — the caller turns the
+ * Blob into a temporary object URL and clicks a synthetic link (see
+ * OcrResultPanel.tsx).
+ */
+export async function downloadStatementOcrArtifact(id: string): Promise<Blob> {
+  const res = await apiClient.get<Blob>(API_ENDPOINTS.statementOcrArtifactDownload(id), {
+    responseType: "blob",
+  });
+  return res.data;
 }

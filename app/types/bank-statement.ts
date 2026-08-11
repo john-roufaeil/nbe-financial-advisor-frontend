@@ -72,6 +72,18 @@ export interface BankStatement {
   canAddTransactions?: boolean;
 }
 
+/**
+ * GET /statements/{id}/ocr-result — metadata about the OCR pass that
+ * produced this statement's extracted transactions. Only available once
+ * the raw pipeline stage has reached at least "extracted" (before that,
+ * the endpoint 404s — see getStatementOcrResult).
+ */
+export interface StatementOcrResult {
+  ocrEngine: string;
+  confidenceScore: number | null;
+  processedAt: string;
+}
+
 /** Same accept rules as the chat composer's attachment adapter — images and office/pdf docs only. */
 export const BANK_STATEMENT_UPLOAD_ACCEPT =
   "image/*,.pdf,.doc,.docx,application/pdf,application/msword,application/vnd.openxmlformats-officedocument.wordprocessingml.document";

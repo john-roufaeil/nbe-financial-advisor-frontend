@@ -10,6 +10,7 @@ import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
 import { AccountConfirmStep } from "@/components/bank-statements/AccountConfirmStep";
 import { BankStatementStatusPanel } from "@/components/bank-statements/BankStatementStatusPanel";
 import { ExtractedTransactionsSection } from "@/components/bank-statements/ExtractedTransactionsSection";
+import { OcrResultPanel } from "@/components/bank-statements/OcrResultPanel";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { BankStatementModalActions } from "@/components/bank-statements/BankStatementModalActions";
 import {
@@ -133,6 +134,10 @@ export const BankStatementDetailModal = forwardRef<
                   onRetry={() => retryBankStatement.mutate(doc.id)}
                   retryPending={retryBankStatement.isPending}
                 />
+              )}
+
+              {doc.status === BANK_STATEMENT_STATUS.processed && (
+                <OcrResultPanel statementId={doc.id} />
               )}
 
               {doc.status === BANK_STATEMENT_STATUS.processed && needsAccountConfirm && (

@@ -6,6 +6,8 @@ export const API_ENDPOINTS = {
   transaction: (id: string) => `/transactions/${id}`,
   statements: "/statements",
   statement: (id: string) => `/statements/${id}`,
+  statementOcrResult: (id: string) => `/statements/${id}/ocr-result`,
+  statementOcrArtifactDownload: (id: string) => `/statements/${id}/ocr-result/download`,
   dashboard: "/dashboard",
   dashboardGoal: "/dashboard/goal",
   budget: "/budget",

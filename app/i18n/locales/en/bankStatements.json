@@ -30,6 +30,11 @@
       "processed": "Processed",
       "failed": "Failed"
     },
+    "ocr": {
+      "engine": "Extracted via {{engine}}",
+      "confidence": "{{percent}}% confidence",
+      "download": "Download extracted text"
+    },
     "detail": {
       "title": "Bank Statement",
       "uploading": "Uploading bank statement...",

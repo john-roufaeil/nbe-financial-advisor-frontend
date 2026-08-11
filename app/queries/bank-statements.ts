@@ -1,5 +1,10 @@
 import { useEffect, useRef } from "react";
-import { useQuery, useQueryClient, keepPreviousData } from "@tanstack/react-query";
+import {
+  useQuery,
+  useQueryClient,
+  useMutation,
+  keepPreviousData,
+} from "@tanstack/react-query";
 import * as bankStatementsApi from "@/api/bank-statements";
 import type { BankStatementFilters } from "@/api/bank-statements";
 import type {
@@ -9,6 +14,7 @@ import type {
 } from "@/types/bank-statement";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 import { useInvalidatingMutation } from "@/queries/shared";
+import { toastApiError } from "@/lib/toast";
 
 export const bankStatementKeys = {
   all: [QUERY_ROOTS.bankStatements] as const,
@@ -154,5 +160,22 @@ export function useDeleteBankStatement() {
       [QUERY_ROOTS.dashboard],
     ],
     successToastKey: "toast.bankStatementDeleted",
+  });
+}
+
+/** `enabled` should reflect whether OCR has plausibly run yet (see getStatementOcrResult) — pass false while a statement is still uploading/processing to avoid a guaranteed-404 request. */
+export function useStatementOcrResult(id: string, enabled: boolean) {
+  return useQuery({
+    queryKey: [...bankStatementKeys.detail(id), "ocr-result"],
+    queryFn: () => bankStatementsApi.getStatementOcrResult(id),
+    enabled,
+  });
+}
+
+/** No success toast — the browser's own download UI is the confirmation. */
+export function useDownloadStatementOcrArtifact() {
+  return useMutation({
+    mutationFn: (id: string) => bankStatementsApi.downloadStatementOcrArtifact(id),
+    onError: (error) => toastApiError(error),
   });
 }
