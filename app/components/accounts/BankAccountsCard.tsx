@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { CreditCard, Plus, Landmark, RefreshCw, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
@@ -14,12 +14,8 @@ import { useNumberDisplay } from "@/lib/use-number-display";
 import { useCreateBankConnection } from "@/queries/bank-connections";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
-import {
-  openOAuthPopup,
-  isBankOAuthResult,
-  watchForUnhandledClose,
-} from "@/lib/oauth-popup";
-import { toastSuccess, toastError } from "@/lib/toast";
+import { useBankOAuthPopup } from "@/lib/use-bank-oauth-popup";
+import { toastSuccess } from "@/lib/toast";
 
 /** Slug of the (currently only) registered bank connector — see services/bank_connectors/mock_bank.py on the backend. */
 const MOCK_BANK_PROVIDER_SLUG = "mock_bank";
@@ -87,32 +83,16 @@ export function BankAccountsCard() {
   const [viewedAccount, setViewedAccount] = useState<BankAccount | null>(null);
   const createConnection = useCreateBankConnection();
   const queryClient = useQueryClient();
-  // Set inside handleMessage once a result actually arrives — lets the
-  // popup-closed watcher below tell "closed after delivering its result"
-  // apart from "closed without ever delivering one" (lost message, or the
-  // user just closing it by hand).
-  const bankConnectHandledRef = useRef(false);
 
-  // Listens for the popup opened by handleConnectBank (see lib/oauth-popup.ts)
-  // to hand back its result — the confirm call itself runs in the popup, in a
-  // separate React Query cache, so this tab's own accounts/dashboard data
-  // needs its own invalidation once that's done.
-  useEffect(() => {
-    function handleMessage(event: MessageEvent) {
-      if (!isBankOAuthResult(event) || event.data.kind !== "bank-connect") return;
-      bankConnectHandledRef.current = true;
-      if (event.data.ok) {
-        queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.accounts] });
-        queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
-        queryClient.invalidateQueries({ queryKey: ["bank-connections"] });
-        toastSuccess("toast.bankConnected");
-      } else {
-        toastError();
-      }
-    }
-    window.addEventListener("message", handleMessage);
-    return () => window.removeEventListener("message", handleMessage);
-  }, [queryClient]);
+  // Handles the popup opened by handleConnectBank — the confirm call itself
+  // runs in the popup, in a separate React Query cache, so this tab's own
+  // accounts/dashboard data needs its own invalidation once that's done.
+  const { openPopup } = useBankOAuthPopup("bank-connect", () => {
+    queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.accounts] });
+    queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
+    queryClient.invalidateQueries({ queryKey: ["bank-connections"] });
+    toastSuccess("toast.bankConnected");
+  });
 
   function handleView(account: BankAccount) {
     setViewedAccount(account);
@@ -128,17 +108,7 @@ export function BankAccountsCard() {
       // Falls back to a full-tab redirect if the popup was blocked — still
       // works via bank-connect-callback.tsx's no-opener branch, it just
       // navigates this tab away and back instead of staying on it.
-      const popup = openOAuthPopup(authorize_url, "bank-connect");
-      if (!popup) {
-        window.location.href = authorize_url;
-        return;
-      }
-      bankConnectHandledRef.current = false;
-      watchForUnhandledClose(
-        popup,
-        () => bankConnectHandledRef.current,
-        () => toastError(),
-      );
+      openPopup(authorize_url);
     } catch {
       // onError already toasted.
     }
