@@ -14,7 +14,6 @@ export const STORAGE_KEYS = {
   messageFeedback: "nbe_message_feedback",
   messageAttachments: "nbe_message_attachments",
   conversationTitles: "nbe_conversation_titles",
-  notifications: "nbe_notifications",
   /** sessionStorage — the pending BankConnection id, set right before redirecting
    *  to the bank's OAuth page so /bank-connect/callback (a fixed, unprefixed
    *  path with no room for it in the query string) knows which connection to

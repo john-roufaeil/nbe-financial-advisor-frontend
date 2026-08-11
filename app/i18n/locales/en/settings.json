@@ -34,11 +34,6 @@
     "notifications": {
       "title": "Notifications",
       "empty": "Nothing here yet.",
-      "tabs": {
-        "everyone": "General",
-        "account": "Personal"
-      },
-      "newCount": "{{count}} new",
       "anomalyTitle": "Unusual activity detected"
     },
     "accessibility": {

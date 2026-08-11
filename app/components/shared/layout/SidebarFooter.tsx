@@ -22,7 +22,7 @@ export function SidebarFooter({
   onNavigate: () => void;
 }) {
   const { t } = useTranslation();
-  const unreadCount = useNotifications().filter((n) => !n.read).length;
+  const unreadCount = useNotifications().length;
   const openNotifications = useNotificationsModalStore((s) => s.open);
 
   return (

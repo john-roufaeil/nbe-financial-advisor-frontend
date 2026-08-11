@@ -34,11 +34,6 @@
     "notifications": {
       "title": "الإشعارات",
       "empty": "لا يوجد شيء هنا بعد.",
-      "tabs": {
-        "everyone": "عام",
-        "account": "شخصي"
-      },
-      "newCount": "{{count}} جديد",
       "anomalyTitle": "تم رصد نشاط غير معتاد"
     },
     "accessibility": {
