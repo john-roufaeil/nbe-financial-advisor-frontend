@@ -43,7 +43,7 @@ function BudgetRow({
       className="hover:bg-base-200/60 focus-visible:outline-primary -mx-1.5 flex cursor-pointer flex-col gap-1.5 rounded-lg px-1.5 py-1 transition-colors"
     >
       <div className="flex items-center justify-between text-sm">
-        <span className="flex min-w-0 items-center gap-1.5 font-medium">
+        <span className="flex min-w-0 items-center gap-1.5 font-medium capitalize">
           <Icon data-no-flip className="text-base-content/60 size-3.5 shrink-0" />
           {t(`common.categories.${category.name}`, category.name)}
         </span>
