@@ -1,118 +1,21 @@
-import { useRef, useState } from "react";
-import { useQueryClient } from "@tanstack/react-query";
-import { CreditCard, Plus, Landmark, RefreshCw, Info } from "lucide-react";
+import { useRef } from "react";
+import { CreditCard, Plus, Landmark } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAccounts } from "@/queries/accounts";
-import { BankBadge } from "@/components/shared/BankBadge";
-import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
 import { AccountDetailModal } from "@/components/accounts/AccountDetailModal";
-import type { BankAccount } from "@/types/account";
+import { AccountRow } from "@/components/accounts/AccountRow";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
-import { useNumberDisplay } from "@/lib/use-number-display";
-import { useCreateBankConnection } from "@/queries/bank-connections";
-import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
-import { QUERY_ROOTS } from "@/lib/constants/query-keys";
-import { useBankOAuthPopup } from "@/lib/use-bank-oauth-popup";
-import { toastSuccess } from "@/lib/toast";
-
-/** Slug of the (currently only) registered bank connector — see services/bank_connectors/mock_bank.py on the backend. */
-const MOCK_BANK_PROVIDER_SLUG = "mock_bank";
-
-// `current_balance` is derived server-side from the account's latest transaction
-// and is read-only, so there is no edit action here — only add and remove, the
-// latter tucked into the details modal (AccountDetailModal) rather than this
-// row. Synced accounts (link_type "synced") are entirely read-only server-side
-// (assert_account_mutable() rejects edit/delete/manual transactions), so the
-// modal shows a badge instead of a remove button for them rather than one
-// that would 403.
-function AccountRow({ account, onView }: { account: BankAccount; onView: () => void }) {
-  const { t } = useTranslation();
-  const formatN = useNumberDisplay();
-  const currencyLabel = t(`currency.${account.currency}`, account.currency);
-  const isSynced = account.link_type === "synced";
-
-  return (
-    <li className="border-base-300 bg-base-100 flex min-w-0 items-center gap-3 rounded-lg border p-3">
-      <BankBadge
-        bank={account.bank_name}
-        className="flex-1"
-        subtitle={
-          <>
-            <span dir="ltr">{account.masked_account_number}</span>
-            {account.account_type
-              ? ` · ${t(`common.addAccount.accountTypes.${account.account_type}`, account.account_type)}`
-              : ""}
-            {account.is_active ? "" : ` · ${t("common.sections.accounts.inactive")}`}
-          </>
-        }
-      />
-      <Money className="shrink-0 text-sm font-semibold tabular-nums">
-        {formatN(Number(account.current_balance))} {currencyLabel}
-      </Money>
-      <div className="flex shrink-0 items-center gap-1">
-        {isSynced && (
-          <Tooltip content={t("common.sections.accounts.syncedTooltip")}>
-            <span className="badge badge-ghost gap-1 text-xs">
-              <RefreshCw data-no-flip className="size-3" />
-              {t("common.sections.accounts.synced")}
-            </span>
-          </Tooltip>
-        )}
-        <Tooltip content={t("common.sections.accounts.detail.title")}>
-          <button
-            type="button"
-            onClick={onView}
-            className="btn btn-ghost btn-sm btn-square"
-            aria-label={t("common.sections.accounts.detail.title")}
-          >
-            <Info data-no-flip className="size-4" />
-          </button>
-        </Tooltip>
-      </div>
-    </li>
-  );
-}
+import { useConnectBank } from "@/lib/use-connect-bank";
+import { useAccountDetailView } from "@/lib/use-account-detail-view";
 
 export function BankAccountsCard() {
   const { t } = useTranslation();
   const { data: accounts, isPending, isError } = useAccounts();
   const addRef = useRef<HTMLDialogElement>(null);
-  const detailRef = useRef<HTMLDialogElement>(null);
-  const [viewedAccount, setViewedAccount] = useState<BankAccount | null>(null);
-  const createConnection = useCreateBankConnection();
-  const queryClient = useQueryClient();
-
-  // Handles the popup opened by handleConnectBank — the confirm call itself
-  // runs in the popup, in a separate React Query cache, so this tab's own
-  // accounts/dashboard data needs its own invalidation once that's done.
-  const { openPopup } = useBankOAuthPopup("bank-connect", () => {
-    queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.accounts] });
-    queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
-    queryClient.invalidateQueries({ queryKey: ["bank-connections"] });
-    toastSuccess("toast.bankConnected");
-  });
-
-  function handleView(account: BankAccount) {
-    setViewedAccount(account);
-    detailRef.current?.showModal();
-  }
-
-  async function handleConnectBank() {
-    try {
-      const { connection_id, authorize_url } = await createConnection.mutateAsync({
-        provider_slug: MOCK_BANK_PROVIDER_SLUG,
-      });
-      sessionStorage.setItem(STORAGE_KEYS.pendingBankConnectionId, connection_id);
-      // Falls back to a full-tab redirect if the popup was blocked — still
-      // works via bank-connect-callback.tsx's no-opener branch, it just
-      // navigates this tab away and back instead of staying on it.
-      openPopup(authorize_url);
-    } catch {
-      // onError already toasted.
-    }
-  }
+  const { detailRef, viewedAccount, viewAccount } = useAccountDetailView();
+  const { connectBank, isPending: connectPending } = useConnectBank();
 
   if (isPending) {
     return (
@@ -147,8 +50,8 @@ export function BankAccountsCard() {
           <Tooltip content={t("common.addAccount.connectBank")}>
             <button
               type="button"
-              onClick={handleConnectBank}
-              disabled={createConnection.isPending}
+              onClick={connectBank}
+              disabled={connectPending}
               className="btn btn-ghost btn-sm btn-square"
               aria-label={t("common.addAccount.connectBank")}
             >
@@ -173,7 +76,7 @@ export function BankAccountsCard() {
               <AccountRow
                 key={account.id}
                 account={account}
-                onView={() => handleView(account)}
+                onView={() => viewAccount(account)}
               />
             ))}
           </ul>
