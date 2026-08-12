@@ -13,11 +13,9 @@ export interface RawReference {
   target_id: string;
 }
 
-/** Confirmed against a live response — `widget` is a nested object (type +
- * payload), not a JSON-in-string field, and `content` carries no inline
- * marker: it's plain prose alongside the widget, not referencing it. `stage`
- * turned out to be a topic label ("general"), not a lifecycle state — see
- * isAwaitingReply in queries/chat.ts, which no longer depends on it. */
+/** `widget` is a nested object (type + payload), not JSON-in-string; `content` is
+ * plain prose alongside it. `stage` is a topic label ("general"), not a lifecycle
+ * state — see isAwaitingReply in queries/chat.ts, which doesn't depend on it. */
 export interface RawWidget {
   type: string;
   payload: unknown;
@@ -42,12 +40,9 @@ function toList<T>(data: ListEnvelope<T>): T[] {
 }
 
 /**
- * `widget.type` is used directly as the tool name — it must match a key in
- * chatToolComponents (app/components/chat/tools/index.ts) for a card to
- * render. Gated to assistant messages only: assistant-ui's runtime hard-rejects
- * a tool-call part on a "user" message ("Unsupported user message part type:
- * tool-call"), so a widget ever showing up on a non-assistant message must
- * not be turned into a tool call.
+ * `widget.type` must match a key in chatToolComponents to render as a card.
+ * Gated to assistant messages: assistant-ui hard-rejects a tool-call part
+ * on a "user" message.
  */
 function parseToolCall(raw: RawMessage): ChatToolCall | undefined {
   if (!raw.widget || raw.sender !== "assistant") return undefined;
@@ -78,15 +73,10 @@ function toChatMessage(raw: RawMessage): ChatMessage {
 }
 
 /**
- * Builds the assistant's ChatMessage directly from the chat_message SSE
- * event's payload (use-event-stream.ts), instead of a caller paying for a
- * GET .../messages round trip to receive back what the event already told
- * it. Safe to treat as equivalent to the REST shape: core/tasks/conversations.py
- * publishes assistant_message.widget_json verbatim — the exact same value
- * MessageSerializer reads for GET — so there's no separate payload-shape
- * trust question here beyond what GET already carries. Only `created_at` is
- * approximated as "now" (the event carries no timestamp); a later real
- * fetch, if one ever happens, overwrites it with the server's true value.
+ * Builds the assistant's ChatMessage from the chat_message SSE event payload
+ * instead of paying for a GET .../messages round trip. Shape matches REST
+ * exactly (same widget_json the backend publishes); only `created_at` is
+ * approximated as "now" since the event carries no timestamp.
  */
 export function assistantMessageFromEvent(payload: {
   id: string;

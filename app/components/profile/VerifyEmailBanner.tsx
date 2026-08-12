@@ -5,15 +5,10 @@ import { useRequestEmailVerification } from "@/queries/auth";
 import { Button } from "@/components/shared/Button";
 
 /**
- * Prompt to (re)send the verification email. Session-only dismiss (not
- * persisted) rather than gone-forever, since an unverified user closing it
- * once shouldn't lose the option permanently.
- * Caller (profile.tsx) is responsible for not rendering this at all once
- * `user.email_verified` is true, or for a bank-login account
- * (`!user.has_password`) — that identity was already proven by bank OTP, so
- * an email-verification nudge doesn't apply regardless of email_verified
- * (bank-login never sends that email, so it would otherwise stay false
- * forever).
+ * Prompt to (re)send the verification email. Dismiss is session-only (not persisted)
+ * so closing it once doesn't lose the option forever.
+ * Caller must not render this for verified users or bank-login accounts
+ * (`!user.has_password`), whose identity is already proven by OTP.
  */
 export function VerifyEmailBanner() {
   const { t } = useTranslation();

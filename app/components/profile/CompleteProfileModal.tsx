@@ -18,15 +18,9 @@ import {
 } from "@/lib/constants/limits";
 
 /**
- * Welcoming, non-dismissible gate for an authenticated user with no
- * employment status yet — a bank-login account (never touched onboarding at
- * all) or a normal account whose profile step never landed. Same four fields
- * as onboarding's IncomeStep; only employment_status/monthly_income are
- * mandatory to submit (dependents/steadiness stay optional here too, same as
- * onboarding — zero dependents is a real answer, not a missing one). Unlike a
- * plain nudge, this one has no header X, no backdrop dismiss, and no Escape
- * close (BaseModal `dismissible={false}`) — the only way out is a valid
- * submit.
+ * Gate shown when an authenticated user has no employment status yet (bank-login
+ * account or profile step never completed). Non-dismissible (BaseModal
+ * `dismissible={false}`) — only a valid submit closes it.
  */
 export function CompleteProfileModal() {
   const { t } = useTranslation();

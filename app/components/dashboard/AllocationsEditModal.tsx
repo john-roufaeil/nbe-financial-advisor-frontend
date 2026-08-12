@@ -26,10 +26,9 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-/** Biggest allocation first, matching the dashboard's Budget Plan Split card
- * and its pie chart — fixed at load time so rows don't jump around as the
- * user edits percentages. The taxonomy's fallback bucket (e.g. "other")
- * always trails the rest, regardless of its allocated size. */
+/** Biggest allocation first (matches the dashboard's pie chart), fixed at
+ * load time so rows don't jump around as the user edits percentages. The
+ * fallback bucket (e.g. "other") always trails, regardless of its size. */
 function toDraft(
   allocations: Allocation[],
   isFallback: (name: string) => boolean,

@@ -43,17 +43,10 @@ function isAuthEndpoint(url?: string) {
   return !!url && AUTH_ENDPOINTS.some((path) => url.includes(path));
 }
 
-// Single in-flight refresh shared by every caller that might race into one —
-// every request that hits a 401 below, AND useSessionRestore's reload-time
-// restore (see refreshAccessTokenOnce) — so a burst of parallel callers
-// shares one request instead of each presenting the same pre-rotation
-// refresh cookie. That matters because the backend's SIMPLE_JWT config
-// rotates + blacklists the refresh token on every successful use: two
-// requests racing in with the same cookie (React StrictMode's dev-only
-// double effect invoke was one real way this happened) means whichever the
-// backend processes second gets a 401 for an already-used token, even though
-// the session was perfectly healthy — exactly the "silently signed out"
-// symptom this dedup exists to prevent.
+// Shared by every caller that might race into a refresh (401 handler below and
+// useSessionRestore) so parallel callers reuse one request instead of each
+// presenting the same pre-rotation cookie — the backend blacklists a refresh
+// token after first use, so a second racing request would otherwise get wrongly signed out.
 let refreshPromise: Promise<string> | null = null;
 
 /**

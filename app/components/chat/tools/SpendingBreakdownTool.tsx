@@ -47,9 +47,8 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
     return t(`common.categories.${name}`, name);
   }
 
-  // Still streaming in (no result yet) or genuinely running: show the
-  // loading state. A present-but-malformed result is a different case,
-  // handled separately below rather than folded into this same branch.
+  // Still streaming (no result yet) or running: show loading. A malformed
+  // result is handled separately below, not folded into this branch.
   if (status.type === "running" || result === undefined) {
     return (
       <div className="border-base-300 bg-base-100 text-base-content/60 my-2 flex items-center gap-2 rounded-xl border px-4 py-3 text-sm">

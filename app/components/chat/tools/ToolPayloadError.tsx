@@ -1,14 +1,9 @@
 import { AlertTriangle } from "lucide-react";
 import { useTranslation } from "react-i18next";
 
-/**
- * Shown instead of a tool widget whose `result` failed Zod validation — an
- * LLM-originated payload is less trustworthy shape-wise than a typed REST
- * response, so a mismatch here is a real possibility, not just defensive
- * paranoia. Distinct from `result === undefined` (still streaming in,
- * renders nothing yet): this is for a payload that arrived but doesn't
- * match the shape this widget expects.
- */
+// Shown when a tool widget's `result` fails Zod validation (LLM-originated payloads
+// aren't as trustworthy as typed REST responses). Distinct from `result === undefined`,
+// which just means still streaming and renders nothing.
 export function ToolPayloadError() {
   const { t } = useTranslation();
   return (

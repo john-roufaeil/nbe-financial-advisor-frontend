@@ -13,12 +13,8 @@ const VIEW_CONTAINER = {
   grid: "grid gap-2 sm:grid-cols-2 xl:grid-cols-3",
 } as const;
 
-/**
- * Shared frame of the transactions and bank-statements tabs: a toolbar card
- * with an attached pagination row, then the query-state block (view-aware
- * skeleton / error / item list / empty state), a standalone bottom
- * pagination, and finally any modals passed as children.
- */
+/** Shared frame of the transactions and bank-statements tabs: toolbar + pagination,
+ * then a view-aware skeleton/error/list/empty block, bottom pagination, and modals. */
 export function PagedListSection<T>({
   toolbar,
   isPending,

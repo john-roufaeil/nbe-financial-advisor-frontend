@@ -63,10 +63,9 @@ function InsightCard({ insight }: { insight: BudgetInsight }) {
 }
 
 /**
- * Derived, analytical statements — not the same information as the raw
- * cards below it, restated. See app/lib/budget-insights.ts for the rules.
- * Shares `period` with the rest of the "current standing" group (KPI strip,
- * Progress+donut, Biggest activity) via budget.tsx's BudgetMonthNav.
+ * Derived analytical statements, not a restatement of the raw cards below it.
+ * See app/lib/budget-insights.ts for the rules. Shares `period` with the rest
+ * of the "current standing" group via budget.tsx's BudgetMonthNav.
  */
 export function BudgetInsights({ period }: { period: string }) {
   const { t } = useTranslation();

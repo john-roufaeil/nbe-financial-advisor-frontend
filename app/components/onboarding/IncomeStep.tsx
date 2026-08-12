@@ -20,12 +20,9 @@ export function IncomeStep({ attempted }: OnboardingStepProps) {
   const data = useOnboardingStore((s) => s.data);
   const setField = useOnboardingStore((s) => s.setField);
 
-  // Once the user fills in one field, give them a moment to reach the other
-  // before flagging it — showing it the instant one field changes was
-  // jarring (see git history), but waiting only for an explicit Continue
-  // click meant a user who filled one field and stalled got no feedback at
-  // all. This settles the difference: reveal after a pause, same as
-  // clicking Continue does immediately.
+  // Delay flagging missing fields after the step becomes dirty, so filling
+  // one field doesn't instantly show an error on the other. Continue still
+  // reveals errors immediately (via `attempted`).
   const dirty = isStepDirty("income", data);
   const [settled, setSettled] = useState(false);
   useEffect(() => {

@@ -8,13 +8,9 @@ import { useDisplayPreferencesStore } from "@/store/use-display-preferences-stor
 import { formatDateTime } from "@/lib/format";
 import { Tooltip } from "@/components/shared/Tooltip";
 
-/**
- * OCR engine/confidence/timestamp for a statement, plus a button to download
- * the extracted document.md. Only rendered once the raw pipeline stage has
- * reached "extracted" or later — pass `enabled` accordingly (BankStatement's
- * collapsed UI status doesn't distinguish "extracted" from "normalized", so
- * the caller uses `status === "processed"` as the gate, which covers both).
- */
+/** OCR engine/confidence/timestamp plus a download button for the extracted document.md.
+ * Caller gates rendering on `status === "processed"`, since the UI status doesn't
+ * distinguish the underlying "extracted" vs "normalized" pipeline stages. */
 export function OcrResultPanel({ statementId }: { statementId: string }) {
   const { t } = useTranslation();
   const timeFormat = useDisplayPreferencesStore((s) => s.timeFormat);

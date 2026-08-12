@@ -230,16 +230,9 @@ function BankStatementsSummary() {
   );
 }
 
-/**
- * Dashboard-level summaries linking through to the full transactions/bank statements
- * pages. This column sits full-width on narrower laptops (before the goal/budget
- * row splits into a tight 12-col grid) so a container query — not a viewport
- * one — lets the two cards sit side by side whenever they actually have the
- * room, and stack once the column itself gets squeezed back to sidebar width.
- * Deliberately not stretched to the row's full height: on the wide, single-column
- * layout the two cards sit flush at the top and leave the rest of the column
- * clear for the floating add button instead of stretching to match it.
- */
+/** Links through to the full transactions/bank-statements pages. Uses a
+ * container query (not viewport) so the two cards sit side by side once this
+ * column has room, and stack when squeezed to sidebar width. */
 export function RecentActivityCard({
   stacked = false,
   filters,

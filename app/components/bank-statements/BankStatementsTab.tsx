@@ -43,16 +43,12 @@ export function BankStatementsTab() {
     setOpenNonce((n) => n + 1);
   }
 
-  // BankStatementDetailModal below is keyed on selectedId, so switching to a
-  // different statement remounts it with a brand-new <dialog> node — calling
-  // showModal() synchronously in openDetail (as before) would fire on the
-  // OLD node just before it's replaced. Deferring to an effect guarantees
-  // detailModalRef already points at the current (post-remount) node.
+  // The modal is keyed on selectedId, so switching statements remounts it with a new
+  // <dialog> node. Calling showModal() synchronously in openDetail would fire on the
+  // old node just before it's replaced, so defer to an effect keyed on openNonce
+  // (not selectedId, so re-selecting the same id doesn't reopen without a fresh call).
   useEffect(() => {
     if (selectedId) detailModalRef.current?.showModal();
-    // openNonce is the real trigger (see its declaration) — selectedId is
-    // read, not re-triggered on, since re-selecting the same id shouldn't
-    // reopen on its own without a matching openDetail call.
   }, [openNonce]);
 
   return (

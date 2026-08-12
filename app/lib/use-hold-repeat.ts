@@ -4,8 +4,9 @@ const INITIAL_DELAY_MS = 400;
 const REPEAT_INTERVAL_MS = 80;
 
 /**
- * Press-and-hold auto-repeat for a spinner button. Purely additive to an
- * existing `onClick` handler — a normal tap never reaches the initial delay,
+ * Press-and-hold auto-repeat for a spinner button. Used by MoneyInput's and
+ * SliderField's +/- steppers. Purely additive to an existing `onClick`
+ * handler — a normal tap never reaches the initial delay,
  * so `onClick` alone still handles it (no double-fire); holding past the
  * delay starts firing `onStep` on an interval until released.
  *

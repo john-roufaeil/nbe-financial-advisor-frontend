@@ -195,17 +195,9 @@ export function useMessages(conversationId: string | null, active = true) {
     },
   });
 
-  // A local, network-free timer — NOT polling: it never touches the backend,
-  // it just forces a re-render once a second so hasChatTimedOut's
-  // Date.now() comparison actually gets re-evaluated over time (nothing
-  // else would trigger that recheck once refetchInterval is gone). Runs
-  // only while genuinely awaiting a reply, which is the sole remaining gap
-  // in the SSE contract: generate_chat_reply (core/tasks/conversations.py)
-  // only publishes chat_error from inside its `except AIServiceError`
-  // branch, so an unrelated exception (e.g. a DB error persisting the
-  // reply) would otherwise leave this awaiting forever with no event ever
-  // arriving to end it. Stops itself once select() above swaps in the
-  // timed-out placeholder, since that placeholder is no longer "awaiting".
+  // Not polling — just forces a re-render each second so hasChatTimedOut's
+  // Date.now() check keeps evaluating. Needed because an unrelated backend
+  // exception (not caught by chat_error) can leave a reply awaiting forever with no SSE event to end it.
   const [, forceTick] = useReducer((c: number) => c + 1, 0);
   useEffect(() => {
     if (!active || conversationId === null || !isAwaitingReply(query.data)) return;

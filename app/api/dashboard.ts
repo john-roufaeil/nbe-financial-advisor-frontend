@@ -82,10 +82,8 @@ export async function getDashboardSummary(
   });
   const data = res.data;
 
-  // A planless user still gets a 200 with `has_plan: false` and null budget/goal.
-  // Treat an empty allocations list as planless too: a budget whose percentages
-  // don't add up to anything has nothing to render, and showing an empty donut
-  // reads as "you have a plan, it's just all zero".
+  // A planless user gets `has_plan: false`. Also treat an empty allocations list as
+  // planless — an empty donut reads as "you have a plan, it's just all zero".
   const hasPlan = data.has_plan === true && (data.allocations_summary ?? []).length > 0;
 
   const inflow = data.metrics?.current_month_inflow || 0;
@@ -93,10 +91,8 @@ export async function getDashboardSummary(
   const prevInflow = data.metrics?.previous_month_inflow || 0;
   const prevSpend = data.metrics?.previous_month_spend || 0;
 
-  // Savings rate = the share of income you did NOT spend. This is NOT the
-  // backend's income_stability_score (a 0-100 measure of how CONSISTENT income
-  // is month to month) — that is a different metric and was previously shown
-  // under this label by mistake. Guard against divide-by-zero for a new user.
+  // Share of income NOT spent — not the backend's income_stability_score (a
+  // consistency metric), which was previously shown under this label by mistake.
   const savingsRate = inflow > 0 ? ((inflow - spend) / inflow) * 100 : 0;
   const prevSavingsRate =
     prevInflow > 0 ? ((prevInflow - prevSpend) / prevInflow) * 100 : 0;

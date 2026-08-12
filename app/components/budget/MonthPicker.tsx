@@ -25,10 +25,8 @@ function monthAbbr(year: number, monthIndex: number, locale: string): string {
 
 /**
  * Calendar-style month/year popover — same trigger+portal+dismiss shell as
- * EntityPicker (app/components/shared/forms/EntityPicker.tsx), just with a
- * year-nav header + 3x4 month grid instead of a flat option list, since
- * EntityPicker's API is shaped around a single scrollable list and doesn't
- * fit a 2D calendar grid.
+ * EntityPicker, but with a year-nav header + 3x4 month grid since EntityPicker's
+ * API assumes a flat scrollable list, not a 2D calendar grid.
  */
 export function MonthPicker({
   value,

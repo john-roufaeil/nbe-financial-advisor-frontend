@@ -35,10 +35,8 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
       },
     );
     const modals = useTransactionModals(ref);
-    // The category filter's options narrow to match the type filter (All
-    // shows both taxonomy sides; Income/Expense shows only that side) — GET
-    // /transactions itself filters by bare category name regardless of type,
-    // but offering a category that can't occur under the selected type would
+    // Category options narrow to the selected type filter; the API filters by
+    // bare category name regardless of type, so an out-of-type option would
     // just silently return zero rows.
     const { data: allCategories } = useCategories();
     const visibleCategories = (allCategories ?? []).filter(

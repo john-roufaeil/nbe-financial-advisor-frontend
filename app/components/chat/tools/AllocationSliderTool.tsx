@@ -7,21 +7,10 @@ import { useUpdateBudget } from "@/queries/budget";
 import { categoryIcon } from "@/lib/constants/category-icons";
 import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
 
-/** Matches the real `widget.payload` for `allocation_slider` — a slimmer
- * shape than the dashboard's `Allocation` type (no amount/currency, just the
- * percentages the chat widget lets the user adjust and confirm). Validated
- * at runtime, not just asserted: `result` is LLM-originated, a meaningfully
- * less trustworthy source than a typed REST response.
- *
- * Field is `percentage`, NOT `allocated_percentage` — confirmed against a
- * live chat_message event (ai-service's `Allocation` model,
- * app/features/chat/schemas/widgets.py). This was flagged as an open
- * mismatch in CHATBOT_BACKEND_INTEGRATION.md; `allocated_percentage` here
- * was simply wrong, which silently 100%-failed every allocation_slider
- * render (safeParse failure -> ToolPayloadError). Not to be confused with
- * `AllocationInput.allocated_percentage` (types/budget.ts) below, which IS
- * still correct — that's the real Django PATCH /budget/ request shape, an
- * entirely separate backend contract from this AI-service widget payload. */
+/** Matches `widget.payload` for `allocation_slider` (ai-service's `Allocation`
+ * model). Field is `percentage`, not `allocated_percentage` — using the wrong
+ * name here previously made every render fail safeParse silently.
+ * Validated at runtime since `result` is LLM-originated, not a typed REST response. */
 const AllocationSliderPayloadSchema = z.object({
   allocations: z.array(
     z.object({

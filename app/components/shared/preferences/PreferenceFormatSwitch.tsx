@@ -2,13 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useToastStore } from "@/store/use-toast-store";
 import { ToggleSwitch } from "@/components/shared/forms/ToggleSwitch";
 
-/**
- * Shared body of every two-option display-preference switcher (date/time/
- * number format, compact numbers): a forced-LTR ToggleSwitch whose option
- * labels and aria-label come from `${i18nPrefix}.<option>` / `${i18nPrefix}.label`,
- * and that confirms each change with an info toast interpolating the new
- * option's label as `{{format}}`.
- */
+/** Shared body of the date/time/number/compact-numbers switchers: a forced-LTR ToggleSwitch that toasts the new value on change. */
 export function PreferenceFormatSwitch<T extends string>({
   options,
   value,

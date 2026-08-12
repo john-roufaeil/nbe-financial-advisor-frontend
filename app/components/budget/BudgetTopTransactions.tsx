@@ -13,12 +13,9 @@ function periodBounds(period: string): { from: string; to: string } {
 }
 
 /**
- * Real ledger transactions for the period, sorted client-side by amount and
- * capped to the top 5 — unlike GET /analytics/monthly-summaries' top_merchants
- * (which sums both directions per merchant with no way to tell which,
- * confirmed against a live response: "Employer Payroll" showed up as the
- * biggest "merchant"), GET /transactions carries a real signed `type` per
- * row, so this can show a correct +/- instead of guessing.
+ * Uses GET /transactions instead of monthly-summaries' top_merchants, which sums
+ * both directions per merchant with no way to tell which (e.g. "Employer Payroll"
+ * showed up as a top merchant) — transactions carry a real signed `type`.
  */
 export function BudgetTopTransactions({ period }: { period: string }) {
   const { t } = useTranslation();

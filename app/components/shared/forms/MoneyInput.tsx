@@ -48,17 +48,10 @@ function formatPartial(raw: string): string {
 
 /**
  * A money `<input>` that comma-groups its integer part while typing.
- * `type="number"` can't do this — browsers reject non-digit characters — so
- * this is a plain text input that keeps its own display buffer (reformatted
- * on every keystroke via formatPartial) while reporting the parsed numeric
- * value up via onChange. Unlike the digits-only pattern in SliderField, a
- * single decimal point is allowed so this also covers cent-precision
- * amounts (transaction/account totals).
- *
- * Owns its own bordered box (like a daisyUI `.input`) rather than being a
- * bare `<input>`. Flanking minus/plus buttons sit on either side of the
- * text — always visible (never hover-only) and large enough to be an easy
- * tap target, rather than a browser-style spinner stacked to one side.
+ * `type="number"` rejects the comma formatting, so this is a text input
+ * with its own display buffer, reporting the parsed number via onChange.
+ * Owns its bordered box with always-visible +/- buttons (bigger tap target
+ * than a native spinner).
  */
 export const MoneyInput = forwardRef<HTMLInputElement, MoneyInputProps>(
   function MoneyInput(

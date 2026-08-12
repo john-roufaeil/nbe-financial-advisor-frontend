@@ -3,14 +3,9 @@ import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MonthPicker } from "@/components/budget/MonthPicker";
 
 /**
- * The one month control for the whole "current standing" group of sections
- * (Insights, KPI strip, Progress+donut, Biggest activity) — arrows step one
- * month at a time, the calendar (MonthPicker) jumps to any month directly.
- * Both are gated to `availablePeriods` (months with at least one
- * transaction — see budget.tsx, which unions GET /analytics/monthly-summaries'
- * months with the current calendar month so a brand-new account with zero
- * transactions yet still has somewhere to land) rather than a plain
- * "not in the future" cutoff, per the "only months that have data" ask.
+ * Shared month control for the "current standing" group (Insights, KPI strip,
+ * Progress+donut, Biggest activity). Both arrows and MonthPicker are gated to
+ * `availablePeriods` — months with data — not a plain "not in the future" cutoff.
  */
 export function BudgetMonthNav({
   period,

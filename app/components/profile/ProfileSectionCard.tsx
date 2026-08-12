@@ -14,10 +14,8 @@ import { FieldValue } from "@/components/shared/forms/FieldValue";
 import { NAME_PATTERN } from "@/lib/name-validation";
 import type { UpdateProfileBody, User as UserType } from "@/types/profile";
 
-// `has_password`/`email_verified` are excluded: both are internal flags
-// (drive VerifyEmailBanner visibility), not displayable/editable
-// personal-data fields, and their boolean type would otherwise widen
-// FieldValue's `value` prop away from `string | undefined`.
+// `has_password`/`email_verified` excluded: internal booleans, not editable
+// fields, and would widen FieldValue's `value` prop away from string.
 export type Field = FormFieldConfig<
   Exclude<keyof UserType, "has_password" | "email_verified">
 >;
@@ -121,7 +119,7 @@ export function ProfileSectionCard({
       setEditing(false);
       showToast(t("toast.profileUpdated"), "success");
     } catch {
-      /* Error is gracefully surfaced globally via the mutation's onError toast handler */
+      // handled by the mutation's onError toast
     }
   }
 

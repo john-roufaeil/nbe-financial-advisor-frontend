@@ -6,13 +6,9 @@ import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useNumberDisplay } from "@/lib/use-number-display";
 
-// `current_balance` is derived server-side from the account's latest transaction
-// and is read-only, so there is no edit action here — only add and remove, the
-// latter tucked into the details modal (AccountDetailModal) rather than this
-// row. Synced accounts (link_type "synced") are entirely read-only server-side
-// (assert_account_mutable() rejects edit/delete/manual transactions), so the
-// modal shows a badge instead of a remove button for them rather than one
-// that would 403.
+// current_balance is server-derived and read-only, so there's no edit action here —
+// only add/remove (remove lives in AccountDetailModal). Synced accounts are read-only
+// server-side (assert_account_mutable()), so the modal shows a badge instead of a remove button.
 export function AccountRow({
   account,
   onView,

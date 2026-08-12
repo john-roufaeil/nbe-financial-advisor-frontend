@@ -40,11 +40,8 @@ export function GoalStep({ attempted }: OnboardingStepProps) {
   const [monthsTouched, setMonthsTouched] = useState(false);
   const amountValue = Number(data.goal_target_amount) || 0;
   const monthsValue = Number(data.goal_target_months) || 0;
-  // SliderField now renders its own `error` (the generic "Missing." message,
-  // passed below) when the step is dirty and the field's still unset — these
-  // more specific range messages would otherwise double up with it once
-  // `attempted` (or the other field) makes the step dirty while this one's
-  // still sitting at 0.
+  // Only show the range error once the generic "missing" error (below) no
+  // longer applies, so the two don't double up on a still-unset field.
   const amountRangeError =
     amountTouched && amountValue === 0 && !missing("goal_target_amount")
       ? t("onboarding.goal.errors.amountRange", {

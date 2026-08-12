@@ -79,18 +79,17 @@ export function Tooltip({
   }, [coords]);
 
   function show(e?: SyntheticEvent) {
-    // 1. If clicked recently, ignore generic focus events until mouse re-enters
+    // After a click, ignore focus/hover-less triggers until the mouse actually re-enters.
     if (isSuppressed && e?.type !== "mouseenter") return;
 
-    // 2. CRITICAL FIX: Ignore programmatic focus from closing modals.
-    // Only show on focus if the user is navigating via keyboard.
+    // Skip programmatic focus (e.g. from a closing modal) — only show on real keyboard nav.
     if (e?.type === "focus" && triggerRef.current) {
       try {
         if (!triggerRef.current.matches(":focus-visible")) {
           return;
         }
       } catch {
-        // Fallback for very old browsers
+        // :focus-visible unsupported
       }
     }
 
@@ -132,13 +131,11 @@ export function Tooltip({
   }
 
   function handleInteractionClick() {
-    // Hide immediately and suppress showing again until explicit mouse enter
     setIsSuppressed(true);
     setCoords(null);
   }
 
   function handleMouseEnter(e: SyntheticEvent) {
-    // Reset suppression when the user explicitly hovers again
     setIsSuppressed(false);
     show(e);
   }

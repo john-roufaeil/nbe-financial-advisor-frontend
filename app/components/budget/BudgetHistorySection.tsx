@@ -25,10 +25,8 @@ const CHANGED_VIA_ICON_CLASS: Record<BudgetHistoryEntry["changedVia"], string> =
   onboarding: "bg-accent/10 text-accent",
 };
 
-/** Shared shell for one timeline node — the dot on the left, a connector
- * line down to the next node (unless `isLast`), and arbitrary content. Both
- * the live "current allocation" node and each past-change node render
- * through this so they read as one continuous timeline, not two lists. */
+/** Shared shell for one timeline node (dot + connector line + content) so the
+ * current allocation and past changes render as one continuous timeline. */
 function TimelineNode({
   icon: Icon,
   iconClassName,
