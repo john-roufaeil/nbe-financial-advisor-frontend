@@ -65,21 +65,9 @@ bash scripts/check-no-hardcoded-hex.sh
 
 ---
 
-## Authentication & offline mode
+## Authentication
 
-The app defaults to **`source: "backend"`** — all data calls hit the real Django API.
-
-To switch to the built-in **mock/demo mode** (no backend required, any credentials work):
-
-```js
-// Run once in browser console, then reload
-localStorage.setItem(
-  "nbe_data_source",
-  JSON.stringify({ state: { source: "mock" }, version: 1 }),
-);
-```
-
-Or use the **Profile → Preferences** toggle inside the running app.
+All data calls hit the real Django API — there is no mock/offline mode (it was removed; every request needs a running backend at `VITE_API_BASE_URL`).
 
 **Auth note:** Access tokens are held **in memory only** — they are never written to `localStorage`. On a page reload, the app silently calls `POST /auth/refresh` using the httpOnly refresh cookie. If the cookie is missing or expired, the user is shown a "session expired" modal.
 
@@ -107,7 +95,6 @@ app/
 │   ├── onboarding/        # Multi-step onboarding step components
 │   └── profile/           # Profile page sections
 ├── api/                   # Real backend calls via axios (one file per domain)
-├── mocks/                 # In-memory fake data, same function signatures as api/
 ├── queries/               # TanStack Query hooks — the ONLY import point for data
 ├── types/                 # TypeScript interfaces, shared enums, domain constants
 ├── store/                 # Zustand stores — client-only UI/session state
@@ -129,16 +116,13 @@ app/
 ```
 Component
   └─► queries/*.ts         (useAccounts, useTransactions, …)
-        ├─► api/*.ts       when source === "backend"
-        └─► mocks/*.ts     when source === "mock"
+        └─► api/*.ts
 ```
 
 - **`api/`** — plain async functions; each hits the real backend via the shared `apiClient` (axios with auto Bearer token + refresh-on-401 interceptor in `api/client.ts`). No React.
-- **`mocks/`** — identical function signatures to `api/`, in-memory data, `MOCK_LATENCY_MS` delay (from `lib/constants/time.ts`).
-- **`queries/`** — the only layer components import. Each hook picks `api/` or `mocks/` at call time based on `useDataSourceStore`. Owns query keys, cache invalidation, and success/error toasts.
+- **`queries/`** — the only layer components import. Owns query keys, cache invalidation, and success/error toasts.
 
-> **Rule:** Never import `api/` or `mocks/` directly in a component. Always go through `queries/`.  
-> This is what makes the data-source toggle work transparently across the whole app.
+> **Rule:** Never import `api/` directly in a component. Always go through `queries/`.
 
 ---
 
@@ -167,7 +151,6 @@ Client-only state only — **no server data in stores**. All server data lives i
 | Store                           | Purpose                                                     | Persisted               |
 | ------------------------------- | ----------------------------------------------------------- | ----------------------- |
 | `use-auth-store`                | `isAuthenticated` flag + in-memory access token             | Flag only (never token) |
-| `use-data-source-store`         | `"mock"` or `"backend"` preference                          | ✅                      |
 | `use-display-preferences-store` | View mode, density, number/date/time format, balance hidden | ✅                      |
 | `use-theme-store`               | Light / dark / system                                       | ✅                      |
 | `use-accessibility-store`       | Font scale, high contrast, reduced motion                   | ✅                      |
