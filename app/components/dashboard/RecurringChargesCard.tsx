@@ -1,4 +1,4 @@
-import { Repeat } from "lucide-react";
+import { ArrowDownCircle, Repeat } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useRecurringCharges } from "@/queries/recurring-charges";
 import { formatDate } from "@/lib/format";
@@ -8,23 +8,35 @@ import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { ErrorState } from "@/components/shared/QueryState";
 import type { RecurringCharge } from "@/types/recurring-charge";
 
-function RecurringChargeRow({ charge }: { charge: RecurringCharge }) {
+function RecurringChargeItem({
+  charge,
+  currency,
+}: {
+  charge: RecurringCharge;
+  currency: string;
+}) {
   const { t } = useTranslation();
   const dateFormat = useDisplayPreferencesStore((s) => s.dateFormat);
   const formatN = useNumberDisplay();
+  const currencyLabel = t(`currency.${currency}`, currency);
 
   return (
-    <li className="border-base-300 bg-base-100 flex min-w-0 items-center justify-between gap-3 rounded-lg border p-3">
-      <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{charge.merchantNormalized}</p>
-        <p className="text-base-content/50 mt-0.5 text-xs capitalize">
-          {charge.frequency}
-        </p>
+    <li className="border-base-300 bg-base-100 flex min-w-0 flex-col gap-3 rounded-lg border p-3">
+      <div className="flex min-w-0 items-center gap-2">
+        <span className="bg-error/10 text-error grid size-8 shrink-0 place-items-center rounded-lg">
+          <ArrowDownCircle data-no-flip className="size-4" />
+        </span>
+        <div className="min-w-0 flex-1">
+          <p className="truncate text-sm font-medium">{charge.merchantNormalized}</p>
+          <p className="text-base-content/50 text-xs capitalize">{charge.frequency}</p>
+        </div>
       </div>
-      <div className="shrink-0 text-end">
-        <p className="text-sm font-medium tabular-nums">{formatN(charge.avgAmount)}</p>
+      <div className="border-base-200 flex flex-col gap-0.5 border-t pt-2">
+        <p className="text-sm font-semibold tabular-nums">
+          {formatN(charge.avgAmount)} {currencyLabel}
+        </p>
         {charge.nextExpectedDate && (
-          <p className="text-base-content/50 mt-0.5 text-xs">
+          <p className="text-base-content/50 text-xs">
             {t("dashboard.recurringCharges.next", {
               date: formatDate(charge.nextExpectedDate, dateFormat),
             })}
@@ -40,7 +52,7 @@ function RecurringChargeRow({ charge }: { charge: RecurringCharge }) {
  * nothing to show" shape as AnomaliesCard, since this is read-only over a
  * backend detection job (see types/recurring-charge.ts).
  */
-export function RecurringChargesCard() {
+export function RecurringChargesCard({ currency }: { currency: string }) {
   const { t } = useTranslation();
   const { data: charges, isPending, isError, refetch } = useRecurringCharges();
 
@@ -71,9 +83,9 @@ export function RecurringChargesCard() {
             {t("dashboard.recurringCharges.title")}
           </h2>
         </div>
-        <ul className="flex flex-col gap-2">
+        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
           {charges.map((charge) => (
-            <RecurringChargeRow key={charge.id} charge={charge} />
+            <RecurringChargeItem key={charge.id} charge={charge} currency={currency} />
           ))}
         </ul>
       </div>

@@ -3,6 +3,7 @@ import { persist } from "zustand/middleware";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
 export const DASHBOARD_CARDS = [
+  "insights",
   "stats",
   "goal",
   "budget",

@@ -25,6 +25,7 @@
       "reset": "إعادة الضبط الافتراضي",
       "cards": {
         "stats": "الأرقام الرئيسية",
+        "insights": "رؤى سريعة",
         "goal": "تقدم الهدف",
         "budget": "توزيع الميزانية",
         "activity": "النشاط الأخير",
@@ -108,6 +109,24 @@
       "stable": "مستقر",
       "variable": "متغيّر",
       "unstable": "غير مستقر"
+    },
+    "accountsSummary": {
+      "label": "الحسابات النشطة"
+    },
+    "recurringTotal": {
+      "label": "تقدير المتكرر شهريًا"
+    },
+    "topCategory": {
+      "label": "الأعلى إنفاقًا"
+    },
+    "daysToGoal": {
+      "label": "أيام حتى الهدف",
+      "days_zero": "اليوم",
+      "days_one": "يوم واحد",
+      "days_two": "يومان",
+      "days_few": "{{count}} أيام",
+      "days_many": "{{count}} يومًا",
+      "days_other": "{{count}} يوم"
     },
     "categoryBreakdown": {
       "title": "أهم الفئات هذا الشهر",

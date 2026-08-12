@@ -25,6 +25,7 @@
       "reset": "Reset to default",
       "cards": {
         "stats": "Key figures",
+        "insights": "Quick insights",
         "goal": "Goal progress",
         "budget": "Budget split",
         "activity": "Recent activity",
@@ -108,6 +109,24 @@
       "stable": "Stable",
       "variable": "Variable",
       "unstable": "Unstable"
+    },
+    "accountsSummary": {
+      "label": "Active accounts"
+    },
+    "recurringTotal": {
+      "label": "Est. recurring per month"
+    },
+    "topCategory": {
+      "label": "Top spend"
+    },
+    "daysToGoal": {
+      "label": "Days to goal",
+      "days_zero": "Today",
+      "days_one": "{{count}} day",
+      "days_two": "{{count}} days",
+      "days_few": "{{count}} days",
+      "days_many": "{{count}} days",
+      "days_other": "{{count}} days"
     },
     "categoryBreakdown": {
       "title": "Top categories this month",
