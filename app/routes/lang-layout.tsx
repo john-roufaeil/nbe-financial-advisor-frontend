@@ -10,6 +10,15 @@ import {
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 import NotFound from "@/routes/not-found";
 
+/**
+ * The sole caller of i18n.changeLanguage() for every prefixed page, driven
+ * entirely by the :lang URL param — useLanguageSwitch deliberately doesn't
+ * call it itself and just navigates, so there's exactly one place setting
+ * i18n's language for these routes. Two callers used to race: the switcher
+ * called changeLanguage and then navigated, so for one tick i18n.language
+ * was ahead of the still-old URL, and this effect "corrected" it back
+ * before the navigate landed and flipped it forward again.
+ */
 export default function LangLayout() {
   const { lang } = useParams<{ lang: string }>();
   const { i18n } = useTranslation();
