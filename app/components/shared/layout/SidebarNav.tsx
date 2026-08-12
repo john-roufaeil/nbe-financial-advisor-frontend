@@ -9,6 +9,7 @@ import {
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@/components/shared/Tooltip";
+import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 
 export function SidebarNav({
   lang,
@@ -22,12 +23,32 @@ export function SidebarNav({
   const { t } = useTranslation();
 
   const navItems = [
-    { to: `/${lang}/dashboard`, label: t("nav.dashboard"), icon: LayoutDashboard },
-    { to: `/${lang}/chat`, label: t("nav.chat"), icon: Bot },
-    { to: `/${lang}/transactions`, label: t("transactions.title"), icon: ArrowLeftRight },
-    { to: `/${lang}/bank-statements`, label: t("bankStatements.title"), icon: FileText },
-    { to: `/${lang}/budget`, label: t("budget.title"), icon: BarChart3 },
-    { to: `/${lang}/recommendations`, label: t("recommendations.title"), icon: Sparkles },
+    {
+      to: localizedPath(lang!, ROUTE_SEGMENTS.dashboard),
+      label: t("nav.dashboard"),
+      icon: LayoutDashboard,
+    },
+    { to: localizedPath(lang!, ROUTE_SEGMENTS.chat), label: t("nav.chat"), icon: Bot },
+    {
+      to: localizedPath(lang!, ROUTE_SEGMENTS.transactions),
+      label: t("transactions.title"),
+      icon: ArrowLeftRight,
+    },
+    {
+      to: localizedPath(lang!, ROUTE_SEGMENTS.bankStatements),
+      label: t("bankStatements.title"),
+      icon: FileText,
+    },
+    {
+      to: localizedPath(lang!, ROUTE_SEGMENTS.budget),
+      label: t("budget.title"),
+      icon: BarChart3,
+    },
+    {
+      to: localizedPath(lang!, ROUTE_SEGMENTS.recommendations),
+      label: t("recommendations.title"),
+      icon: Sparkles,
+    },
   ];
 
   const navLinkClassName = ({ isActive }: { isActive: boolean }) =>

@@ -4,6 +4,7 @@ import { Compass, ArrowLeft } from "lucide-react";
 import { useAuthStore } from "@/store/use-auth-store";
 import { usePageTitle } from "@/lib/use-page-title";
 import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
+import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 
 export default function NotFound() {
   const { lang } = useParams<{ lang: string }>();
@@ -20,7 +21,9 @@ export default function NotFound() {
     : SUPPORTED_LANGUAGES.includes(i18n.language as SupportedLanguage)
       ? (i18n.language as SupportedLanguage)
       : DEFAULT_LANGUAGE;
-  const home = isAuthenticated ? `/${homeLang}/dashboard` : `/${homeLang}`;
+  const home = isAuthenticated
+    ? localizedPath(homeLang, ROUTE_SEGMENTS.dashboard)
+    : localizedPath(homeLang);
 
   return (
     <div className="bg-base-200 flex min-h-screen flex-col items-center justify-center gap-6 p-6">

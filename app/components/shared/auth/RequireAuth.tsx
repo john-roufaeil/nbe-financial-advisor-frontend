@@ -1,6 +1,7 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useSessionGate } from "@/lib/use-session-gate";
 import { RestoringScreen } from "@/components/shared/auth/RestoringScreen";
+import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 
 /**
  * Gate for every route behind the app shell.
@@ -26,7 +27,13 @@ export function RequireAuth() {
 
   if (!hasSession) {
     // `from` lets sign-in send the user back where they were headed.
-    return <Navigate to={`/${lang}/sign-in`} state={{ from: location }} replace />;
+    return (
+      <Navigate
+        to={localizedPath(lang!, ROUTE_SEGMENTS.signIn)}
+        state={{ from: location }}
+        replace
+      />
+    );
   }
   return <Outlet />;
 }
