@@ -1,4 +1,4 @@
-import { ArrowDownCircle, ArrowUpCircle, Pencil, Trash2 } from "lucide-react";
+import { ArrowDownCircle, ArrowUpCircle, Pencil, Repeat, Trash2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { formatDateTime } from "@/lib/format";
 import { useNumberDisplay } from "@/lib/use-number-display";
@@ -59,7 +59,17 @@ export function TransactionCard({
         <Icon data-no-flip className={isCompact ? "size-4" : "size-5"} />
       </span>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium">{transaction.title}</p>
+        <p className="truncate text-sm font-medium">
+          {transaction.title}
+          {transaction.isRecurring && (
+            <Tooltip content={t("transactions.add.recurring")}>
+              <Repeat
+                data-no-flip
+                className="text-base-content/40 ms-1.5 inline size-3 shrink-0 align-middle"
+              />
+            </Tooltip>
+          )}
+        </p>
         {!isCompact && (
           <p className="text-base-content/50 flex min-w-0 items-center gap-1 text-xs">
             <CategoryLabel

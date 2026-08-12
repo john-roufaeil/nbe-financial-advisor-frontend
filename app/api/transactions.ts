@@ -81,6 +81,7 @@ function toTransaction(raw: RawTransaction): Transaction {
     amount: Math.abs(Number(raw.amount)),
     accountId: raw.account_id,
     source: raw.source,
+    isRecurring: raw.is_recurring,
   };
 }
 
@@ -172,6 +173,7 @@ export async function createTransaction(
     category: body.category,
     amount: body.amount,
     transaction_type: toBackendType(body.type),
+    is_recurring: body.isRecurring,
   });
   return toTransaction(res.data);
 }
@@ -187,6 +189,7 @@ export async function updateTransaction(
   if (patch.category !== undefined) body.category = patch.category;
   if (patch.amount !== undefined) body.amount = patch.amount;
   if (patch.type !== undefined) body.transaction_type = toBackendType(patch.type);
+  if (patch.isRecurring !== undefined) body.is_recurring = patch.isRecurring;
 
   const res = await apiClient.patch<RawTransaction>(API_ENDPOINTS.transaction(id), body);
   return toTransaction(res.data);

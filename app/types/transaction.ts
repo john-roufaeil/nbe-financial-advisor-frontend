@@ -10,6 +10,7 @@ export interface Transaction {
   /** Where the backend got this row from — one of TRANSACTION_SOURCES. Synced
    * transactions are backend-rejected on edit/delete — see TransactionCard. */
   source: string;
+  isRecurring: boolean;
 }
 
 // The category vocabulary is NOT hardcoded here — it's the backend's

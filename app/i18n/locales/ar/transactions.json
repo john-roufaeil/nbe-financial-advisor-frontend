@@ -29,6 +29,7 @@
       "amount": "المبلغ",
       "amountPlaceholder": "0.00",
       "date": "التاريخ",
+      "recurring": "متكررة",
       "errors": {
         "nameRequired": "أدخل اسمًا لهذه المعاملة.",
         "nameTooLong": "يجب ألا يتجاوز الاسم 20 حرفًا.",
@@ -43,6 +44,7 @@
       "category": "الفئة",
       "date": "التاريخ",
       "type": "النوع",
+      "recurring": "متكررة",
       "account": "الحساب البنكي",
       "accountUnknown": "لا يوجد حساب مرتبط"
     }

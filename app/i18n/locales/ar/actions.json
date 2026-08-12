@@ -18,6 +18,8 @@
     "showPassword": "إظهار كلمة المرور",
     "hidePassword": "إخفاء كلمة المرور",
     "increase": "زيادة {{name}}",
-    "decrease": "إنقاص {{name}}"
+    "decrease": "إنقاص {{name}}",
+    "yes": "نعم",
+    "no": "لا"
   }
 }

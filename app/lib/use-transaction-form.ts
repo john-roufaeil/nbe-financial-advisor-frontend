@@ -30,6 +30,7 @@ export interface TransactionFormValues {
   type: "income" | "expense";
   amount: number | "";
   date: string;
+  isRecurring: boolean;
 }
 
 function emptyValues(): TransactionFormValues {
@@ -41,6 +42,7 @@ function emptyValues(): TransactionFormValues {
     type: "expense",
     amount: "",
     date: today(),
+    isRecurring: false,
   };
 }
 
@@ -76,6 +78,7 @@ export function useTransactionForm(
       type: z.enum(["income", "expense"]),
       amount: z.union([z.number(), z.literal("")]),
       date: z.string(),
+      isRecurring: z.boolean(),
     })
     .superRefine((values, ctx) => {
       if (!Number.isFinite(values.amount) || (values.amount as number) <= 0) {
@@ -110,6 +113,7 @@ export function useTransactionForm(
         type: editing.type,
         amount: editing.amount,
         date: editing.datetime.slice(0, 10),
+        isRecurring: editing.isRecurring,
       });
     } else {
       reset(emptyValues());
@@ -169,6 +173,7 @@ export function useTransactionForm(
       category: values.category,
       type: values.type,
       amount: values.amount as number,
+      isRecurring: values.isRecurring,
     };
     try {
       if (editing) {
