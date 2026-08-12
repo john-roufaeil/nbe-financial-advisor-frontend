@@ -6,6 +6,7 @@ import { useDisplayPreferencesStore } from "@/store/use-display-preferences-stor
 import { useNumberDisplay } from "@/lib/use-number-display";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { ErrorState } from "@/components/shared/QueryState";
+import { Money } from "@/components/shared/Money";
 import type { RecurringCharge } from "@/types/recurring-charge";
 
 function RecurringChargeItem({
@@ -33,7 +34,9 @@ function RecurringChargeItem({
       </div>
       <div className="border-base-200 flex flex-col gap-0.5 border-t pt-2">
         <p className="text-sm font-semibold tabular-nums">
-          {formatN(charge.avgAmount)} {currencyLabel}
+          <Money>
+            {formatN(charge.avgAmount)} {currencyLabel}
+          </Money>
         </p>
         {charge.nextExpectedDate && (
           <p className="text-base-content/50 text-xs">
