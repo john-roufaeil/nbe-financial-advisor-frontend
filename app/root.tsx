@@ -14,9 +14,18 @@ import "@/i18n";
 import type { Route } from "./+types/root";
 import "./app.css";
 import { useTranslation } from "react-i18next";
+import { useRef } from "react";
 
 export function Layout({ children }: { children: React.ReactNode }) {
   const { t } = useTranslation();
+  // Captured once and never recomputed — this <title> is only the
+  // pre-hydration/SSR fallback; usePageTitle owns document.title for every
+  // real route from then on. Layout re-renders on every navigation (its
+  // `children` prop changes via <Outlet>), and re-running t("app.name")
+  // there raced usePageTitle's own effect, flashing the tab title down to
+  // just the bare app name between the old and new page titles.
+  const initialTitleRef = useRef<string>(undefined);
+  if (initialTitleRef.current === undefined) initialTitleRef.current = t("app.name");
   return (
     <html lang="en" suppressHydrationWarning>
       <head>
@@ -32,7 +41,7 @@ export function Layout({ children }: { children: React.ReactNode }) {
         />
       </head>
       <body suppressHydrationWarning>
-        <title>{t("app.name")}</title>
+        <title>{initialTitleRef.current}</title>
         {children}
         <ScrollRestoration />
         <Scripts />

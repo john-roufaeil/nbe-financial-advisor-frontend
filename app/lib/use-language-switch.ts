@@ -48,11 +48,6 @@ export function useLanguageSwitch() {
       document.documentElement.lang = next;
       document.documentElement.dir = RTL_LANGUAGES.includes(next) ? "rtl" : "ltr";
       localStorage.setItem(STORAGE_KEYS.lang, next);
-      await i18n.changeLanguage(next);
-      // Guest pages (splash, sign-in, onboarding) share this same switcher —
-      // only persist server-side once actually signed in, or this 401s.
-      if (isAuthenticated) updatePreferences.mutate({ language: next });
-      setPendingToast(t("toast.languageChanged"));
       // Unprefixed pages (no :lang segment at all — verify-email,
       // reset-password, the links emailed to a user with no locale
       // context) have no path segment to rewrite; changing the i18n
@@ -60,9 +55,24 @@ export function useLanguageSwitch() {
       // `/${next}${rest}` here would build a `/ar/verify-email`-style path
       // that doesn't exist as a route and 404s via the :lang/* catch-all.
       if (lang !== undefined) {
+        // Don't call i18n.changeLanguage here — LangLayout is the sole
+        // owner of that call for prefixed pages, driven by the :lang param.
+        // Calling it here too raced LangLayout: for one tick i18n.language
+        // was already "ar" while the URL (and LangLayout's still-mounted
+        // instance) was still "/en/...", so LangLayout "corrected" i18n
+        // back to "en" before the navigate below landed and flipped it
+        // forward again — a visible en/ar/en/ar bounce in the tab title.
+        // Navigating first keeps i18n.language and the URL changing in one
+        // step, from LangLayout's perspective.
         const rest = location.pathname.replace(`/${current}`, "");
         navigate(`/${next}${rest}${location.search}`);
+      } else {
+        await i18n.changeLanguage(next);
       }
+      // Guest pages (splash, sign-in, onboarding) share this same switcher —
+      // only persist server-side once actually signed in, or this 401s.
+      if (isAuthenticated) updatePreferences.mutate({ language: next });
+      setPendingToast(t("toast.languageChanged"));
     } catch {
       setPendingLang(null);
     }
