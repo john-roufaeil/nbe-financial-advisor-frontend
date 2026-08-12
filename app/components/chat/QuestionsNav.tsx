@@ -2,6 +2,7 @@ import { useEffect, useState, type RefObject } from "react";
 import { MoreVertical } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useChatStore } from "@/store/use-chat-store";
+import { useMessageHighlightStore } from "@/store/use-message-highlight-store";
 import { useMessages } from "@/queries/chat";
 
 const MAX_VISIBLE = 5;
@@ -25,6 +26,7 @@ export function QuestionsNav({
   const questions = allQuestions.slice(-MAX_VISIBLE);
   const questionIds = questions.map((q) => q.id).join(",");
   const [activeId, setActiveId] = useState<string | null>(null);
+  const highlight = useMessageHighlightStore((s) => s.highlight);
 
   useEffect(() => {
     const viewport = viewportRef.current;
@@ -85,7 +87,10 @@ export function QuestionsNav({
               type="button"
               aria-label={q.text}
               aria-current={isActive}
-              onClick={() => scrollToMessage(q.id)}
+              onClick={() => {
+                scrollToMessage(q.id);
+                highlight(q.id);
+              }}
               className="hover:bg-base-300 focus-visible:outline-primary/50 flex cursor-pointer items-center justify-center rounded-full p-1.5 transition-colors focus-visible:outline-2 focus-visible:outline-offset-2"
             >
               <span

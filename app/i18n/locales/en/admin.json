@@ -19,8 +19,7 @@
       "categories": "Categories",
       "products": "Products",
       "issues": "Issues",
-      "feedback": "Feedback",
-      "notifications": "Notifications"
+      "feedback": "Feedback"
     },
     "columns": {
       "createdAt": "Created",
@@ -113,17 +112,6 @@
         "rating": "Rating",
         "comment": "Comment",
         "target": "Target"
-      }
-    },
-    "notifications": {
-      "composeTitle": "Send a broadcast notification",
-      "sentTitle": "Sent broadcasts",
-      "empty": "No broadcasts sent yet.",
-      "send": "Send",
-      "toastSent": "Notification sent to all users",
-      "fields": {
-        "title": "Title",
-        "body": "Message"
       }
     },
     "toast": {

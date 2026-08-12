@@ -1,14 +1,20 @@
+import axios from "axios";
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/lib/constants/api";
 import type {
   BankStatement,
+  BankStatementRawStatus,
   BankStatementStatus,
   BankStatementType,
   ExtractedTransaction,
+  StatementOcrResult,
 } from "@/types/bank-statement";
 
 export interface BankStatementFilters {
-  type?: BankStatementType;
+  accountId?: string;
+  /** One of BANK_STATEMENT_RAW_STATUSES — the backend's own pipeline-stage
+   * vocabulary, not the UI's derived BankStatementStatus badge. */
+  status?: BankStatementRawStatus;
   q?: string;
   from?: string;
   to?: string;
@@ -135,15 +141,18 @@ function toBankStatement(raw: RawStatement): BankStatement {
 // ── Calls ─────────────────────────────────────────────────────────────────────
 
 /**
- * GET /statements supports ONLY account_id, status, limit, offset. The tab's
- * type/search/date controls have no server-side equivalent, so they are not sent
- * — filtering client-side would desync `total` from the server's unfiltered count
- * and silently break pagination.
+ * GET /statements supports ONLY account_id, status, limit, offset — search/
+ * date-range/sort have no server-side equivalent, so they stay unsent even
+ * though the tab still shows those controls: filtering them client-side
+ * would desync `total` from the server's unfiltered count and silently break
+ * pagination.
  */
 export async function getBankStatements(
   filters: BankStatementFilters,
 ): Promise<BankStatementListResponse> {
   const params: Record<string, string | number> = {};
+  if (filters.accountId) params.account_id = filters.accountId;
+  if (filters.status) params.status = filters.status;
   if (filters.offset !== undefined) params.offset = filters.offset;
   if (filters.limit !== undefined) params.limit = filters.limit;
 
@@ -250,4 +259,50 @@ export async function approveBankStatement(
       .map((r) => r.transaction_id)
       .filter((txId): txId is string => txId !== null),
   };
+}
+
+interface RawStatementOcrResult {
+  statement_id: string;
+  ocr_engine: string;
+  confidence_score: number | string | null;
+  processed_at: string;
+  artifact_url: string;
+}
+
+/**
+ * 404s both when the statement doesn't exist and when OCR hasn't completed
+ * yet (raw status still "uploaded") — that's the documented "not ready yet"
+ * answer, not an error, so it maps to null rather than throwing.
+ */
+export async function getStatementOcrResult(
+  id: string,
+): Promise<StatementOcrResult | null> {
+  try {
+    const res = await apiClient.get<RawStatementOcrResult>(
+      API_ENDPOINTS.statementOcrResult(id),
+    );
+    return {
+      ocrEngine: res.data.ocr_engine,
+      confidenceScore:
+        res.data.confidence_score === null ? null : Number(res.data.confidence_score),
+      processedAt: res.data.processed_at,
+    };
+  } catch (error) {
+    if (axios.isAxiosError(error) && error.response?.status === 404) return null;
+    throw error;
+  }
+}
+
+/**
+ * Downloads the OCR artifact's extracted document.md as a Blob. This is a
+ * Bearer-authed endpoint like every other call in the app, not a public
+ * storage URL, so it can't be a plain `<a href>` — the caller turns the
+ * Blob into a temporary object URL and clicks a synthetic link (see
+ * OcrResultPanel.tsx).
+ */
+export async function downloadStatementOcrArtifact(id: string): Promise<Blob> {
+  const res = await apiClient.get<Blob>(API_ENDPOINTS.statementOcrArtifactDownload(id), {
+    responseType: "blob",
+  });
+  return res.data;
 }

@@ -3,6 +3,7 @@ import { ChevronUp, ChevronDown, Info } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { RequiredMark } from "@/components/onboarding/RequiredMark";
+import { useHoldRepeat } from "@/lib/use-hold-repeat";
 
 const THUMB_SIZE = "1.75rem";
 
@@ -49,6 +50,9 @@ export function SliderField({
   function adjust(direction: 1 | -1) {
     onChange(clamp(value + direction * step));
   }
+
+  const increaseHold = useHoldRepeat(() => adjust(1));
+  const decreaseHold = useHoldRepeat(() => adjust(-1));
 
   // Thousands-separated display (e.g. "500,000") — type="number" can't show
   // commas at all (browsers reject non-digit characters), so this is a plain
@@ -132,6 +136,7 @@ export function SliderField({
             <button
               type="button"
               onClick={() => adjust(1)}
+              {...increaseHold}
               disabled={value >= max}
               aria-label={t("actions.increase", { name: label })}
               className="text-base-content/50 hover:text-primary flex flex-1 cursor-pointer items-center disabled:cursor-not-allowed disabled:opacity-30"
@@ -141,6 +146,7 @@ export function SliderField({
             <button
               type="button"
               onClick={() => adjust(-1)}
+              {...decreaseHold}
               disabled={value <= min}
               aria-label={t("actions.decrease", { name: label })}
               className="text-base-content/50 hover:text-primary flex flex-1 cursor-pointer items-center disabled:cursor-not-allowed disabled:opacity-30"

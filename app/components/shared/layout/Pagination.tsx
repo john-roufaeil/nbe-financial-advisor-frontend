@@ -16,11 +16,7 @@ interface PaginationProps {
   attached?: boolean;
 }
 
-/**
- * Compact page list that always shows the first and last page, the current page
- * and its immediate neighbours, and collapses the rest into ellipses:
- * 1 … 4 [5] 6 … 20
- */
+/** First/last page plus current page's neighbours, rest collapsed to ellipses: 1 … 4 [5] 6 … 20 */
 function pageItems(current: number, total: number): (number | "…")[] {
   const items: (number | "…")[] = [];
   const left = Math.max(2, current - 1);
@@ -34,11 +30,7 @@ function pageItems(current: number, total: number): (number | "…")[] {
   return items;
 }
 
-/**
- * Total count + page-size preference (grouped together), and real numbered page
- * navigation. Rendered twice per page with identical content and styling: attached
- * beneath the DataToolbar at the top, and as a standalone card at the bottom.
- */
+/** Rendered twice per page: attached beneath DataToolbar at the top, standalone at the bottom. */
 export function Pagination({
   page,
   totalPages,

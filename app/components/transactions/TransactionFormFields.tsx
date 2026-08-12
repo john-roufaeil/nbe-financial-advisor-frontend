@@ -162,6 +162,22 @@ export function TransactionFormFields({
           )}
         />
       </label>
+
+      <label className="flex items-center gap-2">
+        <Controller
+          name="isRecurring"
+          control={control}
+          render={({ field }) => (
+            <input
+              type="checkbox"
+              className="checkbox checkbox-sm"
+              checked={field.value}
+              onChange={(e) => field.onChange(e.target.checked)}
+            />
+          )}
+        />
+        <span className="label-text text-xs">{t("transactions.add.recurring")}</span>
+      </label>
     </form>
   );
 }

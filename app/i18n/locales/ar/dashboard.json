@@ -25,10 +25,12 @@
       "reset": "إعادة الضبط الافتراضي",
       "cards": {
         "stats": "الأرقام الرئيسية",
+        "insights": "رؤى سريعة",
         "goal": "تقدم الهدف",
         "budget": "توزيع الميزانية",
         "activity": "النشاط الأخير",
-        "anomalies": "الحالات غير المعتادة"
+        "anomalies": "الحالات غير المعتادة",
+        "recurringCharges": "الرسوم المتكررة"
       }
     },
     "stats": {
@@ -100,6 +102,39 @@
       "benefitGoal": "تتبّع هدف الادخار",
       "benefitBudget": "اعرف أين يذهب مالك",
       "cta": "أنشئ خطة مع المستشار"
+    },
+    "stability": {
+      "label": "استقرار الدخل",
+      "tooltip": "مدى ثبات دخلك خلال آخر 6 أشهر.",
+      "stable": "مستقر",
+      "variable": "متغيّر",
+      "unstable": "غير مستقر"
+    },
+    "accountsSummary": {
+      "label": "الحسابات النشطة"
+    },
+    "recurringTotal": {
+      "label": "تقدير المتكرر شهريًا"
+    },
+    "topCategory": {
+      "label": "الأعلى إنفاقًا"
+    },
+    "daysToGoal": {
+      "label": "أيام حتى الهدف",
+      "days_zero": "اليوم",
+      "days_one": "يوم واحد",
+      "days_two": "يومان",
+      "days_few": "{{count}} أيام",
+      "days_many": "{{count}} يومًا",
+      "days_other": "{{count}} يوم"
+    },
+    "categoryBreakdown": {
+      "title": "أهم الفئات هذا الشهر",
+      "empty": "لا توجد معاملات هذا الشهر بعد."
+    },
+    "recurringCharges": {
+      "title": "الرسوم المتكررة",
+      "next": "التالي {{date}}"
     }
   }
 }

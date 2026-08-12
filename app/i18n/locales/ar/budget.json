@@ -1,0 +1,82 @@
+{
+  "budget": {
+    "title": "الميزانية",
+    "subtitle": "تابع كيف يقارن إنفاقك بخطتك، ولاحظ الاتجاهات، وراجع التغييرات السابقة.",
+    "nav": {
+      "previousMonth": "الشهر السابق",
+      "nextMonth": "الشهر التالي"
+    },
+    "insights": {
+      "empty": "لا يوجد نشاط كافٍ في هذه الفترة لاستخلاص رؤى منه.",
+      "overBudgetOne": "تجاوزت فئة {{category}} ميزانيتها بنسبة {{percent}}%.",
+      "overBudgetMultiple": "هناك {{count}} فئات تجاوزت ميزانيتها — الأكثر هي {{category}} بنسبة {{percent}}%.",
+      "approaching": "فئة {{category}} عند {{percent}}% من ميزانيتها — تقترب من الحد.",
+      "bestControlled": "فئة {{category}} هي الأفضل ضبطًا — لم تستخدم سوى {{percent}}%.",
+      "utilization": "استخدمت {{percent}}% من إجمالي ميزانيتك لهذه الفترة.",
+      "topSpend": "كانت فئة {{category}} الأكثر إنفاقًا.",
+      "savingsReached": "لقد بلغت هدف ادخارك — تم تمويل {{percent}}%.",
+      "savingsClose": "أنت قريب من هدف ادخارك — تم تمويل {{percent}}%.",
+      "savingsBehind": "ادخرت {{percent}}% من هدفك حتى الآن هذه الفترة.",
+      "netUp": "ادخرت أكثر بنسبة {{percent}}% مقارنة بالشهر السابق.",
+      "netDown": "انخفض صافي الادخار بنسبة {{percent}}% مقارنة بالشهر السابق.",
+      "netTurnedPositive": "عدت إلى الادخار الإيجابي هذه الفترة، بعد عجز في الشهر السابق."
+    },
+    "kpi": {
+      "income": "الدخل",
+      "spend": "الإنفاق",
+      "net": "صافي الادخار"
+    },
+    "progress": {
+      "title": "تقدّم الإنفاق",
+      "spent": "المُنفق",
+      "selectMonth": "اختر الشهر",
+      "previousYear": "السنة السابقة",
+      "nextYear": "السنة التالية",
+      "noBudget": "ليس لديك خطة ميزانية بعد.",
+      "empty": "لا توجد فئات في هذه الخطة بعد.",
+      "status": {
+        "spend": {
+          "good": "ضمن الخطة",
+          "watch": "يقترب من الحد",
+          "bad": "تجاوز الميزانية"
+        },
+        "savings": {
+          "good": "تم بلوغ الهدف",
+          "watch": "قريب من الهدف",
+          "bad": "دون الهدف"
+        }
+      }
+    },
+    "topTransactions": {
+      "title": "أكبر الحركات",
+      "empty": "لا توجد معاملات مسجلة لهذه الفترة.",
+      "unknown": "غير معروف"
+    },
+    "savingsChart": {
+      "title": "الادخار الشهري",
+      "latest": "أحدث شهر",
+      "average": "متوسط 6 أشهر",
+      "best": "أفضل شهر"
+    },
+    "history": {
+      "title": "سجل التغييرات",
+      "empty": "لا توجد تغييرات مسجلة بعد.",
+      "current": "الحالي",
+      "currentAllocationsLabel": "التوزيعات الحالية:",
+      "previousStateLabel": "التوزيعات قبل هذا التغيير:",
+      "changedVia": {
+        "dashboard": "لوحة التحكم",
+        "chat": "محادثة المستشار",
+        "onboarding": "الإعداد الأولي"
+      },
+      "pagination": {
+        "total_zero": "لا توجد تغييرات",
+        "total_one": "تغيير واحد",
+        "total_two": "تغييران",
+        "total_few": "{{count}} تغييرات",
+        "total_many": "{{count}} تغييرًا",
+        "total_other": "{{count}} تغيير"
+      }
+    }
+  }
+}

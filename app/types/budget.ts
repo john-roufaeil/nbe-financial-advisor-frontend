@@ -47,3 +47,42 @@ export interface UpdateBudgetBody {
   allocations?: AllocationInput[];
   changed_via: "dashboard" | "chat";
 }
+
+export interface BudgetHistoryAllocationSnapshot {
+  category: string;
+  allocatedPercentage: number;
+  allocatedAmount: number;
+}
+
+/**
+ * One row of GET /budget/history — `previousAllocations` is the plan's
+ * state immediately BEFORE this change was applied (a snapshot, not a
+ * diff), newest change first.
+ */
+export interface BudgetHistoryEntry {
+  id: string;
+  previousAllocations: BudgetHistoryAllocationSnapshot[];
+  changedVia: "dashboard" | "chat" | "onboarding";
+  changedAt: string;
+}
+
+export const BUDGET_PROGRESS_STATUSES = [
+  "on_track",
+  "approaching_limit",
+  "over_budget",
+] as const;
+export type BudgetProgressStatus = (typeof BUDGET_PROGRESS_STATUSES)[number];
+
+export interface BudgetProgressCategory {
+  category: string;
+  allocatedAmount: number;
+  actualAmount: number;
+  percentageUsed: number;
+  status: BudgetProgressStatus;
+}
+
+/** GET /budget/progress — per-category spend-vs-allocation for one calendar month. */
+export interface BudgetProgress {
+  period: string;
+  categories: BudgetProgressCategory[];
+}

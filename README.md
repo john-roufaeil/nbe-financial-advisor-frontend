@@ -6,6 +6,33 @@ React Router v7 (SPA) · TypeScript · Tailwind v4 / DaisyUI v5 · TanStack Quer
 
 ## Quick start
 
+The fastest way to run this app is the full stack via Docker — one command
+brings up the frontend, the Django backend, the AI service, and every
+supporting service (Postgres, Redis, object storage, mock bank) together.
+Running the frontend alone against Node is the alternative for frontend-only
+work with a backend already running elsewhere.
+
+### Option A — Docker (recommended, full stack)
+
+Requires `nbe-financial-advisor-backend` and `nbe-financial-advisor-ai-service`
+checked out as sibling directories next to this repo:
+
+```bash
+# 1. Copy .env.example → .env in this repo, ../nbe-financial-advisor-backend,
+#    and ../nbe-financial-advisor-ai-service (all three are required)
+cp .env.example .env
+
+# 2. Bring up the whole stack (hot reload on backend/frontend/ai-service)
+docker compose -f docker-compose.dev.yml up -d --build
+
+# 3. Open http://localhost:5173
+```
+
+Full details — service list, `.env` files explained, prod compose, data
+persistence — live in [DOCKER.md](DOCKER.md).
+
+### Option B — Node only (frontend against an already-running backend)
+
 ```bash
 # 1. Use the pinned Node version (Node ≥ 22 required)
 nvm use 22                     # or: echo 'cd() { builtin cd "$@"; [ -f .nvmrc ] && nvm use --silent; }' >> ~/.bashrc
@@ -23,15 +50,6 @@ cp .env.example .env.local
 # 5. Start the dev server (http://localhost:5173)
 pnpm dev
 ```
-
-> **Docker alternative** — run without installing Node locally:
->
-> ```bash
-> docker build -f Dockerfile.dev -t frontend-dev .
-> docker run --rm -it -p 5173:5173 \
->   -v "$(pwd)":/app -v /app/node_modules \
->   --env-file .env.local frontend-dev
-> ```
 
 ### Environment variables
 
@@ -65,21 +83,9 @@ bash scripts/check-no-hardcoded-hex.sh
 
 ---
 
-## Authentication & offline mode
+## Authentication
 
-The app defaults to **`source: "backend"`** — all data calls hit the real Django API.
-
-To switch to the built-in **mock/demo mode** (no backend required, any credentials work):
-
-```js
-// Run once in browser console, then reload
-localStorage.setItem(
-  "nbe_data_source",
-  JSON.stringify({ state: { source: "mock" }, version: 1 }),
-);
-```
-
-Or use the **Profile → Preferences** toggle inside the running app.
+All data calls hit the real Django API — there is no mock/offline mode (it was removed; every request needs a running backend at `VITE_API_BASE_URL`).
 
 **Auth note:** Access tokens are held **in memory only** — they are never written to `localStorage`. On a page reload, the app silently calls `POST /auth/refresh` using the httpOnly refresh cookie. If the cookie is missing or expired, the user is shown a "session expired" modal.
 
@@ -107,7 +113,6 @@ app/
 │   ├── onboarding/        # Multi-step onboarding step components
 │   └── profile/           # Profile page sections
 ├── api/                   # Real backend calls via axios (one file per domain)
-├── mocks/                 # In-memory fake data, same function signatures as api/
 ├── queries/               # TanStack Query hooks — the ONLY import point for data
 ├── types/                 # TypeScript interfaces, shared enums, domain constants
 ├── store/                 # Zustand stores — client-only UI/session state
@@ -129,16 +134,13 @@ app/
 ```
 Component
   └─► queries/*.ts         (useAccounts, useTransactions, …)
-        ├─► api/*.ts       when source === "backend"
-        └─► mocks/*.ts     when source === "mock"
+        └─► api/*.ts
 ```
 
 - **`api/`** — plain async functions; each hits the real backend via the shared `apiClient` (axios with auto Bearer token + refresh-on-401 interceptor in `api/client.ts`). No React.
-- **`mocks/`** — identical function signatures to `api/`, in-memory data, `MOCK_LATENCY_MS` delay (from `lib/constants/time.ts`).
-- **`queries/`** — the only layer components import. Each hook picks `api/` or `mocks/` at call time based on `useDataSourceStore`. Owns query keys, cache invalidation, and success/error toasts.
+- **`queries/`** — the only layer components import. Owns query keys, cache invalidation, and success/error toasts.
 
-> **Rule:** Never import `api/` or `mocks/` directly in a component. Always go through `queries/`.  
-> This is what makes the data-source toggle work transparently across the whole app.
+> **Rule:** Never import `api/` directly in a component. Always go through `queries/`.
 
 ---
 
@@ -167,7 +169,6 @@ Client-only state only — **no server data in stores**. All server data lives i
 | Store                           | Purpose                                                     | Persisted               |
 | ------------------------------- | ----------------------------------------------------------- | ----------------------- |
 | `use-auth-store`                | `isAuthenticated` flag + in-memory access token             | Flag only (never token) |
-| `use-data-source-store`         | `"mock"` or `"backend"` preference                          | ✅                      |
 | `use-display-preferences-store` | View mode, density, number/date/time format, balance hidden | ✅                      |
 | `use-theme-store`               | Light / dark / system                                       | ✅                      |
 | `use-accessibility-store`       | Font scale, high contrast, reduced motion                   | ✅                      |

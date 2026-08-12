@@ -4,13 +4,8 @@ import { Package } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
 
-/** Matches the real `widget.payload` for `product_card` — see
- * ai-service/app/features/chat/schemas/widgets.py's ProductCardPayload,
- * built in agents/recommendation.py. Field names (product_id, product_name,
- * similarity) match that schema exactly, unlike allocation_slider's payload
- * below which predates it and was never reconciled. Validated at runtime,
- * not just asserted: `result` is LLM-originated, a meaningfully less
- * trustworthy source than a typed REST response. */
+/** Matches `widget.payload` for `product_card` (ai-service's ProductCardPayload).
+ * Validated at runtime since `result` is LLM-originated, not a typed REST response. */
 const ProductCardPayloadSchema = z.object({
   products: z.array(
     z.object({

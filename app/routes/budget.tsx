@@ -1,0 +1,114 @@
+import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useTranslation } from "react-i18next";
+import { BarChart3 } from "lucide-react";
+import { BudgetMonthNav } from "@/components/budget/BudgetMonthNav";
+import { BudgetInsights } from "@/components/budget/BudgetInsights";
+import { BudgetKpiStrip } from "@/components/budget/BudgetKpiStrip";
+import { BudgetProgressSection } from "@/components/budget/BudgetProgressSection";
+import { BudgetTopTransactions } from "@/components/budget/BudgetTopTransactions";
+import { SavingsPerMonthChart } from "@/components/budget/SavingsPerMonthChart";
+import { BudgetHistorySection } from "@/components/budget/BudgetHistorySection";
+import { PageBanner } from "@/components/shared/layout/PageBanner";
+import { usePageTitle } from "@/lib/use-page-title";
+import { currentPeriod } from "@/lib/budget-period";
+import { useMonthlySummaries } from "@/queries/analytics";
+
+export default function BudgetPage() {
+  const { t } = useTranslation();
+  usePageTitle(t("budget.title"));
+  const [period, setPeriod] = useState(currentPeriod());
+
+  // No from/to -> every month that has at least one transaction (see
+  // MonthlySummariesView's docstring: unbounded, naturally capped by the
+  // user's own history). Unioned with the current calendar month so a
+  // brand-new account with zero transactions yet still has one selectable,
+  // navigable month instead of an all-disabled picker.
+  const { data: summaries } = useMonthlySummaries();
+  const availablePeriods = useMemo(() => {
+    const months = new Set((summaries ?? []).map((s) => s.month.slice(0, 7)));
+    months.add(currentPeriod());
+    return [...months];
+  }, [summaries]);
+
+  // Measured, not CSS-only: a plain grid row's `auto` height is sized from
+  // each item's max-content size, which is defined to ignore overflow — so
+  // History's `overflow-y-auto` never actually shrinks its contribution to
+  // the row, and min-h-0 alone doesn't fix that (it changes the automatic
+  // *minimum*, not the max-content query the row-sizing pass uses). Only a
+  // concrete pixel height gives its inner scroll area something definite to
+  // clip against. lg:h-(--savings-card-height) below only takes effect at
+  // the lg breakpoint, so mobile's stacked layout stays natural-height.
+  //
+  // useLayoutEffect + a synchronous getBoundingClientRect() read (not just
+  // the ResizeObserver) — ResizeObserver's first callback is inherently
+  // async (fires after paint), so relying on it alone left one render, on
+  // every mount, where --savings-card-height was still unset. CSS treats
+  // height: var(--unset-property) as an invalid declaration and falls back
+  // to auto (full natural height) for that render — this is the "sometimes
+  // shows full height" History was flashing before landing on the matched
+  // height a moment later.
+  const savingsRef = useRef<HTMLDivElement>(null);
+  const [savingsHeight, setSavingsHeight] = useState<number>();
+  useLayoutEffect(() => {
+    const el = savingsRef.current;
+    if (!el) return;
+    setSavingsHeight(el.getBoundingClientRect().height);
+    const observer = new ResizeObserver((entries) =>
+      setSavingsHeight(entries[0].contentRect.height),
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  return (
+    <div className="mx-auto flex min-h-full w-full max-w-6xl flex-col gap-4 p-4 md:p-6">
+      <PageBanner
+        title={t("budget.title")}
+        subtitle={t("budget.subtitle")}
+        icon={BarChart3}
+      />
+
+      <div className="flex justify-end">
+        <BudgetMonthNav
+          period={period}
+          onPeriodChange={setPeriod}
+          availablePeriods={availablePeriods}
+        />
+      </div>
+
+      <BudgetInsights period={period} />
+      <BudgetKpiStrip period={period} />
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-3">
+        <div className="lg:col-span-2">
+          <BudgetProgressSection period={period} />
+        </div>
+        <BudgetTopTransactions period={period} />
+      </div>
+
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <div ref={savingsRef}>
+          <SavingsPerMonthChart />
+        </div>
+        <div
+          // The 420px fallback (only used while --savings-card-height is
+          // unset) is what actually makes this robust across client-side
+          // route navigation, not just a fresh load: var()'s fallback only
+          // applies when the custom property is missing/invalid, so even if
+          // the measurement effect below runs late, races with this card's
+          // own data loading, or (SSR/hydration edge cases) never fires at
+          // all, this never silently falls through to `auto` (full natural
+          // height) the way lg:h-(--savings-card-height) alone did.
+          className="lg:h-(--savings-card-height,420px)"
+          style={
+            savingsHeight
+              ? ({ "--savings-card-height": `${savingsHeight}px` } as React.CSSProperties)
+              : undefined
+          }
+        >
+          <BudgetHistorySection />
+        </div>
+      </div>
+    </div>
+  );
+}

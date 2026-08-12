@@ -3,6 +3,8 @@ import { useTranslation } from "react-i18next";
 import { RTL_LANGUAGES, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 import { useLanguageSwitchStore } from "@/store/use-language-switch-store";
+import { useUpdatePreferences } from "@/queries/preferences";
+import { useAuthStore } from "@/store/use-auth-store";
 
 /**
  * Single source of truth for switching the active language, shared by every
@@ -19,6 +21,8 @@ export function useLanguageSwitch() {
   const pendingLang = useLanguageSwitchStore((s) => s.pendingLang);
   const setPendingLang = useLanguageSwitchStore((s) => s.setPendingLang);
   const setPendingToast = useLanguageSwitchStore((s) => s.setPendingToast);
+  const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
+  const updatePreferences = useUpdatePreferences();
 
   // Driven by the actual active i18n language, not the :lang route param —
   // the two are normally kept in sync by LangLayout, but the param is
@@ -45,6 +49,9 @@ export function useLanguageSwitch() {
       document.documentElement.dir = RTL_LANGUAGES.includes(next) ? "rtl" : "ltr";
       localStorage.setItem(STORAGE_KEYS.lang, next);
       await i18n.changeLanguage(next);
+      // Guest pages (splash, sign-in, onboarding) share this same switcher —
+      // only persist server-side once actually signed in, or this 401s.
+      if (isAuthenticated) updatePreferences.mutate({ language: next });
       setPendingToast(t("toast.languageChanged"));
       // Unprefixed pages (no :lang segment at all — verify-email,
       // reset-password, the links emailed to a user with no locale

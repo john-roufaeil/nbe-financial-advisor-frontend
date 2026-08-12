@@ -3,6 +3,12 @@ import { useCategoriesForType } from "@/queries/categories";
 import { categoryIcon } from "@/lib/constants/category-icons";
 import { SimpleSelect } from "@/components/shared/forms/SimpleSelect";
 
+/** SimpleSelect renders `label` as plain text with no per-option className hook,
+ * so category names are capitalized here at the string level rather than via CSS. */
+function capitalizeFirst(s: string): string {
+  return s.length > 0 ? s[0].toUpperCase() + s.slice(1) : s;
+}
+
 /** Per-size classes: the transaction form uses the sm variant, the denser
  * extracted-statement rows the xs one. */
 const SIZES = {
@@ -87,7 +93,7 @@ export function TypeCategoryField({
         ariaDescribedBy={ariaDescribedBy}
         options={categoryOptions.map((c) => ({
           value: c.name,
-          label: t(`common.${categoryNamespace}.${c.name}`, c.label),
+          label: capitalizeFirst(t(`common.${categoryNamespace}.${c.name}`, c.label)),
           icon: categoryIcon(c.name),
         }))}
       />

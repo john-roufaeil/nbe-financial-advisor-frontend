@@ -8,17 +8,15 @@ interface RawConversation {
   title?: string | null;
 }
 
-interface RawReference {
+export interface RawReference {
   target_type: string;
   target_id: string;
 }
 
-/** Confirmed against a live response — `widget` is a nested object (type +
- * payload), not a JSON-in-string field, and `content` carries no inline
- * marker: it's plain prose alongside the widget, not referencing it. `stage`
- * turned out to be a topic label ("general"), not a lifecycle state — see
- * isAwaitingReply in queries/chat.ts, which no longer depends on it. */
-interface RawWidget {
+/** `widget` is a nested object (type + payload), not JSON-in-string; `content` is
+ * plain prose alongside it. `stage` is a topic label ("general"), not a lifecycle
+ * state — see isAwaitingReply in queries/chat.ts, which doesn't depend on it. */
+export interface RawWidget {
   type: string;
   payload: unknown;
 }
@@ -42,12 +40,9 @@ function toList<T>(data: ListEnvelope<T>): T[] {
 }
 
 /**
- * `widget.type` is used directly as the tool name — it must match a key in
- * chatToolComponents (app/components/chat/tools/index.ts) for a card to
- * render. Gated to assistant messages only: assistant-ui's runtime hard-rejects
- * a tool-call part on a "user" message ("Unsupported user message part type:
- * tool-call"), so a widget ever showing up on a non-assistant message must
- * not be turned into a tool call.
+ * `widget.type` must match a key in chatToolComponents to render as a card.
+ * Gated to assistant messages: assistant-ui hard-rejects a tool-call part
+ * on a "user" message.
  */
 function parseToolCall(raw: RawMessage): ChatToolCall | undefined {
   if (!raw.widget || raw.sender !== "assistant") return undefined;
@@ -75,6 +70,29 @@ function toChatMessage(raw: RawMessage): ChatMessage {
       ? { suggestions: buildSuggestions(toolCall?.toolName) }
       : {}),
   };
+}
+
+/**
+ * Builds the assistant's ChatMessage from the chat_message SSE event payload
+ * instead of paying for a GET .../messages round trip. Shape matches REST
+ * exactly (same widget_json the backend publishes); only `created_at` is
+ * approximated as "now" since the event carries no timestamp.
+ */
+export function assistantMessageFromEvent(payload: {
+  id: string;
+  content: string;
+  widget: RawWidget | null;
+  references: RawReference[] | null;
+}): ChatMessage {
+  return toChatMessage({
+    id: payload.id,
+    sender: "assistant",
+    content: payload.content,
+    stage: null,
+    widget: payload.widget,
+    references: payload.references,
+    created_at: new Date().toISOString(),
+  });
 }
 
 function toConversation(raw: RawConversation): ChatConversation {
@@ -106,8 +124,10 @@ export async function getMessages(conversationId: string): Promise<ChatMessage[]
 
 /**
  * POST returns 202: it creates the user message and enqueues reply generation,
- * it does NOT return the assistant's reply. Callers must poll `getMessages`
- * (see useMessages' refetchInterval) to observe the reply once it lands.
+ * it does NOT return the assistant's reply. Callers observe the reply once it
+ * lands via the chat_token/chat_message SSE events (see queries/chat.ts's
+ * useMessages and app/lib/use-event-stream.ts), not by refetching `getMessages`
+ * themselves.
  */
 export async function sendMessage(
   conversationId: string,
@@ -124,9 +144,10 @@ export async function sendMessage(
 
 /**
  * Shortcut into the same statement-ingestion pipeline as `POST /statements`
- * (same 202-and-poll contract), tagged to this conversation. Returns the
- * assistant message announcing the upload; the referenced statement is
- * tracked/polled through the normal bank-statements queries.
+ * (same 202 contract, resolved via the statement_status SSE event rather
+ * than polling), tagged to this conversation. Returns the assistant message
+ * announcing the upload; the referenced statement is tracked through the
+ * normal bank-statements queries.
  */
 export async function uploadChatAttachment(
   conversationId: string,

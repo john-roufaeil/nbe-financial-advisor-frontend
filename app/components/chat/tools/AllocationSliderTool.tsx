@@ -7,16 +7,15 @@ import { useUpdateBudget } from "@/queries/budget";
 import { categoryIcon } from "@/lib/constants/category-icons";
 import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
 
-/** Matches the real `widget.payload` for `allocation_slider` — a slimmer
- * shape than the dashboard's `Allocation` type (no amount/currency, just the
- * percentages the chat widget lets the user adjust and confirm). Validated
- * at runtime, not just asserted: `result` is LLM-originated, a meaningfully
- * less trustworthy source than a typed REST response. */
+/** Matches `widget.payload` for `allocation_slider` (ai-service's `Allocation`
+ * model). Field is `percentage`, not `allocated_percentage` — using the wrong
+ * name here previously made every render fail safeParse silently.
+ * Validated at runtime since `result` is LLM-originated, not a typed REST response. */
 const AllocationSliderPayloadSchema = z.object({
   allocations: z.array(
     z.object({
       category: z.string(),
-      allocated_percentage: z.number(),
+      percentage: z.number(),
     }),
   ),
 });
@@ -35,9 +34,7 @@ export const AllocationSliderTool: ToolCallMessagePartComponent = ({ result }) =
     : undefined;
   const updateBudget = useUpdateBudget();
   const [draft, setDraft] = useState<Record<string, number>>(() =>
-    Object.fromEntries(
-      (data?.allocations ?? []).map((a) => [a.category, a.allocated_percentage]),
-    ),
+    Object.fromEntries((data?.allocations ?? []).map((a) => [a.category, a.percentage])),
   );
   const [dirty, setDirty] = useState(false);
 
@@ -119,7 +116,7 @@ export const AllocationSliderTool: ToolCallMessagePartComponent = ({ result }) =
           return (
             <label key={category} className="flex flex-col gap-1">
               <div className="flex items-center justify-between text-xs">
-                <span className="flex items-center gap-1.5 font-medium">
+                <span className="flex items-center gap-1.5 font-medium capitalize">
                   <Icon data-no-flip className="text-base-content/50 size-3.5 shrink-0" />
                   {t(`dashboard.budget.categoryNames.${category}`, category)}
                 </span>

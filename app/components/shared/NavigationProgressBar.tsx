@@ -8,16 +8,10 @@ import { LoadingAnnouncement } from "@/components/shared/skeletons/LoadingAnnoun
 const SPINNER_DELAY_MS = 150;
 
 /**
- * The only visual cue that a route transition is in flight: a glowing
- * top-of-viewport progress bar plus a small corner spinner badge for
- * transitions that run long enough to notice. Route chunks are lazy-loaded
- * (see routes.ts) and some routes have loaders, so a navigation can take
- * anywhere from a few ms to a couple of seconds with otherwise zero
- * feedback. Both are non-interactive (`aria-hidden`, `pointer-events-none`).
- *
- * Classic NProgress-style state machine: creep toward (not to) completion
- * while navigating, since the real duration is unknown; snap to 100% and
- * fade out once the navigation settles back to "idle".
+ * Only visual cue that a route transition is in flight (lazy chunks + loaders
+ * mean navigation can take anywhere from a few ms to seconds otherwise).
+ * NProgress-style: creeps toward, not to, completion since duration is unknown,
+ * then snaps to 100% and fades once navigation settles back to "idle".
  */
 export function NavigationProgressBar() {
   const { t } = useTranslation();

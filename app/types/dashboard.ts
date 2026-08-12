@@ -26,6 +26,20 @@ export interface BudgetCategory {
   spent: number;
 }
 
+export const STABILITY_LABELS = ["stable", "variable", "unstable"] as const;
+export type StabilityLabel = (typeof STABILITY_LABELS)[number];
+
+/**
+ * A 0-100 score for how CONSISTENT (not how much) income is month to month —
+ * not to be confused with the savings-rate stat, which used to be shown
+ * under this label by mistake (see api/dashboard.ts). `null` means fewer
+ * than 2 months of credit-inflow history, not a zero score.
+ */
+export interface IncomeStability {
+  score: number;
+  label: StabilityLabel;
+}
+
 export interface DashboardSummary {
   currency: string;
   /**
@@ -36,4 +50,5 @@ export interface DashboardSummary {
   hasPlan: boolean;
   stats: DashboardStat[];
   budget: { categories: BudgetCategory[] };
+  stability: IncomeStability | null;
 }

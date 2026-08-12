@@ -1,4 +1,4 @@
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, keepPreviousData } from "@tanstack/react-query";
 import * as budgetApi from "@/api/budget";
 import type { CreateBudgetBody, UpdateBudgetBody } from "@/types/budget";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
@@ -7,6 +7,9 @@ import { useInvalidatingMutation } from "@/queries/shared";
 export const budgetKeys = {
   starterTemplates: [QUERY_ROOTS.budget, "starter-templates"] as const,
   detail: [QUERY_ROOTS.budget, "detail"] as const,
+  progress: (period: string) => [QUERY_ROOTS.budget, "progress", period] as const,
+  history: (filters: { limit: number; offset: number }) =>
+    [QUERY_ROOTS.budget, "history", filters] as const,
 };
 
 export function useStarterTemplates() {
@@ -39,5 +42,21 @@ export function useUpdateBudget() {
     mutationFn: (body: UpdateBudgetBody) => budgetApi.updateBudget(body),
     invalidates: [[QUERY_ROOTS.budget], [QUERY_ROOTS.dashboard], [QUERY_ROOTS.goals]],
     successToastKey: "toast.budgetUpdated",
+  });
+}
+
+/** `period` (YYYY-MM) defaults to the current month server-side when omitted. */
+export function useBudgetProgress(period: string) {
+  return useQuery({
+    queryKey: budgetKeys.progress(period),
+    queryFn: () => budgetApi.getBudgetProgress(period),
+  });
+}
+
+export function useBudgetHistory(filters: { limit: number; offset: number }) {
+  return useQuery({
+    queryKey: budgetKeys.history(filters),
+    queryFn: () => budgetApi.getBudgetHistory(filters),
+    placeholderData: keepPreviousData,
   });
 }

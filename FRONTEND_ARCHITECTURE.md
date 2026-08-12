@@ -9,7 +9,7 @@
 
 1. [Tech stack at a glance](#1-tech-stack-at-a-glance)
 2. [Annotated folder map](#2-annotated-folder-map)
-3. [The data pipeline: api → mocks → queries → components](#3-the-data-pipeline)
+3. [The data pipeline: api → queries → components](#3-the-data-pipeline)
 4. [Constants and business rules (`lib/constants/`)](#4-constants-and-business-rules)
 5. [TypeScript types (`types/`)](#5-typescript-types)
 6. [Zustand stores (`store/`)](#6-zustand-stores)
@@ -46,7 +46,6 @@ app/
 ├── routes/                ← one file per page or layout guard
 │
 ├── api/                   ← real HTTP calls (axios, no React)
-├── mocks/                 ← identical signatures, fake in-memory data
 ├── queries/               ← TanStack Query hooks (ONLY data layer components import)
 │
 ├── types/                 ← TypeScript interfaces + domain-level constants
@@ -104,10 +103,10 @@ Component
   │
   └─► queries/*.ts    (useAccounts, useTransactions, useDeleteAccount, …)
         │
-        ├─ source === "backend"  →  api/*.ts  →  Django REST API
-        │
-        └─ source === "mock"     →  mocks/*.ts  →  In-memory fake data
+        └─► api/*.ts  →  Django REST API
 ```
+
+There used to be a mock/live data-source toggle (`mocks/*.ts` + `pickImpl`), letting the app run against fake in-memory data instead of the backend. It was removed (see `git log --grep="mock data source"`) so every user always talks to the real backend. If you see either term in an older doc or PR, it no longer applies.
 
 ### `api/` — real HTTP calls
 
@@ -119,35 +118,22 @@ Component
   - Intercepts 401 responses, attempts a silent token refresh via `POST /auth/refresh` (httpOnly cookie), and retries the original request. If refresh fails, the session is expired.
 - All backend endpoint paths live in `lib/constants/api.ts` as `API_ENDPOINTS`. **Never hardcode a URL string inside an `api/` function.**
 
-### `mocks/` — offline / demo mode
-
-- Same exported function names and signatures as their `api/` counterpart.
-- Data is held in module-level `let` variables that mutate in memory (create/delete work as expected).
-- Every function wraps its return value in `delay()` from `mocks/shared.ts`, which adds `MOCK_LATENCY_MS` (from `lib/constants/time.ts`) to simulate network latency.
-
 ### `queries/` — the only layer components import
 
-- One file per domain, matching `api/` and `mocks/`.
+- One file per domain, matching `api/`.
 - The pattern every query file follows:
 
 ```ts
-import { pickImpl } from "@/queries/shared";
-
-function impl(source: DataSource) {
-  return pickImpl(source, accountsApi, accountsMock); // picks api or mocks
-}
-
 export function useAccounts() {
-  const source = useDataSourceStore((s) => s.source);
   return useQuery({
-    queryKey: accountKeys.all(source),
-    queryFn: () => impl(source).getAccounts(),
+    queryKey: accountKeys.all,
+    queryFn: () => accountsApi.getAccounts(),
   });
 }
 ```
 
 - Mutations use `useInvalidatingMutation` from `queries/shared.ts`, which automatically:
-  1. Runs the correct implementation (api or mocks).
+  1. Runs the mutation.
   2. Invalidates the specified query keys on success.
   3. Shows a success toast (by i18n key).
   4. Shows an error toast on failure.
@@ -155,7 +141,7 @@ export function useAccounts() {
 ```ts
 export function useDeleteAccount() {
   return useInvalidatingMutation({
-    mutationFn: (source, id: string) => impl(source).deleteAccount(id),
+    mutationFn: (id: string) => accountsApi.deleteAccount(id),
     invalidates: [[QUERY_ROOTS.accounts], [QUERY_ROOTS.dashboard]],
     successToastKey: "toast.accountDeleted",
   });
@@ -163,10 +149,6 @@ export function useDeleteAccount() {
 ```
 
 - Query key **roots** live in `lib/constants/query-keys.ts` as `QUERY_ROOTS`. Always use these — never write a raw string key.
-
-### Switching data sources
-
-The data source is a persisted Zustand store (`use-data-source-store`). Toggling it (in Profile → Preferences) re-triggers every active query because `source` is part of every `queryKey`. No component code changes.
 
 ---
 
@@ -183,7 +165,7 @@ Every magic number, string literal, and configurable value must live here. **Not
 | `storage-keys.ts`    | `STORAGE_KEYS` — all `localStorage` key strings (`nbe_*` prefix)                     |
 | `query-keys.ts`      | `QUERY_ROOTS` — TanStack Query cache key roots                                       |
 | `limits.ts`          | Numeric min/max/step for forms; retry counts; `BYTES_PER_KB`                         |
-| `time.ts`            | Millisecond durations: toast, ripple, debounce, mock latency, stale time             |
+| `time.ts`            | Millisecond durations: toast, ripple, debounce, stale time                           |
 | `options.ts`         | `EMPLOYMENT_OPTIONS`, `STEADINESS_OPTIONS`, `NAME_SUGGESTIONS` — select option lists |
 | `accessibility.ts`   | Font-scale bounds (`MIN_SCALE`, `MAX_SCALE`, `SCALE_STEP`, `DEFAULT_SCALE`)          |
 | `layout.ts`          | Sidebar pixel bounds (`MIN_SIDEBAR_WIDTH`, `MAX_SIDEBAR_WIDTH`)                      |
@@ -514,11 +496,7 @@ All CI scripts live in `scripts/`. They are Node ESM scripts or shell scripts �
 
 ### Add a new API endpoint
 
-→ `app/lib/constants/api.ts` (API_ENDPOINTS) → `app/api/domain.ts` (function) → `app/mocks/domain.ts` (fake) → `app/queries/domain.ts` (hook)
-
-### Add mock data
-
-→ `app/mocks/<domain>.ts` — edit the module-level data array / add a new function matching the `api/` signature
+→ `app/lib/constants/api.ts` (API_ENDPOINTS) → `app/api/domain.ts` (function) → `app/queries/domain.ts` (hook)
 
 ### Add or change a type
 
@@ -571,7 +549,7 @@ All CI scripts live in `scripts/`. They are Node ESM scripts or shell scripts �
 ```
 A component needs data
   └─► queries/*.ts
-        └─► api/*.ts | mocks/*.ts
+        └─► api/*.ts
               └─► types/*.ts (argument/return types)
                     └─► lib/constants/api.ts (URL paths)
                           └─► api/client.ts (axios, auth, refresh)

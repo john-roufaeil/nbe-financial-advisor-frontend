@@ -86,12 +86,9 @@ export function EntityPicker<T>({
   const typeaheadQueryRef = useRef("");
   const typeaheadTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
-  // role="listbox"/role="option" promises arrow-key navigation *and*
-  // type-ahead between options (WAI-ARIA listbox pattern) — Tab already
-  // reaches each option (they're real buttons, trapped inside the panel by
-  // useDismissablePanel), this adds the rest: Up/Down/Home/End roving focus,
-  // plus jumping to options by typing their (rendered, via textContent —
-  // renderItem returns arbitrary nodes, not a plain label prop) text.
+  // WAI-ARIA listbox pattern requires arrow-key roving focus and type-ahead;
+  // Tab already reaches each option, this adds Up/Down/Home/End plus jumping
+  // by typed text (via textContent, since renderItem returns arbitrary nodes).
   const handleListKeyDown = useCallback((e: React.KeyboardEvent<HTMLUListElement>) => {
     const options = Array.from(
       e.currentTarget.querySelectorAll<HTMLButtonElement>(
@@ -125,9 +122,8 @@ export function EntityPicker<T>({
       return;
     }
 
-    // Ctrl/Alt/Meta combos are shortcuts, not typing — e.key for those is
-    // still often a single printable character (e.g. Ctrl+A -> "a"), so
-    // they'd otherwise misfire this.
+    // e.key for Ctrl/Alt/Meta shortcuts is often still a printable char
+    // (e.g. Ctrl+A -> "a"), so exclude them or they'd misfire type-ahead.
     if (e.key.length !== 1 || e.ctrlKey || e.altKey || e.metaKey) return;
 
     if (typeaheadTimeoutRef.current) clearTimeout(typeaheadTimeoutRef.current);
@@ -137,10 +133,8 @@ export function EntityPicker<T>({
     }, TYPEAHEAD_RESET_MS);
 
     const query = typeaheadQueryRef.current;
-    // Repeating a single letter ("b", "b", "b" — same key, still within the
-    // reset window) cycles through every match one at a time instead of
-    // sticking to the first: search from just after the active option and
-    // wrap, rather than from the top.
+    // Repeating one letter within the reset window cycles through matches
+    // instead of sticking to the first: search from after the active option.
     const isRepeatedSingleChar =
       query.length > 1 && [...query].every((c) => c === query[0]);
     const effectiveQuery = isRepeatedSingleChar ? query[0] : query;
@@ -158,12 +152,9 @@ export function EntityPicker<T>({
     }
   }, []);
 
-  // Portal-rendered and positioned from the trigger's live rect (not a
-  // `relative`-parent `absolute` child) so the open menu overlays the page —
-  // e.g. inside a modal — instead of adding to the modal's own scroll height.
-  // maxHeight is the real remaining viewport space below the trigger, not a
-  // fixed guess: a short list (e.g. 4 categories) then renders at its natural
-  // height with no scrollbar, while a long one still clips and scrolls.
+  // Portal-rendered and positioned from the trigger's live rect so the menu
+  // overlays the page (e.g. inside a modal) instead of adding scroll height.
+  // maxHeight is the real remaining viewport space, not a fixed guess.
   const updateCoords = useCallback(() => {
     const rect = triggerRef.current?.getBoundingClientRect();
     if (!rect) return;
@@ -223,21 +214,13 @@ export function EntityPicker<T>({
               left: coords.left,
               width: coords.width,
               maxHeight: coords.maxHeight,
-              // Forces this menu onto its own GPU-composited layer from the
-              // first frame, instead of Chromium lazily promoting/demoting it
-              // — the lazy path is what leaves a stale, incorrectly-ordered
-              // layer behind when this element lives inside an open <dialog>
-              // (hit-testing stays correct; only the painted pixels are wrong).
+              // Forces its own compositor layer immediately — Chromium's lazy
+              // promotion otherwise leaves a stale, misordered layer when this
+              // sits inside an open <dialog> (hit-testing is fine, paint isn't).
               transform: "translateZ(0)",
             }}
-            // Deliberately no entrance animation here: animating transform/
-            // opacity promotes this menu to its own compositor layer during
-            // the transition, and this menu specifically can be nested inside
-            // a native <dialog> alongside other content (unlike the page-level
-            // popovers `animate-a11y-panel-in` was written for) — in that
-            // configuration Chromium can leave the layer's paint order wrong
-            // after the animation ends, even though hit-testing stays correct
-            // (a real compositor bug, not a stacking bug).
+            // No entrance animation: animating transform/opacity here re-triggers
+            // the same Chromium layer-ordering bug when nested in a <dialog>.
             className={`menu bg-base-100 border-base-300 fixed ${Z_POPOVER} flex-col flex-nowrap gap-1 overflow-hidden rounded-xl border p-2 shadow-lg`}
           >
             {search}
@@ -268,11 +251,9 @@ export function EntityPicker<T>({
             </ul>
             {footer?.(close)}
           </div>,
-          // Native <dialog> content renders in the browser's top layer, which
-          // always paints above regular DOM regardless of z-index — a portal
-          // to document.body would render *behind* an open modal. Portaling
-          // into the dialog itself keeps the menu in that same top-layer
-          // subtree; outside a dialog, document.body is the normal target.
+          // Native <dialog> content paints in the browser's top layer, above
+          // everything else regardless of z-index — portal into the dialog
+          // itself (not document.body) or the menu renders behind the modal.
           triggerRef.current?.closest("dialog") ?? document.body,
         )}
     </div>

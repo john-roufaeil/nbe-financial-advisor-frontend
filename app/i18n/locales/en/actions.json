@@ -18,6 +18,8 @@
     "showPassword": "Show password",
     "hidePassword": "Hide password",
     "increase": "Increase {{name}}",
-    "decrease": "Decrease {{name}}"
+    "decrease": "Decrease {{name}}",
+    "yes": "Yes",
+    "no": "No"
   }
 }

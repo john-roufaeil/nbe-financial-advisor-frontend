@@ -14,6 +14,7 @@ import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useChatStore } from "@/store/use-chat-store";
+import { useMessageHighlightStore } from "@/store/use-message-highlight-store";
 import { useMessages } from "@/queries/chat";
 import { useSendChatMessage } from "@/lib/use-chat-runtime";
 import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
@@ -52,28 +53,49 @@ function UserUploadChip({ name }: { name: string }) {
   );
 }
 
-function AssistantActionBar() {
+/** Shared by both action bars below — assistant-ui's ActionBarPrimitive.Copy
+ * reads from the nearest MessagePrimitive.Root, so it works unchanged
+ * whichever role's message it's rendered inside. */
+function CopyMessageButton() {
   const { t } = useTranslation();
+  return (
+    <Tooltip content={t("chat.copy")}>
+      <ActionBarPrimitive.Copy
+        aria-label={t("chat.copy")}
+        className="btn btn-ghost btn-xs btn-square"
+      >
+        <MessagePrimitive.If copied={false}>
+          <Copy className="size-3.5" />
+        </MessagePrimitive.If>
+        <MessagePrimitive.If copied>
+          <Check data-no-flip className="text-success size-3.5" />
+        </MessagePrimitive.If>
+      </ActionBarPrimitive.Copy>
+    </Tooltip>
+  );
+}
+
+function AssistantActionBar() {
   return (
     <ActionBarPrimitive.Root
       hideWhenRunning
       autohide="never"
       className="text-base-content/50 flex items-center gap-1 pt-1"
     >
-      <Tooltip content={t("chat.copy")}>
-        <ActionBarPrimitive.Copy
-          aria-label={t("chat.copy")}
-          className="btn btn-ghost btn-xs btn-square"
-        >
-          <MessagePrimitive.If copied={false}>
-            <Copy className="size-3.5" />
-          </MessagePrimitive.If>
-          <MessagePrimitive.If copied>
-            <Check data-no-flip className="text-success size-3.5" />
-          </MessagePrimitive.If>
-        </ActionBarPrimitive.Copy>
-      </Tooltip>
+      <CopyMessageButton />
       <ChatFeedbackButton />
+    </ActionBarPrimitive.Root>
+  );
+}
+
+function UserActionBar() {
+  return (
+    <ActionBarPrimitive.Root
+      hideWhenRunning
+      autohide="never"
+      className="text-base-content/40 flex items-center gap-1 pt-1"
+    >
+      <CopyMessageButton />
     </ActionBarPrimitive.Root>
   );
 }
@@ -84,6 +106,9 @@ export function UserMessage() {
   const createdAt = useMessage((m) => m.createdAt);
   const content = useMessage((m) => m.content);
   const timeFormat = useDisplayPreferencesStore((s) => s.timeFormat);
+  const highlightedId = useMessageHighlightStore((s) => s.highlightedId);
+  const highlightNonce = useMessageHighlightStore((s) => s.nonce);
+  const isHighlighted = highlightedId === id;
 
   // Split the "📎 <filename>" line(s) the upload flow prepends off from the rest
   // of the text, so the file renders as a chip above the caption (a plain text
@@ -98,7 +123,18 @@ export function UserMessage() {
   return (
     <MessagePrimitive.Root id={`msg-${id}`} className="flex justify-end">
       <div className="animate-message-in flex max-w-[80%] min-w-0 flex-col items-end">
-        <div className="bg-primary text-primary-content min-w-0 overflow-hidden rounded-xl rounded-ee-sm px-4 py-2.5">
+        <div
+          // Keyed on the highlight nonce so re-selecting the same message from
+          // QuestionsNav restarts the flash instead of no-op'ing on unchanged props.
+          key={isHighlighted ? highlightNonce : "static"}
+          // selection:* overrides the app-wide ::selection (app.css —
+          // background: primary, color: primary-content) specifically here:
+          // this bubble's own resting colors ARE primary/primary-content, so
+          // the global selection style is invisible against it otherwise.
+          className={`bg-primary text-primary-content selection:bg-base-300 selection:text-base-content min-w-0 overflow-hidden rounded-xl rounded-ee-sm px-4 py-2.5 ${
+            isHighlighted ? "animate-message-highlight" : ""
+          }`}
+        >
           <div className="flex flex-wrap gap-1.5 pb-2 empty:hidden">
             <MessagePrimitive.Attachments>
               {({ attachment }) => <MessageAttachmentChip attachment={attachment} />}
@@ -114,6 +150,7 @@ export function UserMessage() {
         <span className="text-base-content/40 mt-1 px-1 text-xs">
           {formatTime(createdAt, timeFormat, t)}
         </span>
+        <UserActionBar />
       </div>
     </MessagePrimitive.Root>
   );
@@ -123,7 +160,6 @@ export function AssistantMessage() {
   const { t } = useTranslation();
   const id = useMessage((m) => m.id);
   const createdAt = useMessage((m) => m.createdAt);
-  const isLast = useMessage((m) => m.isLast);
   const timeFormat = useDisplayPreferencesStore((s) => s.timeFormat);
   // assistant-ui's runtime message carries no references, so look this message
   // up in our own cache by id (same approach SuggestedQuestions uses) to find a
@@ -134,7 +170,7 @@ export function AssistantMessage() {
     ?.find((m) => m.id === id)
     ?.references?.find((r) => r.targetType === "statement")?.targetId;
   return (
-    <MessagePrimitive.Root id={`msg-${id}`} className="group">
+    <MessagePrimitive.Root id={`msg-${id}`}>
       <MessagePrimitive.If hasContent>
         <div className="animate-message-in flex w-full items-start gap-2.5">
           <span className="bg-primary/10 text-primary grid size-8 shrink-0 place-items-center rounded-full">
@@ -162,17 +198,7 @@ export function AssistantMessage() {
             <span className="text-base-content/40 mt-1 px-1 text-xs">
               {formatTime(createdAt, timeFormat, t)}
             </span>
-            <div
-              className={`grid w-full transition-[grid-template-rows] duration-200 ease-out ${
-                isLast
-                  ? "grid-rows-[1fr]"
-                  : "grid-rows-[0fr] group-focus-within:grid-rows-[1fr] group-hover:grid-rows-[1fr]"
-              }`}
-            >
-              <div className="overflow-hidden">
-                <AssistantActionBar />
-              </div>
-            </div>
+            <AssistantActionBar />
           </div>
         </div>
       </MessagePrimitive.If>

@@ -10,6 +10,7 @@ import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
 import { AccountConfirmStep } from "@/components/bank-statements/AccountConfirmStep";
 import { BankStatementStatusPanel } from "@/components/bank-statements/BankStatementStatusPanel";
 import { ExtractedTransactionsSection } from "@/components/bank-statements/ExtractedTransactionsSection";
+import { OcrResultPanel } from "@/components/bank-statements/OcrResultPanel";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
 import { BankStatementModalActions } from "@/components/bank-statements/BankStatementModalActions";
 import {
@@ -69,13 +70,9 @@ export const BankStatementDetailModal = forwardRef<
     }
   }
 
-  // Confirming the account is a CLIENT-SIDE review step: no endpoint accepts an
-  // account on its own, so nothing about the statement changes server-side until
-  // approve carries the chosen `accountId` along with the rows. Waiting on the
-  // server to flip a flag here would leave the user stuck on step 1 forever.
-  // The caller keys this component on bankStatementId, so a fresh mount is
-  // what resets this (and the two hooks above) to a different statement —
-  // no explicit reset effect needed here.
+  // Confirming the account is client-side only: no endpoint accepts an account
+  // on its own, so nothing changes server-side until approve sends `accountId`
+  // with the rows. Resets automatically since the caller remounts this on a new bankStatementId.
   const [accountConfirmed, setAccountConfirmed] = useState(false);
 
   const isConfirmed = !!doc && (doc.accountConfirmed || accountConfirmed);
@@ -133,6 +130,10 @@ export const BankStatementDetailModal = forwardRef<
                   onRetry={() => retryBankStatement.mutate(doc.id)}
                   retryPending={retryBankStatement.isPending}
                 />
+              )}
+
+              {doc.status === BANK_STATEMENT_STATUS.processed && (
+                <OcrResultPanel statementId={doc.id} />
               )}
 
               {doc.status === BANK_STATEMENT_STATUS.processed && needsAccountConfirm && (

@@ -9,7 +9,7 @@ import { Button } from "@/components/shared/Button";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { MoneyInput } from "@/components/shared/forms/MoneyInput";
 import { moneyFieldBinding } from "@/components/shared/forms/money-field-binding";
-import { categoryIcon } from "@/lib/constants/category-icons";
+import { CategoryLabel } from "@/components/shared/CategoryLabel";
 import { useCategories, sortByValueFallbackLast } from "@/queries/categories";
 import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { closeDialog } from "@/lib/close-dialog";
@@ -26,10 +26,9 @@ function round2(n: number): number {
   return Math.round(n * 100) / 100;
 }
 
-/** Biggest allocation first, matching the dashboard's Budget Plan Split card
- * and its pie chart — fixed at load time so rows don't jump around as the
- * user edits percentages. The taxonomy's fallback bucket (e.g. "other")
- * always trails the rest, regardless of its allocated size. */
+/** Biggest allocation first (matches the dashboard's pie chart), fixed at
+ * load time so rows don't jump around as the user edits percentages. The
+ * fallback bucket (e.g. "other") always trails, regardless of its size. */
 function toDraft(
   allocations: Allocation[],
   isFallback: (name: string) => boolean,
@@ -192,12 +191,14 @@ export const AllocationsEditModal = forwardRef<
 
         <div className="grid grid-cols-2 gap-3">
           {rows.map((row, i) => {
-            const Icon = categoryIcon(row.category);
             return (
               <label key={row.category} className="flex flex-col gap-1">
-                <span className="label-text flex items-center gap-1.5 text-xs">
-                  <Icon data-no-flip className="text-base-content/50 size-3.5" />
-                  {t(`dashboard.budget.categoryNames.${row.category}`, row.category)}
+                <span className="label-text text-xs">
+                  <CategoryLabel
+                    category={row.category}
+                    type="expense"
+                    iconClassName="text-base-content/50 size-3.5 shrink-0"
+                  />
                 </span>
                 <Controller
                   name={`rows.${i}.percentage`}
@@ -207,10 +208,7 @@ export const AllocationsEditModal = forwardRef<
                       {...moneyFieldBinding(field)}
                       max={100}
                       unit="%"
-                      aria-label={t(
-                        `dashboard.budget.categoryNames.${row.category}`,
-                        row.category,
-                      )}
+                      aria-label={t(`common.categories.${row.category}`, row.category)}
                       className={`w-full ${errors.rows?.[i]?.percentage ? "input-error" : ""}`}
                     />
                   )}

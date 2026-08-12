@@ -39,11 +39,8 @@ function AccountOption({ account }: { account?: BankAccount }) {
   );
 }
 
-/**
- * The dashboard's filter row: a period segmented control and an account
- * picker that scope every card below, plus a Customize menu toggling which
- * cards are shown at all.
- */
+/** Period + account filters that scope every card below, plus a Customize
+ * menu to toggle which cards are shown. */
 export function DashboardToolbar({
   filters,
   onFiltersChange,

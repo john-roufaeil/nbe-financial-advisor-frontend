@@ -30,7 +30,9 @@ export function CategoryLabel({
   return (
     <span className={`inline-flex min-w-0 items-center gap-1.5 ${className}`}>
       <Icon data-no-flip className={iconClassName} />
-      <span className="truncate">{t(`common.${namespace}.${category}`, category)}</span>
+      <span className="truncate capitalize">
+        {t(`common.${namespace}.${category}`, category)}
+      </span>
     </span>
   );
 }

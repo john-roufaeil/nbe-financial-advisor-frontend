@@ -71,6 +71,9 @@ export const TransactionDetailModal = forwardRef<
           <DetailRow label={t("transactions.detail.type")}>
             {t(`common.filters.${transaction.type}`)}
           </DetailRow>
+          <DetailRow label={t("transactions.detail.recurring")}>
+            {transaction.isRecurring ? t("actions.yes") : t("actions.no")}
+          </DetailRow>
           <div className="flex items-center justify-between gap-3 py-2.5">
             <span className="text-base-content/50 text-sm">
               {t("transactions.detail.account")}

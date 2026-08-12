@@ -3,6 +3,7 @@ import { useTranslation } from "react-i18next";
 import { LogOut, User } from "lucide-react";
 import { PersonalDataSections } from "@/components/profile/PersonalDataSections";
 import { VerifyEmailBanner } from "@/components/profile/VerifyEmailBanner";
+import { IssuesSection } from "@/components/profile/IssuesSection";
 import { PageBanner } from "@/components/shared/layout/PageBanner";
 import { PreferencesMenu } from "@/components/shared/preferences/PreferencesMenu";
 import { useAuthStore } from "@/store/use-auth-store";
@@ -55,6 +56,7 @@ export default function Profile() {
       {showVerifyEmail && <VerifyEmailBanner />}
       <PreferencesMenu />
       <PersonalDataSections />
+      <IssuesSection />
     </div>
   );
 }

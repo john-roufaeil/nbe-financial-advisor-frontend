@@ -17,10 +17,8 @@ import { useStatementReviewStore } from "@/store/use-statement-review-store";
 export function ChatThread() {
   const { ref: viewportRef, atTop, atBottom } = useScrollEdges<HTMLDivElement>();
 
-  // One review modal for the whole thread, opened by any message's statement
-  // card via the store. Native <dialog>'s "close" event (Esc / backdrop / the
-  // modal's own close button) resets the store so the same statement can be
-  // reopened later.
+  // One review modal for the whole thread, opened by any message's statement card via the store.
+  // Native <dialog> "close" (Esc/backdrop/close button) resets the store so it can reopen later.
   const reviewModalRef = useRef<HTMLDialogElement>(null);
   const reviewStatementId = useStatementReviewStore((s) => s.statementId);
   const closeReview = useStatementReviewStore((s) => s.close);

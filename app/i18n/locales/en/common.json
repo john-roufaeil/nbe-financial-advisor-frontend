@@ -11,6 +11,16 @@
     "clearFilters": "Clear filters",
     "category": "Category",
     "allCategories": "All categories",
+    "account": "Account",
+    "allAccounts": "All accounts",
+    "source": "Source",
+    "allSources": "All sources",
+    "transactionSource": {
+      "statement": "From statement",
+      "manual": "Manual",
+      "synced": "Synced"
+    },
+    "recurringOnly": "Recurring only",
     "completeProfile": {
       "title": "Welcome aboard!",
       "description": "Let's finish setting up your profile — a couple of quick details help us tailor your budget and advice.",
@@ -33,14 +43,8 @@
       "other_income": "Income"
     },
     "filtersLabel": "Filters",
-    "amountRange": "Amount range",
-    "amountRanges": {
-      "any": "Any amount",
-      "under500": "Under 500",
-      "500to1000": "500 – 1,000",
-      "1000to5000": "1,000 – 5,000",
-      "over5000": "Over 5,000"
-    },
+    "amountMin": "Min amount",
+    "amountMax": "Max amount",
     "sort": {
       "dateAsc": "Oldest first",
       "dateDesc": "Newest first"
@@ -51,7 +55,11 @@
       "expense": "Expense",
       "pdf": "PDF",
       "image": "Image",
-      "doc": "Doc"
+      "doc": "Doc",
+      "uploaded": "Uploaded",
+      "extracted": "Extracted",
+      "normalized": "Awaiting review",
+      "approved": "Approved"
     },
     "pagination": {
       "prev": "Previous",

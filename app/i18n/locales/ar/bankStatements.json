@@ -30,6 +30,11 @@
       "processed": "تمت المعالجة",
       "failed": "فشل"
     },
+    "ocr": {
+      "engine": "تم الاستخراج باستخدام {{engine}}",
+      "confidence": "دقة {{percent}}%",
+      "download": "تنزيل النص المستخرج"
+    },
     "detail": {
       "title": "كشف الحساب",
       "uploading": "جارٍ رفع كشف الحساب...",

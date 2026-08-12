@@ -4,6 +4,8 @@ export const ROUTE_SEGMENTS = {
   chat: "chat",
   transactions: "transactions",
   bankStatements: "bank-statements",
+  budget: "budget",
+  recommendations: "recommendations",
   profile: "profile",
   onboarding: "onboarding",
   signIn: "sign-in",

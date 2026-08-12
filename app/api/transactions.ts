@@ -5,13 +5,16 @@ import type { Transaction } from "@/types/transaction";
 export interface TransactionFilters {
   type?: "income" | "expense";
   category?: string;
-  /** ASSUMED BACKEND CHANGE: GET /transactions must accept `?account_id=`. */
   accountId?: string;
   from?: string;
   to?: string;
   minAmount?: number;
   maxAmount?: number;
   q?: string;
+  /** One of TRANSACTION_SOURCES ("statement" | "manual" | "synced"). */
+  source?: string;
+  isRecurring?: boolean;
+  /** Always sorts by transaction_date — the only sortable field the UI exposes. */
   sort?: "asc" | "desc";
   offset?: number;
   limit?: number;
@@ -78,6 +81,7 @@ function toTransaction(raw: RawTransaction): Transaction {
     amount: Math.abs(Number(raw.amount)),
     accountId: raw.account_id,
     source: raw.source,
+    isRecurring: raw.is_recurring,
   };
 }
 
@@ -87,19 +91,17 @@ function toTransaction(raw: RawTransaction): Transaction {
  * search is `search` (NOT `q`); using the wrong name makes the filter a silent
  * no-op, because an unrecognized query param is ignored rather than rejected.
  *
- * `filters.type` is deliberately NOT sent. The backend's transaction_type filter
- * is exact-match on a SINGLE value, but the UI's "expense" means debit OR fee OR
- * transfer. Sending transaction_type=debit would silently hide the user's bank
- * fees from an "expenses" list. Verified: a seeded user with 40 transactions has
- * 32 debit + 2 fee + 6 credit; filtering on `debit` returns 32, hiding 2 real
- * outgoing charges. Restore this only once the backend supports an `in` lookup.
+ * The backend's raw `transaction_type` field (debit/credit/fee/transfer) is
+ * deliberately never sent on its own — it's exact-match on a SINGLE value,
+ * but the UI's "expense" means debit OR fee OR transfer. Sending
+ * transaction_type=debit would silently hide the user's bank fees from an
+ * "expenses" list. Verified: a seeded user with 40 transactions has 32 debit
+ * + 2 fee + 6 credit; filtering on `debit` returns 32, hiding 2 real outgoing
+ * charges. `type` (income/expense, below) is the backend's own higher-level
+ * filter that already does this collapsing server-side.
  */
 function toQueryParams(filters: TransactionFilters): Record<string, string | number> {
   const params: Record<string, string | number> = {};
-  // ASSUMED BACKEND CHANGE: GET /transactions must accept `?type=income|expense`
-  // using the same mapping as toUiType (income = credit rows, expense = every
-  // other transaction_type). Until it exists, the backend ignores the param and
-  // the type filter is a no-op.
   if (filters.type) params.type = filters.type;
   if (filters.category) params.category = filters.category;
   if (filters.accountId) params.account_id = filters.accountId;
@@ -108,6 +110,9 @@ function toQueryParams(filters: TransactionFilters): Record<string, string | num
   if (filters.minAmount !== undefined) params.min_amount = filters.minAmount;
   if (filters.maxAmount !== undefined) params.max_amount = filters.maxAmount;
   if (filters.q) params.search = filters.q;
+  if (filters.source) params.source = filters.source;
+  if (filters.isRecurring !== undefined)
+    params.is_recurring = String(filters.isRecurring);
   if (filters.sort)
     params.sort = filters.sort === "asc" ? "transaction_date" : "-transaction_date";
   if (filters.offset !== undefined) params.offset = filters.offset;
@@ -168,6 +173,7 @@ export async function createTransaction(
     category: body.category,
     amount: body.amount,
     transaction_type: toBackendType(body.type),
+    is_recurring: body.isRecurring,
   });
   return toTransaction(res.data);
 }
@@ -183,6 +189,7 @@ export async function updateTransaction(
   if (patch.category !== undefined) body.category = patch.category;
   if (patch.amount !== undefined) body.amount = patch.amount;
   if (patch.type !== undefined) body.transaction_type = toBackendType(patch.type);
+  if (patch.isRecurring !== undefined) body.is_recurring = patch.isRecurring;
 
   const res = await apiClient.patch<RawTransaction>(API_ENDPOINTS.transaction(id), body);
   return toTransaction(res.data);

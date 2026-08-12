@@ -18,9 +18,15 @@ import { PageBanner } from "@/components/shared/layout/PageBanner";
 import { StatsGrid } from "@/components/dashboard/StatsGrid";
 import { RecentActivityCard } from "@/components/dashboard/RecentActivityCard";
 import { AnomaliesCard } from "@/components/dashboard/AnomaliesCard";
+import { RecurringChargesCard } from "@/components/dashboard/RecurringChargesCard";
 import { GoalCard, GoalCardSkeleton } from "@/components/dashboard/GoalCard";
 import { BudgetSplitCard } from "@/components/dashboard/BudgetSplitCard";
 import { NoPlanCard } from "@/components/dashboard/NoPlanCard";
+import { IncomeStabilityCard } from "@/components/dashboard/IncomeStabilityCard";
+import { AccountsSummaryCard } from "@/components/dashboard/AccountsSummaryCard";
+import { RecurringTotalCard } from "@/components/dashboard/RecurringTotalCard";
+import { TopCategoryCard } from "@/components/dashboard/TopCategoryCard";
+import { DaysToGoalCard } from "@/components/dashboard/DaysToGoalCard";
 import { AddItemFab } from "@/components/dashboard/AddItemFab";
 import { useDashboard } from "@/queries/dashboard";
 import { usePageTitle } from "@/lib/use-page-title";
@@ -74,19 +80,27 @@ export default function Dashboard() {
         subtitle={t("dashboard.subtitle")}
         icon={LayoutDashboard}
         actions={
-          <>
-            <Link
-              to={localizedPath(lang!, ROUTE_SEGMENTS.chat)}
-              className="btn bg-secondary btn-sm text-secondary-content hover:bg-secondary/90 gap-2 border-none shadow-sm"
-            >
-              <Bot className="size-4" />
-              {t("dashboard.askAdvisor")}
-            </Link>
-          </>
+          <Link
+            to={localizedPath(lang!, ROUTE_SEGMENTS.chat)}
+            className="btn bg-secondary btn-sm text-secondary-content hover:bg-secondary/90 gap-2 border-none shadow-sm"
+          >
+            <Bot className="size-4" />
+            {t("dashboard.askAdvisor")}
+          </Link>
         }
       />
 
       <DashboardToolbar filters={filters} onFiltersChange={setFilters} />
+
+      {!isPending && !isError && show("insights") && (
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+          {data.stability && <IncomeStabilityCard stability={data.stability} />}
+          <AccountsSummaryCard />
+          <RecurringTotalCard currency={data.currency} />
+          <TopCategoryCard categories={data.budget.categories} currency={data.currency} />
+          <DaysToGoalCard />
+        </div>
+      )}
 
       {isPending ? (
         <DashboardSkeleton />
@@ -152,6 +166,12 @@ export default function Dashboard() {
           {show("anomalies") && (
             <div className="xl:col-span-4 xl:row-start-3">
               <AnomaliesCard />
+            </div>
+          )}
+
+          {show("recurringCharges") && (
+            <div className="xl:col-span-4 xl:row-start-4">
+              <RecurringChargesCard currency={data.currency} />
             </div>
           )}
         </div>

@@ -5,7 +5,7 @@ import { LanguageSwitcher } from "@/components/shared/preferences/LanguageSwitch
 import { BalanceVisibilityToggle } from "@/components/shared/preferences/BalanceVisibilityToggle";
 import { ThemeToggle } from "@/components/shared/preferences/ThemeToggle";
 import { Tooltip } from "@/components/shared/Tooltip";
-import { useNotificationsStore } from "@/store/use-notifications-store";
+import { useNotifications } from "@/lib/use-notifications";
 import { useNotificationsModalStore } from "@/store/use-notifications-modal-store";
 
 export function SidebarFooter({
@@ -22,9 +22,7 @@ export function SidebarFooter({
   onNavigate: () => void;
 }) {
   const { t } = useTranslation();
-  const unreadCount = useNotificationsStore(
-    (s) => s.notifications.filter((n) => !n.read).length,
-  );
+  const unreadCount = useNotifications().length;
   const openNotifications = useNotificationsModalStore((s) => s.open);
 
   return (

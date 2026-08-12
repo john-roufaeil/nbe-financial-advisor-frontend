@@ -1,14 +1,8 @@
 /**
- * Visually hidden until the group receives focus (the first Tab press on
- * the page lands here, before the header/sidebar), then reveals as a bar of
- * jump links so a keyboard user can bypass repetitive chrome — a long
- * sidebar nav, a hero image — instead of tabbing through it every visit.
- * Deliberately left in normal document flow rather than `fixed`: as the
- * first child in the layout, reserving its own space here pushes everything
- * below it down instead of overlaying (and hiding) whatever's already at
- * the top of the page.
- * Each target just needs `id` + `tabIndex={-1}` (fragment navigation focuses
- * any element with a tabindex, even -1, so no extra JS is needed here).
+ * Hidden until focused (first Tab press), then shows jump links so keyboard
+ * users can skip repetitive chrome like the sidebar nav.
+ * Kept in normal flow (not `fixed`) so revealing it pushes content down
+ * instead of overlaying it.
  */
 export function SkipLinks({ links }: { links: { href: string; label: string }[] }) {
   return (

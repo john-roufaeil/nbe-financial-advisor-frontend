@@ -97,9 +97,8 @@ function resolveConversationTitle(
  * `active` should be false whenever the chat page isn't the one on screen —
  * this runtime is created once in AppLayout (so the sidebar thread list and
  * AssistantRuntimeProvider survive navigating away from /chat), and without
- * this flag its message poll would keep hitting the backend every second
- * from every other route too, and the conversation list would fetch on
- * every page load regardless of whether chat is ever opened.
+ * this flag the conversation list and current conversation's messages would
+ * fetch on every page load regardless of whether chat is ever opened.
  */
 export function useAppChatRuntime(active = true) {
   const { t } = useTranslation();
@@ -205,8 +204,9 @@ export function useAppChatRuntime(active = true) {
   // render regardless) and rebuilds its internal thread-data map plus
   // notifies every subscriber whenever either differs — without this, a
   // fresh `conversations.map(...)` array on every render triggers that
-  // rebuild continuously while useMessages polls during an awaited reply,
-  // even though conversations/currentConversationId/derivedTitles are
+  // rebuild continuously while useMessages re-renders on every streamed
+  // chat_token delta during an awaited reply, even though
+  // conversations/currentConversationId/derivedTitles are
   // themselves stable across those renders (React Query structural sharing,
   // zustand selectors) and nothing actually changed.
   const threadListAdapter: ExternalStoreThreadListAdapter = useMemo(

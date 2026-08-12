@@ -5,15 +5,17 @@ export function HighlightStatCard({
   label,
   value,
   colorClass = "bg-primary text-primary-content",
+  className = "",
 }: {
   icon: LucideIcon;
   label: string;
   value: React.ReactNode;
   colorClass?: string;
+  className?: string;
 }) {
   return (
     <div
-      className={`relative min-w-32 flex-1 overflow-hidden rounded-xl p-4 ${colorClass}`}
+      className={`relative min-w-32 flex-1 overflow-hidden rounded-xl p-4 ${colorClass} ${className}`}
     >
       <Icon data-no-flip className="absolute -end-3 -top-3 size-20 opacity-15" />
       <p className="relative truncate text-xs opacity-80">{label}</p>

@@ -4,14 +4,9 @@ import { useBankStatement } from "@/queries/bank-statements";
 import { useStatementReviewStore } from "@/store/use-statement-review-store";
 import { BANK_STATEMENT_STATUS } from "@/types/bank-statement";
 
-/**
- * Surfaces a chat-uploaded statement's pipeline status inline under the
- * assistant's "I've started processing…" message, and — once the proposal is
- * ready — opens the SAME review modal the Bank Statements screen uses (via
- * use-statement-review-store, mounted once in ChatThread). It reuses
- * useBankStatement, which already polls while the statement is still
- * processing, so no extra polling logic lives here.
- */
+// Shows a chat-uploaded statement's pipeline status and, once ready, opens the
+// same review modal as the Bank Statements screen (via use-statement-review-store).
+// useBankStatement already refetches on the statement_status SSE event, so no polling here.
 export function ChatStatementCard({ statementId }: { statementId: string }) {
   const { t } = useTranslation();
   const { data: doc, isPending } = useBankStatement(statementId);

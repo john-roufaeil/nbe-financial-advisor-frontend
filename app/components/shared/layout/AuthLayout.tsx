@@ -7,22 +7,10 @@ import { useThemeStore } from "@/store/use-theme-store";
 import { SkipLinks } from "@/components/shared/layout/SkipLinks";
 
 /**
- * Split-screen shell for the auth/onboarding pages (splash, sign-in, onboarding).
- * A large branded image panel sits alongside the page content on desktop, and
- * collapses to a compact banner above the content on mobile. The panel is a
- * pure image — logo/branding/feature content belongs in each page's own
- * content column.
- *
- * The hero image is `/auth-hero.png` on desktop (lg+) and `/mobile-auth-hero.png`
- * below that (drop both assets into `public/`); a primary-gradient fallback
- * shows through if either is absent. On desktop, `/auth-hero-dark.png` is
- * cross-faded in over the light image when the site is in dark mode (and
- * back out on switch to light).
- *
- * All `lg:` desktop-split classes below are also gated on `!isForcedMobile`
- * (see useLayoutTier) so a user who scales the in-app font past 140% gets the
- * stacked mobile treatment even on a wide screen — real `lg:` media queries
- * only track viewport width, not this app's own JS-driven font-scale slider.
+ * Split-screen shell for auth/onboarding pages: branded image panel beside
+ * the content on desktop, collapses to a banner above it on mobile.
+ * `lg:` classes are gated on `!isForcedMobile` (see useLayoutTier) since real
+ * media queries can't see the app's own font-scale-driven mobile forcing.
  */
 export function AuthLayout({
   children,
