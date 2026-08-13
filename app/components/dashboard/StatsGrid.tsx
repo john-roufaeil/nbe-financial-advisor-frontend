@@ -13,6 +13,7 @@ import { useTranslation } from "react-i18next";
 import type { DashboardFilters, DashboardStat } from "@/types/dashboard";
 import { dashboardPeriodRange } from "@/lib/dashboard-period";
 import { Money } from "@/components/shared/Money";
+import { Tooltip } from "@/components/shared/Tooltip";
 import { useNumberDisplay } from "@/lib/use-number-display";
 
 const ICONS = {
@@ -61,7 +62,7 @@ function StatCard({
     stat.key === "income" || stat.key === "spending" ? DRILL_TYPE[stat.key] : undefined;
 
   const body = (
-    <div className="card-body gap-3 p-4">
+    <div className="card-body w-full gap-3 p-4">
       <div className="flex items-center gap-2">
         <span
           className={`grid size-9 shrink-0 place-items-center rounded-lg ${trendClass}`}
@@ -100,7 +101,12 @@ function StatCard({
   if (!drillType) {
     return (
       <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
-        {body}
+        <Tooltip
+          content={t(`dashboard.stats.tooltips.${stat.key}`)}
+          className="h-full w-full"
+        >
+          {body}
+        </Tooltip>
       </div>
     );
   }
@@ -114,7 +120,12 @@ function StatCard({
       })}
       className="card border-base-300 bg-base-100 hover:border-primary group animate-entry border shadow-sm transition-colors"
     >
-      {body}
+      <Tooltip
+        content={t(`dashboard.stats.tooltips.${stat.key}`)}
+        className="h-full w-full"
+      >
+        {body}
+      </Tooltip>
     </Link>
   );
 }

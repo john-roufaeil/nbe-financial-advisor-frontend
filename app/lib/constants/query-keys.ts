@@ -11,7 +11,6 @@ export const QUERY_ROOTS = {
   admin: "admin",
   chat: "chat",
   anomalies: "anomalies",
-  recommendations: "recommendations",
   analytics: "analytics",
   issues: "issues",
   recurringCharges: "recurringCharges",

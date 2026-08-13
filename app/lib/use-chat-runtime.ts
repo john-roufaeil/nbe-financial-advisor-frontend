@@ -10,6 +10,7 @@ import {
 import { useChatStore } from "@/store/use-chat-store";
 import { useChatStopStore } from "@/store/use-chat-stop-store";
 import { useConversationTitleStore } from "@/store/use-conversation-title-store";
+import { CHAT_MESSAGE_MAX_LENGTH } from "@/lib/constants/limits";
 import {
   createChatAttachmentsAdapter,
   sendPendingChatAttachments,
@@ -184,6 +185,13 @@ export function useAppChatRuntime(active = true) {
 
     if (!text.trim()) {
       throw new Error("Only text messages are supported for now");
+    }
+    // Backstop for text that reaches here without going through the composer
+    // textarea's maxLength (a restored draft, a suggestion chip, a
+    // programmatic setText) — the backend enforces this too (422), but
+    // failing fast here skips the round trip.
+    if (text.length > CHAT_MESSAGE_MAX_LENGTH) {
+      throw new Error(`Message exceeds the ${CHAT_MESSAGE_MAX_LENGTH}-character limit`);
     }
 
     const conversationId = await ensureConversation();

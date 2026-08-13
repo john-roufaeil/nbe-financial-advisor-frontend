@@ -1,12 +1,5 @@
 import { NavLink } from "react-router";
-import {
-  LayoutDashboard,
-  Bot,
-  ArrowLeftRight,
-  FileText,
-  BarChart3,
-  Sparkles,
-} from "lucide-react";
+import { LayoutDashboard, Bot, ArrowLeftRight, FileText, BarChart3 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
@@ -43,11 +36,6 @@ export function SidebarNav({
       to: localizedPath(lang!, ROUTE_SEGMENTS.budget),
       label: t("budget.title"),
       icon: BarChart3,
-    },
-    {
-      to: localizedPath(lang!, ROUTE_SEGMENTS.recommendations),
-      label: t("recommendations.title"),
-      icon: Sparkles,
     },
   ];
 

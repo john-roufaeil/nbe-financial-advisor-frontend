@@ -3,6 +3,7 @@ import { createPortal } from "react-dom";
 import { useTranslation } from "react-i18next";
 import { Calendar, ChevronLeft, ChevronRight } from "lucide-react";
 import { useDismissablePanel } from "@/lib/use-dismissable-panel";
+import { Tooltip } from "@/components/shared/Tooltip";
 import { Z_POPOVER } from "@/lib/z-index";
 
 const MONTH_INDEXES = Array.from({ length: 12 }, (_, i) => i);
@@ -69,22 +70,24 @@ export function MonthPicker({
 
   return (
     <div className="relative">
-      <button
-        ref={triggerRef}
-        type="button"
-        onClick={() => {
-          setDisplayedYear(selectedYear);
-          updateCoords();
-          setOpen((v) => !v);
-        }}
-        aria-haspopup="dialog"
-        aria-expanded={open}
-        aria-label={t("budget.progress.selectMonth")}
-        className="btn btn-ghost btn-sm gap-1.5"
-      >
-        <Calendar data-no-flip className="text-primary size-4" />
-        <span className="tabular-nums">{periodLabel(value, i18n.language)}</span>
-      </button>
+      <Tooltip content={t("budget.progress.selectMonth")}>
+        <button
+          ref={triggerRef}
+          type="button"
+          onClick={() => {
+            setDisplayedYear(selectedYear);
+            updateCoords();
+            setOpen((v) => !v);
+          }}
+          aria-haspopup="dialog"
+          aria-expanded={open}
+          aria-label={t("budget.progress.selectMonth")}
+          className="btn btn-ghost btn-sm gap-1.5"
+        >
+          <Calendar data-no-flip className="text-primary size-4" />
+          <span className="tabular-nums">{periodLabel(value, i18n.language)}</span>
+        </button>
+      </Tooltip>
 
       {open &&
         coords &&

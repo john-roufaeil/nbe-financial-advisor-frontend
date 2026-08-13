@@ -20,3 +20,8 @@ export const TRANSACTION_AMOUNT_FILTER_MAX = 10_000;
 export const QUERY_RETRY_COUNT = 2;
 export const MUTATION_RETRY_COUNT = 0;
 export const BYTES_PER_KB = 1024;
+
+// Must match the backend's CHAT_MESSAGE_MAX_LENGTH (core/constants.py) —
+// the backend is the source of truth (a 422 rejects anything over this),
+// this just stops the user from typing past it in the first place.
+export const CHAT_MESSAGE_MAX_LENGTH = 4000;

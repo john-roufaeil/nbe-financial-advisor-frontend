@@ -6,6 +6,11 @@
       "low": "Low",
       "medium": "Medium",
       "high": "High"
+    },
+    "severityTooltip": {
+      "low": "A minor deviation from your usual pattern — worth a glance.",
+      "medium": "A notable deviation from your usual spending pattern.",
+      "high": "A significant deviation, such as an unusually large or duplicate-looking charge."
     }
   }
 }
