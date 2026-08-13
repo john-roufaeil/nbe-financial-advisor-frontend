@@ -51,28 +51,38 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
             </span>
           </span>
           {currentPct >= 100 ? (
-            <span className="bg-success/10 text-success inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold">
-              <CheckCircle2 data-no-flip className="size-3" />
-              {t("dashboard.goals.completed")}
-            </span>
+            <Tooltip content={t("dashboard.goals.completedTooltip")}>
+              <span className="bg-success/10 text-success inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold">
+                <CheckCircle2 data-no-flip className="size-3" />
+                {t("dashboard.goals.completed")}
+              </span>
+            </Tooltip>
           ) : (
             goal.onTrack !== undefined && (
-              <span
-                className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+              <Tooltip
+                content={t(
                   goal.onTrack
-                    ? "bg-success/10 text-success"
-                    : "bg-warning/10 text-warning"
-                }`}
-              >
-                {goal.onTrack ? (
-                  <TrendingUp data-no-flip className="size-3" />
-                ) : (
-                  <TriangleAlert data-no-flip className="size-3" />
+                    ? "dashboard.goals.onTrackTooltip"
+                    : "dashboard.goals.behindScheduleTooltip",
                 )}
-                {goal.onTrack
-                  ? t("dashboard.goals.onTrack")
-                  : t("dashboard.goals.behindSchedule")}
-              </span>
+              >
+                <span
+                  className={`inline-flex shrink-0 items-center gap-1 rounded-full px-2 py-0.5 text-xs font-semibold ${
+                    goal.onTrack
+                      ? "bg-success/10 text-success"
+                      : "bg-warning/10 text-warning"
+                  }`}
+                >
+                  {goal.onTrack ? (
+                    <TrendingUp data-no-flip className="size-3" />
+                  ) : (
+                    <TriangleAlert data-no-flip className="size-3" />
+                  )}
+                  {goal.onTrack
+                    ? t("dashboard.goals.onTrack")
+                    : t("dashboard.goals.behindSchedule")}
+                </span>
+              </Tooltip>
             )
           )}
         </div>
@@ -144,21 +154,31 @@ function GoalMilestones({ goal, currency }: { goal: FinancialGoal; currency: str
               </div>
 
               <div className="shrink-0 text-right">
-                <span
-                  className={`rounded-full px-2 py-0.5 text-xs font-semibold tracking-wide uppercase ${
+                <Tooltip
+                  content={t(
                     isCompleted
-                      ? "bg-success/10 text-success"
+                      ? "dashboard.goals.status.reachedTooltip"
                       : isNextUp
-                        ? "bg-primary/10 text-primary animate-pulse"
-                        : "bg-base-200/50 text-base-content/30"
-                  }`}
+                        ? "dashboard.goals.status.nextTooltip"
+                        : "dashboard.goals.status.lockedTooltip",
+                  )}
                 >
-                  {isCompleted
-                    ? t("dashboard.goals.status.reached", "Reached")
-                    : isNextUp
-                      ? t("dashboard.goals.status.next", "Next Up")
-                      : t("dashboard.goals.status.locked", "Locked")}
-                </span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold tracking-wide uppercase ${
+                      isCompleted
+                        ? "bg-success/10 text-success"
+                        : isNextUp
+                          ? "bg-primary/10 text-primary animate-pulse"
+                          : "bg-base-200/50 text-base-content/30"
+                    }`}
+                  >
+                    {isCompleted
+                      ? t("dashboard.goals.status.reached", "Reached")
+                      : isNextUp
+                        ? t("dashboard.goals.status.next", "Next Up")
+                        : t("dashboard.goals.status.locked", "Locked")}
+                  </span>
+                </Tooltip>
               </div>
             </div>
           );

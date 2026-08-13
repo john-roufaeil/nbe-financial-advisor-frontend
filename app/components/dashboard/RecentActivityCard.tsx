@@ -17,6 +17,7 @@ import { useTransactions } from "@/queries/transactions";
 import { useBankStatements } from "@/queries/bank-statements";
 import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
+import { Tooltip } from "@/components/shared/Tooltip";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { ErrorState } from "@/components/shared/QueryState";
 import { formatDate } from "@/lib/format";
@@ -30,6 +31,7 @@ type TypeChip = (typeof TYPE_CHIPS)[number];
 
 function SummaryCard({
   to,
+  tooltip,
   icon: Icon,
   color,
   title,
@@ -42,6 +44,7 @@ function SummaryCard({
   children,
 }: {
   to: string;
+  tooltip: string;
   icon: typeof ArrowLeftRight;
   color: string;
   title: string;
@@ -58,51 +61,55 @@ function SummaryCard({
   const isEmpty = count === 0;
 
   return (
-    <Link
-      to={to}
-      // When empty, the whole card is the invitation to add the first item —
-      // send it straight into the add flow instead of the (empty) list view.
-      state={isEmpty ? { openAdd: true } : undefined}
-      className="card border-base-300 bg-base-100 hover:border-primary group animate-entry h-48 border shadow-sm transition-colors xl:h-full"
-    >
-      <div className="card-body flex h-full min-h-0 flex-col gap-3 p-4">
-        <div className="flex shrink-0 items-center gap-2">
-          <span className={`grid size-9 shrink-0 place-items-center rounded-lg ${color}`}>
-            <Icon className="size-4.5" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <h3 className="text-base-content text-sm font-semibold">{title}</h3>
-            {count > 0 && <p className="text-base-content/50 text-xs">{countLabel}</p>}
-          </div>
-          <ChevronRight className="text-base-content/30 group-hover:text-primary size-4 shrink-0 transition-[color,translate] ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
-        </div>
-        {controls}
-        {count > 0 ? (
-          <div className="relative min-h-0 flex-1">
-            <ul className="flex h-full flex-col gap-2 overflow-y-auto">{children}</ul>
-            {/* Fade hints that the list keeps going below the fold — cheap CSS-only
-                affordance, harmless to render even when the list doesn't overflow. */}
-            <div
-              aria-hidden="true"
-              className="from-base-100 pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-linear-to-t to-transparent"
-            />
-          </div>
-        ) : (
-          <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
-            <div className="flex items-center gap-1.5">
-              <EmptyIcon className="text-base-content/30 size-4 shrink-0" />
-              <p className="text-base-content/50 text-xs">{emptyLabel}</p>
-            </div>
-            {/* Purely visual — the card itself (the enclosing `<Link>`) is the
-                click target, so this isn't a real nested button. */}
-            <span className="btn btn-primary btn-xs pointer-events-none gap-1 font-medium normal-case shadow-sm">
-              <Plus className="size-3.5" />
-              {emptyCtaLabel}
+    <Tooltip content={tooltip} className="h-48 w-full xl:h-full">
+      <Link
+        to={to}
+        // When empty, the whole card is the invitation to add the first item —
+        // send it straight into the add flow instead of the (empty) list view.
+        state={isEmpty ? { openAdd: true } : undefined}
+        className="card border-base-300 bg-base-100 hover:border-primary group animate-entry h-48 w-full border shadow-sm transition-colors xl:h-full"
+      >
+        <div className="card-body flex h-full min-h-0 flex-col gap-3 p-4">
+          <div className="flex shrink-0 items-center gap-2">
+            <span
+              className={`grid size-9 shrink-0 place-items-center rounded-lg ${color}`}
+            >
+              <Icon className="size-4.5" />
             </span>
+            <div className="min-w-0 flex-1">
+              <h3 className="text-base-content text-sm font-semibold">{title}</h3>
+              {count > 0 && <p className="text-base-content/50 text-xs">{countLabel}</p>}
+            </div>
+            <ChevronRight className="text-base-content/30 group-hover:text-primary size-4 shrink-0 transition-[color,translate] ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
           </div>
-        )}
-      </div>
-    </Link>
+          {controls}
+          {count > 0 ? (
+            <div className="relative min-h-0 flex-1">
+              <ul className="flex h-full flex-col gap-2 overflow-y-auto">{children}</ul>
+              {/* Fade hints that the list keeps going below the fold — cheap CSS-only
+                  affordance, harmless to render even when the list doesn't overflow. */}
+              <div
+                aria-hidden="true"
+                className="from-base-100 pointer-events-none absolute inset-x-0 bottom-0 h-4 bg-linear-to-t to-transparent"
+              />
+            </div>
+          ) : (
+            <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
+              <div className="flex items-center gap-1.5">
+                <EmptyIcon className="text-base-content/30 size-4 shrink-0" />
+                <p className="text-base-content/50 text-xs">{emptyLabel}</p>
+              </div>
+              {/* Purely visual — the card itself (the enclosing `<Link>`) is the
+                  click target, so this isn't a real nested button. */}
+              <span className="btn btn-primary btn-xs pointer-events-none gap-1 font-medium normal-case shadow-sm">
+                <Plus className="size-3.5" />
+                {emptyCtaLabel}
+              </span>
+            </div>
+          )}
+        </div>
+      </Link>
+    </Tooltip>
   );
 }
 
@@ -155,9 +162,10 @@ function TransactionsSummary({ filters }: { filters: DashboardFilters }) {
         </div>
       }
       to={`/${lang}/transactions`}
+      tooltip={t("dashboard.recentActivity.transactionsTooltip")}
       icon={ArrowLeftRight}
       color="bg-info/10 text-info"
-      title={t("transactions.title")}
+      title={t("dashboard.recentActivity.transactionsTitle")}
       count={data?.total ?? 0}
       countLabel={t("transactions.pagination.total", { count: data?.total ?? 0 })}
       emptyIcon={Inbox}
@@ -208,9 +216,10 @@ function BankStatementsSummary() {
   return (
     <SummaryCard
       to={`/${lang}/bank-statements`}
+      tooltip={t("dashboard.recentActivity.statementsTooltip")}
       icon={FileText}
       color="bg-secondary/10 text-secondary"
-      title={t("bankStatements.title")}
+      title={t("dashboard.recentActivity.statementsTitle")}
       count={data?.total ?? 0}
       countLabel={t("bankStatements.pagination.total", { count: data?.total ?? 0 })}
       emptyIcon={FileX2}

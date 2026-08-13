@@ -25,11 +25,13 @@ function AnomalyRow({ anomaly }: { anomaly: AnomalyFlag }) {
 
   return (
     <li className="border-base-300 bg-base-100 flex min-w-0 items-start gap-3 rounded-lg border p-3">
-      <span
-        className={`badge ${SEVERITY_BADGE_CLASS[anomaly.severity]} mt-0.5 shrink-0 text-xs`}
-      >
-        {t(`anomalies.severity.${anomaly.severity}`)}
-      </span>
+      <Tooltip content={t(`anomalies.severityTooltip.${anomaly.severity}`)}>
+        <span
+          className={`badge ${SEVERITY_BADGE_CLASS[anomaly.severity]} mt-0.5 shrink-0 text-xs`}
+        >
+          {t(`anomalies.severity.${anomaly.severity}`)}
+        </span>
+      </Tooltip>
       <div className="min-w-0 flex-1">
         <p className="text-sm">{anomaly.reason}</p>
         <p className="text-base-content/50 mt-1 flex flex-wrap items-center gap-1 text-xs">

@@ -26,7 +26,6 @@ import { IncomeStabilityCard } from "@/components/dashboard/IncomeStabilityCard"
 import { AccountsSummaryCard } from "@/components/dashboard/AccountsSummaryCard";
 import { RecurringTotalCard } from "@/components/dashboard/RecurringTotalCard";
 import { TopCategoryCard } from "@/components/dashboard/TopCategoryCard";
-import { DaysToGoalCard } from "@/components/dashboard/DaysToGoalCard";
 import { AddItemFab } from "@/components/dashboard/AddItemFab";
 import { useDashboard } from "@/queries/dashboard";
 import { usePageTitle } from "@/lib/use-page-title";
@@ -93,12 +92,11 @@ export default function Dashboard() {
       <DashboardToolbar filters={filters} onFiltersChange={setFilters} />
 
       {!isPending && !isError && show("insights") && (
-        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
+        <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
           {data.stability && <IncomeStabilityCard stability={data.stability} />}
           <AccountsSummaryCard />
           <RecurringTotalCard currency={data.currency} />
           <TopCategoryCard categories={data.budget.categories} currency={data.currency} />
-          <DaysToGoalCard />
         </div>
       )}
 
