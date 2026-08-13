@@ -14,8 +14,9 @@ work with a backend already running elsewhere.
 
 ### Option A — Docker (recommended, full stack)
 
-Requires `nbe-financial-advisor-backend` and `nbe-financial-advisor-ai-service`
-checked out as sibling directories next to this repo:
+The compose files live in `nbe-financial-advisor-backend/deploy/`, not this
+repo. Requires this repo and `nbe-financial-advisor-ai-service` checked out
+as sibling directories next to `nbe-financial-advisor-backend`:
 
 ```bash
 # 1. Copy .env.example → .env in this repo, ../nbe-financial-advisor-backend,
@@ -23,13 +24,15 @@ checked out as sibling directories next to this repo:
 cp .env.example .env
 
 # 2. Bring up the whole stack (hot reload on backend/frontend/ai-service)
+cd ../nbe-financial-advisor-backend/deploy
 docker compose -f docker-compose.dev.yml up -d --build
 
 # 3. Open http://localhost:5173
 ```
 
 Full details — service list, `.env` files explained, prod compose, data
-persistence — live in [DOCKER.md](DOCKER.md).
+persistence — live in
+[nbe-financial-advisor-backend/deploy/DOCKER.md](../nbe-financial-advisor-backend/deploy/DOCKER.md).
 
 ### Option B — Node only (frontend against an already-running backend)
 
