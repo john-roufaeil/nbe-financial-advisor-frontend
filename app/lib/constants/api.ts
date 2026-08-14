@@ -51,8 +51,6 @@ export const API_ENDPOINTS = {
   anomalies: "/analytics/anomalies",
   anomaly: (id: string) => `/analytics/anomalies/${id}`,
   eventsTicket: "/events/ticket",
-  recommendations: "/recommendations",
-  recommendationFeedback: (id: string) => `/recommendations/${id}/feedback`,
   monthlySummaries: "/analytics/monthly-summaries",
   categoryBreakdown: "/analytics/category-breakdown",
   recurringCharges: "/analytics/recurring-charges",

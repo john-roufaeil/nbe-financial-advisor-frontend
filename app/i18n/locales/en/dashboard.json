@@ -40,7 +40,13 @@
       "savingsRate": "Savings Rate",
       "vsLastMonth": "vs last month",
       "vsPreviousPeriod": "vs previous period",
-      "drillDown": "View {{stat}} transactions"
+      "drillDown": "View {{stat}} transactions",
+      "tooltips": {
+        "balance": "Combined balance across all your linked accounts, right now.",
+        "income": "Money received across all accounts during this period. Click to view your income transactions.",
+        "spending": "Money spent across all accounts during this period. Click to view your spending transactions.",
+        "savingsRate": "Share of your income left over after spending this period."
+      }
     },
     "goals": {
       "goal": "goal",
@@ -62,6 +68,9 @@
       "onTrack": "On track",
       "behindSchedule": "Behind schedule",
       "completed": "Completed",
+      "completedTooltip": "You've reached 100% of your target.",
+      "onTrackTooltip": "Your current pace should get you to this goal by the projected date.",
+      "behindScheduleTooltip": "At your current pace, you may miss the projected completion date.",
       "projectedCompletion": "Projected to finish {{date}}",
       "errors": {
         "nameRequired": "Enter a name for this goal.",
@@ -72,7 +81,10 @@
       "status": {
         "reached": "Reached",
         "next": "Next Up",
-        "locked": "Locked"
+        "locked": "Locked",
+        "reachedTooltip": "You've hit this milestone.",
+        "nextTooltip": "This is your next milestone.",
+        "lockedTooltip": "You haven't reached this milestone yet."
       }
     },
     "budget": {
@@ -111,26 +123,26 @@
       "unstable": "Unstable"
     },
     "accountsSummary": {
-      "label": "Active accounts"
+      "label": "Active accounts",
+      "tooltip": "Number of linked bank accounts that are still active."
     },
     "recurringTotal": {
-      "label": "Est. recurring per month"
+      "label": "Est. recurring per month",
+      "tooltip": "Estimated total you pay each month across all detected recurring charges."
     },
     "topCategory": {
-      "label": "Top spend"
-    },
-    "daysToGoal": {
-      "label": "Days to goal",
-      "days_zero": "Today",
-      "days_one": "{{count}} day",
-      "days_two": "{{count}} days",
-      "days_few": "{{count}} days",
-      "days_many": "{{count}} days",
-      "days_other": "{{count}} days"
+      "label": "Top spend",
+      "tooltip": "The spending category with the highest total this period."
     },
     "categoryBreakdown": {
       "title": "Top categories this month",
       "empty": "No transactions yet this month."
+    },
+    "recentActivity": {
+      "transactionsTitle": "Recent Transactions",
+      "transactionsTooltip": "Go to Transactions to see your full transaction history.",
+      "statementsTitle": "Recent Statements",
+      "statementsTooltip": "Go to Bank Statements to see all your uploaded statements."
     },
     "recurringCharges": {
       "title": "Recurring Charges",

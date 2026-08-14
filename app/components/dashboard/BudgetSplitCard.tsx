@@ -27,43 +27,52 @@ function BudgetRow({
   const Icon = categoryIcon(category.name);
 
   return (
-    <li
-      role="button"
-      tabIndex={0}
-      aria-label={t("dashboard.budget.drillDown", {
-        category: t(`common.categories.${category.name}`, category.name),
-      })}
-      onClick={onDrillDown}
-      onKeyDown={(e) => {
-        if (e.key === "Enter" || e.key === " ") {
-          e.preventDefault();
-          onDrillDown();
-        }
-      }}
-      className="hover:bg-base-200/60 focus-visible:outline-primary -mx-1.5 flex cursor-pointer flex-col gap-1.5 rounded-lg px-1.5 py-1 transition-colors"
-    >
-      <div className="flex items-center justify-between text-sm">
-        <span className="flex min-w-0 items-center gap-1.5 font-medium capitalize">
-          <Icon data-no-flip className="text-base-content/60 size-3.5 shrink-0" />
-          {t(`common.categories.${category.name}`, category.name)}
-        </span>
-        <Money className="text-base-content/60 tabular-nums">
-          {formatN(category.spent)} / {formatN(category.budget)}{" "}
-          {t(`currency.${currency}`, currency)}
-        </Money>
-      </div>
-      <div className="bg-base-200 h-2 w-full overflow-hidden rounded-full">
+    <li>
+      <Tooltip
+        content={t("dashboard.budget.drillDown", {
+          category: t(`common.categories.${category.name}`, category.name),
+        })}
+        className="w-full"
+      >
         <div
-          className={`h-full rounded-full ${isOver ? "bg-error" : ""}`}
-          style={{ width: `${pct}%`, backgroundColor: isOver ? undefined : color }}
-        />
-      </div>
-      {isOver && (
-        <p className="text-error flex items-center gap-1 text-xs">
-          <TriangleAlert className="size-3.5" />
-          {t("dashboard.budget.over")}
-        </p>
-      )}
+          role="button"
+          tabIndex={0}
+          aria-label={t("dashboard.budget.drillDown", {
+            category: t(`common.categories.${category.name}`, category.name),
+          })}
+          onClick={onDrillDown}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onDrillDown();
+            }
+          }}
+          className="hover:bg-base-200/60 focus-visible:outline-primary -mx-1.5 flex w-full cursor-pointer flex-col gap-1.5 rounded-lg px-1.5 py-1 transition-colors"
+        >
+          <div className="flex items-center justify-between text-sm">
+            <span className="flex min-w-0 items-center gap-1.5 font-medium capitalize">
+              <Icon data-no-flip className="text-base-content/60 size-3.5 shrink-0" />
+              {t(`common.categories.${category.name}`, category.name)}
+            </span>
+            <Money className="text-base-content/60 tabular-nums">
+              {formatN(category.spent)} / {formatN(category.budget)}{" "}
+              {t(`currency.${currency}`, currency)}
+            </Money>
+          </div>
+          <div className="bg-base-200 h-2 w-full overflow-hidden rounded-full">
+            <div
+              className={`h-full rounded-full ${isOver ? "bg-error" : ""}`}
+              style={{ width: `${pct}%`, backgroundColor: isOver ? undefined : color }}
+            />
+          </div>
+          {isOver && (
+            <p className="text-error flex items-center gap-1 text-xs">
+              <TriangleAlert className="size-3.5" />
+              {t("dashboard.budget.over")}
+            </p>
+          )}
+        </div>
+      </Tooltip>
     </li>
   );
 }

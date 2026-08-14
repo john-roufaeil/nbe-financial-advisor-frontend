@@ -1,6 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { MonthPicker } from "@/components/budget/MonthPicker";
+import { Tooltip } from "@/components/shared/Tooltip";
 
 /**
  * Shared month control for the "current standing" group (Insights, KPI strip,
@@ -24,29 +25,33 @@ export function BudgetMonthNav({
 
   return (
     <div className="flex items-center gap-1">
-      <button
-        type="button"
-        onClick={() => prevPeriod && onPeriodChange(prevPeriod)}
-        disabled={!prevPeriod}
-        aria-label={t("budget.nav.previousMonth")}
-        className="btn btn-ghost btn-sm btn-square"
-      >
-        <ChevronLeft className="size-4" />
-      </button>
+      <Tooltip content={t("budget.nav.previousMonth")}>
+        <button
+          type="button"
+          onClick={() => prevPeriod && onPeriodChange(prevPeriod)}
+          disabled={!prevPeriod}
+          aria-label={t("budget.nav.previousMonth")}
+          className="btn btn-ghost btn-sm btn-square"
+        >
+          <ChevronLeft className="size-4" />
+        </button>
+      </Tooltip>
       <MonthPicker
         value={period}
         onChange={onPeriodChange}
         availablePeriods={availablePeriods}
       />
-      <button
-        type="button"
-        onClick={() => nextPeriod && onPeriodChange(nextPeriod)}
-        disabled={!nextPeriod}
-        aria-label={t("budget.nav.nextMonth")}
-        className="btn btn-ghost btn-sm btn-square"
-      >
-        <ChevronRight className="size-4" />
-      </button>
+      <Tooltip content={t("budget.nav.nextMonth")}>
+        <button
+          type="button"
+          onClick={() => nextPeriod && onPeriodChange(nextPeriod)}
+          disabled={!nextPeriod}
+          aria-label={t("budget.nav.nextMonth")}
+          className="btn btn-ghost btn-sm btn-square"
+        >
+          <ChevronRight className="size-4" />
+        </button>
+      </Tooltip>
     </div>
   );
 }

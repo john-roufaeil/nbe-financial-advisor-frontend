@@ -20,7 +20,6 @@ import enNotFound from "./locales/en/notFound.json";
 import enAdmin from "./locales/en/admin.json";
 import enBankConnections from "./locales/en/bankConnections.json";
 import enAnomalies from "./locales/en/anomalies.json";
-import enRecommendations from "./locales/en/recommendations.json";
 import enBudget from "./locales/en/budget.json";
 
 import arApp from "./locales/ar/app.json";
@@ -41,7 +40,6 @@ import arNotFound from "./locales/ar/notFound.json";
 import arAdmin from "./locales/ar/admin.json";
 import arBankConnections from "./locales/ar/bankConnections.json";
 import arAnomalies from "./locales/ar/anomalies.json";
-import arRecommendations from "./locales/ar/recommendations.json";
 import arBudget from "./locales/ar/budget.json";
 
 export const SUPPORTED_LANGUAGES = ["en", "ar"] as const;
@@ -73,7 +71,6 @@ const enCommon = {
   ...enAdmin,
   ...enBankConnections,
   ...enAnomalies,
-  ...enRecommendations,
   ...enBudget,
 };
 
@@ -96,7 +93,6 @@ const arCommon = {
   ...arAdmin,
   ...arBankConnections,
   ...arAnomalies,
-  ...arRecommendations,
   ...arBudget,
 };
 

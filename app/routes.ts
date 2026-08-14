@@ -21,7 +21,6 @@ export default [
         route(`:lang/${ROUTE_SEGMENTS.transactions}`, "routes/transactions.tsx"),
         route(`:lang/${ROUTE_SEGMENTS.bankStatements}`, "routes/bank-statements.tsx"),
         route(`:lang/${ROUTE_SEGMENTS.budget}`, "routes/budget.tsx"),
-        route(`:lang/${ROUTE_SEGMENTS.recommendations}`, "routes/recommendations.tsx"),
         route(`:lang/${ROUTE_SEGMENTS.profile}`, "routes/profile.tsx"),
       ]),
     ]),

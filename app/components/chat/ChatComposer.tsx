@@ -13,6 +13,27 @@ import {
   captureComposerTextForRestore,
   registerComposerTextRestore,
 } from "@/lib/composer-text-recovery";
+import { CHAT_MESSAGE_MAX_LENGTH } from "@/lib/constants/limits";
+
+// Only surfaced once the user is close to the cap — showing "0/4000" from
+// the first keystroke would just be noise.
+const CHAR_COUNT_VISIBLE_THRESHOLD = 100;
+
+function ComposerCharCount() {
+  const text = useComposer((c) => c.text);
+  const remaining = CHAT_MESSAGE_MAX_LENGTH - text.length;
+  if (remaining > CHAR_COUNT_VISIBLE_THRESHOLD) return null;
+
+  return (
+    <span
+      className={`shrink-0 self-end px-1 pb-1.5 text-xs tabular-nums ${
+        remaining < 0 ? "text-error" : "text-base-content/60"
+      }`}
+    >
+      {text.length}/{CHAT_MESSAGE_MAX_LENGTH}
+    </span>
+  );
+}
 
 function ComposerAttachment() {
   const { t } = useTranslation();
@@ -87,8 +108,10 @@ export function ChatComposer() {
             <ComposerPrimitive.Input
               placeholder={t("chat.placeholder")}
               rows={1}
+              maxLength={CHAT_MESSAGE_MAX_LENGTH}
               className="max-h-40 min-h-9 flex-1 resize-none bg-transparent px-1 py-1.5 focus:outline-none"
             />
+            <ComposerCharCount />
             <ThreadPrimitive.If running={false}>
               <ComposerSendButton />
             </ThreadPrimitive.If>
