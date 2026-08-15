@@ -17,7 +17,9 @@ export interface RawReference {
  * plain prose alongside it. `stage` is a topic label ("general"), not a lifecycle
  * state — see isAwaitingReply in queries/chat.ts, which doesn't depend on it. */
 export interface RawWidget {
-  type: string;
+  /** Null on a reply with no widget — the backend always sends the slot as
+   *  `{type: null, payload: null}` rather than omitting it. */
+  type: string | null;
   payload: unknown;
 }
 
@@ -45,7 +47,11 @@ function toList<T>(data: ListEnvelope<T>): T[] {
  * on a "user" message.
  */
 function parseToolCall(raw: RawMessage): ChatToolCall | undefined {
-  if (!raw.widget || raw.sender !== "assistant") return undefined;
+  // `widget.type`, not `widget` itself: a reply with no widget still carries
+  // the slot as `{type: null, payload: null}`, a truthy object. Testing the
+  // object alone mints a tool call named `null` — no card renders, and worse,
+  // isAwaitingReply (queries/chat.ts) reads it as "a reply has arrived".
+  if (!raw.widget?.type || raw.sender !== "assistant") return undefined;
   return { toolName: raw.widget.type, args: {}, result: raw.widget.payload };
 }
 

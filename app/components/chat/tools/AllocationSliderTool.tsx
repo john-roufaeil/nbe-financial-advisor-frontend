@@ -8,8 +8,16 @@ import { categoryIcon } from "@/lib/constants/category-icons";
 import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
 
 /** Matches `widget.payload` for `allocation_slider` (ai-service's `Allocation`
- * model). Field is `percentage`, not `allocated_percentage` — using the wrong
- * name here previously made every render fail safeParse silently.
+ * schema, app/features/chat/schemas/widgets.py) — a slimmer shape than the
+ * dashboard's `Allocation` type: no amount/currency, just the percentages the
+ * chat widget lets the user adjust and confirm.
+ *
+ * The field is `percentage`, not `allocated_percentage` — using the wrong name
+ * here previously made every render fail safeParse silently.
+ * `allocated_percentage` is the *dashboard* budget API's field name
+ * (AllocationInputSerializer), used below only for the outgoing
+ * useUpdateBudget mutation, never for reading this incoming payload.
+ *
  * Validated at runtime since `result` is LLM-originated, not a typed REST response. */
 const AllocationSliderPayloadSchema = z.object({
   allocations: z.array(
