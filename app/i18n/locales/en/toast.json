@@ -19,6 +19,8 @@
     "issueReported": "Issue reported — thanks for letting us know",
     "verificationEmailSent": "Verification email sent — check your inbox.",
     "genericError": "Something went wrong. Please try again.",
+    "rateLimited": "Too many attempts — please wait {{seconds}}s and try again.",
+    "rateLimitedGeneric": "Too many attempts — please wait a moment and try again.",
     "emailTaken": "This email is already registered.",
     "budgetCreated": "Registration successful",
     "budgetUpdated": "Plan updated",
