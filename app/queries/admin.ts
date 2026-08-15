@@ -48,6 +48,15 @@ export function useAdminLogin() {
   });
 }
 
+export function useAdminLogout() {
+  return useMutation({
+    // Best-effort: invalidate the refresh token server-side (SEC-009). Local
+    // state is cleared by the caller regardless of success/failure (offline,
+    // already expired, etc.) — same pattern as the end-user useLogout().
+    mutationFn: () => adminApi.adminLogout(),
+  });
+}
+
 export function useAdminCategories(params: AdminCategoryListParams) {
   return useQuery({
     queryKey: adminKeys.categories(params),

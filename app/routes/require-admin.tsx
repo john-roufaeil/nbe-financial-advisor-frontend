@@ -1,17 +1,21 @@
-import { Navigate, Outlet, useParams } from "react-router";
-import { useAdminAuthStore } from "@/store/use-admin-auth-store";
+import { Navigate, Outlet } from "react-router";
+import { useAdminSessionGate } from "@/lib/use-admin-session-gate";
+import { RestoringScreen } from "@/components/shared/auth/RestoringScreen";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 
 /**
- * Gate for admin-only routes. Much simpler than RequireAuth: admin tokens have
- * no refresh flow, so there is no "restoring" state to wait on — either the
- * sessionStorage-persisted token exists or the admin must sign in again. An
- * expired token is caught by the admin client's 401 interceptor, which clears
- * the store and re-triggers this redirect.
+ * Gate for admin-only routes. Same shape as RequireAuth (core/views/auth.py's
+ * end-user equivalent, app/components/shared/auth/RequireAuth.tsx) now that
+ * POST /admin/auth/refresh exists (SEC-009): guards on the ACCESS TOKEN, not
+ * the persisted `isAuthenticated` flag, and waits for useAdminSessionGate's
+ * restore round-trip to settle before redirecting — a reload doesn't briefly
+ * bounce a signed-in admin to sign-in just because the in-memory token hasn't
+ * been restored from the httpOnly cookie yet.
  */
 export default function RequireAdmin() {
-  const { lang } = useParams<{ lang: string }>();
-  const hasSession = useAdminAuthStore((s) => s.accessToken !== null);
+  const { restoring, hasSession, lang } = useAdminSessionGate();
+
+  if (restoring) return <RestoringScreen />;
 
   if (!hasSession) {
     return <Navigate to={localizedPath(lang!, ROUTE_SEGMENTS.admin)} replace />;

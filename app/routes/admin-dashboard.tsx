@@ -12,7 +12,7 @@ import {
 } from "lucide-react";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useAdminAuthStore } from "@/store/use-admin-auth-store";
-import { useAdminOverviewCounts } from "@/queries/admin";
+import { useAdminOverviewCounts, useAdminLogout } from "@/queries/admin";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 import { ConfirmDialog } from "@/components/shared/modals/ConfirmDialog";
 import { LanguageSwitcher } from "@/components/shared/preferences/LanguageSwitcher";
@@ -39,6 +39,7 @@ export default function AdminDashboard() {
   usePageTitle(t("admin.dashboard.title"));
   const role = useAdminAuthStore((s) => s.role);
   const logout = useAdminAuthStore((s) => s.logout);
+  const logoutMutation = useAdminLogout();
   const [tab, setTab] = useState<Tab>("categories");
   const [drawerOpen, setDrawerOpen] = useState(false);
   const counts = useAdminOverviewCounts();
@@ -47,9 +48,16 @@ export default function AdminDashboard() {
   // hiding the buttons for reviewers just keeps the UI honest about it.
   const canWrite = role === "super_admin";
 
-  // No admin logout endpoint exists — dropping the local session is the whole
-  // operation (see use-admin-auth-store).
-  function handleLogout() {
+  // SEC-009: invalidates the refresh token server-side (POST
+  // /admin/auth/logout) before dropping the local session — best-effort,
+  // same as the end-user flow: local state clears regardless of whether the
+  // request succeeds (offline, already expired, etc.).
+  async function handleLogout() {
+    try {
+      await logoutMutation.mutateAsync();
+    } catch {
+      // Best-effort — local state still clears below.
+    }
     logout();
     navigate(localizedPath(lang!, ROUTE_SEGMENTS.admin), { replace: true });
   }

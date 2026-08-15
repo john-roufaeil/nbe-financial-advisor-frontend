@@ -1,8 +1,10 @@
 /**
  * Admin API shapes — mirrors core/serializers/administration.py and
  * core/serializers/categories.py on the backend. Admin auth is a completely
- * separate credential space from end-user auth: tokens are NOT interchangeable,
- * and there is no admin refresh/logout endpoint (tokens simply expire).
+ * separate credential space from end-user auth: tokens are NOT
+ * interchangeable, and it has its own refresh/logout endpoints
+ * (POST /admin/auth/refresh, POST /admin/auth/logout — SEC-009), separate
+ * from the end-user ones.
  */
 
 export interface AdminLoginBody {
@@ -12,9 +14,15 @@ export interface AdminLoginBody {
 
 export type AdminRole = "reviewer" | "super_admin";
 
+/**
+ * Shared by POST /admin/auth/login and POST /admin/auth/refresh — see
+ * AdminLoginResponseSerializer's docstring (core/serializers/administration.py)
+ * for why those two responses are identical in shape. No `refresh_token`
+ * field — it's set as an httpOnly cookie instead, so it's never readable by
+ * client-side JavaScript, even via a successful XSS attack.
+ */
 export interface AdminLoginResponse {
   access_token: string;
-  refresh_token: string;
   admin_id: string;
   role: AdminRole;
 }
