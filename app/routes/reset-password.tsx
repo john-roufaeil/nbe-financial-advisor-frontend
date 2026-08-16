@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useSearchParams, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
-import { CheckCircle2, XCircle } from "lucide-react";
+import { CheckCircle2, Clock, XCircle } from "lucide-react";
 import { AuthLayout } from "@/components/shared/layout/AuthLayout";
 import { Button } from "@/components/shared/Button";
 import { PasswordInput } from "@/components/shared/forms/PasswordInput";
@@ -13,6 +13,7 @@ import { usePageTitle } from "@/lib/use-page-title";
 import { useSyncHtmlDir } from "@/lib/use-sync-html-dir";
 import { useCanGoBack } from "@/lib/use-can-go-back";
 import { useConfirmPasswordReset } from "@/queries/auth";
+import { isRateLimitError } from "@/lib/toast";
 
 /**
  * Landing page for the password-reset email link
@@ -29,7 +30,9 @@ export default function ResetPassword() {
   const canGoBack = useCanGoBack();
   const [searchParams] = useSearchParams();
   const confirmMutation = useConfirmPasswordReset();
-  const [status, setStatus] = useState<"form" | "success" | "invalid">("form");
+  const [status, setStatus] = useState<"form" | "success" | "invalid" | "rateLimited">(
+    "form",
+  );
 
   const ticket = searchParams.get("t");
 
@@ -61,15 +64,23 @@ export default function ResetPassword() {
         new_password: values.password,
       });
       setStatus("success");
-    } catch {
-      setStatus("invalid");
+    } catch (error) {
+      // A rate-limit (SEC-004) is transient — the link itself is still
+      // valid, so this must not tell the user to request a new one.
+      setStatus(isRateLimitError(error) ? "rateLimited" : "invalid");
     }
   }
 
   if (!ticket) {
     return (
       <AuthLayout>
-        <InvalidState t={t} onBack={() => navigate(-1)} canGoBack={canGoBack} />
+        <InvalidState
+          icon={<XCircle className="text-error size-12" />}
+          title={t("resetPassword.invalidTitle")}
+          message={t("resetPassword.invalidMessage")}
+          onBack={() => navigate(-1)}
+          canGoBack={canGoBack}
+        />
       </AuthLayout>
     );
   }
@@ -85,7 +96,22 @@ export default function ResetPassword() {
         </div>
       )}
       {status === "invalid" && (
-        <InvalidState t={t} onBack={() => navigate(-1)} canGoBack={canGoBack} />
+        <InvalidState
+          icon={<XCircle className="text-error size-12" />}
+          title={t("resetPassword.invalidTitle")}
+          message={t("resetPassword.invalidMessage")}
+          onBack={() => navigate(-1)}
+          canGoBack={canGoBack}
+        />
+      )}
+      {status === "rateLimited" && (
+        <InvalidState
+          icon={<Clock className="text-warning size-12" />}
+          title={t("resetPassword.rateLimitedTitle")}
+          message={t("resetPassword.rateLimitedMessage")}
+          onBack={() => navigate(-1)}
+          canGoBack={canGoBack}
+        />
       )}
       {status === "form" && (
         <div className="flex flex-col gap-4">
@@ -144,19 +170,24 @@ export default function ResetPassword() {
 }
 
 function InvalidState({
-  t,
+  icon,
+  title,
+  message,
   onBack,
   canGoBack,
 }: {
-  t: (key: string) => string;
+  icon: React.ReactNode;
+  title: string;
+  message: string;
   onBack: () => void;
   canGoBack: boolean;
 }) {
+  const { t } = useTranslation();
   return (
     <div className="flex flex-col items-center gap-4 text-center">
-      <XCircle className="text-error size-12" />
-      <h1 className="text-xl font-semibold">{t("resetPassword.invalidTitle")}</h1>
-      <p className="text-base-content/70">{t("resetPassword.invalidMessage")}</p>
+      {icon}
+      <h1 className="text-xl font-semibold">{title}</h1>
+      <p className="text-base-content/70">{message}</p>
       <div className="flex items-center gap-2">
         <button
           type="button"

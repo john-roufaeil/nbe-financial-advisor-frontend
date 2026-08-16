@@ -1,25 +1,27 @@
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Navigate, useNavigate, useParams } from "react-router";
+import { Navigate, useNavigate } from "react-router";
 import { useTranslation } from "react-i18next";
 import { Lock } from "lucide-react";
 import { AdminAuthLayout } from "@/components/admin/AdminAuthLayout";
 import { Button } from "@/components/shared/Button";
 import { PasswordInput } from "@/components/shared/forms/PasswordInput";
+import { RestoringScreen } from "@/components/shared/auth/RestoringScreen";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useAdminLogin } from "@/queries/admin";
-import { useAdminAuthStore } from "@/store/use-admin-auth-store";
+import { useAdminSessionGate } from "@/lib/use-admin-session-gate";
 import { useAuthStore } from "@/store/use-auth-store";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 import NotFound from "@/routes/not-found";
 
 export default function AdminSignIn() {
-  const { lang } = useParams<{ lang: string }>();
   const navigate = useNavigate();
   const { t } = useTranslation();
   usePageTitle(t("admin.signIn.title"));
-  const hasSession = useAdminAuthStore((s) => s.accessToken !== null);
+  // SEC-009: restore-aware now that POST /admin/auth/refresh exists — a
+  // reload no longer means re-entering credentials (see RequireAdmin).
+  const { restoring, hasSession, lang } = useAdminSessionGate();
   // A regular end-user is not part of the admin credential space at all, but
   // the admin sign-in form still existing at a guessable URL leaks that an
   // admin panel exists. Rendering the same 404 a truly unknown route gets
@@ -44,6 +46,8 @@ export default function AdminSignIn() {
   if (isRegularUser) {
     return <NotFound />;
   }
+
+  if (restoring) return <RestoringScreen />;
 
   if (hasSession) {
     return <Navigate to={localizedPath(lang!, ROUTE_SEGMENTS.adminDashboard)} replace />;

@@ -34,6 +34,8 @@ export const API_ENDPOINTS = {
   bankConnections: "/bank-connections",
   bankConnectionCallback: (id: string) => `/bank-connections/${id}/callback`,
   adminAuthLogin: "/admin/auth/login",
+  adminAuthRefresh: "/admin/auth/refresh",
+  adminAuthLogout: "/admin/auth/logout",
   adminCategories: "/admin/categories",
   adminCategory: (id: string) => `/admin/categories/${id}`,
   adminProducts: "/admin/products",

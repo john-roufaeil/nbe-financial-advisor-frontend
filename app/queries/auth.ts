@@ -63,6 +63,10 @@ export function useConfirmEmailVerification() {
 export function useRequestPasswordReset() {
   return useMutation({
     mutationFn: (body: PasswordResetRequestBody) => authApi.requestPasswordReset(body),
+    // Unlike confirm below, this step has no "invalid ticket" state of its
+    // own to render — a rate-limit (SEC-004) or transient failure needs a
+    // toast or the caller gets no feedback at all and the form just sits there.
+    onError: (error) => toastApiError(error),
   });
 }
 

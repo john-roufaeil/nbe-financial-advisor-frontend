@@ -1,16 +1,19 @@
-import axios, { type AxiosError } from "axios";
+import axios, { type AxiosError, type InternalAxiosRequestConfig } from "axios";
 import { useAdminAuthStore } from "@/store/use-admin-auth-store";
 import { API_ENDPOINTS } from "@/lib/constants/api";
 
 /**
  * Separate axios instance for the admin API. It cannot share `apiClient`:
  * that instance attaches the END-USER access token and, on a 401, tries
- * POST /auth/refresh — both wrong here. Admin tokens are a separate
- * credential space with no refresh endpoint, so a 401 on any admin call
- * (other than login itself) simply means the session is over.
+ * POST /auth/refresh — both wrong here. Admin tokens are a completely
+ * separate credential space with their own refresh/logout endpoints
+ * (POST /admin/auth/refresh, POST /admin/auth/logout — SEC-009).
  */
 export const adminApiClient = axios.create({
   baseURL: import.meta.env.VITE_API_BASE_URL,
+  // Required so the browser sends/stores the httpOnly admin_refresh_token cookie.
+  withCredentials: true,
+  timeout: 20_000,
 });
 
 adminApiClient.interceptors.request.use((config) => {
@@ -30,16 +33,86 @@ adminApiClient.interceptors.request.use((config) => {
   return config;
 });
 
+// Requests that must never trigger a refresh-on-401 loop (refresh itself, and
+// login where a 401 just means "bad credentials").
+const ADMIN_AUTH_ENDPOINTS = [
+  API_ENDPOINTS.adminAuthRefresh,
+  API_ENDPOINTS.adminAuthLogin,
+];
+
+function isAdminAuthEndpoint(url?: string) {
+  return !!url && ADMIN_AUTH_ENDPOINTS.some((path) => url.includes(path));
+}
+
+// Shared by every caller that might race into a refresh (401 handler below and
+// useAdminSessionRestore) so parallel callers reuse one request instead of each
+// presenting the same pre-rotation refresh cookie — the backend blacklists an
+// admin refresh token after first use (AdminRefreshView), same as the end-user
+// flow, so a second racing request would otherwise get wrongly signed out.
+let adminRefreshPromise: Promise<{
+  accessToken: string;
+  adminId: string;
+  role: "reviewer" | "super_admin";
+}> | null = null;
+
+/**
+ * POST /admin/auth/refresh takes NO body: the refresh token is an httpOnly
+ * cookie the browser attaches automatically (withCredentials above). It is
+ * never readable by JS, so there is no "do we have a refresh token?" check
+ * we can make up front — we just attempt the call, and a 401 means the
+ * session is genuinely over.
+ */
+async function refreshAdminAccessToken() {
+  const res = await adminApiClient.post<{
+    access_token: string;
+    admin_id: string;
+    role: "reviewer" | "super_admin";
+  }>(API_ENDPOINTS.adminAuthRefresh);
+  const session = {
+    accessToken: res.data.access_token,
+    adminId: res.data.admin_id,
+    role: res.data.role,
+  };
+  useAdminAuthStore
+    .getState()
+    .setAccessToken(session.accessToken, session.adminId, session.role);
+  return session;
+}
+
+/** Shared single-flight entry point — see adminRefreshPromise above. */
+export function refreshAdminAccessTokenOnce() {
+  adminRefreshPromise ??= refreshAdminAccessToken().finally(() => {
+    adminRefreshPromise = null;
+  });
+  return adminRefreshPromise;
+}
+
 adminApiClient.interceptors.response.use(
   (response) => response,
-  (error: AxiosError) => {
-    // A 401 on login is just bad credentials; anywhere else the token has
-    // expired (no admin refresh endpoint exists) — drop the session so the
-    // route guard redirects to the admin sign-in page.
-    const url = error.config?.url ?? "";
-    if (error.response?.status === 401 && !url.includes(API_ENDPOINTS.adminAuthLogin)) {
-      useAdminAuthStore.getState().logout();
+  async (error: AxiosError) => {
+    const originalRequest = error.config as
+      (InternalAxiosRequestConfig & { _retried?: boolean }) | undefined;
+
+    if (
+      error.response?.status !== 401 ||
+      !originalRequest ||
+      originalRequest._retried ||
+      isAdminAuthEndpoint(originalRequest.url)
+    ) {
+      return Promise.reject(error);
     }
-    return Promise.reject(error);
+
+    originalRequest._retried = true;
+
+    try {
+      const { accessToken } = await refreshAdminAccessTokenOnce();
+      originalRequest.headers.Authorization = `Bearer ${accessToken}`;
+      return adminApiClient(originalRequest);
+    } catch {
+      // The refresh cookie is missing, expired, or already used — the
+      // session is over.
+      useAdminAuthStore.getState().logout();
+      return Promise.reject(error);
+    }
   },
 );

@@ -21,6 +21,19 @@ const KNOWN_ERROR_KEYS: { pattern: RegExp; key: string }[] = [
 ];
 
 export function toastApiError(error: unknown) {
+  if (isRateLimitError(error)) {
+    const seconds = getRetryAfterSeconds(error);
+    useToastStore
+      .getState()
+      .show(
+        seconds
+          ? i18n.t("toast.rateLimited", { seconds })
+          : i18n.t("toast.rateLimitedGeneric"),
+        "error",
+      );
+    return;
+  }
+
   const message = extractApiErrorMessage(error);
 
   if (message) {
@@ -30,6 +43,24 @@ export function toastApiError(error: unknown) {
   }
 
   toastError();
+}
+
+/** Whether a failed API call failed specifically because of rate limiting (SEC-004). */
+export function isRateLimitError(error: unknown): boolean {
+  return isAxiosError(error) && error.response?.status === 429;
+}
+
+/**
+ * Seconds until the caller may retry, per the backend's `Retry-After` header
+ * (DRF's Throttled exception sets this automatically). Undefined if the
+ * header is missing or unparseable — callers should fall back to a generic
+ * "try again shortly" message rather than assuming a specific wait.
+ */
+export function getRetryAfterSeconds(error: unknown): number | undefined {
+  if (!isAxiosError(error)) return undefined;
+  const header = error.response?.headers?.["retry-after"];
+  const seconds = Number(header);
+  return Number.isFinite(seconds) && seconds > 0 ? seconds : undefined;
 }
 
 /** Pulls a human-readable message out of a failed API call, if the backend sent one. */

@@ -32,8 +32,13 @@ export const ForgotPasswordModal = forwardRef<HTMLDialogElement>(
     } = useForm<Values>({ resolver: zodResolver(schema) });
 
     async function onSubmit(values: Values) {
-      await requestReset.mutateAsync({ email: values.email });
-      setSent(true);
+      try {
+        await requestReset.mutateAsync({ email: values.email });
+        setSent(true);
+      } catch {
+        // onError above already surfaced a toast (e.g. rate-limited); stay
+        // on the form instead of showing the "check your inbox" state.
+      }
     }
 
     function handleClose() {

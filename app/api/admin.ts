@@ -23,6 +23,18 @@ export async function adminLogin(body: AdminLoginBody): Promise<AdminLoginRespon
   return res.data;
 }
 
+/** Takes NO body — the refresh token rides along as an httpOnly cookie. */
+export async function adminRefresh(): Promise<AdminLoginResponse> {
+  const res = await adminApiClient.post<AdminLoginResponse>(
+    API_ENDPOINTS.adminAuthRefresh,
+  );
+  return res.data;
+}
+
+export async function adminLogout(): Promise<void> {
+  await adminApiClient.post(API_ENDPOINTS.adminAuthLogout);
+}
+
 /** Every admin list endpoint is LimitOffset-paginated ({count, results}). */
 export interface AdminListParams {
   limit?: number;
