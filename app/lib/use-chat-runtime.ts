@@ -16,6 +16,7 @@ import {
   sendPendingChatAttachments,
 } from "@/lib/attachments";
 import {
+  chatKeys,
   useConversations,
   useMessages,
   useCreateConversation,
@@ -24,7 +25,7 @@ import {
   stopChatGeneration,
   isAwaitingReply,
 } from "@/queries/chat";
-import type { ChatConversation } from "@/types/chat";
+import type { ChatConversation, ChatMessage } from "@/types/chat";
 
 /**
  * Referentially stable empty array for ExternalStoreThreadListAdapter's
@@ -242,11 +243,40 @@ export function useAppChatRuntime(active = true) {
     [currentConversationId, conversations, derivedTitles, t, setCurrentConversationId],
   );
 
+  // Backs tool-call components' `addResult` (e.g. AllocationSliderTool
+  // confirming its final values) — without this, useExternalStoreRuntime's
+  // addToolResult throws ("Runtime does not support tool results.") since it
+  // has no adapter callback to persist into, and any `addResult(...)` call
+  // silently fails (thrown inside a mutation's onSuccess, with nothing
+  // surfacing it) leaving the widget's local state as the only place the
+  // update ever landed — lost on remount (e.g. navigating away and back).
+  // Written straight into the query cache, same as the chat_message SSE
+  // handler (use-event-stream.ts) does for a landed reply — this cache is
+  // what convertMessage below reads on every render, and it's kept alive by
+  // useMessages staying mounted (with `enabled: false`) in AppLayout while
+  // navigated away, so it survives exactly the round trip this fixes.
+  const onAddToolResult = useCallback(
+    ({ messageId, result }: { messageId: string; result: unknown }) => {
+      if (!currentConversationId) return;
+      queryClient.setQueryData<ChatMessage[]>(
+        chatKeys.messages(currentConversationId),
+        (old) =>
+          old?.map((m) =>
+            m.id === messageId && m.toolCall
+              ? { ...m, toolCall: { ...m.toolCall, result } }
+              : m,
+          ),
+      );
+    },
+    [currentConversationId, queryClient],
+  );
+
   return useExternalStoreRuntime({
     messages,
     isRunning,
     onNew,
     onCancel,
+    onAddToolResult,
     convertMessage: (m): ThreadMessageLike => ({
       role: m.role,
       id: m.id,
