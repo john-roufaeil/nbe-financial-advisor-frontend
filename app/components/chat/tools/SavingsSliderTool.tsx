@@ -12,8 +12,8 @@ import { useNumberDisplay } from "@/lib/use-number-display";
  * meaningfully less trustworthy source than a typed REST response. */
 const SavingsSliderResultSchema = z.object({
   currency: z.string(),
-  currentBalance: z.number(),
-  defaultMonthlySavings: z.number(),
+  current_balance: z.number(),
+  default_monthly_savings: z.number(),
 });
 
 const HORIZON_MONTHS = 12;
@@ -125,7 +125,7 @@ export const SavingsSliderTool: ToolCallMessagePartComponent = ({ result }) => {
   const { t } = useTranslation();
   const parsed = SavingsSliderResultSchema.safeParse(result);
   const data = parsed.success ? parsed.data : undefined;
-  const [monthly, setMonthly] = useState(data?.defaultMonthlySavings ?? 0);
+  const [monthly, setMonthly] = useState(data?.default_monthly_savings ?? 0);
   const formatN = useNumberDisplay();
 
   // undefined result: still streaming in, render nothing yet. Present but
@@ -133,7 +133,7 @@ export const SavingsSliderTool: ToolCallMessagePartComponent = ({ result }) => {
   if (result !== undefined && !parsed.success) return <ToolPayloadError />;
   if (!data) return null;
 
-  const projected = data.currentBalance + monthly * HORIZON_MONTHS;
+  const projected = data.current_balance + monthly * HORIZON_MONTHS;
   const currencyLabel = t(`currency.${data.currency}`, data.currency);
 
   return (
@@ -146,7 +146,7 @@ export const SavingsSliderTool: ToolCallMessagePartComponent = ({ result }) => {
       </div>
 
       <ProjectionChart
-        start={data.currentBalance}
+        start={data.current_balance}
         monthly={monthly}
         currencyLabel={currencyLabel}
       />

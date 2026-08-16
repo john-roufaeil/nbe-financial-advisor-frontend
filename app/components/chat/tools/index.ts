@@ -5,13 +5,14 @@ import { AllocationSliderTool } from "@/components/chat/tools/AllocationSliderTo
 import { ProductCardTool } from "@/components/chat/tools/ProductCardTool";
 
 // Map of tool name -> renderer, passed to MessagePrimitive.Parts `tools.by_name`.
-// Keys must match the backend's `widget.type` exactly. Only `allocation_slider` and
-// `product_card` exist on the backend today; the other three are speculative names
-// with no matching widget type yet (see CHATBOT_BACKEND_INTEGRATION.md).
+// Keys must match the backend's `widget.type` exactly. All five widget types now
+// exist on the backend; the three former placeholder names (showSpendingBreakdown,
+// showTransactions, showSavingsSlider) never matched anything the backend could
+// send, which is why those renderers never fired.
 export const chatToolComponents = {
-  showSpendingBreakdown: SpendingBreakdownTool,
-  showTransactions: TransactionsListTool,
-  showSavingsSlider: SavingsSliderTool,
+  spending_breakdown: SpendingBreakdownTool,
+  transactions_list: TransactionsListTool,
+  savings_slider: SavingsSliderTool,
   allocation_slider: AllocationSliderTool,
   product_card: ProductCardTool,
 };

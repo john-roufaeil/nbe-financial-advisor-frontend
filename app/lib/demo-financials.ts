@@ -44,7 +44,7 @@ export function buildSpendingBreakdown(): ChatToolCall {
     categories,
   };
 
-  return { toolName: "showSpendingBreakdown", args: { period: "current_month" }, result };
+  return { toolName: "spending_breakdown", args: { period: "current_month" }, result };
 }
 
 const SPENDING_TRIGGERS = [
@@ -74,7 +74,7 @@ export interface ChatTransaction {
   category: string;
   type: "income" | "expense";
   amount: number;
-  datetime: string;
+  date: string;
 }
 
 export interface TransactionsListResult {
@@ -88,35 +88,35 @@ const RECENT_TRANSACTION_POOL: Omit<ChatTransaction, "id">[] = [
     category: "food",
     type: "expense",
     amount: 650,
-    datetime: "2026-07-08T18:32:00",
+    date: "2026-07-08",
   },
   {
     title: "Salary deposit",
     category: "other",
     type: "income",
     amount: 42000,
-    datetime: "2026-07-01T09:00:00",
+    date: "2026-07-01",
   },
   {
     title: "Uber ride",
     category: "transport",
     type: "expense",
     amount: 120,
-    datetime: "2026-07-06T13:05:00",
+    date: "2026-07-06",
   },
   {
     title: "Netflix subscription",
     category: "lifestyle",
     type: "expense",
     amount: 150,
-    datetime: "2026-07-05T00:00:00",
+    date: "2026-07-05",
   },
   {
     title: "Cairo Kitchen restaurant",
     category: "food",
     type: "expense",
     amount: 380,
-    datetime: "2026-07-04T21:10:00",
+    date: "2026-07-04",
   },
 ];
 
@@ -128,7 +128,7 @@ export function buildTransactionsList(): ChatToolCall {
       id: crypto.randomUUID(),
     })),
   };
-  return { toolName: "showTransactions", args: { period: "recent" }, result };
+  return { toolName: "transactions_list", args: { period: "recent" }, result };
 }
 
 const TRANSACTIONS_TRIGGERS = [
@@ -151,17 +151,17 @@ export function wantsTransactions(text: string): boolean {
 
 export interface SavingsSliderResult {
   currency: string;
-  currentBalance: number;
-  defaultMonthlySavings: number;
+  current_balance: number;
+  default_monthly_savings: number;
 }
 
 export function buildSavingsSlider(): ChatToolCall {
   const result: SavingsSliderResult = {
     currency: "EGP",
-    currentBalance: 128450,
-    defaultMonthlySavings: 3000,
+    current_balance: 128450,
+    default_monthly_savings: 3000,
   };
-  return { toolName: "showSavingsSlider", args: { horizonMonths: 12 }, result };
+  return { toolName: "savings_slider", args: { horizonMonths: 12 }, result };
 }
 
 const SAVINGS_TRIGGERS = ["save", "saving", "savings", "ادخار", "أوفر", "توفير"];
@@ -172,17 +172,17 @@ export function wantsSavingsPlan(text: string): boolean {
 }
 
 const SUGGESTIONS_BY_TOOL: Record<string, string[]> = {
-  showSpendingBreakdown: [
+  spending_breakdown: [
     "Which category grew the most this month?",
     "How can I cut down on dining expenses?",
     "Compare this to last month",
   ],
-  showTransactions: [
+  transactions_list: [
     "Show only my expenses",
     "What's my biggest purchase this month?",
     "Any subscriptions I forgot about?",
   ],
-  showSavingsSlider: [
+  savings_slider: [
     "What if I save 20% more each month?",
     "How does this affect my emergency fund?",
     "Set this as my new savings goal",
