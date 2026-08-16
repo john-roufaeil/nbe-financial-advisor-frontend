@@ -149,6 +149,25 @@ export async function sendMessage(
 }
 
 /**
+ * Overwrites a message's widget payload — used once a chat widget's own
+ * confirm action (e.g. AllocationSliderTool) makes the widget itself the
+ * source of truth for its result, so that persists across a real page
+ * reload instead of only living in the client's query cache. Returns the
+ * updated message; only `widget.payload` changes, never `type`.
+ */
+export async function updateMessageWidget(
+  conversationId: string,
+  messageId: string,
+  payload: unknown,
+): Promise<ChatMessage> {
+  const res = await apiClient.patch<RawMessage>(
+    API_ENDPOINTS.chatMessageWidget(conversationId, messageId),
+    { payload },
+  );
+  return toChatMessage(res.data);
+}
+
+/**
  * Shortcut into the same statement-ingestion pipeline as `POST /statements`
  * (same 202 contract, resolved via the statement_status SSE event rather
  * than polling), tagged to this conversation. Returns the assistant message

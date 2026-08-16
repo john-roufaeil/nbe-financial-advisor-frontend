@@ -1,6 +1,9 @@
 {
   "settings": {
     "signOut": "Sign Out",
+    "deleteAccount": "Delete Account",
+    "deleteAccountTitle": "Delete your account?",
+    "deleteAccountMessage": "This permanently deletes your account and all of its data — accounts, transactions, budgets, conversations, statements. This can't be undone.",
     "language": "Language",
     "languageNames": {
       "en": "English",

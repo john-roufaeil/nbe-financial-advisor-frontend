@@ -46,6 +46,16 @@ export function useCheckProfileCompletion() {
   }, [queryClient, openCompleteProfileModal]);
 }
 
+/** No cache write-through, no toast — the caller (profile.tsx) clears all
+ * local auth/session state and navigates away on success, at which point
+ * every cache entry is wiped anyway (see use-auth-store's logout). */
+export function useDeleteMyAccount() {
+  return useMutation({
+    mutationFn: () => profileApi.deleteMe(),
+    onError: (error) => toastApiError(error),
+  });
+}
+
 export function useUpdateProfile() {
   const queryClient = useQueryClient();
   return useMutation({

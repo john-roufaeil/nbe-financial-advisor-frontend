@@ -24,7 +24,7 @@ export function BankStatementsTab() {
   const accountOptions = (accounts ?? []).map((a) => {
     const code = getBankCode(a.bank_name);
     const bankLabel = t(`banks.${code}`, getBankName(code) ?? a.bank_name);
-    return { key: a.id, label: `${bankLabel} ${a.masked_account_number}` };
+    return { key: a.id, label: `${bankLabel} ${a.account_number}` };
   });
 
   const { data, isPending, isError, isFetching, refetch } = useBankStatements({

@@ -38,10 +38,14 @@ export function BankPicker({
   const results = useMemo(() => {
     const q = query.trim().toLowerCase();
     const codes = q
-      ? BANK_CODES.filter((code) =>
-          t(`banks.${code}`, getBankName(code) ?? code)
-            .toLowerCase()
-            .includes(q),
+      ? BANK_CODES.filter(
+          (code) =>
+            // English abbreviation ("NBE") — checked first since it's an
+            // exact-ish short match, not a substring of the localized name.
+            code.toLowerCase().includes(q) ||
+            t(`banks.${code}`, getBankName(code) ?? code)
+              .toLowerCase()
+              .includes(q),
         )
       : BANK_CODES;
     return codes.slice(0, 30);

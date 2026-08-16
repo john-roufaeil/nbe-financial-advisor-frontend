@@ -48,7 +48,10 @@
       "allocation": {
         "title": "توزيع الميزانية",
         "confirm": "تأكيد التغييرات",
-        "updated": "تم التحديث"
+        "updating": "جارٍ التحديث…",
+        "updated": "تم التحديث",
+        "decrease": "إنقاص {{category}}",
+        "increase": "زيادة {{category}}"
       },
       "products": {
         "title": "موصى به لك",

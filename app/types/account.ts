@@ -9,10 +9,9 @@ export interface BankAccount {
   /**
    * The full account number, returned exactly as stored with no display-side
    * masking — the same value whether the account was added by hand, derived
-   * from a statement, or synced from the bank. Named `masked_account_number`
-   * by BankAccountSerializer despite holding the unmasked value.
+   * from a statement, or synced from the bank.
    */
-  masked_account_number: string;
+  account_number: string;
   currency: string;
   is_active: boolean;
   /**
@@ -45,7 +44,7 @@ export const CURRENCIES = [
 export type Currency = (typeof CURRENCIES)[number];
 
 /**
- * Body for POST /accounts. `masked_account_number` is the full account number,
+ * Body for POST /accounts. `account_number` is the full account number,
  * entered twice client-side to confirm — the backend stores and returns it
  * verbatim (no masking), so a typo here is what every screen shows afterwards.
  *
@@ -56,5 +55,5 @@ export interface CreateBankAccountBody {
   bank_name: string;
   account_type: AccountType;
   currency: Currency;
-  masked_account_number: string;
+  account_number: string;
 }

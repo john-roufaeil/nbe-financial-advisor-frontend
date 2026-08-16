@@ -5,7 +5,7 @@ import { assistantMessageFromEvent, type RawReference, type RawWidget } from "@/
 import { useAuthStore } from "@/store/use-auth-store";
 import { useChatStreamStore } from "@/store/use-chat-stream-store";
 import { useToastStore } from "@/store/use-toast-store";
-import { chatKeys, bumpConversationToFront } from "@/queries/chat";
+import { chatKeys, bumpConversationToFront, isAwaitingReply } from "@/queries/chat";
 import { bankStatementKeys } from "@/queries/bank-statements";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 import type { ChatMessage } from "@/types/chat";
@@ -85,6 +85,29 @@ function registerListeners(es: EventSource, queryClient: QueryClient) {
     if (!payload) return;
     useChatStreamStore.getState().clear(payload.conversation_id);
     useToastStore.getState().show(payload.message, "error");
+
+    // Without this, isAwaitingReply (queries/chat.ts) has no way to learn the
+    // reply failed — chat_error touched no query data before, so the loading
+    // indicator sat on the still-unanswered user message until the 45s
+    // hasChatTimedOut fallback eventually caught it. Guarded on still being
+    // awaited so a stray/late chat_error can't clobber an already-landed reply.
+    queryClient.setQueryData<ChatMessage[]>(
+      chatKeys.messages(payload.conversation_id),
+      (old) => {
+        if (!old || !isAwaitingReply(old)) return old;
+        const errorMessage: ChatMessage = {
+          id: `error-${payload.conversation_id}-${Date.now()}`,
+          role: "assistant",
+          text: payload.message,
+          createdAt: Date.now(),
+          stage: "complete",
+        };
+        const last = old[old.length - 1];
+        return last.role === "assistant"
+          ? [...old.slice(0, -1), errorMessage]
+          : [...old, errorMessage];
+      },
+    );
   });
 
   // No id/status fields are read here — the payload just tells us

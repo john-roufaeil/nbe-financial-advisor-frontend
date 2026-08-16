@@ -89,7 +89,7 @@ export const AccountDetailModal = forwardRef<
           <BankBadge bank={account.bank_name} size="size-11" />
           <div className="flex flex-col">
             <DetailRow label={t("common.sections.accounts.detail.accountNumber")}>
-              <span dir="ltr">{account.masked_account_number}</span>
+              <span dir="ltr">{account.account_number}</span>
             </DetailRow>
             {account.account_type && (
               <DetailRow label={t("common.sections.accounts.detail.accountType")}>

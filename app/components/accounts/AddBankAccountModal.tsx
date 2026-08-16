@@ -78,7 +78,7 @@ export const AddBankAccountModal = forwardRef<HTMLDialogElement>(
           bank_name: getBankCode(trimmedBankName) ?? trimmedBankName,
           account_type: values.accountType,
           currency: values.currency,
-          masked_account_number: values.accountNumber,
+          account_number: values.accountNumber,
         });
         resetForm();
         closeDialog(ref);

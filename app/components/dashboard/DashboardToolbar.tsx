@@ -33,7 +33,7 @@ function AccountOption({ account }: { account?: BankAccount }) {
           and a 16-digit one pinned at its natural width would push the bank
           name out of this toolbar chip on narrow viewports. */}
       <span className="text-base-content/40 min-w-0 truncate text-xs" dir="ltr">
-        {account.masked_account_number}
+        {account.account_number}
       </span>
     </span>
   );

@@ -48,7 +48,10 @@
       "allocation": {
         "title": "Budget allocation",
         "confirm": "Confirm changes",
-        "updated": "Updated"
+        "updating": "Updating…",
+        "updated": "Updated",
+        "decrease": "Decrease {{category}}",
+        "increase": "Increase {{category}}"
       },
       "products": {
         "title": "Recommended for you",
