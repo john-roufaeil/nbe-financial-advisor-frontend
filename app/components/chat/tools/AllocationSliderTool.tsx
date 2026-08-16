@@ -255,7 +255,12 @@ export const AllocationSliderTool: ToolCallMessagePartComponent = ({
           disabled={remaining !== 0 || updateBudget.isPending}
           className="btn btn-primary btn-sm gap-1.5 self-end"
         >
-          {t("chat.tools.allocation.confirm")}
+          {updateBudget.isPending && (
+            <span className="loading loading-spinner loading-xs" />
+          )}
+          {updateBudget.isPending
+            ? t("chat.tools.allocation.updating")
+            : t("chat.tools.allocation.confirm")}
         </button>
       )}
     </div>

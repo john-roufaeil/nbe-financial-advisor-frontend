@@ -48,6 +48,7 @@
       "allocation": {
         "title": "توزيع الميزانية",
         "confirm": "تأكيد التغييرات",
+        "updating": "جارٍ التحديث…",
         "updated": "تم التحديث",
         "decrease": "إنقاص {{category}}",
         "increase": "زيادة {{category}}"

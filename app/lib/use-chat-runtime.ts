@@ -15,6 +15,7 @@ import {
   createChatAttachmentsAdapter,
   sendPendingChatAttachments,
 } from "@/lib/attachments";
+import { updateMessageWidget } from "@/api/chat";
 import {
   chatKeys,
   useConversations,
@@ -249,12 +250,18 @@ export function useAppChatRuntime(active = true) {
   // has no adapter callback to persist into, and any `addResult(...)` call
   // silently fails (thrown inside a mutation's onSuccess, with nothing
   // surfacing it) leaving the widget's local state as the only place the
-  // update ever landed — lost on remount (e.g. navigating away and back).
-  // Written straight into the query cache, same as the chat_message SSE
-  // handler (use-event-stream.ts) does for a landed reply — this cache is
-  // what convertMessage below reads on every render, and it's kept alive by
-  // useMessages staying mounted (with `enabled: false`) in AppLayout while
-  // navigated away, so it survives exactly the round trip this fixes.
+  // update ever landed — lost on remount.
+  //
+  // Written into the query cache immediately (same as the chat_message SSE
+  // handler in use-event-stream.ts does for a landed reply) so the widget
+  // locks instantly and survives navigating away and back within the app —
+  // that cache is kept alive by useMessages staying mounted (`enabled:
+  // false`) in AppLayout while navigated away. PATCH .../widget/ then
+  // persists the same value server-side so it also survives a real page
+  // reload, not just in-app navigation; best-effort (the optimistic cache
+  // write already stands on its own for the rest of this session if this
+  // PATCH fails, e.g. offline — a later reload would then revert to the
+  // model's original proposal, same as before this endpoint existed).
   const onAddToolResult = useCallback(
     ({ messageId, result }: { messageId: string; result: unknown }) => {
       if (!currentConversationId) return;
@@ -267,6 +274,7 @@ export function useAppChatRuntime(active = true) {
               : m,
           ),
       );
+      updateMessageWidget(currentConversationId, messageId, result).catch(() => {});
     },
     [currentConversationId, queryClient],
   );

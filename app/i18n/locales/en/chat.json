@@ -48,6 +48,7 @@
       "allocation": {
         "title": "Budget allocation",
         "confirm": "Confirm changes",
+        "updating": "Updating…",
         "updated": "Updated",
         "decrease": "Decrease {{category}}",
         "increase": "Increase {{category}}"

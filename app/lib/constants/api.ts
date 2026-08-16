@@ -47,6 +47,8 @@ export const API_ENDPOINTS = {
   chatConversation: (id: string) => `/chat/conversations/${id}`,
   chatMessages: (conversationId: string) =>
     `/chat/conversations/${conversationId}/messages`,
+  chatMessageWidget: (conversationId: string, messageId: string) =>
+    `/chat/conversations/${conversationId}/messages/${messageId}/widget`,
   chatAttachments: (conversationId: string) =>
     `/chat/conversations/${conversationId}/attachments`,
   feedback: "/feedback",
