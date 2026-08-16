@@ -1,6 +1,9 @@
 {
   "settings": {
     "signOut": "تسجيل الخروج",
+    "deleteAccount": "حذف الحساب",
+    "deleteAccountTitle": "هل تريد حذف حسابك؟",
+    "deleteAccountMessage": "سيؤدي هذا إلى حذف حسابك وجميع بياناته نهائيًا — الحسابات، المعاملات، الميزانيات، المحادثات، كشوف الحسابات. لا يمكن التراجع عن هذا الإجراء.",
     "language": "اللغة",
     "languageNames": {
       "en": "English",

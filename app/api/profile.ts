@@ -11,3 +11,10 @@ export async function updateProfile(body: UpdateProfileBody): Promise<User> {
   const res = await apiClient.patch<User>(API_ENDPOINTS.usersMe, body);
   return res.data;
 }
+
+/** Permanently deletes the current user's account — cascades to every
+ * domain row (accounts, transactions, budgets, conversations, statements,
+ * ...) server-side (core/views/profile.py's MeView.delete). Irreversible. */
+export async function deleteMe(): Promise<void> {
+  await apiClient.delete(API_ENDPOINTS.usersMe);
+}
