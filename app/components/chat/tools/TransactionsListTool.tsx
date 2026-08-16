@@ -20,7 +20,10 @@ const TransactionsListResultSchema = z.object({
       category: z.string(),
       type: z.enum(["income", "expense"]),
       amount: z.number(),
-      datetime: z.string(),
+      // ISO date (YYYY-MM-DD), not a datetime: the backend stores
+      // transactions.transaction_date as a DATE with no time component, so
+      // there is no time-of-day to send.
+      date: z.string(),
     }),
   ),
 });
@@ -94,7 +97,7 @@ export const TransactionsListTool: ToolCallMessagePartComponent = ({ result }) =
                 <p className="truncate text-sm font-medium">{tx.title}</p>
                 <p className="text-base-content/50 text-xs">
                   {t(`common.categories.${tx.category}`, tx.category)} ·{" "}
-                  {formatDate(tx.datetime, dateFormat)}
+                  {formatDate(tx.date, dateFormat)}
                 </p>
               </div>
               <Money
