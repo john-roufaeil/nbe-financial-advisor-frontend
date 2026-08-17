@@ -148,7 +148,8 @@ export const SpendingBreakdownTool: ToolCallMessagePartComponent = ({
                         {categoryLabel(cat.name)}
                       </span>
                       <Money className="text-base-content/70 tabular-nums">
-                        {formatAmount(cat.amount, data.currency)} · {cat.pct}%
+                        {formatAmount(cat.amount, data.currency)} ·{" "}
+                        {Number(cat.pct.toFixed(1))}%
                       </Money>
                     </div>
                     <div className="bg-base-200 h-2 w-full overflow-hidden rounded-full">
