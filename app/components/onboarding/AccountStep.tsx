@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import flags from "react-phone-number-input/flags";
 import "react-phone-number-input/style.css";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { PrivacyPolicyModal } from "@/components/shared/modals/PrivacyPolicyModal";
@@ -178,6 +179,7 @@ export function AccountStep({
               className="input input-bordered w-full"
               defaultCountry="EG"
               international
+              flags={flags}
               value={field.value}
               onBlur={field.onBlur}
               aria-invalid={touchedFields.phone && !!errors.phone}

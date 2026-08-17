@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import PhoneInput from "react-phone-number-input";
+import flags from "react-phone-number-input/flags";
 import "react-phone-number-input/style.css";
 import {
   Controller,
@@ -88,6 +89,7 @@ export function FieldEditor({
               className={`input input-sm input-bordered w-full ${error ? "input-error" : ""}`}
               defaultCountry="EG"
               international
+              flags={flags}
               value={rhfField.value}
               onChange={(next) => rhfField.onChange(next ?? "")}
               placeholder={t(field.placeholderKey ?? field.labelKey)}
