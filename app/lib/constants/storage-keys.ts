@@ -4,7 +4,6 @@ export const STORAGE_KEYS = {
   theme: "nbe_theme",
   lang: "nbe_lang",
   auth: "nbe_auth",
-  onboarding: "nbe_onboarding",
   pageSize: "nbe_data_page_size",
   sidebar: "nbe_sidebar",
   displayPreferences: "nbe_display_preferences",

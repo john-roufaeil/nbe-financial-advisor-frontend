@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
 import { useSearchParams, useNavigate } from "react-router";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useConfirmBankConnection } from "@/queries/bank-connections";
 import { useBankLoginCallback } from "@/queries/auth";
 import { useCheckProfileCompletion } from "@/queries/profile";
 import { postOAuthResult, closePopupAfterResult } from "@/lib/oauth-popup";
-import { extractApiErrorMessage } from "@/lib/toast";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 import { DEFAULT_LANGUAGE } from "@/i18n";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
@@ -30,11 +29,9 @@ import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
  * back to acting directly in this tab if there's no opener, e.g. a popup
  * blocker forced a full-tab redirect instead.
  *
- * Returns just what the callback route needs to pick a view: `debugError`
- * — see its declaration below for why it exists — non-null means "show the
- * failure instead of closing/navigating"; null means "still working" (the
- * route shows a spinner; every other outcome here navigates or closes the
- * popup itself, so there's no separate "done" state to return).
+ * The route always shows a spinner while this runs — every outcome here
+ * navigates or closes the popup itself, so there's no "done" state to
+ * return.
  */
 export function useBankOAuthCallback() {
   const [searchParams] = useSearchParams();
@@ -46,13 +43,6 @@ export function useBankOAuthCallback() {
   const bankLoginCallback = useBankLoginCallback();
   const checkProfileCompletion = useCheckProfileCompletion();
   const submitted = useRef(false);
-  // TEMPORARY debugging aid: on failure inside a popup, show the real error
-  // instead of closing immediately — closePopupAfterResult() normally runs
-  // right after a failure so the user never gets to read what went wrong.
-  // Remove this state (and the isPopup-failure branches below that set it
-  // instead of closing) once the underlying bank-login issue is confirmed
-  // fixed.
-  const [debugError, setDebugError] = useState<string | null>(null);
 
   // Forces this page out of the back/forward cache — some browsers can
   // otherwise resurrect a stale, already-run instance of this page (with its
@@ -87,7 +77,7 @@ export function useBankOAuthCallback() {
           kind: connectionId ? "bank-connect" : "bank-login",
           ok: false,
         });
-        setDebugError("Missing code/state in the OAuth redirect back to this page.");
+        closePopupAfterResult();
       } else {
         navigate(localizedPath(DEFAULT_LANGUAGE, ROUTE_SEGMENTS.signIn), {
           replace: true,
@@ -110,19 +100,13 @@ export function useBankOAuthCallback() {
       confirmConnection
         .mutateAsync({ connectionId, body: { code, state } })
         .then(
-          () => ({ ok: true as const, error: undefined }),
-          (error: unknown) => ({ ok: false as const, error }),
+          () => true,
+          () => false,
         )
-        .then(({ ok, error }) => {
+        .then((ok) => {
           if (isPopup) {
             postOAuthResult({ kind: "bank-connect", ok });
-            if (ok) {
-              closePopupAfterResult();
-            } else {
-              setDebugError(
-                extractApiErrorMessage(error) ?? "Bank connect callback failed.",
-              );
-            }
+            closePopupAfterResult();
           } else {
             navigate(localizedPath(DEFAULT_LANGUAGE, ROUTE_SEGMENTS.profile), {
               replace: true,
@@ -152,10 +136,10 @@ export function useBankOAuthCallback() {
           replace: true,
         });
       })
-      .catch((error: unknown) => {
+      .catch(() => {
         if (isPopup) {
           postOAuthResult({ kind: "bank-login", ok: false });
-          setDebugError(extractApiErrorMessage(error) ?? "Bank login callback failed.");
+          closePopupAfterResult();
         } else {
           navigate(localizedPath(DEFAULT_LANGUAGE, ROUTE_SEGMENTS.signIn), {
             replace: true,
@@ -172,6 +156,4 @@ export function useBankOAuthCallback() {
     bankLoginCallback,
     checkProfileCompletion,
   ]);
-
-  return { debugError };
 }
