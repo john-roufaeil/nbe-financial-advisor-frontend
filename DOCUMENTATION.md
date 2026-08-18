@@ -3,7 +3,7 @@
 Architecture reference for contributors. This document explains **how the app is put
 together and why**; the [README](./README.md) covers running it locally.
 
-> Verified directly against the source tree on 2026-08-18.
+> Verified directly against the source tree on 2026-08-19.
 
 ## Table of contents
 
@@ -268,7 +268,7 @@ the TanStack Query cache.
 | `use-theme-store`                  | Light / dark / system                                       |    ✅     |
 | `use-accessibility-store`          | Font scale, high contrast, reduced motion                   |    ✅     |
 | `use-language-switch-store`        | Pending language change state                               |    ❌     |
-| `use-onboarding-store`             | Multi-step onboarding form state                            |    ✅     |
+| `use-onboarding-store`             | Multi-step onboarding form state                            |    ❌     |
 | `use-sidebar-store`                | Collapsed state, width                                      |    ✅     |
 | `use-page-size-store`              | Rows-per-page preference                                    |    ✅     |
 | `use-toast-store`                  | Active toast message (UI only)                              |    ❌     |
@@ -291,6 +291,14 @@ cache **and** the message-scoped stores above (feedback, attachments,
 conversation titles) — they're keyed by message/conversation id rather than
 by user, so without this they'd otherwise leak into the next login in the
 same browser tab.
+
+`use-onboarding-store` deliberately does **not** persist: every field it
+holds (name, email, phone, income, dependents, savings-goal amounts) is
+sensitive for a bank-adjacent app, so none of it is written to `localStorage`
+in plaintext. The tradeoff is that a page reload mid-onboarding restarts the
+wizard from scratch — accepted because onboarding is a single-page flow (all
+steps render off one `step` index with no route change between them), so
+in-session navigation never depended on persistence; only reload-resume did.
 
 ## 8. AI chat
 
@@ -388,15 +396,24 @@ backend matches against — never rename without a coordinated backend change.
 
 ## 13. Scripts & CI
 
-| Script                      | Purpose                                                           |
-| --------------------------- | ----------------------------------------------------------------- |
-| `check-i18n-parity.mjs`     | Fails if a translation key exists in one locale but not the other |
-| `check-i18n-usage.mjs`      | Fails on a `t()` call whose key doesn't exist in English          |
-| `check-no-hardcoded-hex.sh` | Greps the diff for hex color literals outside `app.css`           |
+| Script                       | Purpose                                                           |
+| ---------------------------- | ----------------------------------------------------------------- |
+| `check-i18n-parity.mjs`      | Fails if a translation key exists in one locale but not the other |
+| `check-i18n-usage.mjs`       | Fails on a `t()` call whose key doesn't exist in English          |
+| `check-no-hardcoded-hex.sh`  | Greps added diff lines for hex color literals outside `app.css`   |
+| `check-no-dangerous-html.sh` | Greps added diff lines for new `dangerouslySetInnerHTML` usage    |
 
-Two GitHub Actions workflows: `ci.yml` (lint → format:check → typecheck →
-build, plus a TruffleHog secret scan) and `pr-quality-gates.yml`
-(`check:i18n`). Both pin Node 22 via `actions/setup-node`, matching
+The two hex/dangerous-HTML scripts share the same mode: no arg diffs staged
+changes (pre-commit use), an arg diffs against that ref (CI use, comparing
+against the PR base SHA) — so only _newly added_ lines are checked, never the
+whole file, meaning pre-existing/reviewed usage (e.g. `root.tsx`'s one static
+theme-boot script) is never retroactively flagged.
+
+Two GitHub Actions workflows: `ci.yml` (install → `pnpm audit --prod
+--ignore-registry-errors` → lint → format:check → typecheck → build, plus a
+TruffleHog secret scan) and `pr-quality-gates.yml` (three jobs:
+`hardcoded-hex`, `no-dangerous-html`, and `i18n-checks` via `pnpm
+check:i18n`). Both pin Node 22 via `actions/setup-node`, matching
 `Dockerfile.dev`/`Dockerfile.prod` (`node:22-slim`).
 
 ## 14. "Where do I edit…?" quick reference
@@ -425,6 +442,11 @@ build, plus a TruffleHog secret scan) and `pr-quality-gates.yml`
   anywhere in the repo, no Playwright/Cypress config, and neither CI workflow
   runs a test step. This is the single biggest standing gap for a
   money-handling, auth-gated app.
+- **Onboarding progress does not survive a page reload.** `use-onboarding-store`
+  deliberately doesn't persist (§7) — every field it holds is sensitive for
+  this app, and partially excluding just the identity fields would still
+  leave financial data in plaintext. A reload mid-flow restarts from step 0.
+  This is an intentional security tradeoff, not an oversight.
 - **Manual accounts are never merged with a newly-connected bank account** —
   connecting a real bank account always creates a new `synced` account, even
   if a `manual` account already tracks the same real-world account, producing

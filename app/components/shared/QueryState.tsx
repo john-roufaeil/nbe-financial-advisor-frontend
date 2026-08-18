@@ -48,7 +48,7 @@ export function EmptyState({
   const { t } = useTranslation();
   return (
     <div
-      className={`min-h-0 flex-1 overflow-y-auto border-base-300 flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed py-14 text-center ${className}`}
+      className={`border-base-300 flex min-h-0 flex-1 flex-col items-center justify-center gap-2 overflow-y-auto rounded-xl border border-dashed py-14 text-center ${className}`}
     >
       {Icon && (
         <span className="bg-base-200 text-base-content/40 grid size-11 place-items-center rounded-full">
