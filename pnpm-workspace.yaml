@@ -5,3 +5,4 @@ overrides:
   browserslist: "4.24.2"
   caniuse-lite: "1.0.30001677"
   zod-validation-error: "^3.5.3"
+  nanoid@<3.3.18: ">=3.3.18"

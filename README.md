@@ -1,8 +1,81 @@
 # NBE Financial Advisor — Frontend
 
-React Router v7 (SPA) · TypeScript · Tailwind v4 / DaisyUI v5 · TanStack Query v5 · Zustand v5 · i18next (en/ar) · assistant-ui (AI chat)
+![hero](public/auth-hero.png)
+
+An AI-powered personal finance app: connect bank accounts, upload and
+reconcile bank statements, track spending and budgets, and get financial
+guidance through a conversational assistant with interactive widgets
+(spending breakdowns, savings projections, budget allocation sliders,
+product recommendations). Fully bilingual — English and Arabic — with
+complete RTL support.
+
+This is the frontend of a three-service system built as a graduation
+capstone project in partnership with the **National Bank of Egypt (NBE)**
+innovation program: a React Router SPA (this repo), a Django backend, and a
+LangGraph-based AI service.
+
+[![CI](https://img.shields.io/github/actions/workflow/status/john-roufaeil/nbe-financial-advisor-frontend/ci.yml?branch=main&style=flat-square&label=CI)](https://github.com/john-roufaeil/nbe-financial-advisor-frontend/actions/workflows/ci.yml)
+![React Router](https://img.shields.io/badge/React_Router-v8-CA4245?style=flat-square)
+![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?style=flat-square)
+![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4-06B6D4?style=flat-square)
+![DaisyUI](https://img.shields.io/badge/DaisyUI-v5-1AD1A5?style=flat-square)
+![TanStack Query](https://img.shields.io/badge/TanStack_Query-v5-FF4154?style=flat-square)
+![Zustand](https://img.shields.io/badge/Zustand-v5-443E38?style=flat-square)
+![Node](https://img.shields.io/badge/Node-22-339933?style=flat-square)
+![License](https://img.shields.io/badge/license-all_rights_reserved-lightgrey?style=flat-square)
+
+```mermaid
+flowchart LR
+    Browser --> RR["React Router SPA<br/>(this repo)"]
+    RR -->|axios| BE[["Django backend"]]
+    RR -->|SSE| BE
+    BE <--> AI[["AI service"]]
+```
 
 ---
+
+## Table of contents
+
+1. [Features](#features)
+2. [Quick start](#quick-start)
+3. [Environment variables](#environment-variables)
+4. [Scripts](#scripts)
+5. [Project layout](#project-layout)
+6. [Architecture at a glance](#architecture-at-a-glance)
+7. [Authentication](#authentication)
+8. [Internationalization](#internationalization)
+9. [Styling rules](#styling-rules)
+10. [Contributing](#contributing)
+11. [Known limitations](#known-limitations)
+12. [License](#license)
+
+---
+
+## Features
+
+- **AI financial assistant** — a streaming chat interface (built on
+  [assistant-ui](https://github.com/assistant-ui/assistant-ui)) that answers
+  natural-language questions about the user's finances and renders its
+  answers as interactive widgets: spending breakdowns, transaction lists,
+  savings sliders, budget allocation sliders, and product recommendations.
+- **Bank connections** — link real bank accounts, or upload bank statements
+  (PDF/image, Arabic or English) for the AI service to extract, categorize,
+  and reconcile against existing transactions.
+- **Unified transactions ledger** — every account, manual or synced, in one
+  place, with automatic categorization, recurring-charge detection, and
+  anomaly flags for unusual spending.
+- **Budgeting** — template-based budgets the user can customize, with KPIs,
+  history, and spending-vs-budget insights.
+- **Dashboard** — an at-a-glance view of balances, spending trends, and
+  recent activity.
+- **Admin panel** — a separate authenticated area for managing products,
+  categories, user feedback, and reported issues (`super_admin`/`reviewer`
+  roles only).
+- **Full i18n + RTL** — every screen ships in English and Arabic from a
+  shared key set, mirrored via `pnpm check:i18n` in CI.
+- **Accessibility & display preferences** — font scale, high contrast,
+  reduced motion, light/dark/system theme, and per-user number/date/time
+  formatting.
 
 ## Quick start
 
@@ -37,8 +110,8 @@ persistence — live in
 ### Option B — Node only (frontend against an already-running backend)
 
 ```bash
-# 1. Use the pinned Node version (Node ≥ 22 required)
-nvm use 22                     # or: echo 'cd() { builtin cd "$@"; [ -f .nvmrc ] && nvm use --silent; }' >> ~/.bashrc
+# 1. Node 22 is required (pinned in Dockerfile.dev/.prod and CI)
+nvm install 22 && nvm use 22
 
 # 2. Enable the pinned package manager
 corepack enable && corepack prepare pnpm@11.10.0 --activate
@@ -54,13 +127,13 @@ cp .env.example .env.local
 pnpm dev
 ```
 
-### Environment variables
+## Environment variables
 
 | Variable            | Required | Description                                                  |
-| ------------------- | -------- | ------------------------------------------------------------ |
-| `VITE_API_BASE_URL` | ✅       | Base URL of the Django backend, e.g. `http://localhost:8000` |
+| ------------------- | :------: | ------------------------------------------------------------ |
+| `VITE_API_BASE_URL` |    ✅    | Base URL of the Django backend, e.g. `http://localhost:8000` |
 
----
+All data calls hit the real Django API — there is no mock/offline mode.
 
 ## Scripts
 
@@ -75,122 +148,94 @@ pnpm dev
 | `pnpm format:check` | Prettier check (CI)                                |
 | `pnpm check:i18n`   | Verify locale key parity + all `t()` calls resolve |
 
-**Pre-commit (Husky + lint-staged)** auto-runs lint + format on staged `*.ts`/`*.tsx` files.
+**Pre-commit (Husky + lint-staged)** auto-runs lint + format on staged
+`*.ts`/`*.tsx` files.
 
-**Before opening a PR**, make sure these all pass locally:
+**Before opening a PR**, make sure these all pass locally — this mirrors what
+CI runs:
 
 ```bash
-pnpm lint && pnpm format:check && pnpm typecheck && pnpm check:i18n
+pnpm lint && pnpm format:check && pnpm typecheck && pnpm build
+pnpm check:i18n
 bash scripts/check-no-hardcoded-hex.sh
 ```
 
----
-
-## Authentication
-
-All data calls hit the real Django API — there is no mock/offline mode (it was removed; every request needs a running backend at `VITE_API_BASE_URL`).
-
-**Auth note:** Access tokens are held **in memory only** — they are never written to `localStorage`. On a page reload, the app silently calls `POST /auth/refresh` using the httpOnly refresh cookie. If the cookie is missing or expired, the user is shown a "session expired" modal.
-
----
-
-## Folder structure
+## Project layout
 
 ```
 app/
-├── routes.ts              # Route registry — every page is registered here
-├── routes/                # One file per page/layout (dashboard, chat, sign-in…)
-├── components/
-│   ├── shared/            # Prop-driven, data-free components used by pages AND chat tools
-│   │   ├── auth/          # RequireAuth, RequireGuest, RestoringScreen guards
-│   │   ├── forms/         # BankPicker, DateField, MoneyInput, ToggleSwitch…
-│   │   ├── layout/        # AppLayout, AuthLayout, DataToolbar, Sidebar pieces
-│   │   ├── modals/        # BaseModal, ConfirmDialog, SessionExpiredModal…
-│   │   ├── preferences/   # ThemeToggle, LanguageSwitcher, AccessibilityMenu…
-│   │   └── skeletons/     # Loading placeholder skeletons
-│   ├── chat/              # AI chat scaffolding + tool renderers (chat/tools/)
-│   ├── dashboard/         # Dashboard-specific widgets
-│   ├── transactions/      # Transaction form fields
-│   ├── accounts/          # Account card components
-│   ├── bank-statements/   # Statement list + review flow
-│   ├── onboarding/        # Multi-step onboarding step components
-│   └── profile/           # Profile page sections
-├── api/                   # Real backend calls via axios (one file per domain)
-├── queries/               # TanStack Query hooks — the ONLY import point for data
-├── types/                 # TypeScript interfaces, shared enums, domain constants
-├── store/                 # Zustand stores — client-only UI/session state
-├── lib/                   # Pure utilities, custom hooks, and constants
-│   └── constants/         # Named constant files (api, routes, limits, time…)
-├── i18n/
-│   ├── index.ts           # i18next setup
-│   └── locales/
-│       ├── en/            # English translations (15 namespace JSON files)
-│       └── ar/            # Arabic translations (must mirror en/ exactly)
-├── root.tsx               # React Router root (providers, global error boundary)
-└── app.css                # Global styles, Tailwind + DaisyUI theme tokens
+├── routes.ts        # Route registry — every page is registered here
+├── routes/          # One file per page/layout guard
+├── components/      # UI, grouped by domain + components/shared/
+├── api/             # axios calls to the Django backend, one file per domain
+├── queries/         # TanStack Query hooks — the ONLY import point for data
+├── types/           # TypeScript interfaces + domain constants
+├── store/           # Zustand stores — client-only UI/session state
+├── lib/             # Utilities, custom hooks, lib/constants/
+└── i18n/locales/    # en/ (source of truth) + ar/ (mirrors en/ key-for-key)
 ```
 
----
+Two rules that hold everywhere in this codebase:
 
-## Data flow
+- **Never import `api/` directly in a component** — always go through
+  `queries/`.
+- **Never hardcode a magic value** (API path, route segment, `localStorage`
+  key, duration, hex color) — it belongs in `lib/constants/`.
 
-```
-Component
-  └─► queries/*.ts         (useAccounts, useTransactions, …)
-        └─► api/*.ts
-```
+A deeper architecture reference — data flow, routing tree, auth/session
+sequence diagrams, Zustand store inventory, the AI chat tool-call pipeline,
+and a "where do I edit…?" table — lives in
+[DOCUMENTATION.md](./DOCUMENTATION.md).
 
-- **`api/`** — plain async functions; each hits the real backend via the shared `apiClient` (axios with auto Bearer token + refresh-on-401 interceptor in `api/client.ts`). No React.
-- **`queries/`** — the only layer components import. Owns query keys, cache invalidation, and success/error toasts.
+## Architecture at a glance
 
-> **Rule:** Never import `api/` directly in a component. Always go through `queries/`.
+The frontend never talks to the AI service directly — every request,
+including chat, goes through the Django backend at `VITE_API_BASE_URL`.
+Real-time features (chat streaming, notifications) use Server-Sent Events,
+not polling.
 
----
+| Concern      | Library                            |
+| ------------ | ---------------------------------- |
+| Routing      | React Router v8 (SPA mode, no SSR) |
+| UI           | DaisyUI v5 on Tailwind v4          |
+| Server state | TanStack Query v5                  |
+| Client state | Zustand v5                         |
+| Forms        | React Hook Form + Zod              |
+| i18n         | i18next + react-i18next            |
+| HTTP         | axios                              |
+| AI chat      | assistant-ui                       |
+| Icons        | lucide-react                       |
 
-## Adding a page
+See [DOCUMENTATION.md § 1–5](./DOCUMENTATION.md#1-tech-stack) for the full
+breakdown and diagrams.
 
-1. Create `app/routes/my-page.tsx`.
-2. Register it in `app/routes.ts` inside the correct layout tier (`require-guest`, `require-auth`, or `app-layout`). Use `ROUTE_SEGMENTS` from `lib/constants/routes.ts` for the URL segment — never a raw string.
-3. Add translation strings to **both** `app/i18n/locales/en/*.json` and `app/i18n/locales/ar/*.json` — `pnpm check:i18n` will fail if they're missing or out of sync.
-4. Fetch data via a `queries/` hook, not a raw `useEffect`. Use React Hook Form + Zod for forms.
+## Authentication
 
----
+Access tokens are held **in memory only** — never written to `localStorage`.
+On a page reload, the app silently calls `POST /auth/refresh` using the
+httpOnly refresh cookie. If the cookie is missing or expired, the user sees a
+"session expired" modal. Full sequence diagram in
+[DOCUMENTATION.md § 6](./DOCUMENTATION.md#6-authentication--session-restore).
+
+## Internationalization
+
+Every screen ships in English and Arabic from 19 shared namespace files per
+locale (`app/i18n/locales/{en,ar}/`), with full RTL mirroring via logical CSS
+properties. `pnpm check:i18n` fails CI on any key drift between locales or
+any `t()` call that doesn't resolve.
 
 ## Styling rules
 
-- **DaisyUI semantic classes only** — never hardcoded hex colors (`#...`). CI enforces this via `scripts/check-no-hardcoded-hex.sh`.
-- **Logical CSS properties** for RTL support: use `ms-`/`me-`/`ps-`/`pe-` instead of `ml-`/`mr-`/`pl-`/`pr-`.
-- **One `btn-primary` per screen**. Use `badge-success`/`badge-error`/`badge-warning` for status.
+- **DaisyUI semantic classes only** — never hardcoded hex colors (`#...`).
+  CI enforces this via `scripts/check-no-hardcoded-hex.sh`.
+- **Logical CSS properties** for RTL support: use `ms-`/`me-`/`ps-`/`pe-`
+  instead of `ml-`/`mr-`/`pl-`/`pr-`.
+- **One `btn-primary` per screen**. Use `badge-success`/`badge-error`/
+  `badge-warning` for status.
 - **Icons:** `lucide-react` with `size-*` + `text-*` classes.
 
----
+## License
 
-## Stores (Zustand)
-
-Client-only state only — **no server data in stores**. All server data lives in the TanStack Query cache.
-
-| Store                           | Purpose                                                     | Persisted               |
-| ------------------------------- | ----------------------------------------------------------- | ----------------------- |
-| `use-auth-store`                | `isAuthenticated` flag + in-memory access token             | Flag only (never token) |
-| `use-display-preferences-store` | View mode, density, number/date/time format, balance hidden | ✅                      |
-| `use-theme-store`               | Light / dark / system                                       | ✅                      |
-| `use-accessibility-store`       | Font scale, high contrast, reduced motion                   | ✅                      |
-| `use-language-switch-store`     | Pending language change state                               | ❌                      |
-| `use-onboarding-store`          | Multi-step onboarding form state                            | ✅                      |
-| `use-sidebar-store`             | Collapsed state, width                                      | ✅                      |
-| `use-page-size-store`           | Rows-per-page preference                                    | ✅                      |
-| `use-toast-store`               | Active toast message (UI only)                              | ❌                      |
-| `use-confirm-store`             | Confirm dialog state (UI only)                              | ❌                      |
-| `use-chat-store`                | Active chat thread state                                    | ❌                      |
-| `use-drawer-store`              | Mobile drawer open state                                    | ❌                      |
-| `use-route-announcer-store`     | Accessibility route announcements                           | ❌                      |
-
----
-
-## Known quirks
-
-- `envFile deprecated` / babel `filter` warnings → upstream bugs in dependencies; safe to ignore.
-- `@react-router/node` + `isbot` are required deps (React Router internals); do not remove.
-- `eslint-plugin-react-hooks` pinned to `6.1.1` — 7.x has a known crash bug.
-- `pnpm` pinned to `11.10.0` exactly — required for `pnpm-workspace.yaml` supply-chain settings.
-- The plain `Dockerfile` is **broken/unused**. Real builds use `Dockerfile.dev` (development) and `Dockerfile.prod` (production).
+All rights reserved. This repository is shared publicly for
+portfolio and demonstration purposes; no license is granted to use,
+copy, modify, or distribute this code without explicit permission.

@@ -30,6 +30,9 @@ interface RawMessage {
   stage: string | null;
   widget: RawWidget | null;
   references: RawReference[] | null;
+  /** Null/omitted on a user message and on any assistant message predating
+   *  this field — falls back to the static, tool-keyed chips in that case. */
+  suggestions?: string[] | null;
   created_at: string;
 }
 
@@ -69,11 +72,15 @@ function toChatMessage(raw: RawMessage): ChatMessage {
       targetType: r.target_type,
       targetId: r.target_id,
     })),
-    // The backend doesn't supply follow-up suggestions itself — fall back to
-    // static, topic-keyed chips so the "continue the conversation" chips still
-    // show for real replies.
+    // The AI service generates these alongside the reply; fall back to
+    // static, topic-keyed chips only for older messages persisted before
+    // this field existed (null/undefined `suggestions`).
     ...(role === "assistant"
-      ? { suggestions: buildSuggestions(toolCall?.toolName) }
+      ? {
+          suggestions: raw.suggestions?.length
+            ? raw.suggestions
+            : buildSuggestions(toolCall?.toolName),
+        }
       : {}),
   };
 }
@@ -89,6 +96,7 @@ export function assistantMessageFromEvent(payload: {
   content: string;
   widget: RawWidget | null;
   references: RawReference[] | null;
+  suggestions?: string[] | null;
 }): ChatMessage {
   return toChatMessage({
     id: payload.id,
@@ -97,6 +105,7 @@ export function assistantMessageFromEvent(payload: {
     stage: null,
     widget: payload.widget,
     references: payload.references,
+    suggestions: payload.suggestions,
     created_at: new Date().toISOString(),
   });
 }

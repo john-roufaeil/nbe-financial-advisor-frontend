@@ -13,6 +13,7 @@ import {
   captureComposerTextForRestore,
   registerComposerTextRestore,
 } from "@/lib/composer-text-recovery";
+import { useComposerPromptHistory } from "@/lib/use-composer-prompt-history";
 import { CHAT_MESSAGE_MAX_LENGTH } from "@/lib/constants/limits";
 
 // Only surfaced once the user is close to the cap — showing "0/4000" from
@@ -84,6 +85,7 @@ function ComposerSendButton() {
 
 export function ChatComposer() {
   const { t } = useTranslation();
+  const handleHistoryKeyDown = useComposerPromptHistory();
   return (
     <div className="bg-base-100 animate-entry">
       <ComposerPrimitive.AttachmentDropzone className="data-dragging:border-primary mx-auto w-full max-w-3xl rounded-xl data-dragging:border-2 data-dragging:border-dashed">
@@ -109,6 +111,7 @@ export function ChatComposer() {
               placeholder={t("chat.placeholder")}
               rows={1}
               maxLength={CHAT_MESSAGE_MAX_LENGTH}
+              onKeyDown={handleHistoryKeyDown}
               className="max-h-40 min-h-9 flex-1 resize-none bg-transparent px-1 py-1.5 focus:outline-none"
             />
             <ComposerCharCount />

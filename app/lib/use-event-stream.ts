@@ -30,6 +30,7 @@ interface ChatMessagePayload {
   content: string;
   widget: RawWidget | null;
   references: RawReference[] | null;
+  suggestions: string[] | null;
 }
 
 interface ChatErrorPayload {

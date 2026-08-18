@@ -62,6 +62,11 @@ export function useTransactionForm(
   const accounts = editing
     ? allAccounts
     : allAccounts?.filter((a) => a.link_type !== "synced");
+  // A synced transaction mirrors the bank's own record — the backend rejects
+  // a PATCH touching anything but category/is_recurring for one (see
+  // TransactionDetailView.patch), so the form locks down to just those two
+  // fields rather than letting the user edit fields the request would 422 on.
+  const isSyncedEditing = !!editing && editing.source === "synced";
   const accountModalRef = useRef<HTMLDialogElement>(null);
   const awaitingNewAccountRef = useRef(false);
 
@@ -167,6 +172,20 @@ export function useTransactionForm(
   );
 
   async function onSubmit(values: TransactionFormValues) {
+    if (editing && isSyncedEditing) {
+      try {
+        await updateTransaction.mutateAsync({
+          id: editing.id,
+          patch: { category: values.category, isRecurring: values.isRecurring },
+        });
+        resetForm();
+        closeDialog(ref);
+      } catch {
+        // onError already toasted; keep the modal open with the entered values.
+      }
+      return;
+    }
+
     const patch = {
       datetime: `${values.date}T00:00:00`,
       title: values.transactionTitle.trim(),
@@ -204,6 +223,7 @@ export function useTransactionForm(
     accountModalRef,
     currencyLabel,
     isSaving,
+    isSyncedEditing,
     resetForm,
     handleAddNewAccount,
     handleFormSubmit: handleSubmit(onSubmit),

@@ -31,12 +31,12 @@ export function TransactionCard({
   const Icon = isIncome ? ArrowUpCircle : ArrowDownCircle;
   const { data: accounts } = useAccounts();
   const account = accounts?.find((a) => a.id === transaction.accountId);
-  // Synced-account transactions are backend-rejected on edit/delete
-  // (assert_account_mutable()) — hide the controls rather than let them 403.
-  // Individually-synchronized transactions (source === "synchronized") are
-  // rejected the same way regardless of the account's own link_type.
-  const isReadOnly =
-    account?.link_type === "synced" || transaction.source === "synchronized";
+  // A synced transaction stays editable for category/is_recurring (backend:
+  // TransactionDetailView.patch) but everything else, including delete, is
+  // backend-rejected (assert_account_mutable()) — so the edit button stays,
+  // opening the form in its synced-lock mode (see use-transaction-form.ts),
+  // while delete is hidden rather than left to 422.
+  const isSynced = account?.link_type === "synced" || transaction.source === "synced";
   const currencyLabel = t(
     `currency.${account?.currency ?? "EGP"}`,
     account?.currency ?? "EGP",
@@ -98,14 +98,13 @@ export function TransactionCard({
     </Money>
   );
 
-  const actions = isReadOnly ? (
+  const actions = (
     <div className="relative z-10 flex shrink-0 items-center gap-1">
-      <Tooltip content={t("transactions.synced")}>
-        <span className="badge badge-ghost text-xs">{t("transactions.synced")}</span>
-      </Tooltip>
-    </div>
-  ) : (
-    <div className="relative z-10 flex shrink-0 items-center gap-1">
+      {isSynced && (
+        <Tooltip content={t("transactions.synced")}>
+          <span className="badge badge-ghost text-xs">{t("transactions.synced")}</span>
+        </Tooltip>
+      )}
       <Tooltip content={t("actions.edit")}>
         <button
           type="button"
@@ -116,16 +115,18 @@ export function TransactionCard({
           <Pencil data-no-flip className="size-4" />
         </button>
       </Tooltip>
-      <Tooltip content={t("actions.delete", { name: transaction.title })}>
-        <button
-          type="button"
-          onClick={onDelete}
-          className="btn btn-ghost btn-sm btn-square text-error"
-          aria-label={t("actions.delete", { name: transaction.title })}
-        >
-          <Trash2 className="size-4" />
-        </button>
-      </Tooltip>
+      {!isSynced && (
+        <Tooltip content={t("actions.delete", { name: transaction.title })}>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="btn btn-ghost btn-sm btn-square text-error"
+            aria-label={t("actions.delete", { name: transaction.title })}
+          >
+            <Trash2 className="size-4" />
+          </button>
+        </Tooltip>
+      )}
     </div>
   );
 
