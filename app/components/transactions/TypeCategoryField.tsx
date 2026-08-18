@@ -38,6 +38,7 @@ export function TypeCategoryField({
   onTypeChange,
   onCategoryChange,
   size = "sm",
+  disableType = false,
   error,
   ariaDescribedBy,
 }: {
@@ -48,6 +49,10 @@ export function TypeCategoryField({
   onTypeChange: (next: "income" | "expense", fallbackCategory: string | null) => void;
   onCategoryChange: (category: string) => void;
   size?: keyof typeof SIZES;
+  /** Locks the expense/income toggle while leaving the category select
+   * interactive — for a synced transaction, whose direction mirrors the
+   * bank's own record and isn't user-editable. */
+  disableType?: boolean;
   /** The expense/income toggle can't be invalid (always one of two fixed
    * values) — only the category select can, so these apply to it alone. */
   error?: boolean;
@@ -72,6 +77,7 @@ export function TypeCategoryField({
         <button
           type="button"
           onClick={() => changeType("expense")}
+          disabled={disableType}
           className={`${classes.btn} ${type === "expense" ? "btn-error" : "btn-ghost"}`}
         >
           {t("common.filters.expense")}
@@ -79,6 +85,7 @@ export function TypeCategoryField({
         <button
           type="button"
           onClick={() => changeType("income")}
+          disabled={disableType}
           className={`${classes.btn} ${type === "income" ? "btn-success" : "btn-ghost"}`}
         >
           {t("common.filters.income")}

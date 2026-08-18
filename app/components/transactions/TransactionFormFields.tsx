@@ -21,6 +21,7 @@ export function TransactionFormFields({
   errors,
   accounts,
   editing,
+  isSyncedEditing = false,
   currencyLabel,
   onAddNewAccount,
   today,
@@ -33,6 +34,10 @@ export function TransactionFormFields({
   errors: FieldErrors<TransactionFormValues>;
   accounts: BankAccount[] | undefined;
   editing: boolean;
+  /** Editing a synced (source === "synced") transaction — every field but
+   * category/recurring mirrors the bank's own record and is locked, matching
+   * what the backend actually accepts on PATCH (see use-transaction-form.ts). */
+  isSyncedEditing?: boolean;
   currencyLabel: string;
   onAddNewAccount: () => void;
   today: () => string;
@@ -44,6 +49,11 @@ export function TransactionFormFields({
 
   return (
     <form id={formId} onSubmit={onSubmit} className="flex flex-col gap-3">
+      {isSyncedEditing && (
+        <p className="bg-base-200 text-base-content/70 rounded-md p-2 text-xs">
+          {t("transactions.add.syncedEditHint")}
+        </p>
+      )}
       <label className="flex flex-col gap-1">
         <span className="label-text text-xs">{t("transactions.add.name")}</span>
         <Controller
@@ -54,6 +64,7 @@ export function TransactionFormFields({
               type="text"
               placeholder={t("transactions.add.namePlaceholder")}
               maxLength={20}
+              disabled={isSyncedEditing}
               aria-invalid={!!errors.transactionTitle}
               aria-describedby={
                 errors.transactionTitle ? "transactionTitle-error" : undefined
@@ -110,6 +121,11 @@ export function TransactionFormFields({
               value={field.value}
               max={MAX_MONEY_VALUE}
               onChange={field.onChange}
+              disabled={isSyncedEditing}
+              // The +/- steppers aren't governed by `disabled` (see
+              // MoneyInput), so they're hidden outright rather than left
+              // clickable while the text input itself is locked.
+              hideSteppers={isSyncedEditing}
               placeholder={t("transactions.add.amountPlaceholder")}
               unit={currencyLabel}
               aria-label={t("transactions.add.amount")}
@@ -136,6 +152,7 @@ export function TransactionFormFields({
             if (fallback) setValue("category", fallback, { shouldValidate: true });
           }}
           onCategoryChange={(c) => setValue("category", c, { shouldValidate: true })}
+          disableType={isSyncedEditing}
           error={!!errors.category}
           ariaDescribedBy={errors.category ? "category-error" : undefined}
         />
@@ -156,6 +173,7 @@ export function TransactionFormFields({
               type="date"
               min={minDate()}
               max={today()}
+              disabled={isSyncedEditing}
               className="input input-bordered input-sm w-full"
               {...field}
             />

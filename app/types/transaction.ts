@@ -8,7 +8,8 @@ export interface Transaction {
   /** The linked bank account this transaction belongs to. Not patchable once created. */
   accountId?: string;
   /** Where the backend got this row from — one of TRANSACTION_SOURCES. Synced
-   * transactions are backend-rejected on edit/delete — see TransactionCard. */
+   * transactions are backend-rejected on delete, and on editing any field but
+   * category/isRecurring — see TransactionCard and use-transaction-form.ts. */
   source: string;
   isRecurring: boolean;
 }

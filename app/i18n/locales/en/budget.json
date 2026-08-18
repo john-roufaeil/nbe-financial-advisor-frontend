@@ -60,6 +60,7 @@
     },
     "history": {
       "title": "Change history",
+      "noBudget": "You don't have a budget plan yet.",
       "empty": "No changes recorded yet.",
       "current": "Current",
       "currentAllocationsLabel": "Current allocations:",

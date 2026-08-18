@@ -30,6 +30,7 @@
       "amountPlaceholder": "0.00",
       "date": "Date",
       "recurring": "Recurring",
+      "syncedEditHint": "This transaction is synced from your bank. Only the category and recurring status can be changed.",
       "errors": {
         "nameRequired": "Enter a name for this transaction.",
         "nameTooLong": "Name must be 20 characters or fewer.",

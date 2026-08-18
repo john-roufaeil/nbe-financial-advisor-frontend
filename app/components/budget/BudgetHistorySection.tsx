@@ -179,9 +179,11 @@ export function BudgetHistorySection() {
 
       {isPending ? (
         <ListSkeleton rows={4} />
+      ) : noBudgetYet ? (
+        <EmptyState icon={History} label={t("budget.history.noBudget")} />
       ) : isError ? (
         <ErrorState onRetry={() => refetch()} />
-      ) : !budget && noBudgetYet && (data?.items.length ?? 0) === 0 ? (
+      ) : !budget && (data?.items.length ?? 0) === 0 ? (
         <EmptyState icon={History} label={t("budget.history.empty")} />
       ) : (
         <>

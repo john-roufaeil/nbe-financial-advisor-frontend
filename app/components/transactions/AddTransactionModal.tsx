@@ -21,6 +21,7 @@ export const AddTransactionModal = forwardRef<
     accountModalRef,
     currencyLabel,
     isSaving,
+    isSyncedEditing,
     resetForm,
     handleAddNewAccount,
     handleFormSubmit,
@@ -67,6 +68,7 @@ export const AddTransactionModal = forwardRef<
           errors={errors}
           accounts={accounts}
           editing={!!editing}
+          isSyncedEditing={isSyncedEditing}
           currencyLabel={currencyLabel}
           onAddNewAccount={handleAddNewAccount}
           today={today}
