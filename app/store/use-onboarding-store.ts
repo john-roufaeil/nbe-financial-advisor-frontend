@@ -1,6 +1,4 @@
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
 /**
  * Field names mirror the backend request bodies (snake_case) so wiring is a
@@ -9,10 +7,11 @@ import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
  *   employment_status ... dependents_count      -> PATCH /users/me
  *   goal_* / selected_template_key              -> POST /budget
  *
- * NOTE: `password` is deliberately NOT part of this shape. This store is
- * persisted to localStorage, and the password must never be written to any
- * client store (bank-adjacent app). It lives only in local component state in
- * the Account step and is used solely for the one-off signup call.
+ * NOTE: this store is deliberately NOT persisted. Every field here is PII or
+ * sensitive financial data (bank-adjacent app), so none of it may sit in
+ * browser storage — including `password`, which lives only in local
+ * component state in the Account step and is used solely for the one-off
+ * signup call. A page reload mid-onboarding restarts the flow from scratch.
  */
 export interface OnboardingData {
   name: string;
@@ -56,23 +55,16 @@ interface OnboardingState {
   setField: <K extends keyof OnboardingData>(field: K, value: OnboardingData[K]) => void;
 }
 
-export const useOnboardingStore = create<OnboardingState>()(
-  persist(
-    (set) => ({
-      step: 0,
-      totalSteps: 5,
-      started: false,
-      data: INITIAL_ONBOARDING_DATA,
-      begin: () => set({ started: true, step: 0, data: INITIAL_ONBOARDING_DATA }),
-      next: () => set((s) => ({ step: Math.min(s.step + 1, s.totalSteps - 1) })),
-      back: () => set((s) => ({ step: Math.max(s.step - 1, 0) })),
-      goToStep: (step) =>
-        set((s) => ({ step: Math.max(0, Math.min(step, s.totalSteps - 1)) })),
-      reset: () => set({ step: 0, started: false, data: INITIAL_ONBOARDING_DATA }),
-      setField: (field, value) => set((s) => ({ data: { ...s.data, [field]: value } })),
-    }),
-    // version bumped: the field set changed (income_bracket removed), so any
-    // stale persisted `data` is discarded instead of hydrating a mismatched shape.
-    { name: STORAGE_KEYS.onboarding, version: 2 },
-  ),
-);
+export const useOnboardingStore = create<OnboardingState>()((set) => ({
+  step: 0,
+  totalSteps: 5,
+  started: false,
+  data: INITIAL_ONBOARDING_DATA,
+  begin: () => set({ started: true, step: 0, data: INITIAL_ONBOARDING_DATA }),
+  next: () => set((s) => ({ step: Math.min(s.step + 1, s.totalSteps - 1) })),
+  back: () => set((s) => ({ step: Math.max(s.step - 1, 0) })),
+  goToStep: (step) =>
+    set((s) => ({ step: Math.max(0, Math.min(step, s.totalSteps - 1)) })),
+  reset: () => set({ step: 0, started: false, data: INITIAL_ONBOARDING_DATA }),
+  setField: (field, value) => set((s) => ({ data: { ...s.data, [field]: value } })),
+}));
