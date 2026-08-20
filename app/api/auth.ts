@@ -32,6 +32,12 @@ export async function logout(): Promise<void> {
   await apiClient.post(API_ENDPOINTS.authLogout);
 }
 
+/** Ends every OTHER session for the current user — the calling device
+ * stays signed in. Profile page's Account Management section. */
+export async function logoutAllDevices(): Promise<void> {
+  await apiClient.post(API_ENDPOINTS.authLogoutAll);
+}
+
 /** IsAuthenticated — resends the verification email to the current user. */
 export async function requestEmailVerification(): Promise<void> {
   await apiClient.post(API_ENDPOINTS.authVerifyEmailRequest);

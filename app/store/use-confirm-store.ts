@@ -4,6 +4,12 @@ interface ConfirmOptions {
   title: string;
   message?: string;
   onConfirm: () => void;
+  /** Overrides the confirm button's label (default: "Delete") — e.g. "Log
+   * out" for a non-deletion confirmation like logging out other devices. */
+  confirmLabel?: string;
+  /** "danger" (default, red button + warning icon) or "default" (primary
+   * button) — most confirmations here are deletions, but not all. */
+  tone?: "danger" | "default";
 }
 
 interface ConfirmState extends ConfirmOptions {
@@ -17,6 +23,9 @@ export const useConfirmStore = create<ConfirmState>((set) => ({
   title: "",
   message: undefined,
   onConfirm: () => {},
-  confirm: (options) => set({ isOpen: true, ...options }),
+  confirmLabel: undefined,
+  tone: "danger",
+  confirm: (options) =>
+    set({ isOpen: true, tone: "danger", confirmLabel: undefined, ...options }),
   close: () => set({ isOpen: false }),
 }));

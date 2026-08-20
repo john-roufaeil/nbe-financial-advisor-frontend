@@ -1,9 +1,11 @@
 {
   "settings": {
     "signOut": "Sign Out",
+    "termsDeclinedBanner": "You haven't agreed to the Terms of Service, so the rest of the app is locked — only account settings are available here. Turn it back on under Privacy & consent below to regain full access.",
     "deleteAccount": "Delete Account",
     "deleteAccountTitle": "Delete your account?",
     "deleteAccountMessage": "This permanently deletes your account and all of its data — accounts, transactions, budgets, conversations, statements. This can't be undone.",
+    "deleteAccountConfirmLabel": "Type {{word}} to confirm",
     "language": "Language",
     "languageNames": {
       "en": "English",
@@ -58,6 +60,50 @@
         "in_review": "In review",
         "resolved": "Resolved",
         "dismissed": "Dismissed"
+      }
+    },
+    "accountManagement": {
+      "title": "Account Management",
+      "groups": {
+        "security": "Security",
+        "privacy": "Privacy",
+        "dangerZone": "Danger zone"
+      },
+      "changePassword": {
+        "title": "Change password",
+        "description": "We'll email you a link to set a new password.",
+        "action": "Send reset link",
+        "sent": "Password reset link sent — check your email."
+      },
+      "logoutAll": {
+        "title": "Log out of all other devices",
+        "description": "Ends every other signed-in session. This device stays signed in.",
+        "action": "Log out other devices",
+        "confirmTitle": "Log out of all other devices?",
+        "confirmMessage": "Every other device signed into your account will be signed out. This device stays signed in.",
+        "confirmAction": "Log out",
+        "done": "You've been logged out everywhere else."
+      },
+      "consent": {
+        "title": "Privacy & consent",
+        "description": "Control what you've agreed to.",
+        "manage": "Manage",
+        "viewText": "View policy text",
+        "types": {
+          "terms_of_service": "Terms of Service",
+          "data_processing": "Data Processing"
+        }
+      },
+      "dataExport": {
+        "title": "Request my account data",
+        "description": "Get a copy of everything we store about your account, emailed to you.",
+        "action": "Request export",
+        "requested": "Your data export is on its way — check your email shortly.",
+        "verifyFirst": "Verify your email first — see the banner above."
+      },
+      "deleteAccount": {
+        "title": "Delete account",
+        "description": "Permanently delete your account and all of its data. This can't be undone."
       }
     },
     "accessibility": {

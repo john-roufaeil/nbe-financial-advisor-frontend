@@ -3,7 +3,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import * as profileApi from "@/api/profile";
 import type { UpdateProfileBody } from "@/types/profile";
 import { useCompleteProfileModalStore } from "@/store/use-complete-profile-modal-store";
-import { toastApiError } from "@/lib/toast";
+import { toastApiError, toastSuccess } from "@/lib/toast";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 
 export const profileKeys = {
@@ -52,6 +52,17 @@ export function useCheckProfileCompletion() {
 export function useDeleteMyAccount() {
   return useMutation({
     mutationFn: () => profileApi.deleteMe(),
+    onError: (error) => toastApiError(error),
+  });
+}
+
+/** "Request my account data" (profile page's Account Management) — a 202
+ * means the export was queued, not that the email has landed yet, so the
+ * success toast says "check your email" rather than "done". */
+export function useRequestDataExport() {
+  return useMutation({
+    mutationFn: () => profileApi.requestDataExport(),
+    onSuccess: () => toastSuccess("settings.accountManagement.dataExport.requested"),
     onError: (error) => toastApiError(error),
   });
 }

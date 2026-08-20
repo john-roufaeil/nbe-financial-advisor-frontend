@@ -18,3 +18,10 @@ export async function updateProfile(body: UpdateProfileBody): Promise<User> {
 export async function deleteMe(): Promise<void> {
   await apiClient.delete(API_ENDPOINTS.usersMe);
 }
+
+/** Kicks off an async export of every piece of the user's own data,
+ * emailed as a JSON attachment once ready (core/tasks/data_export.py) —
+ * this call itself only enqueues the job (202), it doesn't wait for it. */
+export async function requestDataExport(): Promise<void> {
+  await apiClient.post(API_ENDPOINTS.usersMeDataExport);
+}
