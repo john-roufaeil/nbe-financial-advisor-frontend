@@ -9,6 +9,7 @@ import {
   Package,
   ShieldCheck,
   TriangleAlert,
+  Wallet,
 } from "lucide-react";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useAdminAuthStore } from "@/store/use-admin-auth-store";
@@ -18,16 +19,18 @@ import { ConfirmDialog } from "@/components/shared/modals/ConfirmDialog";
 import { LanguageSwitcher } from "@/components/shared/preferences/LanguageSwitcher";
 import { CategoriesPanel } from "@/components/admin/CategoriesPanel";
 import { ProductsPanel } from "@/components/admin/ProductsPanel";
+import { TemplatesPanel } from "@/components/admin/TemplatesPanel";
 import { IssuesPanel } from "@/components/admin/IssuesPanel";
 import { FeedbackPanel } from "@/components/admin/FeedbackPanel";
 import { Z_DROPDOWN } from "@/lib/z-index";
 
-const TABS = ["categories", "products", "issues", "feedback"] as const;
+const TABS = ["categories", "products", "templates", "issues", "feedback"] as const;
 type Tab = (typeof TABS)[number];
 
 const TAB_ICONS: Record<Tab, typeof FolderTree> = {
   categories: FolderTree,
   products: Package,
+  templates: Wallet,
   issues: TriangleAlert,
   feedback: MessageSquareText,
 };
@@ -96,6 +99,7 @@ export default function AdminDashboard() {
           <h2 className="text-xl font-semibold">{t(`admin.tabs.${tab}`)}</h2>
           {tab === "categories" && <CategoriesPanel canWrite={canWrite} />}
           {tab === "products" && <ProductsPanel canWrite={canWrite} />}
+          {tab === "templates" && <TemplatesPanel canWrite={canWrite} />}
           {tab === "issues" && <IssuesPanel />}
           {tab === "feedback" && <FeedbackPanel />}
         </main>
@@ -131,11 +135,13 @@ export default function AdminDashboard() {
                   ? counts.categoriesCount
                   : name === "products"
                     ? counts.productsCount
-                    : name === "issues"
-                      ? counts.openIssuesCount
-                      : name === "feedback"
-                        ? counts.feedbackCount
-                        : undefined;
+                    : name === "templates"
+                      ? counts.templatesCount
+                      : name === "issues"
+                        ? counts.openIssuesCount
+                        : name === "feedback"
+                          ? counts.feedbackCount
+                          : undefined;
               return (
                 <button
                   key={name}

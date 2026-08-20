@@ -2,6 +2,17 @@
   "dashboard": {
     "placeholder": "Placeholder — dashboard widgets go here.",
     "subtitle": "A snapshot of your finances this month.",
+    "subtitlePeriods": {
+      "thisMonth": "A snapshot of your finances this month.",
+      "lastMonth": "A snapshot of your finances last month.",
+      "last3Months": "A snapshot of your finances over the last 3 months.",
+      "thisYear": "A snapshot of your finances this year."
+    },
+    "sections": {
+      "keyFigures": "Key figures",
+      "quickInsights": "Quick insights",
+      "yourPlan": "Your goal"
+    },
     "askAdvisor": "Ask the advisor",
     "addItem": "Add new item",
     "hideBalances": "Hide balances",
@@ -53,6 +64,12 @@
       "title": "Goal Progress",
       "titleShort": "Your Goal",
       "remaining": "{{amount}} {{currency}} to go",
+      "ofTarget": "of {{target}} {{currency}}",
+      "remainingLabel": "Remaining",
+      "remainingTooltip": "Amount left to reach your target, at today's pace.",
+      "durationTooltip": "{{count}}-month goal",
+      "milestoneTooltip": "{{pct}}% milestone · {{amount}} {{currency}}",
+      "milestoneReachedTooltip": "Reached {{pct}}% · {{amount}} {{currency}}",
       "empty": "No goal set yet. Add yours now to start tracking.",
       "emptyTitle": "No active goal",
       "addYours": "Add your goal",
@@ -72,6 +89,8 @@
       "onTrackTooltip": "Your current pace should get you to this goal by the projected date.",
       "behindScheduleTooltip": "At your current pace, you may miss the projected completion date.",
       "projectedCompletion": "Projected to finish {{date}}",
+      "congratsMessage": "Congratulations, you've reached your goal!",
+      "setNewGoal": "Set new savings goal",
       "errors": {
         "nameRequired": "Enter a name for this goal.",
         "nameTooLong": "Name must be 20 characters or fewer.",
@@ -94,6 +113,10 @@
       "allocated": "allocated",
       "empty": "This plan has no categories yet.",
       "editAllocations": "Edit allocations",
+      "changeTemplate": "Change plan template",
+      "changeTemplateTitle": "Choose a plan template",
+      "changeTemplateWarning": "Applying a template replaces every category and percentage in your current plan.",
+      "applyTemplate": "Apply template",
       "allocationsNeedMore": "You need to allocate {{amount}}% more to continue",
       "allocationsOverAllocated": "Over-allocated by {{amount}}%",
       "allocationsFullyAllocated": "Fully allocated",

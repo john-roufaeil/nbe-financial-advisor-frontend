@@ -18,6 +18,7 @@
     "tabs": {
       "categories": "الفئات",
       "products": "المنتجات",
+      "templates": "قوالب خطط الادخار",
       "issues": "البلاغات",
       "feedback": "التقييمات"
     },
@@ -82,6 +83,27 @@
         "externalLink": "رابط خارجي"
       }
     },
+    "templates": {
+      "add": "إضافة قالب",
+      "addTitle": "إضافة قالب خطة ادخار",
+      "editTitle": "تعديل قالب خطة الادخار",
+      "deleteTitle": "حذف «{{name}}»؟",
+      "deleteMessage": "سيتم حذف القالب نهائيًا. لن يظهر بعد ذلك كخيار لمن يقوم بالتسجيل.",
+      "empty": "لا توجد قوالب أولية بعد.",
+      "keyHint": "معرّف ثابت (أحرف، أرقام، شرطات، وشرطات سفلية). لا يمكن تغييره بعد الإنشاء.",
+      "selectCategory": "اختر فئة…",
+      "removeRow": "إزالة الفئة",
+      "addRow": "إضافة فئة",
+      "errors": {
+        "keyFormat": "يُسمح فقط بالأحرف والأرقام والشرطات والشرطات السفلية."
+      },
+      "columns": {
+        "key": "المعرّف",
+        "name": "الاسم",
+        "description": "الوصف",
+        "percentage": "النسبة"
+      }
+    },
     "issues": {
       "empty": "لا توجد بلاغات.",
       "changeStatus": "تغيير حالة البلاغ",
@@ -121,6 +143,9 @@
       "productCreated": "تم إنشاء المنتج",
       "productUpdated": "تم تحديث المنتج",
       "productDeleted": "تم حذف المنتج",
+      "templateCreated": "تم إنشاء القالب",
+      "templateUpdated": "تم تحديث القالب",
+      "templateDeleted": "تم حذف القالب",
       "issueUpdated": "تم تحديث حالة البلاغ"
     }
   }

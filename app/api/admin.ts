@@ -11,6 +11,9 @@ import type {
   AdminProduct,
   AdminProductCreateBody,
   AdminProductUpdateBody,
+  AdminTemplate,
+  AdminTemplateCreateBody,
+  AdminTemplateUpdateBody,
   IssueStatus,
   Paginated,
 } from "@/types/admin";
@@ -131,6 +134,40 @@ export async function updateAdminProduct(
 
 export async function deleteAdminProduct(id: string): Promise<void> {
   await adminApiClient.delete(API_ENDPOINTS.adminProduct(id));
+}
+
+/** GET /admin/onboarding-templates is a plain array, not LimitOffset-paginated
+ * — there are only ever a handful of starter templates. */
+export async function getAdminTemplates(): Promise<AdminTemplate[]> {
+  const res = await adminApiClient.get<AdminTemplate[]>(
+    API_ENDPOINTS.adminOnboardingTemplates,
+  );
+  return res.data;
+}
+
+export async function createAdminTemplate(
+  body: AdminTemplateCreateBody,
+): Promise<AdminTemplate> {
+  const res = await adminApiClient.post<AdminTemplate>(
+    API_ENDPOINTS.adminOnboardingTemplates,
+    body,
+  );
+  return res.data;
+}
+
+export async function updateAdminTemplate(
+  templateKey: string,
+  body: AdminTemplateUpdateBody,
+): Promise<AdminTemplate> {
+  const res = await adminApiClient.patch<AdminTemplate>(
+    API_ENDPOINTS.adminOnboardingTemplate(templateKey),
+    body,
+  );
+  return res.data;
+}
+
+export async function deleteAdminTemplate(templateKey: string): Promise<void> {
+  await adminApiClient.delete(API_ENDPOINTS.adminOnboardingTemplate(templateKey));
 }
 
 export async function getAdminFeedback(

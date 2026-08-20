@@ -18,6 +18,7 @@
     "tabs": {
       "categories": "Categories",
       "products": "Products",
+      "templates": "Savings Templates",
       "issues": "Issues",
       "feedback": "Feedback"
     },
@@ -82,6 +83,27 @@
         "externalLink": "External link"
       }
     },
+    "templates": {
+      "add": "Add template",
+      "addTitle": "Add savings plan template",
+      "editTitle": "Edit savings plan template",
+      "deleteTitle": "Delete “{{name}}”?",
+      "deleteMessage": "This permanently removes the template. Anyone onboarding after this will no longer see it as an option.",
+      "empty": "No starter templates yet.",
+      "keyHint": "Stable machine key (letters, numbers, hyphens, underscores). Can't be changed after creation.",
+      "selectCategory": "Select a category…",
+      "removeRow": "Remove category",
+      "addRow": "Add category",
+      "errors": {
+        "keyFormat": "Only letters, numbers, hyphens, and underscores are allowed."
+      },
+      "columns": {
+        "key": "Key",
+        "name": "Name",
+        "description": "Description",
+        "percentage": "Percentage"
+      }
+    },
     "issues": {
       "empty": "No reported issues.",
       "changeStatus": "Change issue status",
@@ -121,6 +143,9 @@
       "productCreated": "Product created",
       "productUpdated": "Product updated",
       "productDeleted": "Product deleted",
+      "templateCreated": "Template created",
+      "templateUpdated": "Template updated",
+      "templateDeleted": "Template deleted",
       "issueUpdated": "Issue status updated"
     }
   }

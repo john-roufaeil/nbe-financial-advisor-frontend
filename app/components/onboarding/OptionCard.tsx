@@ -1,3 +1,4 @@
+import type { ReactNode } from "react";
 import { Check } from "lucide-react";
 
 export function OptionCard({
@@ -5,11 +6,16 @@ export function OptionCard({
   onClick,
   title,
   description,
+  children,
 }: {
   selected: boolean;
   onClick: () => void;
   title: string;
   description?: string;
+  /** Extra content under the description, e.g. a template's allocation
+   * breakdown (ChangeTemplateModal) — omit for the plain title+description
+   * card onboarding's TemplateStep uses. */
+  children?: ReactNode;
 }) {
   return (
     <button
@@ -27,11 +33,12 @@ export function OptionCard({
       >
         {selected && <Check data-no-flip className="size-3" />}
       </span>
-      <span className="flex flex-col gap-0.5">
+      <span className="flex min-w-0 flex-1 flex-col gap-0.5">
         <span className="text-sm font-medium">{title}</span>
         {description && (
           <span className="text-base-content/60 text-xs">{description}</span>
         )}
+        {children}
       </span>
     </button>
   );
