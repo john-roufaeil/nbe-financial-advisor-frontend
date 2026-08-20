@@ -45,7 +45,11 @@ export function IssuesSection() {
       ) : isError ? (
         <ErrorState onRetry={refetch} />
       ) : data.items.length === 0 ? (
-        <EmptyState icon={MessageSquareWarning} label={t("settings.issues.empty")} />
+        <EmptyState
+          compact
+          icon={MessageSquareWarning}
+          label={t("settings.issues.empty")}
+        />
       ) : (
         <ul className="flex flex-col gap-2">
           {data.items.map((issue) => (

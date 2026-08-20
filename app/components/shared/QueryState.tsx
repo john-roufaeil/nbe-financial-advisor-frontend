@@ -40,19 +40,25 @@ export function EmptyState({
   label,
   icon: Icon,
   className = "",
+  compact = false,
 }: {
   label?: string;
   icon?: typeof TriangleAlert;
   className?: string;
+  /** Tighter padding/icon for a small inline section (e.g. a card's empty
+   * list) where the default hero-sized padding reads as wasted space. */
+  compact?: boolean;
 }) {
   const { t } = useTranslation();
   return (
     <div
-      className={`border-base-300 flex min-h-0 flex-1 flex-col items-center justify-center gap-2 overflow-y-auto rounded-xl border border-dashed py-14 text-center ${className}`}
+      className={`border-base-300 flex min-h-0 flex-1 flex-col items-center justify-center gap-2 overflow-y-auto rounded-xl border border-dashed text-center ${compact ? "py-5" : "py-14"} ${className}`}
     >
       {Icon && (
-        <span className="bg-base-200 text-base-content/40 grid size-11 place-items-center rounded-full">
-          <Icon className="size-5" />
+        <span
+          className={`bg-base-200 text-base-content/40 grid place-items-center rounded-full ${compact ? "size-8" : "size-11"}`}
+        >
+          <Icon className={compact ? "size-4" : "size-5"} />
         </span>
       )}
       <p className="text-base-content/50 w-full text-sm text-balance sm:w-1/2">
@@ -66,7 +72,7 @@ export function GoalEmptyState({ onAddClick }: { onAddClick: () => void }) {
   const { t } = useTranslation();
 
   return (
-    <div className="border-base-300 bg-base-200/20 flex flex-1 flex-col items-center justify-center gap-4 rounded-xl border border-dashed px-4 py-8 text-center">
+    <div className="flex flex-1 flex-col items-center justify-center gap-4 px-4 py-8 text-center">
       <span className="bg-primary/10 text-primary/70 grid size-12 place-items-center rounded-full">
         <Target className="size-5.5" />
       </span>
