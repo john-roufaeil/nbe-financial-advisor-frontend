@@ -74,7 +74,7 @@ export function SavingsPerMonthChart() {
     delta === undefined || delta === 0 ? Minus : delta > 0 ? TrendingUp : TrendingDown;
 
   return (
-    <div className="border-base-300 bg-base-100 animate-entry flex h-full flex-col gap-4 rounded-xl border p-4 shadow-sm">
+    <div className="animate-entry flex h-full flex-col gap-4">
       <h2 className="flex items-center gap-2 text-sm font-semibold">
         <span className="bg-primary/10 text-primary grid size-7 shrink-0 place-items-center rounded-lg">
           <TrendingUp data-no-flip className="size-4" />
