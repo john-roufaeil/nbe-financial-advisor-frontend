@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router";
 import { useSessionGate } from "@/lib/use-session-gate";
+import { useConsentStatus } from "@/queries/consent";
 import { RestoringScreen } from "@/components/shared/auth/RestoringScreen";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 
@@ -22,6 +23,13 @@ import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 export function RequireAuth() {
   const { restoring, hasSession, lang } = useSessionGate();
   const location = useLocation();
+  // Declining/revoking terms_of_service restricts the account to profile-only
+  // (account housekeeping — Preferences, Support, Account Management, and the
+  // basic profile fields) until it's re-granted from there; every other route
+  // bounces to profile instead of rendering. Purely a frontend UX restriction
+  // — unlike data_processing, terms_of_service isn't enforced by the backend.
+  const { isActive: hasAgreedToTerms, isPending: termsPending } =
+    useConsentStatus("terms_of_service");
 
   if (restoring) return <RestoringScreen />;
 
@@ -35,5 +43,11 @@ export function RequireAuth() {
       />
     );
   }
+
+  const profilePath = localizedPath(lang!, ROUTE_SEGMENTS.profile);
+  if (!termsPending && !hasAgreedToTerms && location.pathname !== profilePath) {
+    return <Navigate to={profilePath} replace />;
+  }
+
   return <Outlet />;
 }
