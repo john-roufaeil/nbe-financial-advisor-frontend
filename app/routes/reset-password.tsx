@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -14,6 +14,10 @@ import { useSyncHtmlDir } from "@/lib/use-sync-html-dir";
 import { useCanGoBack } from "@/lib/use-can-go-back";
 import { useConfirmPasswordReset } from "@/queries/auth";
 import { isRateLimitError } from "@/lib/toast";
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
+import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
+
+const REDIRECT_SECONDS = 5;
 
 /**
  * Landing page for the password-reset email link
@@ -23,7 +27,7 @@ import { isRateLimitError } from "@/lib/toast";
  * server-side.
  */
 export default function ResetPassword() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   usePageTitle(t("resetPassword.title"));
   useSyncHtmlDir();
   const navigate = useNavigate();
@@ -33,8 +37,32 @@ export default function ResetPassword() {
   const [status, setStatus] = useState<"form" | "success" | "invalid" | "rateLimited">(
     "form",
   );
+  const [secondsLeft, setSecondsLeft] = useState(REDIRECT_SECONDS);
 
   const ticket = searchParams.get("t");
+
+  // This page is unprefixed (no :lang in the URL — see module docstring), so
+  // the redirect target reads the active i18n language, same as
+  // GoHomeOrSignInLink. Resetting a password is a deliberate "sign in fresh
+  // with the new one" signal, so this always targets sign-in, unlike that
+  // link's home-if-already-signed-in branch.
+  useEffect(() => {
+    if (status !== "success") return;
+    setSecondsLeft(REDIRECT_SECONDS);
+    const lang = SUPPORTED_LANGUAGES.includes(i18n.language as SupportedLanguage)
+      ? (i18n.language as SupportedLanguage)
+      : DEFAULT_LANGUAGE;
+    const interval = setInterval(() => {
+      setSecondsLeft((seconds) => seconds - 1);
+    }, 1000);
+    const timeout = setTimeout(() => {
+      navigate(localizedPath(lang, ROUTE_SEGMENTS.signIn), { replace: true });
+    }, REDIRECT_SECONDS * 1000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [status, i18n.language, navigate]);
 
   const schema = z
     .object({
@@ -92,6 +120,9 @@ export default function ResetPassword() {
           <CheckCircle2 className="text-success size-12" />
           <h1 className="text-xl font-semibold">{t("resetPassword.successTitle")}</h1>
           <p className="text-base-content/70">{t("resetPassword.successMessage")}</p>
+          <p className="text-base-content/50 text-sm" role="status">
+            {t("resetPassword.redirecting", { seconds: Math.max(0, secondsLeft) })}
+          </p>
           <GoHomeOrSignInLink className="btn btn-primary" />
         </div>
       )}
