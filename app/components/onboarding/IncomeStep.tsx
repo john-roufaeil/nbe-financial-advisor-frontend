@@ -15,7 +15,7 @@ import {
   DEPENDENTS_MAX,
 } from "@/lib/constants/limits";
 
-export function IncomeStep({ attempted }: OnboardingStepProps) {
+export function IncomeStep({ attempted, highlightField }: OnboardingStepProps) {
   const { t } = useTranslation();
   const data = useOnboardingStore((s) => s.data);
   const setField = useOnboardingStore((s) => s.setField);
@@ -57,6 +57,20 @@ export function IncomeStep({ attempted }: OnboardingStepProps) {
         onChange={(v) => setField("employment_status", v)}
         error={statusMissing}
         required
+        highlighted={highlightField === "employment_status"}
+      />
+
+      <SliderField
+        label={t("onboarding.income.monthlyIncome")}
+        value={Number(data.monthly_income) || 0}
+        onChange={(v) => setField("monthly_income", String(v))}
+        min={MONTHLY_INCOME_MIN}
+        max={MONTHLY_INCOME_MAX}
+        step={MONTHLY_INCOME_STEP}
+        unit={t("currency.EGP")}
+        error={incomeMissing}
+        required
+        highlighted={highlightField === "monthly_income"}
       />
 
       <SliderField
@@ -70,18 +84,6 @@ export function IncomeStep({ attempted }: OnboardingStepProps) {
           count: Number(data.dependents_count) || 0,
         })}
         info={t("onboarding.income.dependentsInfo")}
-      />
-
-      <SliderField
-        label={t("onboarding.income.monthlyIncome")}
-        value={Number(data.monthly_income) || 0}
-        onChange={(v) => setField("monthly_income", String(v))}
-        min={MONTHLY_INCOME_MIN}
-        max={MONTHLY_INCOME_MAX}
-        step={MONTHLY_INCOME_STEP}
-        unit={t("currency.EGP")}
-        error={incomeMissing}
-        required
       />
 
       <ChipPicker

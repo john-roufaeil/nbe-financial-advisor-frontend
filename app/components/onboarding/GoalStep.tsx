@@ -3,9 +3,9 @@ import { useTranslation } from "react-i18next";
 import { X } from "lucide-react";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { SliderField } from "@/components/onboarding/SliderField";
-import { RequiredMark } from "@/components/onboarding/RequiredMark";
 import type { STEP_FIELDS, OnboardingStepProps } from "@/lib/onboarding-fields";
 import { isFieldUnset, isStepDirty } from "@/lib/onboarding-fields";
+import { useHighlightRef } from "@/lib/use-highlight-ref";
 import {
   GOAL_TARGET_MAX,
   GOAL_MONTHS_MAX,
@@ -19,10 +19,12 @@ import { NAME_SUGGESTIONS } from "@/lib/constants/options";
  *   goal_target_months -> goal.target_months
  * No API call on this step — the goal is held in form state until step 5.
  */
-export function GoalStep({ attempted }: OnboardingStepProps) {
+export function GoalStep({ attempted, highlightField }: OnboardingStepProps) {
   const { t } = useTranslation();
   const data = useOnboardingStore((s) => s.data);
   const setField = useOnboardingStore((s) => s.setField);
+  const nameHighlighted = highlightField === "goal_name";
+  const nameHighlightRef = useHighlightRef<HTMLLabelElement>(nameHighlighted);
 
   // Once the user has started this step (or tried to leave it incomplete),
   // every remaining unfilled field is flagged — the step is "all or nothing"
@@ -57,10 +59,14 @@ export function GoalStep({ attempted }: OnboardingStepProps) {
 
   return (
     <div className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1.5">
+      <label
+        ref={nameHighlightRef}
+        className={`flex flex-col gap-1.5 rounded-lg transition-shadow ${
+          nameHighlighted ? "ring-primary ring-offset-base-100 ring-2 ring-offset-2" : ""
+        }`}
+      >
         <span className="label-text inline-flex items-center gap-1.5 text-xs">
           {t("onboarding.goal.name")}
-          <RequiredMark />
         </span>
         <label className="input input-bordered flex w-full items-center gap-2">
           <input
@@ -122,7 +128,6 @@ export function GoalStep({ attempted }: OnboardingStepProps) {
           error={
             missing("goal_target_amount") ? t("onboarding.errors.missing") : undefined
           }
-          required
         />
         {amountRangeError && (
           <span role="alert" className="text-error text-xs">
@@ -154,7 +159,6 @@ export function GoalStep({ attempted }: OnboardingStepProps) {
           error={
             missing("goal_target_months") ? t("onboarding.errors.missing") : undefined
           }
-          required
         />
         {monthsRangeError && (
           <span role="alert" className="text-error text-xs">

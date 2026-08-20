@@ -4,6 +4,7 @@ import { useTranslation } from "react-i18next";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { RequiredMark } from "@/components/onboarding/RequiredMark";
 import { useHoldRepeat } from "@/lib/use-hold-repeat";
+import { useHighlightRef } from "@/lib/use-highlight-ref";
 
 const THUMB_SIZE = "1.75rem";
 
@@ -25,6 +26,9 @@ interface SliderFieldProps {
   /** Definition shown in a tooltip behind an info icon beside the label, for
    * a field whose meaning isn't self-evident from its name alone. */
   info?: string;
+  /** Briefly rings and scrolls this field into view — set when the user
+   * jumps here from PlanSummary's "edit" affordance. */
+  highlighted?: boolean;
 }
 
 export function SliderField({
@@ -39,9 +43,11 @@ export function SliderField({
   error,
   required,
   info,
+  highlighted,
 }: SliderFieldProps) {
   const { t } = useTranslation();
   const errorId = useId();
+  const highlightRef = useHighlightRef<HTMLDivElement>(highlighted);
 
   function clamp(v: number) {
     return Math.min(max, Math.max(min, v));
@@ -65,7 +71,12 @@ export function SliderField({
   const inputWidth = `${Math.max(3, formattedValue.length + 2)}ch`;
 
   return (
-    <div className="flex flex-col gap-1.5">
+    <div
+      ref={highlightRef}
+      className={`flex flex-col gap-1.5 rounded-lg transition-shadow ${
+        highlighted ? "ring-primary ring-offset-base-100 ring-2 ring-offset-2" : ""
+      }`}
+    >
       <span className="label-text inline-flex items-center gap-1.5 text-xs">
         {label}
         {required && <RequiredMark />}

@@ -18,7 +18,6 @@ export default function Splash() {
   const { t } = useTranslation();
   usePageTitle(t("splash.welcome"));
   const isAuthenticated = useAuthStore((s) => s.isAuthenticated);
-  const onboardingStarted = useOnboardingStore((s) => s.started);
   const begin = useOnboardingStore((s) => s.begin);
 
   if (isAuthenticated)
@@ -51,18 +50,10 @@ export default function Splash() {
         </ul>
 
         <div className="flex w-full flex-col gap-3">
-          {onboardingStarted && (
-            <Link
-              to={localizedPath(lang!, ROUTE_SEGMENTS.onboarding)}
-              className="btn btn-primary"
-            >
-              {t("splash.continue")}
-            </Link>
-          )}
           <Link
             to={localizedPath(lang!, ROUTE_SEGMENTS.onboarding)}
             onClick={() => begin()}
-            className={`btn ${onboardingStarted ? "btn-outline btn-primary" : "btn-primary"}`}
+            className="btn btn-primary"
           >
             {t("splash.getStarted")}
           </Link>

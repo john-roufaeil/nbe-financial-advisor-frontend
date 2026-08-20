@@ -1,10 +1,11 @@
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
-import { ArrowLeft, ArrowRight, ChevronsRight, Check } from "lucide-react";
+import { ArrowLeft, ArrowRight, ChevronsRight, Check, Info } from "lucide-react";
 import {
   useOnboardingStore,
   INITIAL_ONBOARDING_DATA,
+  type OnboardingData,
 } from "@/store/use-onboarding-store";
 import { AuthLayout } from "@/components/shared/layout/AuthLayout";
 import { Button } from "@/components/shared/Button";
@@ -13,7 +14,7 @@ import { AccountStep } from "@/components/onboarding/AccountStep";
 import { IncomeStep } from "@/components/onboarding/IncomeStep";
 import { GoalStep } from "@/components/onboarding/GoalStep";
 import { TemplateStep } from "@/components/onboarding/TemplateStep";
-import { ReviewStep } from "@/components/onboarding/ReviewStep";
+import { PlanSummary } from "@/components/onboarding/PlanSummary";
 import { useSignup } from "@/queries/auth";
 import { useUpdateProfile } from "@/queries/profile";
 import { useStarterTemplates, useCreateBudget } from "@/queries/budget";
@@ -31,7 +32,13 @@ import {
   type OptionalStepKey,
 } from "@/lib/onboarding-fields";
 
-const STEP_KEYS = ["account", "income", "goal", "template", "review"] as const;
+// Account is last on purpose: the signup call already fires only once, at
+// the very end (see handlePrimary below), regardless of display order — so
+// asking for name/email/password only after the user has configured
+// income/goal/template lets them see the shape of their plan before being
+// asked to commit to it.
+const STEP_KEYS = ["income", "goal", "template", "account"] as const;
+const ACCOUNT_STEP_INDEX = STEP_KEYS.indexOf("account");
 
 export default function Onboarding() {
   const { step, totalSteps, next, back, goToStep, reset, data, setField } =
@@ -49,7 +56,13 @@ export default function Onboarding() {
 
   // Consent acknowledgement, merged into the account step. Kept in local state
   // (not persisted) — a per-session acknowledgement gating signup.
+  // terms_of_service is mandatory (ANDed into isAccountValid below);
+  // data_processing is its own optional checkbox — declining it just means
+  // signup skips granting that type, leaving the account in the same
+  // "no active data_processing consent" state HasDataProcessingConsent
+  // gates on, rather than forcing every account to start with it granted.
   const [agreed, setAgreed] = useState(false);
+  const [dataProcessingAgreed, setDataProcessingAgreed] = useState(false);
 
   // Live zod-validity of the account step's fields (name/email/password/phone),
   // reported up by AccountStep. Consent isn't part of that schema, so it's
@@ -65,6 +78,24 @@ export default function Onboarding() {
   // (not state) so it doesn't change how anything renders.
   const submittingRef = useRef(false);
   const [attempted, setAttempted] = useState(false);
+
+  // Set when the user clicks a field's "edit" affordance on PlanSummary (the
+  // account step's recap of income/goal/template) — the target step scrolls
+  // that field into view and rings it briefly, then this clears itself.
+  const [highlightField, setHighlightField] = useState<keyof OnboardingData | null>(null);
+  const highlightTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  useEffect(
+    () => () => {
+      if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+    },
+    [],
+  );
+  function handleEditField(target: OptionalStepKey, field: keyof OnboardingData) {
+    goToStep(STEP_KEYS.indexOf(target));
+    setHighlightField(field);
+    if (highlightTimeoutRef.current) clearTimeout(highlightTimeoutRef.current);
+    highlightTimeoutRef.current = setTimeout(() => setHighlightField(null), 2000);
+  }
 
   // Every step's data is held locally until "Create plan" on the final step —
   // no API calls fire before then. If a later call in that sequence fails
@@ -211,13 +242,18 @@ export default function Onboarding() {
         completedRef.current.signup = true;
       }
 
-      // The account step's checkbox agrees to both the terms and the privacy
-      // policy in one gesture (PrivacyPolicyModal shows both), so it grants
-      // both consent types. Needs the just-issued access token, hence after
-      // signup — this endpoint 401s for an unauthenticated caller.
+      // terms_of_service is mandatory (isAccountValid already required
+      // `agreed`); data_processing only grants if its own optional checkbox
+      // was checked — a decline here just leaves the account without an
+      // active data_processing consent record, same state a later revoke
+      // produces. Needs the just-issued access token, hence after signup —
+      // this endpoint 401s for an unauthenticated caller.
       if (!completedRef.current.consent) {
+        const typesToGrant = dataProcessingAgreed
+          ? CONSENT_TYPES
+          : CONSENT_TYPES.filter((consentType) => consentType !== "data_processing");
         await Promise.all(
-          CONSENT_TYPES.map((consentType) =>
+          typesToGrant.map((consentType) =>
             grantConsent.mutateAsync({
               consentType,
               policyVersion: CURRENT_POLICY_VERSION,
@@ -285,7 +321,7 @@ export default function Onboarding() {
       // the user back to the account step to fix the email.
       if (!completedRef.current.signup && isEmailTakenError(error)) {
         setEmailTaken(true);
-        goToStep(0);
+        goToStep(ACCOUNT_STEP_INDEX);
       }
     } finally {
       submittingRef.current = false;
@@ -360,31 +396,50 @@ export default function Onboarding() {
               className="flex animate-[step-enter_300ms_ease-out_both] flex-col gap-4"
             >
               <div>
-                <h1 className="text-xl font-semibold">
-                  {t(`onboarding.${stepKey}.title`)}
-                </h1>
-                <p className="text-base-content/60 mt-1 text-sm">
-                  {t(`onboarding.${stepKey}.subtitle`)}
+                <div className="flex items-center gap-2">
+                  <h1 className="text-xl font-semibold">
+                    {t(`onboarding.${stepKey}.title`)}
+                  </h1>
+                  {optionalStepKey !== null && isStepSkippable(optionalStepKey) && (
+                    <span className="badge badge-ghost badge-sm text-base-content/50 font-normal">
+                      {t("onboarding.optionalBadge")}
+                    </span>
+                  )}
+                </div>
+                <p className="text-base-content/60 mt-1 flex items-start gap-1.5 text-sm">
+                  <span>{t(`onboarding.${stepKey}.subtitle`)}</span>
+                  <Tooltip content={t(`onboarding.${stepKey}.why`)}>
+                    <button
+                      type="button"
+                      aria-label={t(`onboarding.${stepKey}.why`)}
+                      className="text-base-content/40 hover:text-primary mt-0.5 inline-flex shrink-0"
+                    >
+                      <Info data-no-flip className="size-3.5" />
+                    </button>
+                  </Tooltip>
                 </p>
               </div>
               {stepKey === "account" ? (
-                <AccountStep
-                  password={password}
-                  onPasswordChange={setPassword}
-                  agreed={agreed}
-                  onAgreedChange={setAgreed}
-                  onValidityChange={setAccountFieldsValid}
-                  emailTaken={emailTaken}
-                  onEmailChange={() => setEmailTaken(false)}
-                />
+                <>
+                  <PlanSummary onEdit={handleEditField} />
+                  <AccountStep
+                    password={password}
+                    onPasswordChange={setPassword}
+                    agreed={agreed}
+                    onAgreedChange={setAgreed}
+                    dataProcessingAgreed={dataProcessingAgreed}
+                    onDataProcessingAgreedChange={setDataProcessingAgreed}
+                    onValidityChange={setAccountFieldsValid}
+                    emailTaken={emailTaken}
+                    onEmailChange={() => setEmailTaken(false)}
+                  />
+                </>
               ) : stepKey === "income" ? (
-                <IncomeStep attempted={attempted} />
+                <IncomeStep attempted={attempted} highlightField={highlightField} />
               ) : stepKey === "goal" ? (
-                <GoalStep attempted={attempted} />
-              ) : stepKey === "template" ? (
-                <TemplateStep />
+                <GoalStep attempted={attempted} highlightField={highlightField} />
               ) : (
-                <ReviewStep />
+                <TemplateStep highlightField={highlightField} />
               )}
             </div>
 
@@ -450,7 +505,7 @@ export default function Onboarding() {
           </div>
         </div>
 
-        {stepKey === "account" && (
+        {step === 0 && (
           <Link
             to={localizedPath(lang!, ROUTE_SEGMENTS.signIn)}
             className="text-base-content/60 btn btn-ghost text-center text-sm"

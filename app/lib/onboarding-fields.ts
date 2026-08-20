@@ -20,6 +20,10 @@ export interface OnboardingStepProps {
    * shows "missing" state immediately rather than waiting for the step to
    * become dirty on its own. */
   attempted: boolean;
+  /** Set when the user clicked a field's "edit" affordance on PlanSummary —
+   * the matching field scrolls into view and rings briefly, then this clears
+   * itself on a timeout (see onboarding.tsx's handleEditField). */
+  highlightField?: keyof OnboardingData | null;
 }
 
 /**

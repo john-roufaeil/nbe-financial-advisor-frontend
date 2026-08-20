@@ -1,15 +1,23 @@
 import { useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
+import type { OnboardingData } from "@/store/use-onboarding-store";
 import { OptionCard } from "@/components/onboarding/OptionCard";
 import { useStarterTemplates } from "@/queries/budget";
 import { ListSkeleton } from "@/components/shared/skeletons/ListSkeleton";
 import { ErrorState } from "@/components/shared/QueryState";
+import { useHighlightRef } from "@/lib/use-highlight-ref";
 
-export function TemplateStep() {
+export function TemplateStep({
+  highlightField,
+}: {
+  highlightField?: keyof OnboardingData | null;
+}) {
   const { t } = useTranslation();
   const selected = useOnboardingStore((s) => s.data.selected_template_key);
   const setField = useOnboardingStore((s) => s.setField);
+  const highlighted = highlightField === "selected_template_key";
+  const highlightRef = useHighlightRef<HTMLDivElement>(highlighted);
   // GET /budget/starter-templates via the data-source-aware query hook.
   const { data: templates, isPending, isError, refetch } = useStarterTemplates();
 
@@ -30,7 +38,12 @@ export function TemplateStep() {
   }
 
   return (
-    <div className="flex flex-col gap-2">
+    <div
+      ref={highlightRef}
+      className={`flex flex-col gap-2 rounded-lg transition-shadow ${
+        highlighted ? "ring-primary ring-offset-base-100 ring-2 ring-offset-2" : ""
+      }`}
+    >
       {templates.map((tpl) => (
         <OptionCard
           key={tpl.template_key}

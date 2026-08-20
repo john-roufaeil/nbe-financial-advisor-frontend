@@ -44,8 +44,6 @@ export const INITIAL_ONBOARDING_DATA: OnboardingData = {
 interface OnboardingState {
   step: number;
   totalSteps: number;
-  /** True once the user has accepted consent and entered the onboarding flow. */
-  started: boolean;
   data: OnboardingData;
   begin: () => void;
   next: () => void;
@@ -57,14 +55,13 @@ interface OnboardingState {
 
 export const useOnboardingStore = create<OnboardingState>()((set) => ({
   step: 0,
-  totalSteps: 5,
-  started: false,
+  totalSteps: 4,
   data: INITIAL_ONBOARDING_DATA,
-  begin: () => set({ started: true, step: 0, data: INITIAL_ONBOARDING_DATA }),
+  begin: () => set({ step: 0, data: INITIAL_ONBOARDING_DATA }),
   next: () => set((s) => ({ step: Math.min(s.step + 1, s.totalSteps - 1) })),
   back: () => set((s) => ({ step: Math.max(s.step - 1, 0) })),
   goToStep: (step) =>
     set((s) => ({ step: Math.max(0, Math.min(step, s.totalSteps - 1)) })),
-  reset: () => set({ step: 0, started: false, data: INITIAL_ONBOARDING_DATA }),
+  reset: () => set({ step: 0, data: INITIAL_ONBOARDING_DATA }),
   setField: (field, value) => set((s) => ({ data: { ...s.data, [field]: value } })),
 }));
