@@ -85,76 +85,23 @@ export function AccountManagementSection() {
   }
 
   return (
-    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
-      <div className="card-body gap-3 p-4">
-        <div className="flex items-center gap-2">
-          <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
-            <Settings2 className="size-4.5" />
-          </span>
-          <h2 className="card-title flex-1 text-base">
-            {t("settings.accountManagement.title")}
-          </h2>
-        </div>
+    <div className="animate-entry flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
+          <Settings2 className="size-4.5" />
+        </span>
+        <h2 className="card-title flex-1 text-base">
+          {t("settings.accountManagement.title")}
+        </h2>
+      </div>
 
-        <div className="flex flex-col gap-3">
-          <SettingsGroup title={t("settings.accountManagement.groups.security")}>
-            <ul className="divide-base-300 flex flex-col divide-y">
-              {hasPassword && (
-                <Row
-                  title={t("settings.accountManagement.changePassword.title")}
-                  description={t("settings.accountManagement.changePassword.description")}
-                >
-                  <Tooltip
-                    content={
-                      canUseVerifiedEmail
-                        ? ""
-                        : t("settings.accountManagement.dataExport.verifyFirst")
-                    }
-                  >
-                    <Button
-                      className="btn btn-outline btn-sm"
-                      loading={requestReset.isPending}
-                      disabled={!canUseVerifiedEmail}
-                      onClick={handleChangePassword}
-                    >
-                      {t("settings.accountManagement.changePassword.action")}
-                    </Button>
-                  </Tooltip>
-                </Row>
-              )}
-
+      <div className="flex flex-col gap-3">
+        <SettingsGroup title={t("settings.accountManagement.groups.security")}>
+          <ul className="divide-base-300 flex flex-col divide-y">
+            {hasPassword && (
               <Row
-                title={t("settings.accountManagement.logoutAll.title")}
-                description={t("settings.accountManagement.logoutAll.description")}
-              >
-                <Button
-                  className="btn btn-outline btn-sm"
-                  loading={logoutAll.isPending}
-                  onClick={handleLogoutAll}
-                >
-                  {t("settings.accountManagement.logoutAll.action")}
-                </Button>
-              </Row>
-            </ul>
-          </SettingsGroup>
-
-          <SettingsGroup title={t("settings.accountManagement.groups.privacy")}>
-            <ul className="divide-base-300 flex flex-col divide-y">
-              <Row
-                title={t("settings.accountManagement.consent.title")}
-                description={t("settings.accountManagement.consent.description")}
-              >
-                <Button
-                  className="btn btn-outline btn-sm"
-                  onClick={() => consentModalRef.current?.showModal()}
-                >
-                  {t("settings.accountManagement.consent.manage")}
-                </Button>
-              </Row>
-
-              <Row
-                title={t("settings.accountManagement.dataExport.title")}
-                description={t("settings.accountManagement.dataExport.description")}
+                title={t("settings.accountManagement.changePassword.title")}
+                description={t("settings.accountManagement.changePassword.description")}
               >
                 <Tooltip
                   content={
@@ -165,35 +112,86 @@ export function AccountManagementSection() {
                 >
                   <Button
                     className="btn btn-outline btn-sm"
-                    loading={requestExport.isPending}
+                    loading={requestReset.isPending}
                     disabled={!canUseVerifiedEmail}
-                    onClick={() => requestExport.mutate()}
+                    onClick={handleChangePassword}
                   >
-                    {t("settings.accountManagement.dataExport.action")}
+                    {t("settings.accountManagement.changePassword.action")}
                   </Button>
                 </Tooltip>
               </Row>
-            </ul>
-          </SettingsGroup>
+            )}
 
-          <SettingsGroup title={t("settings.accountManagement.groups.dangerZone")}>
-            <ul className="divide-base-300 flex flex-col divide-y">
-              <Row
-                danger
-                title={t("settings.accountManagement.deleteAccount.title")}
-                description={t("settings.accountManagement.deleteAccount.description")}
+            <Row
+              title={t("settings.accountManagement.logoutAll.title")}
+              description={t("settings.accountManagement.logoutAll.description")}
+            >
+              <Button
+                className="btn btn-outline btn-sm"
+                loading={logoutAll.isPending}
+                onClick={handleLogoutAll}
               >
-                <button
-                  type="button"
-                  onClick={() => deleteModalRef.current?.showModal()}
-                  className="btn btn-outline btn-error btn-sm"
+                {t("settings.accountManagement.logoutAll.action")}
+              </Button>
+            </Row>
+          </ul>
+        </SettingsGroup>
+
+        <SettingsGroup title={t("settings.accountManagement.groups.privacy")}>
+          <ul className="divide-base-300 flex flex-col divide-y">
+            <Row
+              title={t("settings.accountManagement.consent.title")}
+              description={t("settings.accountManagement.consent.description")}
+            >
+              <Button
+                className="btn btn-outline btn-sm"
+                onClick={() => consentModalRef.current?.showModal()}
+              >
+                {t("settings.accountManagement.consent.manage")}
+              </Button>
+            </Row>
+
+            <Row
+              title={t("settings.accountManagement.dataExport.title")}
+              description={t("settings.accountManagement.dataExport.description")}
+            >
+              <Tooltip
+                content={
+                  canUseVerifiedEmail
+                    ? ""
+                    : t("settings.accountManagement.dataExport.verifyFirst")
+                }
+              >
+                <Button
+                  className="btn btn-outline btn-sm"
+                  loading={requestExport.isPending}
+                  disabled={!canUseVerifiedEmail}
+                  onClick={() => requestExport.mutate()}
                 >
-                  {t("settings.deleteAccount")}
-                </button>
-              </Row>
-            </ul>
-          </SettingsGroup>
-        </div>
+                  {t("settings.accountManagement.dataExport.action")}
+                </Button>
+              </Tooltip>
+            </Row>
+          </ul>
+        </SettingsGroup>
+
+        <SettingsGroup title={t("settings.accountManagement.groups.dangerZone")}>
+          <ul className="divide-base-300 flex flex-col divide-y">
+            <Row
+              danger
+              title={t("settings.accountManagement.deleteAccount.title")}
+              description={t("settings.accountManagement.deleteAccount.description")}
+            >
+              <button
+                type="button"
+                onClick={() => deleteModalRef.current?.showModal()}
+                className="btn btn-outline btn-error btn-sm"
+              >
+                {t("settings.deleteAccount")}
+              </button>
+            </Row>
+          </ul>
+        </SettingsGroup>
       </div>
 
       <DeleteAccountModal ref={deleteModalRef} />

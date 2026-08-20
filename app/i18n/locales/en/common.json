@@ -98,6 +98,9 @@
       "send": "Send verification email"
     },
     "sections": {
+      "personal": {
+        "title": "Personal & financial details"
+      },
       "errors": {
         "phoneInvalid": "Enter a valid phone number.",
         "nameRequired": "Enter your name.",
@@ -105,7 +108,7 @@
         "incomeNegative": "Monthly income can't be negative."
       },
       "profile": {
-        "title": "Profile",
+        "title": "Personal information",
         "fields": {
           "fullName": "Full name",
           "fullNamePlaceholder": "e.g. Amina El-Sayed",
@@ -123,7 +126,7 @@
         }
       },
       "financial": {
-        "title": "Financial Profile",
+        "title": "Financial information",
         "fields": {
           "employmentStatus": "Employment status",
           "monthlyIncome": "Monthly income",

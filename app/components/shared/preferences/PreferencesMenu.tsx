@@ -82,50 +82,48 @@ function PreferenceField({
   );
 }
 
-/** Inline settings card on the profile page — not a popover, so every preference stays visible at once. */
+/** Inline settings section on the profile page — not a popover, so every preference stays visible at once. */
 export function PreferencesMenu() {
   const { t } = useTranslation();
 
   return (
-    <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
-      <div className="card-body gap-4 p-4">
-        <div className="flex items-center gap-2">
-          <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
-            <Settings2 className="size-4.5" />
-          </span>
-          <h2 className="card-title flex-1 text-base">
-            {t("common.sections.preferences.title")}
-          </h2>
-        </div>
+    <div className="animate-entry flex flex-col gap-4">
+      <div className="flex items-center gap-2">
+        <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
+          <Settings2 className="size-4.5" />
+        </span>
+        <h2 className="card-title flex-1 text-base">
+          {t("common.sections.preferences.title")}
+        </h2>
+      </div>
 
-        <div className="grid gap-3 sm:grid-cols-3">
-          <SettingsGroup title={t("common.sections.preferences.groups.display")}>
-            <PreferenceField icon={Globe} label={t("settings.language")}>
-              <LanguageToggle />
-            </PreferenceField>
-            <PreferenceField icon={Sun} label={t("settings.theme.label")}>
-              <ThemeSwitch />
-            </PreferenceField>
-          </SettingsGroup>
+      <div className="grid gap-3 sm:grid-cols-3">
+        <SettingsGroup title={t("common.sections.preferences.groups.display")}>
+          <PreferenceField icon={Globe} label={t("settings.language")}>
+            <LanguageToggle />
+          </PreferenceField>
+          <PreferenceField icon={Sun} label={t("settings.theme.label")}>
+            <ThemeSwitch />
+          </PreferenceField>
+        </SettingsGroup>
 
-          <SettingsGroup title={t("common.sections.preferences.groups.dateTime")}>
-            <PreferenceField icon={Clock} label={t("settings.timeFormat.label")}>
-              <TimeFormatSwitcher />
-            </PreferenceField>
-            <PreferenceField icon={CalendarDays} label={t("settings.dateFormat.label")}>
-              <DateFormatSwitcher />
-            </PreferenceField>
-          </SettingsGroup>
+        <SettingsGroup title={t("common.sections.preferences.groups.dateTime")}>
+          <PreferenceField icon={Clock} label={t("settings.timeFormat.label")}>
+            <TimeFormatSwitcher />
+          </PreferenceField>
+          <PreferenceField icon={CalendarDays} label={t("settings.dateFormat.label")}>
+            <DateFormatSwitcher />
+          </PreferenceField>
+        </SettingsGroup>
 
-          <SettingsGroup title={t("common.sections.preferences.groups.numbers")}>
-            <PreferenceField icon={Hash} label={t("settings.numberFormat.label")}>
-              <NumberFormatSwitcher />
-            </PreferenceField>
-            <PreferenceField icon={Minimize2} label={t("settings.compactNumbers.label")}>
-              <CompactNumbersSwitcher />
-            </PreferenceField>
-          </SettingsGroup>
-        </div>
+        <SettingsGroup title={t("common.sections.preferences.groups.numbers")}>
+          <PreferenceField icon={Hash} label={t("settings.numberFormat.label")}>
+            <NumberFormatSwitcher />
+          </PreferenceField>
+          <PreferenceField icon={Minimize2} label={t("settings.compactNumbers.label")}>
+            <CompactNumbersSwitcher />
+          </PreferenceField>
+        </SettingsGroup>
       </div>
     </div>
   );

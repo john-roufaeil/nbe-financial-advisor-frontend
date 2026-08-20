@@ -26,7 +26,7 @@ export function BudgetTopTransactions({ period }: { period: string }) {
   const top = [...(data?.items ?? [])].sort((a, b) => b.amount - a.amount).slice(0, 5);
 
   return (
-    <div className="border-base-300 bg-base-100 animate-entry flex flex-col gap-3 rounded-xl border p-4 shadow-sm">
+    <div className="animate-entry flex flex-col gap-3">
       <h2 className="flex items-center gap-2 text-sm font-semibold">
         <span className="bg-primary/10 text-primary grid size-7 shrink-0 place-items-center rounded-lg">
           <Landmark data-no-flip className="size-4" />
@@ -41,13 +41,13 @@ export function BudgetTopTransactions({ period }: { period: string }) {
       ) : top.length === 0 ? (
         <EmptyState label={t("budget.topTransactions.empty")} />
       ) : (
-        <ul className="flex flex-col gap-2">
+        <ul className="divide-base-300/60 flex flex-col divide-y">
           {top.map((txn) => {
             const isIncome = txn.type === "income";
             return (
               <li
                 key={txn.id}
-                className="border-base-300 flex items-center justify-between gap-2 rounded-lg border p-2.5 text-sm"
+                className="flex items-center justify-between gap-2 py-2.5 text-sm"
               >
                 <span className="min-w-0 truncate">
                   {txn.title || t("budget.topTransactions.unknown")}

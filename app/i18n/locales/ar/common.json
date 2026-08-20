@@ -98,6 +98,9 @@
       "send": "إرسال بريد التحقق"
     },
     "sections": {
+      "personal": {
+        "title": "البيانات الشخصية والمالية"
+      },
       "errors": {
         "phoneInvalid": "أدخل رقم هاتف صحيحًا.",
         "nameRequired": "أدخل اسمك.",
@@ -105,7 +108,7 @@
         "incomeNegative": "لا يمكن أن يكون الدخل الشهري سالبًا."
       },
       "profile": {
-        "title": "الملف الشخصي",
+        "title": "المعلومات الشخصية",
         "fields": {
           "fullName": "الاسم الكامل",
           "fullNamePlaceholder": "مثال: أمينة السيد",
@@ -123,7 +126,7 @@
         }
       },
       "financial": {
-        "title": "الملف المالي",
+        "title": "المعلومات المالية",
         "fields": {
           "employmentStatus": "الحالة الوظيفية",
           "monthlyIncome": "الدخل الشهري",

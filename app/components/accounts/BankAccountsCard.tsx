@@ -3,6 +3,7 @@ import { CreditCard, Plus } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { useAccounts } from "@/queries/accounts";
 import { Tooltip } from "@/components/shared/Tooltip";
+import { SettingsGroup } from "@/components/shared/SettingsGroup";
 import { AddBankAccountModal } from "@/components/accounts/AddBankAccountModal";
 import { AccountDetailModal } from "@/components/accounts/AccountDetailModal";
 import { AccountRow } from "@/components/accounts/AccountRow";
@@ -18,64 +19,51 @@ export function BankAccountsCard() {
   if (isPending) {
     return (
       <CardSkeleton
+        bare
         icon={CreditCard}
-        className="animate-entry sm:col-span-2"
+        className="animate-entry"
         rows={[{ kind: "progress" }, { kind: "progress" }]}
       />
     );
   }
 
   if (isError) {
-    return (
-      <div className="card border-base-300 bg-base-100 border shadow-sm sm:col-span-2">
-        <div className="card-body p-4">
-          <p className="text-error text-sm">{t("common.sections.accounts.error")}</p>
-        </div>
-      </div>
-    );
+    return <p className="text-error text-sm">{t("common.sections.accounts.error")}</p>;
   }
 
-  return (
-    <div className="card border-base-300 bg-base-100 animate-entry min-w-0 border shadow-sm sm:col-span-2">
-      <div className="card-body gap-4 p-4">
-        <div className="flex items-center gap-2">
-          <span className="bg-success/10 text-success grid size-9 shrink-0 place-items-center rounded-lg">
-            <CreditCard className="size-4.5" />
-          </span>
-          <h2 className="card-title flex-1 text-base">
-            {t("common.sections.accounts.title")}
-          </h2>
-          <Tooltip content={t("common.addAccount.add")}>
-            <button
-              type="button"
-              onClick={() => addRef.current?.showModal()}
-              className="btn btn-ghost btn-sm btn-square"
-              aria-label={t("common.addAccount.add")}
-            >
-              <Plus data-no-flip className="size-4" />
-            </button>
-          </Tooltip>
-        </div>
+  const action = (
+    <Tooltip content={t("common.addAccount.add")}>
+      <button
+        type="button"
+        onClick={() => addRef.current?.showModal()}
+        className="btn btn-ghost btn-sm btn-square"
+        aria-label={t("common.addAccount.add")}
+      >
+        <Plus data-no-flip className="size-4" />
+      </button>
+    </Tooltip>
+  );
 
-        {accounts.length > 0 ? (
-          <ul className="flex flex-col gap-2">
-            {accounts.map((account) => (
-              <AccountRow
-                key={account.id}
-                account={account}
-                onView={() => viewAccount(account)}
-              />
-            ))}
-          </ul>
-        ) : (
-          <p className="text-base-content/50 text-sm">
-            {t("common.sections.accounts.empty")}
-          </p>
-        )}
-      </div>
+  return (
+    <SettingsGroup title={t("common.sections.accounts.title")} action={action}>
+      {accounts.length > 0 ? (
+        <ul className="flex flex-col gap-2">
+          {accounts.map((account) => (
+            <AccountRow
+              key={account.id}
+              account={account}
+              onView={() => viewAccount(account)}
+            />
+          ))}
+        </ul>
+      ) : (
+        <p className="text-base-content/50 text-sm">
+          {t("common.sections.accounts.empty")}
+        </p>
+      )}
 
       <AddBankAccountModal ref={addRef} />
       <AccountDetailModal ref={detailRef} account={viewedAccount} />
-    </div>
+    </SettingsGroup>
   );
 }

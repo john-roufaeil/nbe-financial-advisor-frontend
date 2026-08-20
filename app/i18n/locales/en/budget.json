@@ -2,6 +2,7 @@
   "budget": {
     "title": "Budget",
     "subtitle": "Track how your spending compares to your plan, spot trends, and review past changes.",
+    "editCta": "Edit budget",
     "nav": {
       "previousMonth": "Previous month",
       "nextMonth": "Next month"
