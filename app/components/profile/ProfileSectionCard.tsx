@@ -8,6 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useUpdateProfile } from "@/queries/profile";
 import { useToastStore } from "@/store/use-toast-store";
+import { SettingsGroup } from "@/components/shared/SettingsGroup";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { FieldEditor, type FormFieldConfig } from "@/components/shared/forms/FieldEditor";
 import { FieldValue } from "@/components/shared/forms/FieldValue";
@@ -100,8 +101,6 @@ export function ProfileSectionCard({
     defaultValues: {},
   });
 
-  const Icon = section.icon;
-
   function startEdit() {
     const initial: Draft = {};
     for (const f of section.fields) {
@@ -128,78 +127,72 @@ export function ProfileSectionCard({
     setEditing(false);
   }
 
-  return (
-    <div className="card border-base-300 bg-base-100 animate-entry min-w-0 border shadow-sm">
-      <form className="card-body gap-4 p-4" onSubmit={handleSubmit(onSubmit)}>
-        <div className="flex items-center gap-2">
-          <span
-            className={`grid size-9 shrink-0 place-items-center rounded-lg ${section.color}`}
-          >
-            <Icon className="size-4.5" />
-          </span>
-          <h2 className="card-title flex-1 text-base">{t(section.titleKey)}</h2>
-          {editing ? (
-            <div dir="ltr" className="flex gap-1">
-              <Tooltip content={t("actions.cancel")}>
-                <button
-                  type="button"
-                  onClick={cancel}
-                  className="btn btn-ghost btn-sm btn-square text-error"
-                  aria-label={t("actions.cancel")}
-                  disabled={updateProfile.isPending}
-                >
-                  <X className="size-4" />
-                </button>
-              </Tooltip>
-              <Tooltip content={t("actions.done")}>
-                <button
-                  type="submit"
-                  className="btn btn-ghost btn-sm btn-square text-success"
-                  aria-label={t("actions.done")}
-                  disabled={updateProfile.isPending}
-                >
-                  {updateProfile.isPending ? (
-                    <Loader2 className="size-4 animate-spin" />
-                  ) : (
-                    <Check data-no-flip className="size-4" />
-                  )}
-                </button>
-              </Tooltip>
-            </div>
+  const action = editing ? (
+    <div dir="ltr" className="flex gap-1">
+      <Tooltip content={t("actions.cancel")}>
+        <button
+          type="button"
+          onClick={cancel}
+          className="btn btn-ghost btn-sm btn-square text-error"
+          aria-label={t("actions.cancel")}
+          disabled={updateProfile.isPending}
+        >
+          <X className="size-4" />
+        </button>
+      </Tooltip>
+      <Tooltip content={t("actions.done")}>
+        <button
+          type="submit"
+          className="btn btn-ghost btn-sm btn-square text-success"
+          aria-label={t("actions.done")}
+          disabled={updateProfile.isPending}
+        >
+          {updateProfile.isPending ? (
+            <Loader2 className="size-4 animate-spin" />
           ) : (
-            <Tooltip content={t("actions.edit")}>
-              <button
-                type="button"
-                onClick={startEdit}
-                className="btn btn-ghost btn-sm btn-square"
-                aria-label={t("actions.edit")}
-              >
-                <Pencil data-no-flip className="size-4" />
-              </button>
-            </Tooltip>
+            <Check data-no-flip className="size-4" />
           )}
-        </div>
-
-        <div className="grid min-w-0 gap-3 sm:grid-cols-2">
-          {section.fields.map((field) => (
-            <label key={field.key} className="flex min-w-0 flex-col gap-1">
-              <span className="label-text text-base-content/50 text-xs">
-                {t(field.labelKey)}
-              </span>
-              {editing && field.writable ? (
-                <FieldEditor
-                  field={field}
-                  control={control}
-                  register={register}
-                  errors={errors}
-                />
-              ) : (
-                <FieldValue field={field} value={user[field.key]} />
-              )}
-            </label>
-          ))}
-        </div>
-      </form>
+        </button>
+      </Tooltip>
     </div>
+  ) : (
+    <Tooltip content={t("actions.edit")}>
+      <button
+        type="button"
+        onClick={startEdit}
+        className="btn btn-ghost btn-sm btn-square"
+        aria-label={t("actions.edit")}
+      >
+        <Pencil data-no-flip className="size-4" />
+      </button>
+    </Tooltip>
+  );
+
+  return (
+    <SettingsGroup
+      title={t(section.titleKey)}
+      action={action}
+      onSubmit={handleSubmit(onSubmit)}
+    >
+      <div className="grid min-w-0 gap-3 sm:grid-cols-2">
+        {section.fields.map((field) => (
+          <label key={field.key} className="flex min-w-0 flex-col gap-1">
+            <span className="label-text text-base-content/50 text-xs">
+              {t(field.labelKey)}
+            </span>
+            {editing && field.writable ? (
+              <FieldEditor
+                field={field}
+                control={control}
+                register={register}
+                errors={errors}
+              />
+            ) : (
+              <FieldValue field={field} value={user[field.key]} />
+            )}
+          </label>
+        ))}
+      </div>
+    </SettingsGroup>
   );
 }

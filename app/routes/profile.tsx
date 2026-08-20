@@ -73,10 +73,34 @@ export default function Profile() {
         </div>
       )}
       {showVerifyEmail && <VerifyEmailBanner />}
-      <PersonalDataSections restricted={isRestricted} />
-      <PreferencesMenu />
-      <IssuesSection />
-      <AccountManagementSection />
+
+      {/* One elevated shell for the whole page instead of five separately
+          bordered cards — matches dashboard.tsx/budget.tsx's convention:
+          a single card, thin border-t dividers between logical groups. */}
+      <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
+        <div className="flex flex-col gap-6 py-4 md:py-6">
+          <div className="px-4 md:px-6">
+            <PersonalDataSections restricted={isRestricted} />
+          </div>
+
+          {/* Bleeds edge-to-edge across the card, not just the padded
+              content column, so the seam reads as one continuous line. */}
+          <div className="border-base-300/60 border-t" />
+          <div className="px-4 md:px-6">
+            <PreferencesMenu />
+          </div>
+
+          <div className="border-base-300/60 border-t" />
+          <div className="px-4 md:px-6">
+            <IssuesSection />
+          </div>
+
+          <div className="border-base-300/60 border-t" />
+          <div className="px-4 md:px-6">
+            <AccountManagementSection />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

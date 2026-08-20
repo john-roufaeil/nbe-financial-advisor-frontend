@@ -24,10 +24,13 @@ export function IssuesSection() {
   const { data, isPending, isError, refetch } = useIssues({ limit: 10 });
 
   return (
-    <section className="border-base-300 bg-base-100 flex flex-col gap-3 rounded-xl border p-4 shadow-sm sm:p-5">
-      <div className="flex items-center justify-between gap-3">
-        <div>
-          <h2 className="text-sm font-semibold">{t("settings.issues.title")}</h2>
+    <section className="animate-entry flex flex-col gap-3">
+      <div className="flex items-center gap-2">
+        <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
+          <MessageSquareWarning className="size-4.5" />
+        </span>
+        <div className="flex-1">
+          <h2 className="card-title text-base">{t("settings.issues.title")}</h2>
           <p className="text-base-content/60 text-xs">{t("settings.issues.subtitle")}</p>
         </div>
         <button
@@ -53,10 +56,7 @@ export function IssuesSection() {
       ) : (
         <ul className="flex flex-col gap-2">
           {data.items.map((issue) => (
-            <li
-              key={issue.id}
-              className="border-base-300 flex flex-col gap-1 rounded-lg border p-3"
-            >
+            <li key={issue.id} className="bg-base-200 flex flex-col gap-1 rounded-lg p-3">
               <div className="flex items-center justify-between gap-2">
                 <span
                   className={`inline-flex shrink-0 items-center rounded-full px-2.5 py-1 text-xs font-medium ${STATUS_TONE[issue.status]}`}
