@@ -22,7 +22,7 @@ function RecurringChargeItem({
   const currencyLabel = t(`currency.${currency}`, currency);
 
   return (
-    <li className="border-base-300 bg-base-100 flex min-w-0 flex-col gap-3 rounded-lg border p-3">
+    <li className="bg-base-200/40 flex min-w-0 flex-col gap-3 rounded-lg p-3">
       <div className="flex min-w-0 items-center gap-2">
         <span className="bg-error/10 text-error grid size-8 shrink-0 place-items-center rounded-lg">
           <ArrowDownCircle data-no-flip className="size-4" />
@@ -62,6 +62,7 @@ export function RecurringChargesCard({ currency }: { currency: string }) {
   if (isPending) {
     return (
       <CardSkeleton
+        bare
         icon={Repeat}
         className="animate-entry"
         rows={[{ kind: "progress" }]}
@@ -76,22 +77,18 @@ export function RecurringChargesCard({ currency }: { currency: string }) {
   if (charges.length === 0) return null;
 
   return (
-    <div className="card border-base-300 bg-base-100 animate-entry min-w-0 border shadow-sm">
-      <div className="card-body gap-3 p-4">
-        <div className="flex items-center gap-2">
-          <span className="bg-info/10 text-info grid size-9 shrink-0 place-items-center rounded-lg">
-            <Repeat className="size-4.5" />
-          </span>
-          <h2 className="card-title flex-1 text-base">
-            {t("dashboard.recurringCharges.title")}
-          </h2>
-        </div>
-        <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
-          {charges.map((charge) => (
-            <RecurringChargeItem key={charge.id} charge={charge} currency={currency} />
-          ))}
-        </ul>
+    <div className="animate-entry flex min-w-0 flex-col gap-3">
+      <div className="flex shrink-0 items-center gap-1.5">
+        <Repeat className="text-info size-4 shrink-0" />
+        <h2 className="line-clamp-1 flex-1 text-sm font-semibold">
+          {t("dashboard.recurringCharges.title")}
+        </h2>
       </div>
+      <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        {charges.map((charge) => (
+          <RecurringChargeItem key={charge.id} charge={charge} currency={currency} />
+        ))}
+      </ul>
     </div>
   );
 }

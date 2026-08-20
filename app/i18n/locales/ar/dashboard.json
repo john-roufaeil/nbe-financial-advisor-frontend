@@ -2,6 +2,17 @@
   "dashboard": {
     "placeholder": "عناصر لوحة التحكم ستكون هنا.",
     "subtitle": "لمحة عن أموالك هذا الشهر.",
+    "subtitlePeriods": {
+      "thisMonth": "لمحة عن أموالك هذا الشهر.",
+      "lastMonth": "لمحة عن أموالك الشهر الماضي.",
+      "last3Months": "لمحة عن أموالك خلال آخر 3 أشهر.",
+      "thisYear": "لمحة عن أموالك هذه السنة."
+    },
+    "sections": {
+      "keyFigures": "الأرقام الرئيسية",
+      "quickInsights": "لمحة سريعة",
+      "yourPlan": "هدفك"
+    },
     "askAdvisor": "اسأل المستشار",
     "addItem": "إضافة عنصر جديد",
     "hideBalances": "إخفاء الأرصدة",
@@ -53,6 +64,12 @@
       "title": "تقدم الأهداف",
       "titleShort": "هدفك",
       "remaining": "متبقي {{amount}} {{currency}}",
+      "ofTarget": "من أصل {{target}} {{currency}}",
+      "remainingLabel": "المتبقي",
+      "remainingTooltip": "المبلغ المتبقي للوصول إلى هدفك، بحسب وتيرتك الحالية.",
+      "durationTooltip": "هدف مدته {{count}} أشهر",
+      "milestoneTooltip": "معلم {{pct}}٪ · {{amount}} {{currency}}",
+      "milestoneReachedTooltip": "تم بلوغ {{pct}}٪ · {{amount}} {{currency}}",
       "empty": "لم يتم تحديد هدف بعد. أضف هدفك الآن لبدء التتبع.",
       "emptyTitle": "لا يوجد هدف نشط",
       "addYours": "أضف هدفك",
@@ -72,6 +89,8 @@
       "onTrackTooltip": "وتيرتك الحالية يجب أن تصل بك إلى هذا الهدف بحلول التاريخ المتوقع.",
       "behindScheduleTooltip": "بوتيرتك الحالية، قد تفوت تاريخ الإنجاز المتوقع.",
       "projectedCompletion": "من المتوقع الانتهاء في {{date}}",
+      "congratsMessage": "تهانينا، لقد حققت هدفك!",
+      "setNewGoal": "تحديد هدف ادخار جديد",
       "errors": {
         "nameRequired": "أدخل اسمًا لهذا الهدف.",
         "nameTooLong": "يجب ألا يتجاوز الاسم 20 حرفًا.",
@@ -94,6 +113,10 @@
       "allocated": "مخصص",
       "empty": "لا تحتوي هذه الخطة على فئات بعد.",
       "editAllocations": "تعديل التوزيعات",
+      "changeTemplate": "تغيير قالب الخطة",
+      "changeTemplateTitle": "اختر قالب خطة",
+      "changeTemplateWarning": "تطبيق قالب سيستبدل جميع الفئات والنسب في خطتك الحالية.",
+      "applyTemplate": "تطبيق القالب",
       "allocationsNeedMore": "تحتاج إلى تخصيص {{amount}}٪ أخرى للمتابعة",
       "allocationsOverAllocated": "تجاوز التخصيص بمقدار {{amount}}٪",
       "allocationsFullyAllocated": "تم التخصيص بالكامل",

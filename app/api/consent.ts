@@ -33,3 +33,16 @@ export async function grantConsent(
   });
   return toConsentRecord(res.data);
 }
+
+/** Full grant/revoke history, newest first — the profile page's
+ * "Privacy & consent" section in Account Management. */
+export async function getConsentHistory(): Promise<ConsentRecord[]> {
+  const res = await apiClient.get<RawConsentRecord[]>(API_ENDPOINTS.usersMeConsent);
+  return res.data.map(toConsentRecord);
+}
+
+/** Appends a revoke event for the given grant — never deletes/mutates it,
+ * same append-only convention as grantConsent. */
+export async function revokeConsent(id: string): Promise<void> {
+  await apiClient.delete(API_ENDPOINTS.usersMeConsentRevoke(id));
+}

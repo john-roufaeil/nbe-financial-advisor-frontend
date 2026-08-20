@@ -62,7 +62,7 @@ function StatCard({
     stat.key === "income" || stat.key === "spending" ? DRILL_TYPE[stat.key] : undefined;
 
   const body = (
-    <div className="card-body w-full gap-3 p-4">
+    <div className="flex w-full flex-col gap-3 p-3">
       <div className="flex items-center gap-2">
         <span
           className={`grid size-9 shrink-0 place-items-center rounded-lg ${trendClass}`}
@@ -100,14 +100,12 @@ function StatCard({
 
   if (!drillType) {
     return (
-      <div className="card border-base-300 bg-base-100 animate-entry border shadow-sm">
-        <Tooltip
-          content={t(`dashboard.stats.tooltips.${stat.key}`)}
-          className="h-full w-full"
-        >
-          {body}
-        </Tooltip>
-      </div>
+      <Tooltip
+        content={t(`dashboard.stats.tooltips.${stat.key}`)}
+        className="h-full w-full"
+      >
+        {body}
+      </Tooltip>
     );
   }
 
@@ -118,7 +116,7 @@ function StatCard({
       aria-label={t("dashboard.stats.drillDown", {
         stat: t(`dashboard.stats.${stat.key}`),
       })}
-      className="card border-base-300 bg-base-100 hover:border-primary group animate-entry border shadow-sm transition-colors"
+      className="hover:bg-base-200/50 group block transition-colors"
     >
       <Tooltip
         content={t(`dashboard.stats.tooltips.${stat.key}`)}
@@ -130,6 +128,11 @@ function StatCard({
   );
 }
 
+/**
+ * Renders bare — no grid/wrapper of its own — so its stat tiles join the
+ * dashboard's single "at a glance" hairline-divided grid alongside the
+ * smaller insight tiles (dashboard.tsx composes the actual grid).
+ */
 export function StatsGrid({
   currency,
   stats = [],
@@ -140,10 +143,10 @@ export function StatsGrid({
   filters: DashboardFilters;
 }) {
   return (
-    <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4 xl:contents">
+    <>
       {stats.map((stat) => (
         <StatCard key={stat.key} stat={stat} currency={currency} filters={filters} />
       ))}
-    </div>
+    </>
   );
 }

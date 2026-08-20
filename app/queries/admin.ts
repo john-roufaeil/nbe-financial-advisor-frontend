@@ -17,6 +17,8 @@ import type {
   AdminLoginBody,
   AdminProductCreateBody,
   AdminProductUpdateBody,
+  AdminTemplateCreateBody,
+  AdminTemplateUpdateBody,
   IssueStatus,
 } from "@/types/admin";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
@@ -32,6 +34,7 @@ export const adminKeys = {
   feedback: (params: AdminFeedbackListParams) =>
     [...adminKeys.all, "feedback", params] as const,
   issues: (params: AdminIssueListParams) => [...adminKeys.all, "issues", params] as const,
+  templates: [QUERY_ROOTS.admin, "templates"] as const,
 };
 
 export function useAdminLogin() {
@@ -73,6 +76,13 @@ export function useAdminProducts(params: AdminProductListParams) {
   });
 }
 
+export function useAdminTemplates() {
+  return useQuery({
+    queryKey: adminKeys.templates,
+    queryFn: () => adminApi.getAdminTemplates(),
+  });
+}
+
 export function useAdminFeedback(params: AdminFeedbackListParams) {
   return useQuery({
     queryKey: adminKeys.feedback(params),
@@ -100,24 +110,27 @@ export function useAdminOverviewCounts() {
   const products = useAdminProducts({ limit: 1 });
   const openIssues = useAdminIssues({ limit: 1, status: "open" });
   const feedback = useAdminFeedback({ limit: 1 });
+  const templates = useAdminTemplates();
 
   return {
     categoriesCount: categories.data?.count,
     productsCount: products.data?.count,
     openIssuesCount: openIssues.data?.count,
     feedbackCount: feedback.data?.count,
+    templatesCount: templates.data?.length,
     isLoading:
       categories.isLoading ||
       products.isLoading ||
       openIssues.isLoading ||
-      feedback.isLoading,
+      feedback.isLoading ||
+      templates.isLoading,
   };
 }
 
 /** Shared shape for every admin write: run, invalidate the tab's lists, toast. */
 function useAdminMutation<TVars, TData>(
   mutationFn: (vars: TVars) => Promise<TData>,
-  segment: "categories" | "products" | "issues",
+  segment: "categories" | "products" | "issues" | "templates",
   successToastKey: string,
 ) {
   const queryClient = useQueryClient();
@@ -178,6 +191,31 @@ export function useDeleteAdminProduct() {
     (id: string) => adminApi.deleteAdminProduct(id),
     "products",
     "admin.toast.productDeleted",
+  );
+}
+
+export function useCreateAdminTemplate() {
+  return useAdminMutation(
+    (body: AdminTemplateCreateBody) => adminApi.createAdminTemplate(body),
+    "templates",
+    "admin.toast.templateCreated",
+  );
+}
+
+export function useUpdateAdminTemplate() {
+  return useAdminMutation(
+    ({ templateKey, body }: { templateKey: string; body: AdminTemplateUpdateBody }) =>
+      adminApi.updateAdminTemplate(templateKey, body),
+    "templates",
+    "admin.toast.templateUpdated",
+  );
+}
+
+export function useDeleteAdminTemplate() {
+  return useAdminMutation(
+    (templateKey: string) => adminApi.deleteAdminTemplate(templateKey),
+    "templates",
+    "admin.toast.templateDeleted",
   );
 }
 

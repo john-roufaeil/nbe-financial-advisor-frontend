@@ -15,6 +15,7 @@ import { NumberFormatSwitcher } from "@/components/shared/preferences/NumberForm
 import { DateFormatSwitcher } from "@/components/shared/preferences/DateFormatSwitcher";
 import { CompactNumbersSwitcher } from "@/components/shared/preferences/CompactNumbersSwitcher";
 import { ToggleSwitch } from "@/components/shared/forms/ToggleSwitch";
+import { SettingsGroup } from "@/components/shared/SettingsGroup";
 import { SUPPORTED_LANGUAGES } from "@/i18n";
 import { useLanguageSwitch } from "@/lib/use-language-switch";
 import { useThemeStore, type Theme } from "@/store/use-theme-store";
@@ -61,24 +62,6 @@ function ThemeSwitch() {
   );
 }
 
-/** A related pair of toggles, set off in its own soft panel so the grid reads as three coherent groups instead of six loose fields. */
-function PreferenceGroup({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="bg-base-200/40 flex flex-col gap-3 rounded-xl p-3">
-      <span className="text-base-content/50 text-[11px] font-semibold tracking-wide uppercase">
-        {title}
-      </span>
-      {children}
-    </div>
-  );
-}
-
 function PreferenceField({
   icon: Icon,
   label,
@@ -116,32 +99,32 @@ export function PreferencesMenu() {
         </div>
 
         <div className="grid gap-3 sm:grid-cols-3">
-          <PreferenceGroup title={t("common.sections.preferences.groups.display")}>
+          <SettingsGroup title={t("common.sections.preferences.groups.display")}>
             <PreferenceField icon={Globe} label={t("settings.language")}>
               <LanguageToggle />
             </PreferenceField>
             <PreferenceField icon={Sun} label={t("settings.theme.label")}>
               <ThemeSwitch />
             </PreferenceField>
-          </PreferenceGroup>
+          </SettingsGroup>
 
-          <PreferenceGroup title={t("common.sections.preferences.groups.dateTime")}>
+          <SettingsGroup title={t("common.sections.preferences.groups.dateTime")}>
             <PreferenceField icon={Clock} label={t("settings.timeFormat.label")}>
               <TimeFormatSwitcher />
             </PreferenceField>
             <PreferenceField icon={CalendarDays} label={t("settings.dateFormat.label")}>
               <DateFormatSwitcher />
             </PreferenceField>
-          </PreferenceGroup>
+          </SettingsGroup>
 
-          <PreferenceGroup title={t("common.sections.preferences.groups.numbers")}>
+          <SettingsGroup title={t("common.sections.preferences.groups.numbers")}>
             <PreferenceField icon={Hash} label={t("settings.numberFormat.label")}>
               <NumberFormatSwitcher />
             </PreferenceField>
             <PreferenceField icon={Minimize2} label={t("settings.compactNumbers.label")}>
               <CompactNumbersSwitcher />
             </PreferenceField>
-          </PreferenceGroup>
+          </SettingsGroup>
         </div>
       </div>
     </div>

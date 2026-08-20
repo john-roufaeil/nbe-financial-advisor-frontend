@@ -45,6 +45,10 @@ export interface UpdateBudgetBody {
   name?: string;
   /** Percentages, must sum to 100 when provided (backend rejects with 422 otherwise). */
   allocations?: AllocationInput[];
+  /** Switches which starter template the plan is recorded as based on
+   * (e.g. "Change plan template" on the dashboard) — not cross-validated
+   * against GET /budget/starter-templates server-side. */
+  selected_template_key?: string;
   changed_via: "dashboard" | "chat";
 }
 

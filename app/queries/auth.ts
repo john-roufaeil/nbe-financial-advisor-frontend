@@ -11,6 +11,14 @@ import type {
 } from "@/types/auth";
 import { useAuthStore } from "@/store/use-auth-store";
 import { toastApiError, toastSuccess } from "@/lib/toast";
+import { withMinDelay } from "@/lib/with-min-delay";
+
+/**
+ * Floor on how fast a login attempt can settle, so a "no such email"
+ * rejection can't be timed apart from a "wrong password" one — see
+ * with-min-delay.ts.
+ */
+const LOGIN_MIN_DURATION_MS = 3000;
 
 export function useSignup() {
   const setTokens = useAuthStore((s) => s.setTokens);
@@ -27,7 +35,8 @@ export function useSignup() {
 export function useLogin() {
   const setTokens = useAuthStore((s) => s.setTokens);
   return useMutation({
-    mutationFn: (body: LoginBody) => authApi.login(body),
+    mutationFn: (body: LoginBody) =>
+      withMinDelay(authApi.login(body), LOGIN_MIN_DURATION_MS),
     onSuccess: (tokens) => setTokens({ accessToken: tokens.access_token }),
     onError: (error) => toastApiError(error),
   });
@@ -39,6 +48,16 @@ export function useLogout() {
     // cleared by the caller regardless of success/failure (offline, already
     // expired, etc.).
     mutationFn: () => authApi.logout(),
+  });
+}
+
+/** "Log out of all other devices" (profile page's Account Management) —
+ * unlike useLogout, this call's success/failure IS the whole outcome (no
+ * local state to clear afterward: the calling session stays signed in). */
+export function useLogoutAllDevices() {
+  return useMutation({
+    mutationFn: () => authApi.logoutAllDevices(),
+    onError: (error) => toastApiError(error),
   });
 }
 

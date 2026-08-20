@@ -71,7 +71,6 @@
     "addAccount": {
       "title": "Add Bank Account",
       "add": "Add Bank Account",
-      "connectBank": "Connect bank account",
       "connecting": "Connecting your account…",
       "accountType": "Account type",
       "accountTypes": {

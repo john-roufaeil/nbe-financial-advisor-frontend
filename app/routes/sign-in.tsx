@@ -26,14 +26,18 @@ export default function SignIn() {
   const navigate = useNavigate();
   const location = useLocation();
   const { t } = useTranslation();
-  // Set by RequireAuth when it turned a deep link away, or by onboarding's
-  // last step right after a successful signup.
+  // Set by RequireAuth when it turned a deep link away, by onboarding's last
+  // step right after a successful signup, or by the account step's "email
+  // already registered" link (AccountStep.tsx) so the typed email carries
+  // over instead of being retyped.
   const locationState = location.state as {
     from?: { pathname: string };
     justSignedUp?: boolean;
+    email?: string;
   } | null;
   const from = locationState?.from?.pathname;
   const justSignedUp = locationState?.justSignedUp === true;
+  const prefillEmail = locationState?.email;
   usePageTitle(t("signIn.title"));
   const login = useAuthStore((s) => s.login);
   const setTokens = useAuthStore((s) => s.setTokens);
@@ -63,7 +67,10 @@ export default function SignIn() {
     register,
     handleSubmit,
     formState: { errors },
-  } = useForm<SignInValues>({ resolver: zodResolver(signInSchema) });
+  } = useForm<SignInValues>({
+    resolver: zodResolver(signInSchema),
+    defaultValues: prefillEmail ? { email: prefillEmail } : undefined,
+  });
 
   async function onSubmit(values: SignInValues) {
     try {

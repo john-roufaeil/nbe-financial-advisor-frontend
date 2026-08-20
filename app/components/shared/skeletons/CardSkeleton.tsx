@@ -10,12 +10,16 @@ export function CardSkeleton({
   rows,
   donut,
   fullHeight,
+  bare = false,
   className = "",
 }: {
   icon?: ComponentType<{ className?: string }>;
   rows?: SkeletonRow[];
   donut?: boolean;
   fullHeight?: boolean;
+  /** Skip the card border/shadow/background — for placement inside a page
+   * that already provides its own single card (e.g. the dashboard). */
+  bare?: boolean;
   className?: string;
 }) {
   const iconBadge = (
@@ -63,10 +67,10 @@ export function CardSkeleton({
     <>
       <LoadingAnnouncement />
       <div
-        className={`card border-base-300 bg-base-100 border shadow-sm ${fullHeight ? "h-full" : ""} ${className}`}
+        className={`${bare ? "" : "card border-base-300 bg-base-100 border shadow-sm"} ${fullHeight ? "h-full" : ""} ${className}`}
         aria-hidden="true"
       >
-        <div className="card-body p-4">{renderBody()}</div>
+        <div className={bare ? "" : "card-body p-4"}>{renderBody()}</div>
       </div>
     </>
   );

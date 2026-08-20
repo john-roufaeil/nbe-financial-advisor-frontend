@@ -24,7 +24,7 @@ function AnomalyRow({ anomaly }: { anomaly: AnomalyFlag }) {
   const account = accounts?.find((a) => a.id === anomaly.account_id);
 
   return (
-    <li className="border-base-300 bg-base-100 flex min-w-0 items-start gap-3 rounded-lg border p-3">
+    <li className="border-base-300 hover:bg-base-200/40 flex min-w-0 items-start gap-3 rounded-lg border p-3 transition-colors">
       <Tooltip content={t(`anomalies.severityTooltip.${anomaly.severity}`)}>
         <span
           className={`badge ${SEVERITY_BADGE_CLASS[anomaly.severity]} mt-0.5 shrink-0 text-xs`}
@@ -77,6 +77,7 @@ export function AnomaliesCard() {
   if (isPending) {
     return (
       <CardSkeleton
+        bare
         icon={TriangleAlert}
         className="animate-entry"
         rows={[{ kind: "progress" }]}
@@ -91,20 +92,18 @@ export function AnomaliesCard() {
   if (anomalies.length === 0) return null;
 
   return (
-    <div className="card border-base-300 bg-base-100 animate-entry min-w-0 border shadow-sm">
-      <div className="card-body gap-3 p-4">
-        <div className="flex items-center gap-2">
-          <span className="bg-warning/10 text-warning grid size-9 shrink-0 place-items-center rounded-lg">
-            <TriangleAlert className="size-4.5" />
-          </span>
-          <h2 className="card-title flex-1 text-base">{t("anomalies.title")}</h2>
-        </div>
-        <ul className="flex flex-col gap-2">
-          {anomalies.map((anomaly) => (
-            <AnomalyRow key={anomaly.id} anomaly={anomaly} />
-          ))}
-        </ul>
+    <div className="animate-entry flex min-w-0 flex-col gap-3">
+      <div className="flex shrink-0 items-center gap-1.5">
+        <TriangleAlert className="text-warning size-4 shrink-0" />
+        <h2 className="line-clamp-1 flex-1 text-sm font-semibold">
+          {t("anomalies.title")}
+        </h2>
       </div>
+      <ul className="flex flex-col gap-2">
+        {anomalies.map((anomaly) => (
+          <AnomalyRow key={anomaly.id} anomaly={anomaly} />
+        ))}
+      </ul>
     </div>
   );
 }

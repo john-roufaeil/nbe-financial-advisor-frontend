@@ -3,6 +3,7 @@ import { useForm, Controller } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
+import { Link, useParams } from "react-router";
 import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
 import flags from "react-phone-number-input/flags";
 import "react-phone-number-input/style.css";
@@ -11,6 +12,7 @@ import { PrivacyPolicyModal } from "@/components/shared/modals/PrivacyPolicyModa
 import { PasswordInput } from "@/components/shared/forms/PasswordInput";
 import { RequiredMark } from "@/components/onboarding/RequiredMark";
 import { NAME_PATTERN } from "@/lib/name-validation";
+import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 
 interface AccountFormValues {
   name: string;
@@ -30,6 +32,8 @@ export function AccountStep({
   onPasswordChange,
   agreed,
   onAgreedChange,
+  dataProcessingAgreed,
+  onDataProcessingAgreedChange,
   onValidityChange,
   emailTaken,
   onEmailChange,
@@ -38,8 +42,13 @@ export function AccountStep({
   onPasswordChange: (value: string) => void;
   agreed: boolean;
   onAgreedChange: (value: boolean) => void;
+  /** Optional — declining it just skips granting data_processing at signup
+   * (see onboarding.tsx), it doesn't block account creation. */
+  dataProcessingAgreed: boolean;
+  onDataProcessingAgreedChange: (value: boolean) => void;
   /** Reports live zod-validity of name/email/password/phone up to the route,
-   * which ANDs it with the (schema-external) consent checkbox. */
+   * which ANDs it with the (schema-external) terms_of_service checkbox —
+   * data_processing is optional, so it's never part of this. */
   onValidityChange: (valid: boolean) => void;
   /** Set by the route when signup failed because this email is already registered. */
   emailTaken: boolean;
@@ -47,9 +56,11 @@ export function AccountStep({
   onEmailChange: () => void;
 }) {
   const { t } = useTranslation();
+  const { lang } = useParams<{ lang: string }>();
   const data = useOnboardingStore((s) => s.data);
   const setField = useOnboardingStore((s) => s.setField);
-  const policyRef = useRef<HTMLDialogElement>(null);
+  const termsPolicyRef = useRef<HTMLDialogElement>(null);
+  const dataPolicyRef = useRef<HTMLDialogElement>(null);
 
   const accountSchema = useMemo(
     () =>
@@ -137,8 +148,19 @@ export function AccountStep({
           </span>
         ) : (
           emailTaken && (
-            <span id="account-email-error" role="alert" className="text-error text-xs">
+            <span
+              id="account-email-error"
+              role="alert"
+              className="text-error flex flex-wrap items-center gap-x-1 text-xs"
+            >
               {t("onboarding.account.errors.emailTaken")}
+              <Link
+                to={localizedPath(lang ?? "en", ROUTE_SEGMENTS.signIn)}
+                state={{ email: data.email }}
+                className="link link-primary"
+              >
+                {t("onboarding.account.errors.signInInstead")}
+              </Link>
             </span>
           )
         )}
@@ -219,7 +241,7 @@ export function AccountStep({
           </label>
           <button
             type="button"
-            onClick={() => policyRef.current?.showModal()}
+            onClick={() => termsPolicyRef.current?.showModal()}
             className="link hover:text-primary cursor-pointer p-0 align-baseline text-sm"
           >
             {t("consent.termsLink")}
@@ -228,7 +250,38 @@ export function AccountStep({
         </p>
       </div>
 
-      <PrivacyPolicyModal ref={policyRef} />
+      <div className="flex flex-row flex-nowrap items-center gap-3">
+        <label
+          htmlFor="consent-data-processing"
+          className="relative -m-3 flex shrink-0 cursor-pointer items-center justify-center p-3"
+        >
+          <input
+            id="consent-data-processing"
+            type="checkbox"
+            className="checkbox checkbox-primary checkbox-sm"
+            checked={dataProcessingAgreed}
+            onChange={(e) => onDataProcessingAgreedChange(e.target.checked)}
+          />
+        </label>
+        <p className="text-base-content/70 flex flex-1 flex-wrap items-center gap-x-1 text-sm">
+          <label htmlFor="consent-data-processing" className="cursor-pointer">
+            {t("consent.dataProcessingAgreePrefix")}
+          </label>
+          <button
+            type="button"
+            onClick={() => dataPolicyRef.current?.showModal()}
+            className="link hover:text-primary cursor-pointer p-0 align-baseline text-sm"
+          >
+            {t("consent.dataProcessingLink")}
+          </button>
+          <span className="text-base-content/50">
+            {t("consent.dataProcessingOptional")}
+          </span>
+        </p>
+      </div>
+
+      <PrivacyPolicyModal ref={termsPolicyRef} type="terms_of_service" />
+      <PrivacyPolicyModal ref={dataPolicyRef} type="data_processing" />
     </div>
   );
 }

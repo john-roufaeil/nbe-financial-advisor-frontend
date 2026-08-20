@@ -71,7 +71,6 @@
     "addAccount": {
       "title": "إضافة حساب بنكي",
       "add": "إضافة حساب بنكي",
-      "connectBank": "ربط حساب بنكي",
       "connecting": "جارٍ ربط حسابك…",
       "accountType": "نوع الحساب",
       "accountTypes": {

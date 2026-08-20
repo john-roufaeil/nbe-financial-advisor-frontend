@@ -7,7 +7,9 @@ import { BaseModal } from "@/components/shared/modals/BaseModal";
 export function ConfirmDialog() {
   const { t } = useTranslation();
   const ref = useRef<HTMLDialogElement>(null);
-  const { isOpen, title, message, onConfirm, close } = useConfirmStore();
+  const { isOpen, title, message, onConfirm, confirmLabel, tone, close } =
+    useConfirmStore();
+  const isDanger = tone !== "default";
 
   useEffect(() => {
     if (isOpen) ref.current?.showModal();
@@ -25,14 +27,22 @@ export function ConfirmDialog() {
       onClose={close}
       title={title}
       icon={
-        <span className="bg-error/10 text-error grid size-9 shrink-0 place-items-center rounded-full">
+        <span
+          className={`grid size-9 shrink-0 place-items-center rounded-full ${
+            isDanger ? "bg-error/10 text-error" : "bg-primary/10 text-primary"
+          }`}
+        >
           <TriangleAlert className="size-5" />
         </span>
       }
       actions={
         <>
-          <button type="button" onClick={handleConfirm} className="btn btn-error">
-            {t("confirm.delete")}
+          <button
+            type="button"
+            onClick={handleConfirm}
+            className={`btn ${isDanger ? "btn-error" : "btn-primary"}`}
+          >
+            {confirmLabel ?? t("confirm.delete")}
           </button>
           <button type="button" onClick={close} className="btn btn-ghost">
             {t("actions.cancel")}

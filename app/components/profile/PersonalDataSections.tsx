@@ -92,25 +92,34 @@ const SECTIONS: Section[] = [
 
 // ── Public export ─────────────────────────────────────────────────────────────
 
-export function PersonalDataSections() {
+/**
+ * `restricted` (declined terms_of_service — see RequireAuth.tsx) drops this
+ * down to just the "profile" card (name/phone/id/email): the financial
+ * profile and linked bank accounts are the app's actual financial-advice
+ * surface, which a declined-terms account shouldn't be using.
+ */
+export function PersonalDataSections({ restricted = false }: { restricted?: boolean }) {
   const { data: user, isLoading, isError, refetch } = useMe();
+  const sections = restricted ? SECTIONS.filter((s) => s.key === "profile") : SECTIONS;
 
   if (isLoading) {
     return (
       <div className="animate-entry grid gap-4 sm:grid-cols-2">
-        {SECTIONS.map((s) => (
+        {sections.map((s) => (
           <CardSkeleton
             key={s.key}
             icon={s.icon}
             rows={[{ kind: "fieldGrid", fields: s.fields.length }]}
           />
         ))}
-        <div className="sm:col-span-2">
-          <CardSkeleton
-            icon={CreditCard}
-            rows={[{ kind: "progress" }, { kind: "progress" }]}
-          />
-        </div>
+        {!restricted && (
+          <div className="sm:col-span-2">
+            <CardSkeleton
+              icon={CreditCard}
+              rows={[{ kind: "progress" }, { kind: "progress" }]}
+            />
+          </div>
+        )}
       </div>
     );
   }
@@ -121,10 +130,10 @@ export function PersonalDataSections() {
 
   return (
     <div className="grid min-w-0 gap-4 sm:grid-cols-2">
-      {SECTIONS.map((s) => (
+      {sections.map((s) => (
         <ProfileSectionCard key={s.key} section={s} user={user} />
       ))}
-      <BankAccountsCard />
+      {!restricted && <BankAccountsCard />}
     </div>
   );
 }

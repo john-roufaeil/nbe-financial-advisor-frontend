@@ -1,9 +1,11 @@
+import { useRef } from "react";
 import type { BudgetCategory, DashboardPeriod } from "@/types/dashboard";
-import { PieChart, Pencil, TriangleAlert } from "lucide-react";
+import { PieChart, Pencil, LayoutTemplate, TriangleAlert } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { categoryIcon } from "@/lib/constants/category-icons";
 import { CategoryDonutChart } from "@/components/dashboard/CategoryDonutChart";
 import { AllocationsEditModal } from "@/components/dashboard/AllocationsEditModal";
+import { ChangeTemplateModal } from "@/components/dashboard/ChangeTemplateModal";
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { useNumberDisplay } from "@/lib/use-number-display";
@@ -51,6 +53,10 @@ function BudgetRow({
         >
           <div className="flex items-center justify-between text-sm">
             <span className="flex min-w-0 items-center gap-1.5 font-medium capitalize">
+              <span
+                className="size-2 shrink-0 rounded-full"
+                style={{ backgroundColor: color }}
+              />
               <Icon data-no-flip className="text-base-content/60 size-3.5 shrink-0" />
               {t(`common.categories.${category.name}`, category.name)}
             </span>
@@ -95,92 +101,83 @@ export function BudgetSplitCard({
     color,
     sortedCategories,
     pieSlices,
-    pieTotal,
     totalAllocated,
   } = useBudgetSplitView({ categories, period });
+  const templateModalRef = useRef<HTMLDialogElement>(null);
 
   return (
-    <div className="card border-base-300 bg-base-100 animate-entry h-full border shadow-sm">
-      <div className="card-body gap-4 p-4">
-        <div className="flex items-center gap-2">
-          <span className="bg-primary/10 text-primary grid size-9 shrink-0 place-items-center rounded-lg">
-            <PieChart className="size-4.5" />
-          </span>
-          <h2 className="card-title flex-1 text-base">{t("dashboard.budget.title")}</h2>
-          {budget && budget.allocations.length > 0 && (
-            <Tooltip content={t("dashboard.budget.editAllocations")}>
-              <button
-                type="button"
-                onClick={() => modalRef.current?.showModal()}
-                className="btn btn-ghost btn-sm btn-square"
-                aria-label={t("dashboard.budget.editAllocations")}
-              >
-                <Pencil data-no-flip className="size-4" />
-              </button>
-            </Tooltip>
-          )}
-        </div>
-        {/* Defensive: a plan with zero allocations would otherwise render an
-            empty donut, which reads as "your budget is all zeroes". */}
-        {sortedCategories.length === 0 ? (
-          <p className="text-base-content/50 py-6 text-center text-sm">
-            {t("dashboard.budget.empty")}
-          </p>
-        ) : (
-          <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
-            <div className="flex w-full min-w-0 flex-col items-center gap-2 sm:w-auto">
-              <CategoryDonutChart
-                variant="pie"
-                slices={pieSlices}
-                onSelectName={drillDown}
-              />
-              <p className="text-base-content/50 text-center text-xs">
-                <Money className="text-base-content font-semibold">
-                  {formatN(totalAllocated)}
-                </Money>{" "}
-                {t(`currency.${currency}`, currency)} {t("dashboard.budget.allocated")}
-              </p>
-              <ul className="flex w-full min-w-0 flex-col gap-1.5">
-                {sortedCategories.map((category, i) => {
-                  const slicePct =
-                    pieTotal > 0 ? Math.round((pieSlices[i].value / pieTotal) * 100) : 0;
-                  const Icon = categoryIcon(category.name);
-                  return (
-                    <li
-                      key={category.name}
-                      className="flex min-w-0 items-center gap-2 text-xs"
-                    >
-                      <span
-                        className="size-2 shrink-0 rounded-full"
-                        style={{ backgroundColor: color(category.name) }}
-                      />
-                      <Icon
-                        data-no-flip
-                        className="text-base-content/50 size-3.5 shrink-0"
-                      />
-                      <span className="text-base-content/40 ms-auto shrink-0 tabular-nums">
-                        {slicePct}%
-                      </span>
-                    </li>
-                  );
-                })}
-              </ul>
-            </div>
-            <ul className="flex w-full min-w-0 flex-col gap-4">
-              {sortedCategories.map((category) => (
-                <BudgetRow
-                  key={category.name}
-                  category={category}
-                  currency={currency}
-                  color={color(category.name)}
-                  onDrillDown={() => drillDown(category.name)}
-                />
-              ))}
-            </ul>
-          </div>
+    <div className="animate-entry flex h-full flex-col gap-3">
+      <div className="flex shrink-0 items-center gap-1.5">
+        <PieChart className="text-primary size-4 shrink-0" />
+        <h2 className="line-clamp-1 flex-1 text-sm font-semibold">
+          {t("dashboard.budget.title")}
+        </h2>
+        {budget && (
+          <Tooltip content={t("dashboard.budget.changeTemplate")}>
+            <button
+              type="button"
+              onClick={() => templateModalRef.current?.showModal()}
+              className="btn btn-ghost btn-xs btn-square"
+              aria-label={t("dashboard.budget.changeTemplate")}
+            >
+              <LayoutTemplate data-no-flip className="size-3.5" />
+            </button>
+          </Tooltip>
+        )}
+        {budget && budget.allocations.length > 0 && (
+          <Tooltip content={t("dashboard.budget.editAllocations")}>
+            <button
+              type="button"
+              onClick={() => modalRef.current?.showModal()}
+              className="btn btn-ghost btn-xs btn-square"
+              aria-label={t("dashboard.budget.editAllocations")}
+            >
+              <Pencil data-no-flip className="size-3.5" />
+            </button>
+          </Tooltip>
         )}
       </div>
+      {/* Defensive: a plan with zero allocations would otherwise render an
+          empty donut, which reads as "your budget is all zeroes". */}
+      {sortedCategories.length === 0 ? (
+        <p className="text-base-content/50 py-6 text-center text-sm">
+          {t("dashboard.budget.empty")}
+        </p>
+      ) : (
+        <div className="flex flex-col items-center gap-5 sm:flex-row sm:items-start">
+          <div className="flex w-full shrink-0 flex-col items-center gap-2 sm:w-auto">
+            <CategoryDonutChart
+              variant="pie"
+              slices={pieSlices}
+              onSelectName={drillDown}
+            />
+            <p className="text-base-content/50 text-center text-xs">
+              <Money className="text-base-content font-semibold">
+                {formatN(totalAllocated)}
+              </Money>{" "}
+              {t(`currency.${currency}`, currency)} {t("dashboard.budget.allocated")}
+            </p>
+          </div>
+          <ul className="flex w-full min-w-0 flex-col gap-4">
+            {sortedCategories.map((category) => (
+              <BudgetRow
+                key={category.name}
+                category={category}
+                currency={currency}
+                color={color(category.name)}
+                onDrillDown={() => drillDown(category.name)}
+              />
+            ))}
+          </ul>
+        </div>
+      )}
       {budget && <AllocationsEditModal ref={modalRef} allocations={budget.allocations} />}
+      {budget && (
+        <ChangeTemplateModal
+          ref={templateModalRef}
+          currentTemplateKey={budget.selected_template_key || null}
+        />
+      )}
     </div>
   );
 }

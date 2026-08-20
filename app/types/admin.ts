@@ -95,6 +95,36 @@ export interface AdminFeedbackEntry {
   created_at: string;
 }
 
+/** GET /admin/onboarding-templates row — StarterTemplateSerializer minus
+ * `is_suggested`, which is computed per-request from a signed-in user's own
+ * profile on the public endpoint and meaningless for an admin session (see
+ * AdminOnboardingTemplateListCreateView's docstring). Backed by
+ * pfm-reference-data/onboarding-templates/*.json, not a DB table — no `id`,
+ * `template_key` is the identity. */
+export interface AdminTemplateAllocation {
+  category: string;
+  allocated_percentage: number;
+}
+
+export interface AdminTemplate {
+  template_key: string;
+  name: string;
+  description: string;
+  allocations: AdminTemplateAllocation[];
+}
+
+export interface AdminTemplateCreateBody {
+  template_key: string;
+  name: string;
+  description?: string;
+  allocations: AdminTemplateAllocation[];
+}
+
+/** `template_key` is never reassignable through PATCH — it's the object's identity. */
+export type AdminTemplateUpdateBody = Partial<
+  Omit<AdminTemplateCreateBody, "template_key">
+>;
+
 export const ISSUE_STATUSES = ["open", "in_review", "resolved", "dismissed"] as const;
 export type IssueStatus = (typeof ISSUE_STATUSES)[number];
 

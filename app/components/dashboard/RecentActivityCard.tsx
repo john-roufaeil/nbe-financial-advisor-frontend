@@ -5,26 +5,20 @@ import type { DashboardFilters } from "@/types/dashboard";
 import { dashboardPeriodRange } from "@/lib/dashboard-period";
 import {
   ArrowLeftRight,
-  FileText,
   ArrowUpCircle,
   ArrowDownCircle,
   ChevronRight,
   Inbox,
-  FileX2,
   Plus,
 } from "lucide-react";
 import { useTransactions } from "@/queries/transactions";
-import { useBankStatements } from "@/queries/bank-statements";
-import { BankBadge } from "@/components/shared/BankBadge";
 import { Money } from "@/components/shared/Money";
 import { Tooltip } from "@/components/shared/Tooltip";
 import { CardSkeleton } from "@/components/shared/skeletons/CardSkeleton";
 import { ErrorState } from "@/components/shared/QueryState";
-import { formatDate } from "@/lib/format";
 import { useNumberDisplay } from "@/lib/use-number-display";
-import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 
-const RECENT_COUNT = 2;
+const RECENT_COUNT = 10;
 
 const TYPE_CHIPS = ["all", "income", "expense"] as const;
 type TypeChip = (typeof TYPE_CHIPS)[number];
@@ -61,25 +55,25 @@ function SummaryCard({
   const isEmpty = count === 0;
 
   return (
-    <Tooltip content={tooltip} className="h-48 w-full xl:h-full">
+    <Tooltip content={tooltip} className="h-full w-full">
       <Link
         to={to}
         // When empty, the whole card is the invitation to add the first item —
         // send it straight into the add flow instead of the (empty) list view.
         state={isEmpty ? { openAdd: true } : undefined}
-        className="card border-base-300 bg-base-100 hover:border-primary group animate-entry h-48 w-full border shadow-sm transition-colors xl:h-full"
+        className="hover:bg-base-200/40 group animate-entry block h-full w-full rounded-xl transition-colors"
       >
-        <div className="card-body flex h-full min-h-0 flex-col gap-3 p-4">
-          <div className="flex shrink-0 items-center gap-2">
-            <span
-              className={`grid size-9 shrink-0 place-items-center rounded-lg ${color}`}
-            >
-              <Icon className="size-4.5" />
-            </span>
-            <div className="min-w-0 flex-1">
-              <h3 className="text-base-content text-sm font-semibold">{title}</h3>
-              {count > 0 && <p className="text-base-content/50 text-xs">{countLabel}</p>}
-            </div>
+        <div className="flex h-full min-h-0 flex-col gap-3 p-3">
+          {/* Same icon + h2 shape every other dashboard card's header uses
+              (see GoalCard/BudgetSplitCard/AnomaliesCard/RecurringChargesCard)
+              — count and the chevron ride along as trailing content, same
+              slot their pencil/edit buttons occupy elsewhere. */}
+          <div className="flex shrink-0 items-center gap-1.5">
+            <Icon className={`size-4 shrink-0 ${color}`} />
+            <h2 className="line-clamp-1 flex-1 text-sm font-semibold">{title}</h2>
+            {count > 0 && (
+              <span className="text-base-content/50 shrink-0 text-xs">{countLabel}</span>
+            )}
             <ChevronRight className="text-base-content/30 group-hover:text-primary size-4 shrink-0 transition-[color,translate] ltr:group-hover:translate-x-0.5 rtl:group-hover:-translate-x-0.5" />
           </div>
           {controls}
@@ -127,12 +121,12 @@ function TransactionsSummary({ filters }: { filters: DashboardFilters }) {
   });
   const formatN = useNumberDisplay();
 
-  if (isPending) return <CardSkeleton icon={ArrowLeftRight} className="animate-entry" />;
+  if (isPending) {
+    return <CardSkeleton bare icon={ArrowLeftRight} className="animate-entry h-full" />;
+  }
 
   if (isError) {
-    return (
-      <ErrorState onRetry={() => refetch()} className="animate-entry h-48 xl:h-full" />
-    );
+    return <ErrorState onRetry={() => refetch()} className="animate-entry h-full" />;
   }
 
   return (
@@ -164,7 +158,7 @@ function TransactionsSummary({ filters }: { filters: DashboardFilters }) {
       to={`/${lang}/transactions`}
       tooltip={t("dashboard.recentActivity.transactionsTooltip")}
       icon={ArrowLeftRight}
-      color="bg-info/10 text-info"
+      color="text-info"
       title={t("dashboard.recentActivity.transactionsTitle")}
       count={data?.total ?? 0}
       countLabel={t("transactions.pagination.total", { count: data?.total ?? 0 })}
@@ -197,70 +191,14 @@ function TransactionsSummary({ filters }: { filters: DashboardFilters }) {
   );
 }
 
-function BankStatementsSummary() {
-  const { t } = useTranslation();
-  const { lang } = useParams<{ lang: string }>();
-  const { data, isPending, isError, refetch } = useBankStatements({
-    limit: RECENT_COUNT,
-  });
-  const dateFormat = useDisplayPreferencesStore((s) => s.dateFormat);
-
-  if (isPending) return <CardSkeleton icon={FileText} className="animate-entry" />;
-
-  if (isError) {
-    return (
-      <ErrorState onRetry={() => refetch()} className="animate-entry h-48 xl:h-full" />
-    );
-  }
-
+/** Links through to the full transactions page — was previously paired with
+ * a Recent Statements card, dropped as lower-value (relevant mainly right
+ * after an upload, not a daily glance) so Transactions gets the full slot
+ * instead of splitting it with something people check less often. */
+export function RecentActivityCard({ filters }: { filters: DashboardFilters }) {
   return (
-    <SummaryCard
-      to={`/${lang}/bank-statements`}
-      tooltip={t("dashboard.recentActivity.statementsTooltip")}
-      icon={FileText}
-      color="bg-secondary/10 text-secondary"
-      title={t("dashboard.recentActivity.statementsTitle")}
-      count={data?.total ?? 0}
-      countLabel={t("bankStatements.pagination.total", { count: data?.total ?? 0 })}
-      emptyIcon={FileX2}
-      emptyLabel={t("bankStatements.emptyShort")}
-      emptyCtaLabel={t("bankStatements.emptyCta")}
-    >
-      {data?.items.map((doc) => (
-        <li key={doc.id}>
-          <BankBadge
-            bank={doc.bankName}
-            size="size-6"
-            subtitle={formatDate(doc.uploadDate, dateFormat)}
-          />
-        </li>
-      ))}
-    </SummaryCard>
-  );
-}
-
-/** Links through to the full transactions/bank-statements pages. Uses a
- * container query (not viewport) so the two cards sit side by side once this
- * column has room, and stack when squeezed to sidebar width. */
-export function RecentActivityCard({
-  stacked = false,
-  filters,
-}: {
-  stacked?: boolean;
-  filters: DashboardFilters;
-}) {
-  return (
-    <div className="@container xl:h-full">
-      {/* At xl this column is a fixed 1/4-width grid cell (see dashboard.tsx),
-          narrow enough that the two cards always belong stacked — xl:grid-cols-1
-          pins that regardless of container width, and xl:grid-rows-2 xl:h-full
-          split the row's full height evenly between them. */}
-      <div
-        className={`grid h-full grid-cols-1 gap-4 xl:grid-rows-2 ${stacked ? "" : "xl:grid-cols-1 @sm:grid-cols-2 @sm:grid-rows-1"}`}
-      >
-        <TransactionsSummary filters={filters} />
-        <BankStatementsSummary />
-      </div>
+    <div className="h-full">
+      <TransactionsSummary filters={filters} />
     </div>
   );
 }

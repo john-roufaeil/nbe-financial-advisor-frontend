@@ -15,6 +15,8 @@ import {
 } from "@/lib/composer-text-recovery";
 import { useComposerPromptHistory } from "@/lib/use-composer-prompt-history";
 import { CHAT_MESSAGE_MAX_LENGTH } from "@/lib/constants/limits";
+import { ConsentRequiredOverlay } from "@/components/shared/ConsentRequiredOverlay";
+import { useConsentStatus } from "@/queries/consent";
 
 // Only surfaced once the user is close to the cap — showing "0/4000" from
 // the first keystroke would just be noise.
@@ -86,6 +88,17 @@ function ComposerSendButton() {
 export function ChatComposer() {
   const { t } = useTranslation();
   const handleHistoryKeyDown = useComposerPromptHistory();
+  const { isActive: canChat, isPending: consentPending } =
+    useConsentStatus("data_processing");
+
+  if (!consentPending && !canChat) {
+    return (
+      <div className="bg-base-100 animate-entry">
+        <ConsentRequiredOverlay className="mx-auto w-full max-w-3xl" />
+      </div>
+    );
+  }
+
   return (
     <div className="bg-base-100 animate-entry">
       <ComposerPrimitive.AttachmentDropzone className="data-dragging:border-primary mx-auto w-full max-w-3xl rounded-xl data-dragging:border-2 data-dragging:border-dashed">

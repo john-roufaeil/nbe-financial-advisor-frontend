@@ -17,11 +17,13 @@ import {
 } from "@/types/bank-statement";
 import { BYTES_PER_KB } from "@/lib/constants/limits";
 import { useUploadBankStatements } from "@/queries/bank-statements";
+import { useConsentStatus } from "@/queries/consent";
 import { toastError } from "@/lib/toast";
 import { closeDialog } from "@/lib/close-dialog";
 import { Button } from "@/components/shared/Button";
 import { BaseModal } from "@/components/shared/modals/BaseModal";
 import { Tooltip } from "@/components/shared/Tooltip";
+import { ConsentRequiredOverlay } from "@/components/shared/ConsentRequiredOverlay";
 
 const TYPE_ICONS: Record<BankStatementType, typeof FileText> = {
   pdf: FileText,
@@ -38,6 +40,7 @@ export const AddBankStatementModal = forwardRef<HTMLDialogElement>(
   function AddBankStatementModal(_props, ref) {
     const { t } = useTranslation();
     const uploadBankStatements = useUploadBankStatements();
+    const { isActive: canUpload } = useConsentStatus("data_processing");
     const [staged, setStaged] = useState<StagedFile[]>([]);
     const [rejectedType, setRejectedType] = useState<string[]>([]);
     const [rejectedSize, setRejectedSize] = useState<string[]>([]);
@@ -118,7 +121,9 @@ export const AddBankStatementModal = forwardRef<HTMLDialogElement>(
           <>
             <Button
               type="button"
-              disabled={staged.length === 0 || uploadBankStatements.isPending}
+              disabled={
+                staged.length === 0 || uploadBankStatements.isPending || !canUpload
+              }
               loading={uploadBankStatements.isPending}
               onClick={handleUpload}
               className="btn btn-primary"
@@ -139,107 +144,117 @@ export const AddBankStatementModal = forwardRef<HTMLDialogElement>(
         }
       >
         <div className="flex flex-col gap-4">
-          <label
-            tabIndex={0}
-            role="button"
-            onKeyDown={(e) => {
-              if (e.key === "Enter" || e.key === " ") {
-                e.preventDefault();
-                fileInputRef.current?.click();
-              }
-            }}
-            onDragOver={(e) => {
-              e.preventDefault();
-              setIsDragging(true);
-            }}
-            onDragLeave={() => setIsDragging(false)}
-            onDrop={(e) => {
-              e.preventDefault();
-              setIsDragging(false);
-              handleFiles(e.dataTransfer.files);
-            }}
-            className={`hover:border-primary hover:bg-base-200 focus-visible:outline-primary/50 flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
-              isDragging ? "border-primary bg-base-200" : "border-base-300"
-            }`}
-          >
-            <Upload className="text-base-content/40 size-6" />
-            <span className="text-sm font-medium">
-              {t("bankStatements.add.dropzone")}
-            </span>
-            <span className="text-base-content/50 text-xs">
-              {t("bankStatements.add.accepted", { maxMb: BANK_STATEMENT_MAX_SIZE_MB })}
-            </span>
-            <input
-              ref={fileInputRef}
-              type="file"
-              accept={BANK_STATEMENT_UPLOAD_ACCEPT}
-              onChange={(e) => handleFiles(e.target.files)}
-              className="hidden"
-            />
-          </label>
-
-          {(rejectedType.length > 0 ||
-            rejectedSize.length > 0 ||
-            rejectedExtra.length > 0) && (
-            <div role="alert" className="flex flex-col gap-1">
-              {rejectedType.length > 0 && (
-                <p className="text-warning flex items-center gap-1.5 text-xs">
-                  <TriangleAlert className="size-3.5 shrink-0" />
-                  {t("bankStatements.add.rejectedType", {
-                    names: rejectedType.join(", "),
-                  })}
-                </p>
-              )}
-              {rejectedSize.length > 0 && (
-                <p className="text-warning flex items-center gap-1.5 text-xs">
-                  <TriangleAlert className="size-3.5 shrink-0" />
-                  {t("bankStatements.add.rejectedSize", {
+          {!canUpload ? (
+            <ConsentRequiredOverlay />
+          ) : (
+            <>
+              <label
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    fileInputRef.current?.click();
+                  }
+                }}
+                onDragOver={(e) => {
+                  e.preventDefault();
+                  setIsDragging(true);
+                }}
+                onDragLeave={() => setIsDragging(false)}
+                onDrop={(e) => {
+                  e.preventDefault();
+                  setIsDragging(false);
+                  handleFiles(e.dataTransfer.files);
+                }}
+                className={`hover:border-primary hover:bg-base-200 focus-visible:outline-primary/50 flex cursor-pointer flex-col items-center gap-2 rounded-lg border-2 border-dashed p-6 text-center transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${
+                  isDragging ? "border-primary bg-base-200" : "border-base-300"
+                }`}
+              >
+                <Upload className="text-base-content/40 size-6" />
+                <span className="text-sm font-medium">
+                  {t("bankStatements.add.dropzone")}
+                </span>
+                <span className="text-base-content/50 text-xs">
+                  {t("bankStatements.add.accepted", {
                     maxMb: BANK_STATEMENT_MAX_SIZE_MB,
-                    names: rejectedSize.join(", "),
                   })}
-                </p>
-              )}
-              {rejectedExtra.length > 0 && (
-                <p className="text-warning flex items-center gap-1.5 text-xs">
-                  <TriangleAlert className="size-3.5 shrink-0" />
-                  {t("bankStatements.add.rejectedExtra", {
-                    names: rejectedExtra.join(", "),
-                  })}
-                </p>
-              )}
-            </div>
-          )}
+                </span>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept={BANK_STATEMENT_UPLOAD_ACCEPT}
+                  onChange={(e) => handleFiles(e.target.files)}
+                  className="hidden"
+                />
+              </label>
 
-          {staged.length > 0 && (
-            <ul className="flex flex-col gap-2">
-              {staged.map(({ file, type }, i) => {
-                const Icon = TYPE_ICONS[type];
-                return (
-                  <li
-                    key={`${file.name}-${i}`}
-                    className="border-base-300 bg-base-100 flex items-center gap-3 rounded-lg border p-2.5"
-                  >
-                    <span className="bg-info/10 text-info grid size-8 shrink-0 place-items-center rounded-lg">
-                      <Icon className="size-4" />
-                    </span>
-                    <span className="min-w-0 flex-1 truncate text-sm">{file.name}</span>
-                    <Tooltip
-                      content={t("actions.delete", { name: file.name })}
-                      className="shrink-0"
-                    >
-                      <button
-                        type="button"
-                        onClick={() => removeStaged()}
-                        className="btn btn-ghost btn-xs btn-square"
-                        aria-label={t("actions.delete", { name: file.name })}
+              {(rejectedType.length > 0 ||
+                rejectedSize.length > 0 ||
+                rejectedExtra.length > 0) && (
+                <div role="alert" className="flex flex-col gap-1">
+                  {rejectedType.length > 0 && (
+                    <p className="text-warning flex items-center gap-1.5 text-xs">
+                      <TriangleAlert className="size-3.5 shrink-0" />
+                      {t("bankStatements.add.rejectedType", {
+                        names: rejectedType.join(", "),
+                      })}
+                    </p>
+                  )}
+                  {rejectedSize.length > 0 && (
+                    <p className="text-warning flex items-center gap-1.5 text-xs">
+                      <TriangleAlert className="size-3.5 shrink-0" />
+                      {t("bankStatements.add.rejectedSize", {
+                        maxMb: BANK_STATEMENT_MAX_SIZE_MB,
+                        names: rejectedSize.join(", "),
+                      })}
+                    </p>
+                  )}
+                  {rejectedExtra.length > 0 && (
+                    <p className="text-warning flex items-center gap-1.5 text-xs">
+                      <TriangleAlert className="size-3.5 shrink-0" />
+                      {t("bankStatements.add.rejectedExtra", {
+                        names: rejectedExtra.join(", "),
+                      })}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {staged.length > 0 && (
+                <ul className="flex flex-col gap-2">
+                  {staged.map(({ file, type }, i) => {
+                    const Icon = TYPE_ICONS[type];
+                    return (
+                      <li
+                        key={`${file.name}-${i}`}
+                        className="border-base-300 bg-base-100 flex items-center gap-3 rounded-lg border p-2.5"
                       >
-                        <X className="size-3.5" />
-                      </button>
-                    </Tooltip>
-                  </li>
-                );
-              })}
-            </ul>
+                        <span className="bg-info/10 text-info grid size-8 shrink-0 place-items-center rounded-lg">
+                          <Icon className="size-4" />
+                        </span>
+                        <span className="min-w-0 flex-1 truncate text-sm">
+                          {file.name}
+                        </span>
+                        <Tooltip
+                          content={t("actions.delete", { name: file.name })}
+                          className="shrink-0"
+                        >
+                          <button
+                            type="button"
+                            onClick={() => removeStaged()}
+                            className="btn btn-ghost btn-xs btn-square"
+                            aria-label={t("actions.delete", { name: file.name })}
+                          >
+                            <X className="size-3.5" />
+                          </button>
+                        </Tooltip>
+                      </li>
+                    );
+                  })}
+                </ul>
+              )}
+            </>
           )}
         </div>
       </BaseModal>

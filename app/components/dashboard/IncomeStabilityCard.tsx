@@ -1,6 +1,6 @@
 import { Activity } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { Tooltip } from "@/components/shared/Tooltip";
+import { InsightTile } from "@/components/dashboard/InsightTile";
 import type { IncomeStability } from "@/types/dashboard";
 
 const TONE: Record<IncomeStability["label"], string> = {
@@ -21,25 +21,17 @@ export function IncomeStabilityCard({
   const tone = TONE[stability.label];
 
   return (
-    <Tooltip content={t("dashboard.stability.tooltip")} className="w-full">
-      <div className="card border-base-300 bg-base-100 animate-entry h-full w-full border shadow-sm">
-        <div className="flex items-center gap-2 p-3">
-          <span className={`grid size-8 shrink-0 place-items-center rounded-lg ${tone}`}>
-            <Activity data-no-flip className="size-4" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-base-content/60 truncate text-xs">
-              {t("dashboard.stability.label")}
-            </p>
-            <p className="text-base font-semibold tabular-nums">{stability.score}</p>
-          </div>
-          <span
-            className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${tone}`}
-          >
-            {t(`dashboard.stability.${stability.label}`)}
-          </span>
-        </div>
-      </div>
-    </Tooltip>
+    <InsightTile
+      icon={Activity}
+      tone={tone}
+      label={t("dashboard.stability.label")}
+      value={stability.score}
+      tooltip={t("dashboard.stability.tooltip")}
+      trailing={
+        <span className={`shrink-0 rounded-full px-2 py-0.5 text-xs font-medium ${tone}`}>
+          {t(`dashboard.stability.${stability.label}`)}
+        </span>
+      }
+    />
   );
 }

@@ -1,4 +1,5 @@
 import { RequiredMark } from "@/components/onboarding/RequiredMark";
+import { useHighlightRef } from "@/lib/use-highlight-ref";
 
 interface ChipOption<T extends string> {
   value: T;
@@ -17,6 +18,7 @@ export function ChipPicker<T extends string>({
   onChange,
   error,
   required,
+  highlighted,
 }: {
   label: string;
   options: readonly ChipOption<T>[];
@@ -27,9 +29,18 @@ export function ChipPicker<T extends string>({
    * fields use — for a field that's always required, not just conditionally
    * flagged once the step is dirty (see `error` above). */
   required?: boolean;
+  /** Briefly rings and scrolls this field into view — set when the user
+   * jumps here from PlanSummary's "edit" affordance. */
+  highlighted?: boolean;
 }) {
+  const highlightRef = useHighlightRef<HTMLDivElement>(highlighted);
   return (
-    <div className="flex flex-col gap-1.5">
+    <div
+      ref={highlightRef}
+      className={`flex flex-col gap-1.5 rounded-lg transition-shadow ${
+        highlighted ? "ring-primary ring-offset-base-100 ring-2 ring-offset-2" : ""
+      }`}
+    >
       <span className="label-text inline-flex items-center gap-1.5 text-xs">
         {label}
         {required && <RequiredMark />}
