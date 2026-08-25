@@ -1,7 +1,8 @@
 {
   "settings": {
     "signOut": "Sign Out",
-    "termsDeclinedBanner": "You haven't agreed to the Terms of Service, so the rest of the app is locked — only account settings are available here. Turn it back on under Privacy & consent below to regain full access.",
+    "termsDeclinedBanner": "You haven't agreed to the Terms of Service, so the rest of the app is locked — only account settings are available here.",
+    "termsDeclinedBannerAction": "Agree to Terms of Service",
     "deleteAccount": "Delete Account",
     "deleteAccountTitle": "Delete your account?",
     "deleteAccountMessage": "This permanently deletes your account and all of its data — accounts, transactions, budgets, conversations, statements. This can't be undone.",
