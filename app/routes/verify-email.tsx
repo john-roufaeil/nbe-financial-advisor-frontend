@@ -8,6 +8,11 @@ import { usePageTitle } from "@/lib/use-page-title";
 import { useSyncHtmlDir } from "@/lib/use-sync-html-dir";
 import { useCanGoBack } from "@/lib/use-can-go-back";
 import { useConfirmEmailVerification } from "@/queries/auth";
+import { useAuthStore } from "@/store/use-auth-store";
+import { DEFAULT_LANGUAGE, SUPPORTED_LANGUAGES, type SupportedLanguage } from "@/i18n";
+import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
+
+const REDIRECT_SECONDS = 4;
 
 /**
  * Landing page for the verification email link
@@ -17,7 +22,7 @@ import { useConfirmEmailVerification } from "@/queries/auth";
  * server-side (services/link_tickets.py).
  */
 export default function VerifyEmail() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   usePageTitle(t("verifyEmail.title"));
   useSyncHtmlDir();
   const navigate = useNavigate();
@@ -26,6 +31,8 @@ export default function VerifyEmail() {
   const confirmMutation = useConfirmEmailVerification();
   const [status, setStatus] = useState<"pending" | "success" | "invalid">("pending");
   const submitted = useRef(false);
+  const hasSession = useAuthStore((s) => s.isAuthenticated && s.accessToken !== null);
+  const [secondsLeft, setSecondsLeft] = useState(REDIRECT_SECONDS);
 
   const ticket = searchParams.get("t");
 
@@ -42,6 +49,33 @@ export default function VerifyEmail() {
       .catch(() => setStatus("invalid"));
   }, [ticket]);
 
+  // Auto-redirect a few seconds after a successful verification, with a
+  // visible countdown, rather than leaving the user stranded on a success
+  // page with nothing to do but click a button.
+  useEffect(() => {
+    if (status !== "success") return;
+    setSecondsLeft(REDIRECT_SECONDS);
+    const lang = SUPPORTED_LANGUAGES.includes(i18n.language as SupportedLanguage)
+      ? (i18n.language as SupportedLanguage)
+      : DEFAULT_LANGUAGE;
+    const interval = setInterval(() => {
+      setSecondsLeft((seconds) => seconds - 1);
+    }, 1000);
+    const timeout = setTimeout(() => {
+      navigate(
+        localizedPath(
+          lang,
+          hasSession ? ROUTE_SEGMENTS.dashboard : ROUTE_SEGMENTS.signIn,
+        ),
+        { replace: true },
+      );
+    }, REDIRECT_SECONDS * 1000);
+    return () => {
+      clearInterval(interval);
+      clearTimeout(timeout);
+    };
+  }, [status, hasSession, i18n.language, navigate]);
+
   return (
     <AuthLayout>
       <div className="flex flex-col items-center gap-4 text-center">
@@ -56,6 +90,9 @@ export default function VerifyEmail() {
             <CheckCircle2 className="text-success size-12" />
             <h1 className="text-xl font-semibold">{t("verifyEmail.successTitle")}</h1>
             <p className="text-base-content/70">{t("verifyEmail.successMessage")}</p>
+            <p className="text-base-content/50 text-sm" role="status">
+              {t("verifyEmail.redirecting", { seconds: Math.max(0, secondsLeft) })}
+            </p>
             <GoHomeOrSignInLink className="btn btn-primary" />
           </>
         )}
