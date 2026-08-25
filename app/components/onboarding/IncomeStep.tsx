@@ -1,12 +1,11 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { useTranslation } from "react-i18next";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { ChipPicker } from "@/components/onboarding/ChipPicker";
 import { SliderField } from "@/components/onboarding/SliderField";
 import type { OnboardingStepProps } from "@/lib/onboarding-fields";
-import { isFieldUnset, isStepDirty } from "@/lib/onboarding-fields";
+import { isFieldUnset } from "@/lib/onboarding-fields";
 import { EMPLOYMENT_OPTIONS, STEADINESS_OPTIONS } from "@/lib/constants/options";
-import { ONBOARDING_MISSING_FIELD_DELAY_MS } from "@/lib/constants/time";
 import {
   MONTHLY_INCOME_MIN,
   MONTHLY_INCOME_MAX,
@@ -20,27 +19,17 @@ export function IncomeStep({ attempted, highlightField }: OnboardingStepProps) {
   const data = useOnboardingStore((s) => s.data);
   const setField = useOnboardingStore((s) => s.setField);
 
-  // Delay flagging missing fields after the step becomes dirty, so filling
-  // one field doesn't instantly show an error on the other. Continue still
-  // reveals errors immediately (via `attempted`).
-  const dirty = isStepDirty("income", data);
-  const [settled, setSettled] = useState(false);
-  useEffect(() => {
-    if (!dirty) {
-      setSettled(false);
-      return;
-    }
-    const timer = setTimeout(() => setSettled(true), ONBOARDING_MISSING_FIELD_DELAY_MS);
-    return () => clearTimeout(timer);
-  }, [dirty]);
-
-  const reveal = attempted || settled;
+  // A field's "missing" marker only lights up once that field itself has
+  // been touched, or once the user has tried to move on ("attempted") — so
+  // filling in monthly income doesn't flash a "missing" error on the
+  // still-untouched employment status chip, and vice versa.
+  const [incomeTouched, setIncomeTouched] = useState(false);
   const statusMissing =
-    reveal && isFieldUnset("employment_status", data.employment_status)
+    attempted && isFieldUnset("employment_status", data.employment_status)
       ? t("onboarding.income.errors.statusRequired")
       : undefined;
   const incomeMissing =
-    reveal && isFieldUnset("monthly_income", data.monthly_income)
+    (attempted || incomeTouched) && isFieldUnset("monthly_income", data.monthly_income)
       ? t("onboarding.income.errors.monthlyIncomeRequired")
       : undefined;
 
@@ -63,7 +52,10 @@ export function IncomeStep({ attempted, highlightField }: OnboardingStepProps) {
       <SliderField
         label={t("onboarding.income.monthlyIncome")}
         value={Number(data.monthly_income) || 0}
-        onChange={(v) => setField("monthly_income", String(v))}
+        onChange={(v) => {
+          setIncomeTouched(true);
+          setField("monthly_income", String(v));
+        }}
         min={MONTHLY_INCOME_MIN}
         max={MONTHLY_INCOME_MAX}
         step={MONTHLY_INCOME_STEP}

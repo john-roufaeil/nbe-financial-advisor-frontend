@@ -8,7 +8,6 @@ export const DEBOUNCE_DELAY_MS = 300;
 export const MOCK_LATENCY_MS = 400;
 export const MOCK_CHAT_LATENCY_MS = 900;
 export const QUERY_STALE_TIME_MS = 30_000;
-export const ONBOARDING_MISSING_FIELD_DELAY_MS = 3000;
 // A real reply took ~8s in testing; generous headroom above that before
 // treating a silent, no-reply-ever conversation as failed rather than just slow.
 export const CHAT_REPLY_TIMEOUT_MS = 45_000;

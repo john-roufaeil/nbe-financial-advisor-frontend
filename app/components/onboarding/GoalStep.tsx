@@ -4,7 +4,7 @@ import { X } from "lucide-react";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
 import { SliderField } from "@/components/onboarding/SliderField";
 import type { STEP_FIELDS, OnboardingStepProps } from "@/lib/onboarding-fields";
-import { isFieldUnset, isStepDirty } from "@/lib/onboarding-fields";
+import { isFieldUnset } from "@/lib/onboarding-fields";
 import { useHighlightRef } from "@/lib/use-highlight-ref";
 import {
   GOAL_TARGET_MAX,
@@ -26,20 +26,27 @@ export function GoalStep({ attempted, highlightField }: OnboardingStepProps) {
   const nameHighlighted = highlightField === "goal_name";
   const nameHighlightRef = useHighlightRef<HTMLLabelElement>(nameHighlighted);
 
-  // Once the user has started this step (or tried to leave it incomplete),
-  // every remaining unfilled field is flagged — the step is "all or nothing"
-  // (see onboarding.tsx's Continue gating), so a partial fill needs to show
-  // exactly what's still missing.
-  const dirty = isStepDirty("goal", data) || attempted;
+  // A field's "missing" marker only lights up once *that* field has been
+  // touched, or once the user has tried to move on ("attempted") — touching
+  // one field must not flag its still-untouched siblings as missing, since
+  // that reads as the form yelling at you for fields you haven't gotten to
+  // yet (see onboarding.tsx's Continue gating for the step-level "all or
+  // nothing" check, which is separate from this per-field display).
+  const [nameTouched, setNameTouched] = useState(false);
+  const [amountTouched, setAmountTouched] = useState(false);
+  const [monthsTouched, setMonthsTouched] = useState(false);
+  const touched: Record<(typeof STEP_FIELDS)["goal"][number], boolean> = {
+    goal_name: nameTouched,
+    goal_target_amount: amountTouched,
+    goal_target_months: monthsTouched,
+  };
   const missing = (field: (typeof STEP_FIELDS)["goal"][number]) =>
-    dirty && isFieldUnset(field, data[field]);
+    (attempted || touched[field]) && isFieldUnset(field, data[field]);
 
   // Both sliders default to 0 rather than requiring an explicit first pick,
   // so 0 alone doesn't mean "invalid" — only once the user has actually
   // moved the slider (or typed into its number box) and landed on 0 is that
   // a real answer worth flagging, since 0 isn't a usable target/duration.
-  const [amountTouched, setAmountTouched] = useState(false);
-  const [monthsTouched, setMonthsTouched] = useState(false);
   const amountValue = Number(data.goal_target_amount) || 0;
   const monthsValue = Number(data.goal_target_months) || 0;
   // Only show the range error once the generic "missing" error (below) no
@@ -73,6 +80,7 @@ export function GoalStep({ attempted, highlightField }: OnboardingStepProps) {
             type="text"
             value={data.goal_name}
             onChange={(e) => setField("goal_name", e.target.value)}
+            onBlur={() => setNameTouched(true)}
             placeholder={t("onboarding.goal.namePlaceholder")}
             maxLength={20}
             className="min-w-0 grow"
