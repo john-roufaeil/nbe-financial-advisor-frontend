@@ -33,8 +33,6 @@ export const API_ENDPOINTS = {
   authPasswordResetConfirm: "/auth/password-reset/confirm",
   authBankLoginInitiate: "/auth/bank-login/initiate",
   authBankLoginCallback: "/auth/bank-login/callback",
-  bankConnections: "/bank-connections",
-  bankConnectionCallback: (id: string) => `/bank-connections/${id}/callback`,
   adminAuthLogin: "/admin/auth/login",
   adminAuthRefresh: "/admin/auth/refresh",
   adminAuthLogout: "/admin/auth/logout",

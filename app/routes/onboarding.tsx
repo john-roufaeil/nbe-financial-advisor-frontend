@@ -237,7 +237,7 @@ export default function Onboarding() {
           name: data.name,
           email: data.email,
           password,
-          phone: data.phone.trim() ? data.phone : undefined,
+          phone: data.phone,
         });
         completedRef.current.signup = true;
       }

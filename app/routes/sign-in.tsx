@@ -16,7 +16,6 @@ import { useLogin, useBankLoginInitiate } from "@/queries/auth";
 import { useCheckProfileCompletion } from "@/queries/profile";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 import { useBankOAuthPopup } from "@/lib/use-bank-oauth-popup";
-import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 
 /** Slug of the (currently only) registered bank connector — see services/bank_connectors/mock_bank.py on the backend. */
 const MOCK_BANK_PROVIDER_SLUG = "mock_bank";
@@ -85,13 +84,6 @@ export default function SignIn() {
 
   async function onBankLogin() {
     try {
-      // A bank-login attempt is never a connect-a-bank confirmation — clear
-      // any leftover flag from an earlier, abandoned "connect a bank"
-      // attempt before starting, as a second line of defense alongside
-      // bank-connect-callback.tsx's own read-and-clear (some browsers can
-      // resurrect a stale popup/JS instance on a reused named window rather
-      // than doing a truly fresh navigation, which that alone can't catch).
-      sessionStorage.removeItem(STORAGE_KEYS.pendingBankConnectionId);
       const { authorize_url } = await bankLoginInitiate.mutateAsync({
         provider_slug: MOCK_BANK_PROVIDER_SLUG,
       });

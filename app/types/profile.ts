@@ -1,5 +1,7 @@
 /** Fields collected at onboarding step 2 — PATCH /users/me sends only these. */
 export interface UpdateProfileBody {
+  name?: string;
+  phone?: string;
   employment_status?: string;
   monthly_income?: string;
   income_steadiness?: string;
