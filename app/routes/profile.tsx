@@ -1,3 +1,4 @@
+import { useRef } from "react";
 import { useNavigate, useParams } from "react-router";
 import { useTranslation } from "react-i18next";
 import { LogOut, ShieldAlert, User } from "lucide-react";
@@ -7,11 +8,14 @@ import { IssuesSection } from "@/components/profile/IssuesSection";
 import { AccountManagementSection } from "@/components/profile/AccountManagementSection";
 import { PageBanner } from "@/components/shared/layout/PageBanner";
 import { PreferencesMenu } from "@/components/shared/preferences/PreferencesMenu";
+import { Button } from "@/components/shared/Button";
+import { PrivacyPolicyModal } from "@/components/shared/modals/PrivacyPolicyModal";
 import { useAuthStore } from "@/store/use-auth-store";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useLogout } from "@/queries/auth";
 import { useMe } from "@/queries/profile";
-import { useConsentStatus } from "@/queries/consent";
+import { useConsentStatus, useGrantConsent } from "@/queries/consent";
+import { CURRENT_POLICY_VERSION } from "@/types/consent";
 import { localizedPath } from "@/lib/constants/routes";
 
 export default function Profile() {
@@ -36,6 +40,8 @@ export default function Profile() {
   const { isActive: hasAgreedToTerms, isPending: termsPending } =
     useConsentStatus("terms_of_service");
   const isRestricted = !termsPending && !hasAgreedToTerms;
+  const grantTerms = useGrantConsent();
+  const termsPolicyRef = useRef<HTMLDialogElement>(null);
 
   function handleSignOut() {
     // Best-effort: invalidate the refresh token server-side.
@@ -66,10 +72,33 @@ export default function Profile() {
       {isRestricted && (
         <div
           role="alert"
-          className="alert border-warning/30 bg-warning/10 animate-entry items-start gap-3 sm:items-center"
+          className="alert border-warning/30 bg-warning/10 animate-entry flex-col items-start gap-3 sm:flex-row sm:items-center"
         >
           <ShieldAlert className="text-warning size-5 shrink-0" />
           <span className="flex-1 text-sm">{t("settings.termsDeclinedBanner")}</span>
+          <div className="flex items-center gap-2 self-end sm:self-auto">
+            <button
+              type="button"
+              className="btn btn-ghost btn-sm"
+              onClick={() => termsPolicyRef.current?.showModal()}
+            >
+              {t("consent.requiredOverlay.readPolicy")}
+            </button>
+            <Button
+              type="button"
+              className="btn btn-primary btn-sm"
+              loading={grantTerms.isPending}
+              onClick={() =>
+                grantTerms.mutate({
+                  consentType: "terms_of_service",
+                  policyVersion: CURRENT_POLICY_VERSION,
+                })
+              }
+            >
+              {t("settings.termsDeclinedBannerAction")}
+            </Button>
+          </div>
+          <PrivacyPolicyModal ref={termsPolicyRef} type="terms_of_service" />
         </div>
       )}
       {showVerifyEmail && <VerifyEmailBanner />}

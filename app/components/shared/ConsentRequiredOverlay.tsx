@@ -1,8 +1,10 @@
+import { useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { Lock } from "lucide-react";
 import { useGrantConsent } from "@/queries/consent";
 import { CURRENT_POLICY_VERSION } from "@/types/consent";
 import { Button } from "@/components/shared/Button";
+import { PrivacyPolicyModal } from "@/components/shared/modals/PrivacyPolicyModal";
 
 /**
  * Stands in for whatever needs data_processing consent (core/permissions.py's
@@ -14,6 +16,7 @@ import { Button } from "@/components/shared/Button";
 export function ConsentRequiredOverlay({ className = "" }: { className?: string }) {
   const { t } = useTranslation();
   const grant = useGrantConsent();
+  const policyRef = useRef<HTMLDialogElement>(null);
 
   return (
     <div
@@ -25,19 +28,29 @@ export function ConsentRequiredOverlay({ className = "" }: { className?: string 
       <p className="text-base-content/70 w-4/5 text-sm text-balance">
         {t("consent.requiredOverlay.message")}
       </p>
-      <Button
-        type="button"
-        className="btn btn-primary btn-sm"
-        loading={grant.isPending}
-        onClick={() =>
-          grant.mutate({
-            consentType: "data_processing",
-            policyVersion: CURRENT_POLICY_VERSION,
-          })
-        }
-      >
-        {t("consent.requiredOverlay.action")}
-      </Button>
+      <div className="flex items-center gap-2">
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={() => policyRef.current?.showModal()}
+        >
+          {t("consent.requiredOverlay.readPolicy")}
+        </button>
+        <Button
+          type="button"
+          className="btn btn-primary btn-sm"
+          loading={grant.isPending}
+          onClick={() =>
+            grant.mutate({
+              consentType: "data_processing",
+              policyVersion: CURRENT_POLICY_VERSION,
+            })
+          }
+        >
+          {t("consent.requiredOverlay.action")}
+        </Button>
+      </div>
+      <PrivacyPolicyModal ref={policyRef} type="data_processing" />
     </div>
   );
 }
