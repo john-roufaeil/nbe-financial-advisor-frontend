@@ -12,7 +12,7 @@ export interface SignupBody {
   name: string;
   email: string;
   password: string;
-  phone?: string;
+  phone: string;
 }
 
 export interface LoginBody {

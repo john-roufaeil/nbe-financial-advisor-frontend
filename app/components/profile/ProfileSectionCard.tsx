@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { Pencil, Check, X, type User, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { isValidPhoneNumber } from "react-phone-number-input";
 import "react-phone-number-input/style.css";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -13,6 +12,7 @@ import { Tooltip } from "@/components/shared/Tooltip";
 import { FieldEditor, type FormFieldConfig } from "@/components/shared/forms/FieldEditor";
 import { FieldValue } from "@/components/shared/forms/FieldValue";
 import { NAME_PATTERN } from "@/lib/name-validation";
+import { PHONE_PATTERN } from "@/lib/phone-validation";
 import type { UpdateProfileBody, User as UserType } from "@/types/profile";
 
 // `has_password`/`email_verified` excluded: internal booleans, not editable
@@ -49,7 +49,13 @@ export function ProfileSectionCard({
     const phoneField = section.fields.find((f) => f.phone);
     if (phoneField) {
       const value = draft[phoneField.key] ?? "";
-      if (value && !isValidPhoneNumber(value)) {
+      if (!value.trim()) {
+        ctx.addIssue({
+          code: "custom",
+          path: [phoneField.key],
+          message: t("common.sections.errors.phoneRequired"),
+        });
+      } else if (!PHONE_PATTERN.test(value.trim())) {
         ctx.addIssue({
           code: "custom",
           path: [phoneField.key],

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import { useTranslation } from "react-i18next";
 import { Link, useParams } from "react-router";
-import PhoneInput, { isValidPhoneNumber } from "react-phone-number-input";
+import PhoneInput from "react-phone-number-input";
 import flags from "react-phone-number-input/flags";
 import "react-phone-number-input/style.css";
 import { useOnboardingStore } from "@/store/use-onboarding-store";
@@ -12,6 +12,7 @@ import { PrivacyPolicyModal } from "@/components/shared/modals/PrivacyPolicyModa
 import { PasswordInput } from "@/components/shared/forms/PasswordInput";
 import { RequiredMark } from "@/components/onboarding/RequiredMark";
 import { NAME_PATTERN } from "@/lib/name-validation";
+import { PHONE_PATTERN } from "@/lib/phone-validation";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
 
 interface AccountFormValues {
@@ -77,9 +78,11 @@ export function AccountStep({
           .min(1, t("onboarding.account.errors.emailRequired"))
           .email(t("onboarding.account.errors.emailInvalid")),
         password: z.string().min(8, t("onboarding.account.errors.passwordTooShort")),
-        phone: z.string().refine((value) => !value || isValidPhoneNumber(value), {
-          message: t("onboarding.account.errors.phoneInvalid"),
-        }),
+        phone: z
+          .string()
+          .trim()
+          .min(1, t("onboarding.account.errors.phoneRequired"))
+          .regex(PHONE_PATTERN, t("onboarding.account.errors.phoneInvalid")),
       }),
     [t],
   );
@@ -191,7 +194,10 @@ export function AccountStep({
         )}
       </label>
       <label className="flex flex-col gap-1">
-        <span className="label-text text-xs">{t("onboarding.account.phone")}</span>
+        <span className="label-text text-xs">
+          {t("onboarding.account.phone")}
+          <RequiredMark />
+        </span>
         <Controller
           name="phone"
           control={control}

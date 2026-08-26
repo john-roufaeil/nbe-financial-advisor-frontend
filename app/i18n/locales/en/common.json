@@ -102,7 +102,8 @@
         "title": "Personal & financial details"
       },
       "errors": {
-        "phoneInvalid": "Enter a valid phone number.",
+        "phoneRequired": "Enter your phone number.",
+        "phoneInvalid": "Use international format, for example +201001234567.",
         "nameRequired": "Enter your name.",
         "nameInvalid": "Name can only contain letters and spaces.",
         "incomeNegative": "Monthly income can't be negative."

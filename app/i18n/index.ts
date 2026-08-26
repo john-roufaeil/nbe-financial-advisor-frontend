@@ -18,7 +18,6 @@ import enShared from "./locales/en/common.json";
 import enSettings from "./locales/en/settings.json";
 import enNotFound from "./locales/en/notFound.json";
 import enAdmin from "./locales/en/admin.json";
-import enBankConnections from "./locales/en/bankConnections.json";
 import enAnomalies from "./locales/en/anomalies.json";
 import enBudget from "./locales/en/budget.json";
 
@@ -38,7 +37,6 @@ import arShared from "./locales/ar/common.json";
 import arSettings from "./locales/ar/settings.json";
 import arNotFound from "./locales/ar/notFound.json";
 import arAdmin from "./locales/ar/admin.json";
-import arBankConnections from "./locales/ar/bankConnections.json";
 import arAnomalies from "./locales/ar/anomalies.json";
 import arBudget from "./locales/ar/budget.json";
 
@@ -69,7 +67,6 @@ const enCommon = {
   ...enSettings,
   ...enNotFound,
   ...enAdmin,
-  ...enBankConnections,
   ...enAnomalies,
   ...enBudget,
 };
@@ -91,7 +88,6 @@ const arCommon = {
   ...arSettings,
   ...arNotFound,
   ...arAdmin,
-  ...arBankConnections,
   ...arAnomalies,
   ...arBudget,
 };

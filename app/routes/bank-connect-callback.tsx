@@ -3,8 +3,8 @@ import { AuthLayout } from "@/components/shared/layout/AuthLayout";
 import { usePageTitle } from "@/lib/use-page-title";
 import { useBankOAuthCallback } from "@/lib/use-bank-oauth-callback";
 
-/** Landing page for both bank-OAuth flows (bank login and connect-a-bank) —
- * see useBankOAuthCallback for the actual callback handling. */
+/** OAuth redirect landing page for mock-bank sign-in. The URL name is retained
+ * because it is the registered provider redirect URI. */
 export default function BankConnectCallback() {
   const { t } = useTranslation();
   usePageTitle(t("common.addAccount.connecting"));

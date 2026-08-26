@@ -8,15 +8,11 @@ import {
 import { toastError } from "@/lib/toast";
 
 /**
- * Shared orchestration for the two bank-OAuth popup flows (bank login on
- * sign-in, connect-a-bank on the accounts page) — deduped out of sign-in.tsx
- * and BankAccountsCard.tsx, which differed only in which endpoint supplies
- * `authorize_url`, any sessionStorage bookkeeping around it, and what to do
- * with a successful result (auth store vs. React Query cache invalidation).
- * Those stay the caller's responsibility; this hook owns opening the popup
- * (or falling back to a full-tab redirect if it was blocked), listening for
- * its result message, and watching for it closing without ever delivering
- * one.
+ * Orchestration for bank sign-in's OAuth popup. The sign-in route supplies
+ * `authorize_url` and owns the successful auth-store update; this hook owns
+ * opening the popup (or falling back to a full-tab redirect if it was
+ * blocked), listening for its result message, and watching for it closing
+ * without ever delivering one.
  */
 export function useBankOAuthPopup<K extends BankOAuthResult["kind"]>(
   kind: K,

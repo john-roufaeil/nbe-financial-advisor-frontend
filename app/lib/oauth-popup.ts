@@ -1,7 +1,6 @@
 /**
- * Shared plumbing for the bank OAuth+OTP flows (sign-in and connect-a-bank),
- * both of which send the user to the bank's own hosted consent page and need
- * a result back. A popup (rather than a full-page redirect) keeps the app
+ * Popup plumbing for mock-bank OAuth+OTP sign-in. A popup (rather than a
+ * full-page redirect) keeps the app
  * mounted in the original tab, so its in-memory-only access token and React
  * Query cache survive — a full-tab redirect there and back would lose both.
  */
@@ -22,9 +21,7 @@ export function openOAuthPopup(url: string, name: string): Window | null {
 
 export type BankOAuthResult =
   | { kind: "bank-login"; ok: true; accessToken: string }
-  | { kind: "bank-login"; ok: false }
-  | { kind: "bank-connect"; ok: true }
-  | { kind: "bank-connect"; ok: false };
+  | { kind: "bank-login"; ok: false };
 
 /** Called from inside the popup, once the provider has redirected back to it, to hand the result to the opener. */
 export function postOAuthResult(result: BankOAuthResult) {
@@ -69,6 +66,6 @@ export function isBankOAuthResult(
     event.origin === window.location.origin &&
     !!event.data &&
     typeof event.data === "object" &&
-    (event.data.kind === "bank-login" || event.data.kind === "bank-connect")
+    event.data.kind === "bank-login"
   );
 }
