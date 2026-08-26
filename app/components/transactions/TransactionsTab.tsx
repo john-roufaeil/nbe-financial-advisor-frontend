@@ -1,7 +1,11 @@
 import { forwardRef } from "react";
 import { Receipt } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useTransactions, useDeleteTransaction } from "@/queries/transactions";
+import {
+  useTransactions,
+  useDeleteTransaction,
+  useBulkDeleteTransactions,
+} from "@/queries/transactions";
 import { useCategories } from "@/queries/categories";
 import { useAccounts } from "@/queries/accounts";
 import { getBankCode, getBankName } from "@/lib/banks";
@@ -11,7 +15,9 @@ import { TransactionDetailModal } from "@/components/transactions/TransactionDet
 import { TransactionCard } from "@/components/transactions/TransactionCard";
 import { DataToolbar } from "@/components/shared/layout/DataToolbar";
 import { PagedListSection } from "@/components/shared/layout/PagedListSection";
+import { SelectionBar } from "@/components/shared/layout/SelectionBar";
 import { useConfirmStore } from "@/store/use-confirm-store";
+import { useRowSelection } from "@/lib/use-row-selection";
 import { useTransactionFilters } from "@/lib/use-transaction-filters";
 import { useConsumeTxFilterState } from "@/lib/use-consume-tx-filter-state";
 import {
@@ -73,7 +79,7 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
       }
     }
 
-    const { data, isPending, isError, isFetching, refetch } = useTransactions({
+    const transactionFilters = {
       type: f.filter === "all" ? undefined : f.filter,
       category: f.category || undefined,
       accountId: f.account || undefined,
@@ -87,8 +93,13 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
       sort: f.sort,
       offset: (f.page - 1) * f.pageSize,
       limit: f.pageSize,
-    });
+    };
+    const { data, isPending, isError, isFetching, refetch } =
+      useTransactions(transactionFilters);
     const deleteTransaction = useDeleteTransaction();
+    const bulkDeleteTransactions = useBulkDeleteTransactions();
+    const selection = useRowSelection(JSON.stringify(transactionFilters));
+    const pageIds = (data?.items ?? []).map((tr) => tr.id);
 
     return (
       <PagedListSection
@@ -132,6 +143,33 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
             onClearAll={f.clearAllFilters}
           />
         }
+        selectionBar={
+          <SelectionBar
+            selectedCount={selection.selected.size}
+            totalOnPage={pageIds.length}
+            allOnPageSelected={
+              pageIds.length > 0 && pageIds.every((id) => selection.selected.has(id))
+            }
+            onSelectAll={() =>
+              selection.selected.size === pageIds.length
+                ? selection.clear()
+                : selection.selectAll(pageIds)
+            }
+            onClear={selection.clear}
+            deletePending={bulkDeleteTransactions.isPending}
+            onDeleteSelected={() => {
+              const ids = Array.from(selection.selected);
+              confirm({
+                title: t("confirm.deleteTransactionsTitle", { count: ids.length }),
+                message: t("confirm.deleteMessage"),
+                onConfirm: () =>
+                  bulkDeleteTransactions.mutate(ids, {
+                    onSuccess: () => selection.clear(),
+                  }),
+              });
+            }}
+          />
+        }
         isPending={isPending}
         isFetching={isFetching}
         isError={isError}
@@ -145,6 +183,8 @@ export const TransactionsTab = forwardRef<TransactionsTabHandle>(
             view={viewMode}
             onOpen={() => modals.openDetail(tr)}
             onEdit={() => modals.openEdit(tr)}
+            selected={selection.selected.has(tr.id)}
+            onToggleSelect={() => selection.toggle(tr.id)}
             onDelete={() =>
               confirm({
                 title: t("confirm.deleteTransactionTitle"),

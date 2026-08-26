@@ -60,3 +60,11 @@ export function useDeleteTransaction() {
     successToastKey: "toast.transactionDeleted",
   });
 }
+
+export function useBulkDeleteTransactions() {
+  return useInvalidatingMutation({
+    mutationFn: (ids: string[]) => transactionsApi.bulkDeleteTransactions(ids),
+    invalidates: TRANSACTION_INVALIDATES,
+    successToastKey: "toast.transactionsDeleted",
+  });
+}

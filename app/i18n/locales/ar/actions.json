@@ -20,6 +20,9 @@
     "increase": "زيادة {{name}}",
     "decrease": "إنقاص {{name}}",
     "yes": "نعم",
-    "no": "لا"
+    "no": "لا",
+    "selectAll": "تحديد الكل ({{count}})",
+    "deselectAll": "إلغاء تحديد الكل",
+    "deleteSelected": "حذف المحدد"
   }
 }

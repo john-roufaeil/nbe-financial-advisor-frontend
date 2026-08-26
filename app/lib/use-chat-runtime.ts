@@ -11,10 +11,6 @@ import { useChatStore } from "@/store/use-chat-store";
 import { useChatStopStore } from "@/store/use-chat-stop-store";
 import { useConversationTitleStore } from "@/store/use-conversation-title-store";
 import { CHAT_MESSAGE_MAX_LENGTH } from "@/lib/constants/limits";
-import {
-  createChatAttachmentsAdapter,
-  sendPendingChatAttachments,
-} from "@/lib/attachments";
 import { updateMessageWidget } from "@/api/chat";
 import {
   chatKeys,
@@ -38,10 +34,9 @@ import type { ChatConversation, ChatMessage } from "@/types/chat";
 const NO_ARCHIVED_THREADS: ExternalStoreThreadListAdapter["archivedThreads"] = [];
 
 /**
- * Resolves the conversation to send/upload into, creating one on first use.
+ * Resolves the conversation to send into, creating one on first use.
  * Reads/writes the store directly (rather than the subscribed value) so the
- * returned function has a stable identity across renders — callers that
- * memoize on it (the attachments adapter) don't get rebuilt every render.
+ * returned function has a stable identity across renders.
  */
 function useEnsureConversation() {
   const createConversation = useCreateConversation();
@@ -68,17 +63,10 @@ export function useSendChatMessage() {
 }
 
 /** assistant-ui only ever gives `AppendMessage.content[0]` as text when a text
- * part exists at all — an attachment-only send (no caption typed) has no
- * text part, so this must not assume index 0 is text. */
+ * part exists at all, so this must not assume index 0 is text. */
 function extractText(message: AppendMessage): string {
   const part = message.content.find((c) => c.type === "text");
   return part && "text" in part ? part.text : "";
-}
-
-function extractAttachments(message: AppendMessage) {
-  return message.attachments
-    ?.filter((a) => a.type === "image" || a.type === "document")
-    .map((a) => ({ id: a.id, type: a.type as "image" | "document", name: a.name }));
 }
 
 /**
@@ -158,32 +146,11 @@ export function useAppChatRuntime(active = true) {
     }
   }, [currentConversationId, messages, derivedTitles, setConversationTitle]);
 
-  const attachmentsAdapter = useMemo(() => createChatAttachmentsAdapter(), []);
-
   const isRunning =
     !isStoppedForCurrent && (sendMessage.isPending || isAwaitingReply(messages));
 
   const onNew = async (message: AppendMessage) => {
     const text = extractText(message);
-    const attachments = extractAttachments(message);
-
-    // A send that carries an attachment is uploaded HERE (not in the adapter's
-    // send()), because this is the one place that has both the stashed file(s)
-    // and the caption `text` — for every send path (Enter and button), unlike
-    // the composer's button-only text snapshot. The upload records the user's
-    // own message (the caption, or the file name when blank) followed by the
-    // "I've started processing" announcement — one request, no separate racing
-    // send. The typed caption is NOT also sent as its own chat message.
-    if (attachments?.length) {
-      const conversationId = await ensureConversation();
-      await sendPendingChatAttachments(
-        conversationId,
-        text,
-        attachments.map((a) => a.id),
-        queryClient,
-      );
-      return;
-    }
 
     if (!text.trim()) {
       throw new Error("Only text messages are supported for now");
@@ -289,17 +256,6 @@ export function useAppChatRuntime(active = true) {
       role: m.role,
       id: m.id,
       createdAt: new Date(m.createdAt),
-      ...(m.attachments?.length
-        ? {
-            attachments: m.attachments.map((a) => ({
-              id: a.id,
-              type: a.type,
-              name: a.name,
-              status: { type: "complete" as const },
-              content: [{ type: "text" as const, text: a.name }],
-            })),
-          }
-        : {}),
       content: [
         ...(m.text ? [{ type: "text" as const, text: m.text }] : []),
         // A tool-call part on a non-assistant message hard-crashes
@@ -322,7 +278,6 @@ export function useAppChatRuntime(active = true) {
     }),
     adapters: {
       threadList: threadListAdapter,
-      attachments: attachmentsAdapter,
     },
   });
 }

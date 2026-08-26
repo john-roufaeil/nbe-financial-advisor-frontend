@@ -205,6 +205,19 @@ export async function deleteBankStatement(id: string): Promise<void> {
   await apiClient.delete(API_ENDPOINTS.statement(id));
 }
 
+interface BulkDeleteResponse {
+  deleted: string[];
+  skipped: { id: string; reason: string }[];
+}
+
+export async function bulkDeleteBankStatements(ids: string[]): Promise<string[]> {
+  const res = await apiClient.post<BulkDeleteResponse>(
+    API_ENDPOINTS.statementsBulkDelete,
+    { ids },
+  );
+  return res.data.deleted;
+}
+
 /**
  * Retry/resume a stalled pipeline. Targeting a stage further out cascades through
  * the intermediate ones. 422 with error.code `already_approved`,

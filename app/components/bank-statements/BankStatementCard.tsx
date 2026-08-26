@@ -36,10 +36,14 @@ export function BankStatementCard({
   doc,
   view,
   onOpen,
+  selected,
+  onToggleSelect,
 }: {
   doc: BankStatement;
   view: ViewMode;
   onOpen: () => void;
+  selected: boolean;
+  onToggleSelect: () => void;
 }) {
   const { t } = useTranslation();
   const deleteBankStatement = useDeleteBankStatement();
@@ -65,6 +69,17 @@ export function BankStatementCard({
   const statementName = doc.name || t("bankStatements.fallbackName");
   const deleteLabel = t("actions.delete", { name: statementName });
   const viewDetailsLabel = t("actions.viewDetails", { name: statementName });
+
+  const checkbox = (
+    <input
+      type="checkbox"
+      className="checkbox checkbox-sm relative z-10 shrink-0"
+      checked={selected}
+      onChange={onToggleSelect}
+      onClick={(e) => e.stopPropagation()}
+      aria-label={statementName}
+    />
+  );
 
   const deleteButton = (
     <Tooltip content={deleteLabel} className="relative z-10 shrink-0">
@@ -92,7 +107,10 @@ export function BankStatementCard({
         activateLabel={viewDetailsLabel}
         className={`border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer flex-col rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${isCompact ? "gap-2 p-2" : "gap-3 p-3"}`}
       >
-        {logoAndText}
+        <div className="flex items-center gap-3">
+          {checkbox}
+          {logoAndText}
+        </div>
         <div className="border-base-200 flex items-center gap-2 border-t pt-2">
           {status}
           <div className="ms-auto">{deleteButton}</div>
@@ -107,6 +125,7 @@ export function BankStatementCard({
       activateLabel={viewDetailsLabel}
       className={`border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer items-center rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${isCompact ? "gap-2 p-2" : "gap-3 p-3"}`}
     >
+      {checkbox}
       {logoAndText}
       {status}
       {deleteButton}

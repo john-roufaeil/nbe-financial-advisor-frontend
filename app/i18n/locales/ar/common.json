@@ -43,6 +43,9 @@
       "other_income": "دخل"
     },
     "filtersLabel": "الفلاتر",
+    "selection": {
+      "count": "تم تحديد {{count}}"
+    },
     "amountMin": "الحد الأدنى للمبلغ",
     "amountMax": "الحد الأقصى للمبلغ",
     "sort": {

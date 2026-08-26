@@ -4,7 +4,7 @@ import {
   ActionBarPrimitive,
   useMessage,
 } from "@assistant-ui/react";
-import { Copy, Check, Bot, Image as ImageIcon, FileText, Paperclip } from "lucide-react";
+import { Copy, Check, Bot } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { chatToolComponents } from "@/components/chat/tools";
 import { ChatFeedbackButton } from "@/components/chat/ChatFeedbackButton";
@@ -19,39 +19,6 @@ import { useMessages } from "@/queries/chat";
 import { useSendChatMessage } from "@/lib/use-chat-runtime";
 import { useDisplayPreferencesStore } from "@/store/use-display-preferences-store";
 import { formatTime } from "@/lib/format";
-
-function MessageAttachmentChip({
-  attachment,
-}: {
-  attachment: { type: string; name: string };
-}) {
-  const Icon = attachment.type === "image" ? ImageIcon : FileText;
-  return (
-    <span className="bg-primary-content/10 flex max-w-full items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs">
-      <Icon className="size-3.5 shrink-0" />
-      <span className="truncate">{attachment.name}</span>
-    </span>
-  );
-}
-
-// The backend records a chat-uploaded statement as a user message whose text is
-// a "📎 <filename>" line (plus the caption below, if any) — a stopgap until the
-// message model carries real attachments. Pull that line out and render it as a
-// chip that reads as clickable; wiring an actual click target waits on that
-// backend change.
-const FILE_LINE_PREFIX = /^📎\s*/;
-
-function UserUploadChip({ name }: { name: string }) {
-  return (
-    <span
-      title={name}
-      className="bg-primary-content/10 hover:bg-primary-content/20 group flex max-w-full cursor-pointer items-center gap-1.5 rounded-full px-2.5 py-1.5 text-xs transition-colors"
-    >
-      <Paperclip className="size-3.5 shrink-0" />
-      <span className="truncate group-hover:underline">{name}</span>
-    </span>
-  );
-}
 
 /** Shared by both action bars below — assistant-ui's ActionBarPrimitive.Copy
  * reads from the nearest MessagePrimitive.Root, so it works unchanged
@@ -109,16 +76,7 @@ export function UserMessage() {
   const highlightedId = useMessageHighlightStore((s) => s.highlightedId);
   const highlightNonce = useMessageHighlightStore((s) => s.nonce);
   const isHighlighted = highlightedId === id;
-
-  // Split the "📎 <filename>" line(s) the upload flow prepends off from the rest
-  // of the text, so the file renders as a chip above the caption (a plain text
-  // message has no such line and just renders as the caption).
   const text = content.map((p) => (p.type === "text" ? p.text : "")).join("");
-  const lines = text.split("\n");
-  const fileNames = lines
-    .filter((l) => FILE_LINE_PREFIX.test(l))
-    .map((l) => l.replace(FILE_LINE_PREFIX, ""));
-  const caption = lines.filter((l) => !FILE_LINE_PREFIX.test(l)).join("\n");
 
   return (
     <MessagePrimitive.Root id={`msg-${id}`} className="flex justify-end">
@@ -135,16 +93,8 @@ export function UserMessage() {
             isHighlighted ? "animate-message-highlight" : ""
           }`}
         >
-          <div className="flex flex-wrap gap-1.5 pb-2 empty:hidden">
-            <MessagePrimitive.Attachments>
-              {({ attachment }) => <MessageAttachmentChip attachment={attachment} />}
-            </MessagePrimitive.Attachments>
-            {fileNames.map((name, i) => (
-              <UserUploadChip key={i} name={name} />
-            ))}
-          </div>
-          {caption && (
-            <div className="wrap-anywhere whitespace-pre-wrap select-text">{caption}</div>
+          {text && (
+            <div className="wrap-anywhere whitespace-pre-wrap select-text">{text}</div>
           )}
         </div>
         <span className="text-base-content/40 mt-1 px-1 text-xs">

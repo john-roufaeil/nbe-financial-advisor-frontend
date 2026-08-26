@@ -163,6 +163,20 @@ export function useDeleteBankStatement() {
   });
 }
 
+export function useBulkDeleteBankStatements() {
+  return useInvalidatingMutation({
+    mutationFn: (ids: string[]) => bankStatementsApi.bulkDeleteBankStatements(ids),
+    removes: (ids) => ids.map((id) => bankStatementKeys.detail(id)),
+    invalidates: [
+      bankStatementKeys.all,
+      [QUERY_ROOTS.transactions],
+      [QUERY_ROOTS.accounts],
+      [QUERY_ROOTS.dashboard],
+    ],
+    successToastKey: "toast.bankStatementsDeleted",
+  });
+}
+
 /** `enabled` should reflect whether OCR has plausibly run yet (see getStatementOcrResult) — pass false while a statement is still uploading/processing to avoid a guaranteed-404 request. */
 export function useStatementOcrResult(id: string, enabled: boolean) {
   return useQuery({

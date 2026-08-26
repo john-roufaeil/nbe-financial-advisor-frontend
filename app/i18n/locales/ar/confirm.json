@@ -5,6 +5,8 @@
     "deleteGoalTitle": "هل تريد حذف هذا الهدف؟",
     "deleteAccountTitle": "هل تريد حذف هذا الحساب البنكي؟",
     "deleteMessage": "لا يمكن التراجع عن هذا الإجراء.",
-    "delete": "حذف"
+    "delete": "حذف",
+    "deleteTransactionsTitle": "هل تريد حذف {{count}} معاملات؟",
+    "deleteBankStatementsTitle": "هل تريد حذف {{count}} كشوف حساب؟"
   }
 }
