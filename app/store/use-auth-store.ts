@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { useChatStore } from "./use-chat-store";
 import { useMessageFeedbackStore } from "./use-message-feedback-store";
-import { useMessageAttachmentsStore } from "./use-message-attachments-store";
 import { useConversationTitleStore } from "./use-conversation-title-store";
 import { STORAGE_KEYS } from "@/lib/constants/storage-keys";
 import { queryClient } from "@/lib/query-client";
@@ -10,14 +9,13 @@ import { queryClient } from "@/lib/query-client";
 /**
  * Wipes cached server state tied to the previous user (e.g. chat
  * conversations) so it can't leak to the next login in the same tab or
- * browser — includes the locally-persisted feedback/attachment/title stores,
- * which are keyed by message/conversation id rather than by user.
+ * browser — includes the locally-persisted feedback/title stores, which are
+ * keyed by message/conversation id rather than by user.
  */
 function clearUserScopedState() {
   queryClient.clear();
   useChatStore.getState().setCurrentConversationId(null);
   useMessageFeedbackStore.setState({ byMessageId: {} });
-  useMessageAttachmentsStore.setState({ byMessageId: {} });
   useConversationTitleStore.setState({ byConversationId: {} });
 }
 

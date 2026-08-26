@@ -5,6 +5,8 @@
     "deleteGoalTitle": "Delete this goal?",
     "deleteAccountTitle": "Delete this bank account?",
     "deleteMessage": "This action cannot be undone.",
-    "delete": "Delete"
+    "delete": "Delete",
+    "deleteTransactionsTitle": "Delete {{count}} transactions?",
+    "deleteBankStatementsTitle": "Delete {{count}} bank statements?"
   }
 }

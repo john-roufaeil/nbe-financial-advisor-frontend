@@ -4,8 +4,10 @@ export const API_ENDPOINTS = {
   account: (id: string) => `/accounts/${id}`,
   transactions: "/transactions",
   transaction: (id: string) => `/transactions/${id}`,
+  transactionsBulkDelete: "/transactions/bulk-delete",
   statements: "/statements",
   statement: (id: string) => `/statements/${id}`,
+  statementsBulkDelete: "/statements/bulk-delete",
   statementOcrResult: (id: string) => `/statements/${id}/ocr-result`,
   statementOcrArtifactDownload: (id: string) => `/statements/${id}/ocr-result/download`,
   dashboard: "/dashboard",
@@ -52,8 +54,6 @@ export const API_ENDPOINTS = {
     `/chat/conversations/${conversationId}/messages`,
   chatMessageWidget: (conversationId: string, messageId: string) =>
     `/chat/conversations/${conversationId}/messages/${messageId}/widget`,
-  chatAttachments: (conversationId: string) =>
-    `/chat/conversations/${conversationId}/attachments`,
   feedback: "/feedback",
   anomalies: "/analytics/anomalies",
   anomaly: (id: string) => `/analytics/anomalies/${id}`,

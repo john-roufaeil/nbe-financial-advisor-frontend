@@ -198,3 +198,18 @@ export async function updateTransaction(
 export async function deleteTransaction(id: string): Promise<void> {
   await apiClient.delete(API_ENDPOINTS.transaction(id));
 }
+
+interface BulkDeleteResponse {
+  deleted: string[];
+  skipped: { id: string; reason: string }[];
+}
+
+/** Returns the ids actually deleted — an id skipped server-side (e.g. a
+ * synced account's transaction) is silently left out rather than thrown. */
+export async function bulkDeleteTransactions(ids: string[]): Promise<string[]> {
+  const res = await apiClient.post<BulkDeleteResponse>(
+    API_ENDPOINTS.transactionsBulkDelete,
+    { ids },
+  );
+  return res.data.deleted;
+}

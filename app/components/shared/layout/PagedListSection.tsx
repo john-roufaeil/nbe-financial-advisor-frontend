@@ -17,6 +17,7 @@ const VIEW_CONTAINER = {
  * then a view-aware skeleton/error/list/empty block, bottom pagination, and modals. */
 export function PagedListSection<T>({
   toolbar,
+  selectionBar,
   isPending,
   isFetching,
   isError,
@@ -35,6 +36,9 @@ export function PagedListSection<T>({
 }: {
   /** DataToolbar (or equivalent), already wired to this list's filters. */
   toolbar: ReactNode;
+  /** SelectionBar (or equivalent) — rendered below the toolbar/pagination
+   * strip, only while the list has a bulk-selection feature. */
+  selectionBar?: ReactNode;
   isPending: boolean;
   /** From the same useQuery as `total` — gates the page-clamp effect below so
    * it never fires against a mid-refetch/placeholder total. */
@@ -84,9 +88,10 @@ export function PagedListSection<T>({
 
   return (
     <div className="flex flex-1 flex-col gap-4">
-      <div className="border-base-300 bg-base-100 animate-entry rounded-xl border shadow-sm">
+      <div className="border-base-300 bg-base-100 animate-entry overflow-hidden rounded-xl border shadow-sm">
         {toolbar}
         <Pagination attached {...paginationProps} />
+        {selectionBar}
       </div>
 
       {isPending ? (

@@ -19,12 +19,16 @@ export function TransactionCard({
   onOpen,
   onEdit,
   onDelete,
+  selected,
+  onToggleSelect,
 }: {
   transaction: Transaction;
   view: ViewMode;
   onOpen: () => void;
   onEdit: () => void;
   onDelete: () => void;
+  selected: boolean;
+  onToggleSelect: () => void;
 }) {
   const { t } = useTranslation();
   const isIncome = transaction.type === "income";
@@ -47,6 +51,17 @@ export function TransactionCard({
   const density = useDisplayPreferencesStore((s) => s.density);
   const isCompact = density === "compact";
   const formatN = useNumberDisplay();
+
+  const checkbox = (
+    <input
+      type="checkbox"
+      className="checkbox checkbox-sm relative z-10 shrink-0"
+      checked={selected}
+      onChange={onToggleSelect}
+      onClick={(e) => e.stopPropagation()}
+      aria-label={transaction.title}
+    />
+  );
 
   const iconAndText = (
     <div className="flex min-w-0 flex-1 items-center gap-3">
@@ -137,7 +152,10 @@ export function TransactionCard({
         activateLabel={t("actions.viewDetails", { name: transaction.title })}
         className={`border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer flex-col rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${isCompact ? "gap-2 p-2" : "gap-3 p-3"}`}
       >
-        {iconAndText}
+        <div className="flex items-center gap-3">
+          {checkbox}
+          {iconAndText}
+        </div>
         <div className="border-base-200 flex items-center gap-2 border-t pt-2">
           {amount}
           <div className="ms-auto">{actions}</div>
@@ -152,6 +170,7 @@ export function TransactionCard({
       activateLabel={t("actions.viewDetails", { name: transaction.title })}
       className={`border-base-300 bg-base-100 hover:border-primary focus-visible:outline-primary/50 flex cursor-pointer items-center rounded-md border transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 ${isCompact ? "gap-2 p-2" : "gap-3 p-3"}`}
     >
+      {checkbox}
       {iconAndText}
       {amount}
       {actions}

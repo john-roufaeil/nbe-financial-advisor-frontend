@@ -20,6 +20,9 @@
     "increase": "Increase {{name}}",
     "decrease": "Decrease {{name}}",
     "yes": "Yes",
-    "no": "No"
+    "no": "No",
+    "selectAll": "Select all {{count}}",
+    "deselectAll": "Deselect all",
+    "deleteSelected": "Delete selected"
   }
 }

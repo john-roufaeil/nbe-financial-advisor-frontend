@@ -175,29 +175,3 @@ export async function updateMessageWidget(
   );
   return toChatMessage(res.data);
 }
-
-/**
- * Shortcut into the same statement-ingestion pipeline as `POST /statements`
- * (same 202 contract, resolved via the statement_status SSE event rather
- * than polling), tagged to this conversation. Returns the assistant message
- * announcing the upload; the referenced statement is tracked through the
- * normal bank-statements queries.
- */
-export async function uploadChatAttachment(
-  conversationId: string,
-  file: File,
-  caption?: string,
-): Promise<ChatMessage> {
-  const formData = new FormData();
-  formData.append("file", file, file.name);
-  // A caption typed alongside the file rides on THIS request so the backend can
-  // record it as the user's message — sending it separately would race the
-  // upload's "I've started processing" announcement.
-  if (caption?.trim()) formData.append("text", caption.trim());
-  const res = await apiClient.post<RawMessage>(
-    API_ENDPOINTS.chatAttachments(conversationId),
-    formData,
-    { headers: { "Content-Type": "multipart/form-data" } },
-  );
-  return toChatMessage(res.data);
-}

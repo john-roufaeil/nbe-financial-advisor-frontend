@@ -1,13 +1,19 @@
 import { useEffect, useRef, useState } from "react";
 import { FileText } from "lucide-react";
 import { useTranslation } from "react-i18next";
-import { useBankStatements } from "@/queries/bank-statements";
+import {
+  useBankStatements,
+  useBulkDeleteBankStatements,
+} from "@/queries/bank-statements";
 import { useAccounts } from "@/queries/accounts";
 import { getBankCode, getBankName } from "@/lib/banks";
 import { BankStatementDetailModal } from "@/components/bank-statements/BankStatementDetailModal";
 import { BankStatementCard } from "@/components/bank-statements/BankStatementCard";
 import { DataToolbar } from "@/components/shared/layout/DataToolbar";
 import { PagedListSection } from "@/components/shared/layout/PagedListSection";
+import { SelectionBar } from "@/components/shared/layout/SelectionBar";
+import { useConfirmStore } from "@/store/use-confirm-store";
+import { useRowSelection } from "@/lib/use-row-selection";
 import { useBankStatementFilters } from "@/lib/use-bank-statement-filters";
 
 export function BankStatementsTab() {
@@ -27,7 +33,7 @@ export function BankStatementsTab() {
     return { key: a.id, label: `${bankLabel} ${a.account_number}` };
   });
 
-  const { data, isPending, isError, isFetching, refetch } = useBankStatements({
+  const bankStatementFilters = {
     accountId: f.account || undefined,
     status: f.filter === "all" ? undefined : f.filter,
     q: f.search.trim() || undefined,
@@ -36,7 +42,13 @@ export function BankStatementsTab() {
     sort: f.sort,
     offset: (f.page - 1) * f.pageSize,
     limit: f.pageSize,
-  });
+  };
+  const { data, isPending, isError, isFetching, refetch } =
+    useBankStatements(bankStatementFilters);
+  const bulkDeleteBankStatements = useBulkDeleteBankStatements();
+  const confirm = useConfirmStore((s) => s.confirm);
+  const selection = useRowSelection(JSON.stringify(bankStatementFilters));
+  const pageIds = (data?.items ?? []).map((doc) => doc.id);
 
   function openDetail(id: string) {
     setSelectedId(id);
@@ -79,6 +91,33 @@ export function BankStatementsTab() {
           showDividers={false}
         />
       }
+      selectionBar={
+        <SelectionBar
+          selectedCount={selection.selected.size}
+          totalOnPage={pageIds.length}
+          allOnPageSelected={
+            pageIds.length > 0 && pageIds.every((id) => selection.selected.has(id))
+          }
+          onSelectAll={() =>
+            selection.selected.size === pageIds.length
+              ? selection.clear()
+              : selection.selectAll(pageIds)
+          }
+          onClear={selection.clear}
+          deletePending={bulkDeleteBankStatements.isPending}
+          onDeleteSelected={() => {
+            const ids = Array.from(selection.selected);
+            confirm({
+              title: t("confirm.deleteBankStatementsTitle", { count: ids.length }),
+              message: t("confirm.deleteMessage"),
+              onConfirm: () =>
+                bulkDeleteBankStatements.mutate(ids, {
+                  onSuccess: () => selection.clear(),
+                }),
+            });
+          }}
+        />
+      }
       isPending={isPending}
       isFetching={isFetching}
       isError={isError}
@@ -91,6 +130,8 @@ export function BankStatementsTab() {
           doc={doc}
           view={viewMode}
           onOpen={() => openDetail(doc.id)}
+          selected={selection.selected.has(doc.id)}
+          onToggleSelect={() => selection.toggle(doc.id)}
         />
       )}
       emptyIcon={FileText}

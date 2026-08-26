@@ -4,12 +4,6 @@ export interface ChatToolCall {
   result: unknown;
 }
 
-export interface ChatAttachment {
-  id: string;
-  type: "image" | "document";
-  name: string;
-}
-
 export interface ChatReference {
   targetType: string;
   targetId: string;
@@ -28,7 +22,6 @@ export interface ChatMessage {
    */
   stage?: string;
   toolCall?: ChatToolCall;
-  attachments?: ChatAttachment[];
   references?: ChatReference[];
   suggestions?: string[];
 }

@@ -8,11 +8,10 @@ import {
 import * as chatApi from "@/api/chat";
 import { QUERY_ROOTS } from "@/lib/constants/query-keys";
 import { toastApiError } from "@/lib/toast";
-import { useMessageAttachmentsStore } from "@/store/use-message-attachments-store";
 import { useChatStopStore } from "@/store/use-chat-stop-store";
 import { useChatStreamStore } from "@/store/use-chat-stream-store";
 import { CHAT_REPLY_TIMEOUT_MS } from "@/lib/constants/time";
-import type { ChatAttachment, ChatConversation, ChatMessage } from "@/types/chat";
+import type { ChatConversation, ChatMessage } from "@/types/chat";
 
 export { chatApi };
 
@@ -127,15 +126,6 @@ export function useMessages(conversationId: string | null, active = true) {
     // query the moment generate_chat_reply (core/tasks/conversations.py)
     // finishes either way.
     select: (messages) => {
-      // The server never echoes attachments back on a message (see
-      // useSendMessage) — restore them from the local store keyed by real
-      // message id, so the chip a user sent alongside a file survives the
-      // refetch that replaces the optimistic entry.
-      const stored = useMessageAttachmentsStore.getState().byMessageId;
-      const withAttachments = messages.map((m) =>
-        m.attachments?.length || !stored[m.id] ? m : { ...m, attachments: stored[m.id] },
-      );
-
       // Once stopped, a still-pending (empty-text) last message is relabeled
       // locally so isAwaitingReply() and the running/loading UI treat it as
       // finished — the real reply may still land server-side later, but this
@@ -144,8 +134,8 @@ export function useMessages(conversationId: string | null, active = true) {
         conversationId &&
         useChatStopStore.getState().stoppedConversationIds.has(conversationId)
       ) {
-        const last = withAttachments[withAttachments.length - 1];
-        if (last && isAwaitingReply(withAttachments)) {
+        const last = messages[messages.length - 1];
+        if (last && isAwaitingReply(messages)) {
           const stoppedMessage: ChatMessage = {
             id: `stopped-${conversationId}`,
             role: "assistant",
@@ -154,13 +144,13 @@ export function useMessages(conversationId: string | null, active = true) {
             stage: "complete",
           };
           return last.role === "assistant"
-            ? [...withAttachments.slice(0, -1), stoppedMessage]
-            : [...withAttachments, stoppedMessage];
+            ? [...messages.slice(0, -1), stoppedMessage]
+            : [...messages, stoppedMessage];
         }
       }
 
-      if (hasChatTimedOut(withAttachments)) {
-        const last = withAttachments[withAttachments.length - 1];
+      if (hasChatTimedOut(messages)) {
+        const last = messages[messages.length - 1];
         const timedOutMessage: ChatMessage = {
           id: `timed-out-${conversationId}`,
           role: "assistant",
@@ -169,8 +159,8 @@ export function useMessages(conversationId: string | null, active = true) {
           stage: "complete",
         };
         return last.role === "assistant"
-          ? [...withAttachments.slice(0, -1), timedOutMessage]
-          : [...withAttachments, timedOutMessage];
+          ? [...messages.slice(0, -1), timedOutMessage]
+          : [...messages, timedOutMessage];
       }
 
       // Streamed chat_token deltas (use-event-stream.ts), overlaid as a
@@ -178,8 +168,8 @@ export function useMessages(conversationId: string | null, active = true) {
       // event that replaces it via cache invalidation. Guarded on the real
       // (pre-overlay) data still being awaited, so this can't loop back on
       // its own synthetic id or resurrect a genuinely finished reply.
-      if (streamingText && isAwaitingReply(withAttachments)) {
-        const last = withAttachments[withAttachments.length - 1];
+      if (streamingText && isAwaitingReply(messages)) {
+        const last = messages[messages.length - 1];
         const streamingMessage: ChatMessage = {
           id: `streaming-${conversationId}`,
           role: "assistant",
@@ -187,11 +177,11 @@ export function useMessages(conversationId: string | null, active = true) {
           createdAt: Date.now(),
         };
         return last.role === "assistant"
-          ? [...withAttachments.slice(0, -1), streamingMessage]
-          : [...withAttachments, streamingMessage];
+          ? [...messages.slice(0, -1), streamingMessage]
+          : [...messages, streamingMessage];
       }
 
-      return withAttachments;
+      return messages;
     },
   });
 
@@ -238,14 +228,6 @@ export function useDeleteConversation() {
  * immediately, without waiting on a re-render. No success toast — a toast on
  * every chat message would be noise. Optimistically appends the user message
  * so it shows instantly instead of waiting on the round trip.
- *
- * `attachments` are display-only here (already uploaded separately via the
- * attachments adapter, which is what actually sends the file) — POST
- * .../messages/ only takes `{ content }`, so the backend has no field
- * linking a specific text message to a file. `onSuccess` records them into
- * useMessageAttachmentsStore against the real message id the backend hands
- * back, so useMessages' `select` can restore the chip once the refetch
- * replaces this optimistic entry.
  */
 export function useSendMessage() {
   const queryClient = useQueryClient();
@@ -256,9 +238,8 @@ export function useSendMessage() {
     }: {
       conversationId: string;
       content: string;
-      attachments?: ChatAttachment[];
     }) => chatApi.sendMessage(conversationId, content),
-    onMutate: async ({ conversationId, content, attachments }) => {
+    onMutate: async ({ conversationId, content }) => {
       // Sending into a conversation that was previously stopped resumes
       // the normal awaiting/loading UI for this new reply.
       useChatStopStore.getState().resume(conversationId);
@@ -272,7 +253,6 @@ export function useSendMessage() {
         text: content,
         createdAt: Date.now(),
         stage: "complete",
-        ...(attachments?.length ? { attachments } : {}),
       };
       queryClient.setQueryData<ChatMessage[]>(key, (old) => [...(old ?? []), optimistic]);
       return { previous, key, optimisticId };
@@ -285,9 +265,6 @@ export function useSendMessage() {
       queryClient.setQueryData<ChatMessage[]>(context.key, (old) =>
         old?.map((m) => (m.id === context.optimisticId ? data : m)),
       );
-      if (vars.attachments?.length) {
-        useMessageAttachmentsStore.getState().setAttachments(data.id, vars.attachments);
-      }
       // Mirrors the backend bumping Conversation.last_message_at on every
       // message send (core/views/conversations.py) — moves this
       // conversation to the top of the sidebar list without a separate GET
@@ -314,26 +291,4 @@ export function useSendMessage() {
  */
 export function stopChatGeneration(conversationId: string): void {
   useChatStopStore.getState().stop(conversationId);
-}
-
-/**
- * Uploading a bank statement from chat feeds the same ledger the statements
- * pipeline commits to, so its queries are invalidated alongside the
- * conversation's messages (the assistant's upload-announcement message).
- */
-export function useUploadChatAttachment() {
-  const queryClient = useQueryClient();
-  return useMutation({
-    mutationFn: ({ conversationId, file }: { conversationId: string; file: File }) =>
-      chatApi.uploadChatAttachment(conversationId, file),
-    onSuccess: (_data, vars) => {
-      queryClient.invalidateQueries({
-        queryKey: chatKeys.messages(vars.conversationId),
-      });
-      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.bankStatements] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.transactions] });
-      queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.dashboard] });
-    },
-    onError: (error) => toastApiError(error),
-  });
 }
