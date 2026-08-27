@@ -3,6 +3,7 @@ export const DASHBOARD_PERIODS = [
   "lastMonth",
   "last3Months",
   "thisYear",
+  "last5Years",
 ] as const;
 export type DashboardPeriod = (typeof DASHBOARD_PERIODS)[number];
 

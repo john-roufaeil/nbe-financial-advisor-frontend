@@ -6,7 +6,8 @@
       "thisMonth": "A snapshot of your finances this month.",
       "lastMonth": "A snapshot of your finances last month.",
       "last3Months": "A snapshot of your finances over the last 3 months.",
-      "thisYear": "A snapshot of your finances this year."
+      "thisYear": "A snapshot of your finances this year.",
+      "last5Years": "A snapshot of your finances over the last 5 years."
     },
     "sections": {
       "keyFigures": "Key figures",
@@ -28,7 +29,8 @@
         "thisMonth": "This month",
         "lastMonth": "Last month",
         "last3Months": "3 months",
-        "thisYear": "This year"
+        "thisYear": "This year",
+        "last5Years": "5 years"
       },
       "account": "Account",
       "allAccounts": "All accounts",
