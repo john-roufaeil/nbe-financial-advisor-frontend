@@ -1,8 +1,11 @@
 import { useEffect, useState } from "react";
-import { refreshAccessTokenOnce } from "@/api/client";
+import { isRefreshSessionInvalid, refreshAccessTokenOnce } from "@/api/client";
 import { useAuthStore } from "@/store/use-auth-store";
 
 export type SessionStatus = "restoring" | "settled";
+
+const RESTORE_RETRY_BASE_MS = 2_000;
+const RESTORE_RETRY_MAX_MS = 30_000;
 
 /**
  * Recovers the in-memory access token after a full page reload.
@@ -36,6 +39,9 @@ export function useSessionRestore(): SessionStatus {
     }
 
     let cancelled = false;
+    let running = false;
+    let retryAttempt = 0;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
     // Routed through the same single-flight refreshPromise the 401
     // interceptor uses (see api/client.ts) rather than firing an independent
     // POST /auth/refresh — two uncoordinated callers presenting the same
@@ -43,22 +49,52 @@ export function useSessionRestore(): SessionStatus {
     // "silently signed out" bug (ROTATE_REFRESH_TOKENS + BLACKLIST_AFTER_ROTATION
     // means the loser of that race gets a 401 for a token the winner already
     // rotated away, even with a perfectly healthy session).
-    refreshAccessTokenOnce()
-      .catch(() => {
-        // No cookie, or it expired or was already used — the session is genuinely
-        // over. `isAuthenticated` was true going into this (that's what made
-        // needsRestore true), so this is a real, previously-live session ending,
-        // not "there was never one" — expireSession() over clearStaleAuth() so
-        // the SessionExpiredModal explains why RequireAuth is about to bounce
-        // them to sign-in, instead of that redirect just happening silently.
-        if (!cancelled) useAuthStore.getState().expireSession();
-      })
-      .finally(() => {
+    function scheduleRetry() {
+      if (cancelled || !navigator.onLine) return;
+      const delay = Math.min(
+        RESTORE_RETRY_BASE_MS * 2 ** retryAttempt,
+        RESTORE_RETRY_MAX_MS,
+      );
+      retryAttempt += 1;
+      retryTimer = setTimeout(() => void restore(), delay);
+    }
+
+    async function restore() {
+      if (cancelled || running || !navigator.onLine) return;
+      running = true;
+      try {
+        await refreshAccessTokenOnce();
         if (!cancelled) setStatus("settled");
-      });
+      } catch (error) {
+        if (cancelled) return;
+        if (isRefreshSessionInvalid(error)) {
+          // Only an explicit invalid-cookie response ends the session. A
+          // timeout or temporary outage keeps restoring and retries instead
+          // of incorrectly signing the user out.
+          useAuthStore.getState().expireSession();
+          setStatus("settled");
+        } else {
+          scheduleRetry();
+        }
+      } finally {
+        running = false;
+      }
+    }
+
+    function retryWhenOnline() {
+      if (retryTimer) clearTimeout(retryTimer);
+      retryTimer = null;
+      retryAttempt = 0;
+      void restore();
+    }
+
+    void restore();
+    window.addEventListener("online", retryWhenOnline);
 
     return () => {
       cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      window.removeEventListener("online", retryWhenOnline);
     };
   }, [needsRestore]);
 

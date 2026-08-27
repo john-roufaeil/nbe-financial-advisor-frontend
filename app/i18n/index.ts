@@ -20,6 +20,7 @@ import enNotFound from "./locales/en/notFound.json";
 import enAdmin from "./locales/en/admin.json";
 import enAnomalies from "./locales/en/anomalies.json";
 import enBudget from "./locales/en/budget.json";
+import enInvestmentPlans from "./locales/en/investmentPlans.json";
 
 import arApp from "./locales/ar/app.json";
 import arNav from "./locales/ar/nav.json";
@@ -39,6 +40,7 @@ import arNotFound from "./locales/ar/notFound.json";
 import arAdmin from "./locales/ar/admin.json";
 import arAnomalies from "./locales/ar/anomalies.json";
 import arBudget from "./locales/ar/budget.json";
+import arInvestmentPlans from "./locales/ar/investmentPlans.json";
 
 export const SUPPORTED_LANGUAGES = ["en", "ar"] as const;
 export type SupportedLanguage = (typeof SUPPORTED_LANGUAGES)[number];
@@ -69,6 +71,7 @@ const enCommon = {
   ...enAdmin,
   ...enAnomalies,
   ...enBudget,
+  ...enInvestmentPlans,
 };
 
 const arCommon = {
@@ -90,6 +93,7 @@ const arCommon = {
   ...arAdmin,
   ...arAnomalies,
   ...arBudget,
+  ...arInvestmentPlans,
 };
 
 export const resources = {

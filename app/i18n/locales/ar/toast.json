@@ -30,6 +30,16 @@
     "dateFormatChanged": "تم ضبط صيغة التاريخ على {{format}}",
     "compactNumbersChanged": "تم ضبط عرض الأرقام على {{format}}",
     "languageChanged": "Language set to English",
-    "dataSourceChanged": "تم ضبط مصدر البيانات على {{source}}"
+    "dataSourceChanged": "تم ضبط مصدر البيانات على {{source}}",
+    "investmentScenarioSaved": "تم حفظ السيناريو في خطط الاستثمار",
+    "investmentScenarioSaveFailed": "تعذر حفظ السيناريو. يرجى المحاولة مرة أخرى.",
+    "investmentScenarioUpdated": "تم تحديث سيناريو الاستثمار",
+    "investmentScenarioDeleted": "تم حذف سيناريو الاستثمار",
+    "investmentHoldingSaved": "تمت إضافة الاستثمار",
+    "investmentHoldingUpdated": "تم تحديث الاستثمار",
+    "investmentHoldingDeleted": "تمت إزالة الاستثمار",
+    "plannedPurchaseRecorded": "تم نقل عملية الشراء إلى الاستثمارات المملوكة",
+    "plannedInvestmentUpdated": "تم تحديث الاستثمار المخطط",
+    "plannedInvestmentRemoved": "تمت إزالة الاستثمار المخطط"
   }
 }

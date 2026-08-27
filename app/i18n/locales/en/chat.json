@@ -55,6 +55,52 @@
       "products": {
         "title": "Recommended for you",
         "match": "{{percent}}% match"
+      },
+      "investment": {
+        "title": "Your planned investments",
+        "basedOn": "Planning how to use {{amount}} {{currency}}",
+        "allocation": "Allocation",
+        "adjust": "Adjust allocation for {{instrument}}",
+        "quote": "Current quote",
+        "quantity": "Estimated quantity",
+        "residual": "Instrument remainder",
+        "asOf": "As of {{date}}",
+        "allocated": "Scenario allocated",
+        "cashRemainder": "Cash remainder",
+        "percentageWarning": "Allocations currently total {{total}}%. Set them to exactly 100% to save.",
+        "save": "Save as planned",
+        "saved": "Saved as planned — nothing was purchased",
+        "saveExplainer": "Save this under Planned investments. It will not affect your totals until you record an actual purchase.",
+        "viewSaved": "View planned investments",
+        "priority": "Priority {{priority}}",
+        "matchFactor": {
+          "objective": "Matches your objective",
+          "risk": "Matches your risk preference",
+          "horizon": "Fits your time horizon",
+          "liquidity": "Matches your liquidity need",
+          "closest_available": "Closest available curated fit"
+        },
+        "mode": {
+          "live": "Live price",
+          "mock": "Mock price",
+          "user_supplied": "User-supplied price"
+        },
+        "assetClass": {
+          "gold": "Gold",
+          "fund": "Fund",
+          "currency": "Currency"
+        },
+        "priceType": {
+          "spot": "Spot price",
+          "nav": "NAV",
+          "market_price": "Delayed market price",
+          "customer_buy_rate": "Customer buy rate"
+        },
+        "unit": {
+          "gram_24k": "gram of 24K gold",
+          "fund_unit": "fund unit",
+          "USD": "USD"
+        }
       }
     },
     "statement": {

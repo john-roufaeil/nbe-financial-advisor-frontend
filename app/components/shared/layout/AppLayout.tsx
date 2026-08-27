@@ -5,6 +5,7 @@ import { AssistantRuntimeProvider } from "@assistant-ui/react";
 import { ChatThreadList } from "@/components/chat/ChatThreadList";
 import { useAppChatRuntime } from "@/lib/use-chat-runtime";
 import { useEventStream } from "@/lib/use-event-stream";
+import { useSilentSessionRefresh } from "@/lib/use-silent-token-refresh";
 import { useDrawerStore } from "@/store/use-drawer-store";
 import { useSidebarStore } from "@/store/use-sidebar-store";
 import { useSidebarResize } from "@/lib/use-sidebar-resize";
@@ -28,6 +29,7 @@ export default function AppLayout() {
   const { isOpen, toggle, close } = useDrawerStore();
   const onChat = location.pathname.startsWith(`/${lang}/chat`);
   const runtime = useAppChatRuntime(onChat);
+  useSilentSessionRefresh();
   // One multiplexed SSE connection for the whole app (statement, chat, and
   // bank-sync events) — lives here rather than per-route so it survives
   // navigation, same reasoning as useAppChatRuntime above.

@@ -1,6 +1,7 @@
 {
   "actions": {
     "submit": "إرسال",
+    "save": "حفظ",
     "cancel": "إلغاء",
     "continue": "متابعة",
     "skip": "تخطي",

@@ -41,7 +41,8 @@
         "budget": "Budget split",
         "activity": "Recent activity",
         "anomalies": "Anomalies",
-        "recurringCharges": "Recurring charges"
+        "recurringCharges": "Recurring charges",
+        "investmentPlans": "Investment plans"
       }
     },
     "stats": {

@@ -41,7 +41,8 @@
         "budget": "توزيع الميزانية",
         "activity": "النشاط الأخير",
         "anomalies": "الحالات غير المعتادة",
-        "recurringCharges": "الرسوم المتكررة"
+        "recurringCharges": "الرسوم المتكررة",
+        "investmentPlans": "خطط الاستثمار"
       }
     },
     "stats": {

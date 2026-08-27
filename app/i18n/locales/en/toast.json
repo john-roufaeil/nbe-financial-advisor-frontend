@@ -30,6 +30,16 @@
     "dateFormatChanged": "Date format set to {{format}}",
     "compactNumbersChanged": "Number display set to {{format}}",
     "languageChanged": "تم ضبط اللغة للعربية",
-    "dataSourceChanged": "Data source set to {{source}}"
+    "dataSourceChanged": "Data source set to {{source}}",
+    "investmentScenarioSaved": "Scenario saved to Investment Plans",
+    "investmentScenarioSaveFailed": "The scenario could not be saved. Please try again.",
+    "investmentScenarioUpdated": "Investment scenario updated",
+    "investmentScenarioDeleted": "Investment scenario deleted",
+    "investmentHoldingSaved": "Investment added",
+    "investmentHoldingUpdated": "Investment updated",
+    "investmentHoldingDeleted": "Investment removed",
+    "plannedPurchaseRecorded": "Purchase moved to Owned investments",
+    "plannedInvestmentUpdated": "Planned investment updated",
+    "plannedInvestmentRemoved": "Planned investment removed"
   }
 }

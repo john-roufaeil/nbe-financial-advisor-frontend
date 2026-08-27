@@ -1,0 +1,142 @@
+{
+  "investmentPlans": {
+    "title": "My investments",
+    "subtitle": "Keep advisor ideas in Planned until you buy, then track them in Owned.",
+    "createWithAdvisor": "Plan with advisor",
+    "educationalNotice": "Planned investments do not affect your totals or profit and loss. Only purchases you record appear under Owned. This app never buys or sells anything for you.",
+    "planned": {
+      "title": "Planned investments",
+      "subtitle": "Saved from the advisor and waiting for you to buy.",
+      "empty": "No planned investments. Save a plan from the advisor when you want to keep one."
+    },
+    "card": {
+      "planned": "Planned",
+      "pendingCount_one": "{{count}} investment is still planned",
+      "pendingCount_other": "{{count}} investments are still planned",
+      "movedCount_one": "{{count}} purchase from this plan is now under Owned.",
+      "movedCount_other": "{{count}} purchases from this plan are now under Owned.",
+      "remainingPlanned": "Remaining planned",
+      "ofPlan": "of the plan",
+      "estimatedQuantity": "Estimated quantity",
+      "planPrice": "Price used in plan",
+      "edit": "Edit",
+      "bought": "I bought this",
+      "removeItem": "Remove",
+      "savedOn": "Saved {{date}}",
+      "quotesAsOf": "Plan price from {{date}}",
+      "reviewAdvisor": "Review with advisor",
+      "removePlan": "Remove plan",
+      "noTrade": "Waiting for your purchase confirmation"
+    },
+    "edit": {
+      "title": "Edit {{investment}} plan",
+      "notice": "Change the planned amount, quantity, or reference price. An edited price is labelled user-supplied. These changes update the plan only and do not buy anything.",
+      "purchaseValue": "Planned purchase value",
+      "remainder": "Amount left in this item",
+      "form": {
+        "amount": "Planned amount",
+        "amountError": "Planned amount must be greater than zero.",
+        "quantity": "Planned quantity",
+        "quantityError": "Planned quantity must be greater than zero.",
+        "incrementError": "Quantity must use increments of {{increment}}.",
+        "exceedsAmount": "Quantity × price cannot exceed the planned amount.",
+        "price": "Reference price per unit",
+        "priceError": "Reference price must be greater than zero."
+      }
+    },
+    "purchase": {
+      "title": "I bought {{investment}}",
+      "notice": "Enter what you actually bought. Your real quantity and price can be different from the plan.",
+      "mergeNotice": "You already own this investment. This purchase will be added and your average price will be recalculated.",
+      "planEstimate": "Advisor estimate for reference",
+      "confirm": "Move to Owned",
+      "form": {
+        "quantity": "Quantity bought",
+        "quantityUnit": "Measured in {{unit}}.",
+        "quantityError": "Quantity must be greater than zero.",
+        "price": "Price paid per unit",
+        "priceError": "Price must be greater than zero.",
+        "fees": "Fees (optional)",
+        "feesError": "Fees cannot be negative.",
+        "date": "Purchase date",
+        "dateError": "Enter the purchase date."
+      }
+    },
+    "holdings": {
+      "title": "Owned investments",
+      "autoRefresh": "Track purchases you recorded. Prices refresh every minute while this page is open.",
+      "refresh": "Refresh prices",
+      "add": "Add a purchase",
+      "addFirst": "Add a purchase",
+      "emptyTitle": "No owned investments yet",
+      "emptyText": "When you buy a planned investment, use “I bought this.” You can also add a purchase manually.",
+      "pricingDisabled": "Live pricing is off. You can still add and edit purchases; current values will appear when pricing is enabled.",
+      "partialPrices": "Prices are available for {{priced}} of {{total}} investments. Total current value and profit or loss stay hidden until every price is available.",
+      "avgPaid": "average price I paid",
+      "currentPrice": "Latest price",
+      "currentValue": "Current value",
+      "unrealizedReturn": "Estimated profit or loss",
+      "asOf": "Price observed {{date}}",
+      "lastChecked": "Checked {{date}}",
+      "calculation": {
+        "explain": "How {{name}} is calculated",
+        "cost": "What I paid = Quantity × Average price + Fees",
+        "value": "Current value = Quantity × Latest available price",
+        "return": "Estimated profit or loss = Current value − What I paid. Selling costs and taxes are not included."
+      },
+      "summary": {
+        "invested": "What I paid",
+        "currentValue": "What my investments are worth now",
+        "return": "Estimated profit or loss"
+      },
+      "quoteStatus": {
+        "current": "Current",
+        "needs_refresh": "Delayed",
+        "unavailable": "Unavailable",
+        "disabled": "Pricing off"
+      },
+      "deleteTitle": "Remove this investment?",
+      "deleteMessage": "{{instrument}} will be removed from tracking. This does not sell or affect any real investment.",
+      "deleteAction": "Remove",
+      "form": {
+        "addTitle": "Add a purchase",
+        "editTitle": "Edit owned investment",
+        "manualNotice": "Enter an investment you already bought. This saves your information only; it does not buy or sell anything.",
+        "instrument": "Investment",
+        "chooseInstrument": "Choose an investment",
+        "instrumentError": "Choose an investment.",
+        "quantity": "Total quantity owned",
+        "quantityHint": "Enter the total you currently own.",
+        "quantityUnit": "Measured in {{unit}}.",
+        "quantityError": "Quantity must be greater than zero.",
+        "averagePrice": "Average price paid",
+        "averagePriceHint": "For several purchases, use the weighted average price you paid.",
+        "priceError": "Average price must be greater than zero.",
+        "fees": "Total fees (optional)",
+        "feesError": "Fees cannot be negative.",
+        "purchaseDate": "First purchase date (optional)"
+      }
+    },
+    "quoteStatus": {
+      "current": "Plan prices current",
+      "needs_refresh": "Plan prices are old",
+      "unavailable": "Investment unavailable",
+      "mock": "Mock prices",
+      "user_supplied": "User-supplied prices"
+    },
+    "confirm": {
+      "deleteTitle": "Remove this plan?",
+      "deleteMessage": "The remaining planned items will be removed. Any purchases already moved to Owned will stay there.",
+      "deleteAction": "Remove plan",
+      "removeItemTitle": "Remove this planned investment?",
+      "removeItemMessage": "{{investment}} will be removed from this plan. This does not affect anything under Owned.",
+      "removeItemAction": "Remove"
+    },
+    "dashboard": {
+      "title": "Next planned investments",
+      "viewAll": "View planned investments",
+      "empty": "Save an advisor plan to keep your next investment ideas here.",
+      "start": "Plan with advisor"
+    }
+  }
+}
