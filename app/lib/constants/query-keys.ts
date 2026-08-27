@@ -14,5 +14,7 @@ export const QUERY_ROOTS = {
   analytics: "analytics",
   issues: "issues",
   recurringCharges: "recurringCharges",
+  investmentScenarios: "investmentScenarios",
+  investmentHoldings: "investmentHoldings",
   consent: "consent",
 } as const;

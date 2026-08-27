@@ -1,8 +1,14 @@
 import { useEffect, useState } from "react";
-import { refreshAdminAccessTokenOnce } from "@/api/admin-client";
+import {
+  isAdminRefreshSessionInvalid,
+  refreshAdminAccessTokenOnce,
+} from "@/api/admin-client";
 import { useAdminAuthStore } from "@/store/use-admin-auth-store";
 
 export type AdminSessionStatus = "restoring" | "settled";
+
+const RESTORE_RETRY_BASE_MS = 2_000;
+const RESTORE_RETRY_MAX_MS = 30_000;
 
 /**
  * Admin-credential-space equivalent of use-session-restore.ts — recovers
@@ -33,6 +39,9 @@ export function useAdminSessionRestore(): AdminSessionStatus {
     }
 
     let cancelled = false;
+    let running = false;
+    let retryAttempt = 0;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
     // Routed through the same single-flight refreshPromise the admin
     // client's 401 interceptor uses (see api/admin-client.ts) rather than
     // firing an independent POST /admin/auth/refresh — two uncoordinated
@@ -40,18 +49,49 @@ export function useAdminSessionRestore(): AdminSessionStatus {
     // otherwise race (the loser gets a 401 for a token the winner already
     // rotated away), same bug the end-user flow's useSessionRestore avoids
     // the same way.
-    refreshAdminAccessTokenOnce()
-      .catch(() => {
-        // No cookie, or it expired or was already used — the session is
-        // genuinely over.
-        if (!cancelled) useAdminAuthStore.getState().logout();
-      })
-      .finally(() => {
+    function scheduleRetry() {
+      if (cancelled || !navigator.onLine) return;
+      const delay = Math.min(
+        RESTORE_RETRY_BASE_MS * 2 ** retryAttempt,
+        RESTORE_RETRY_MAX_MS,
+      );
+      retryAttempt += 1;
+      retryTimer = setTimeout(() => void restore(), delay);
+    }
+
+    async function restore() {
+      if (cancelled || running || !navigator.onLine) return;
+      running = true;
+      try {
+        await refreshAdminAccessTokenOnce();
         if (!cancelled) setStatus("settled");
-      });
+      } catch (error) {
+        if (cancelled) return;
+        if (isAdminRefreshSessionInvalid(error)) {
+          useAdminAuthStore.getState().logout();
+          setStatus("settled");
+        } else {
+          scheduleRetry();
+        }
+      } finally {
+        running = false;
+      }
+    }
+
+    function retryWhenOnline() {
+      if (retryTimer) clearTimeout(retryTimer);
+      retryTimer = null;
+      retryAttempt = 0;
+      void restore();
+    }
+
+    void restore();
+    window.addEventListener("online", retryWhenOnline);
 
     return () => {
       cancelled = true;
+      if (retryTimer) clearTimeout(retryTimer);
+      window.removeEventListener("online", retryWhenOnline);
     };
   }, [needsRestore]);
 

@@ -5,6 +5,7 @@ export const ROUTE_SEGMENTS = {
   transactions: "transactions",
   bankStatements: "bank-statements",
   budget: "budget",
+  investmentPlans: "investment-plans",
   profile: "profile",
   onboarding: "onboarding",
   signIn: "sign-in",

@@ -27,7 +27,7 @@ adminApiClient.interceptors.request.use((config) => {
   }
 
   const { accessToken } = useAdminAuthStore.getState();
-  if (accessToken) {
+  if (accessToken && !isAdminAuthEndpoint(config.url)) {
     config.headers.Authorization = `Bearer ${accessToken}`;
   }
   return config;
@@ -55,6 +55,10 @@ let adminRefreshPromise: Promise<{
   role: "reviewer" | "super_admin";
 }> | null = null;
 
+export function isAdminRefreshSessionInvalid(error: unknown): boolean {
+  return axios.isAxiosError(error) && error.response?.status === 401;
+}
+
 /**
  * POST /admin/auth/refresh takes NO body: the refresh token is an httpOnly
  * cookie the browser attaches automatically (withCredentials above). It is
@@ -62,7 +66,7 @@ let adminRefreshPromise: Promise<{
  * we can make up front — we just attempt the call, and a 401 means the
  * session is genuinely over.
  */
-async function refreshAdminAccessToken() {
+async function requestRefreshedAdminAccessToken() {
   const res = await adminApiClient.post<{
     access_token: string;
     admin_id: string;
@@ -77,6 +81,16 @@ async function refreshAdminAccessToken() {
     .getState()
     .setAccessToken(session.accessToken, session.adminId, session.role);
   return session;
+}
+
+async function refreshAdminAccessToken() {
+  if (typeof navigator !== "undefined" && navigator.locks) {
+    return navigator.locks.request(
+      "nbe-admin-session-refresh",
+      requestRefreshedAdminAccessToken,
+    );
+  }
+  return requestRefreshedAdminAccessToken();
 }
 
 /** Shared single-flight entry point — see adminRefreshPromise above. */
@@ -108,11 +122,11 @@ adminApiClient.interceptors.response.use(
       const { accessToken } = await refreshAdminAccessTokenOnce();
       originalRequest.headers.Authorization = `Bearer ${accessToken}`;
       return adminApiClient(originalRequest);
-    } catch {
-      // The refresh cookie is missing, expired, or already used — the
-      // session is over.
-      useAdminAuthStore.getState().logout();
-      return Promise.reject(error);
+    } catch (refreshError) {
+      if (isAdminRefreshSessionInvalid(refreshError)) {
+        useAdminAuthStore.getState().logout();
+      }
+      return Promise.reject(refreshError);
     }
   },
 );

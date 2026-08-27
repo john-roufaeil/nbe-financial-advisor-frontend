@@ -23,6 +23,8 @@ import {
   isAwaitingReply,
 } from "@/queries/chat";
 import type { ChatConversation, ChatMessage } from "@/types/chat";
+import { QUERY_ROOTS } from "@/lib/constants/query-keys";
+import { toastApiError, toastError, toastSuccess } from "@/lib/toast";
 
 /**
  * Referentially stable empty array for ExternalStoreThreadListAdapter's
@@ -232,16 +234,40 @@ export function useAppChatRuntime(active = true) {
   const onAddToolResult = useCallback(
     ({ messageId, result }: { messageId: string; result: unknown }) => {
       if (!currentConversationId) return;
-      queryClient.setQueryData<ChatMessage[]>(
-        chatKeys.messages(currentConversationId),
-        (old) =>
-          old?.map((m) =>
-            m.id === messageId && m.toolCall
-              ? { ...m, toolCall: { ...m.toolCall, result } }
-              : m,
-          ),
+      const messageKey = chatKeys.messages(currentConversationId);
+      const previousMessages = queryClient.getQueryData<ChatMessage[]>(messageKey);
+      queryClient.setQueryData<ChatMessage[]>(messageKey, (old) =>
+        old?.map((m) =>
+          m.id === messageId && m.toolCall
+            ? { ...m, toolCall: { ...m.toolCall, result } }
+            : m,
+        ),
       );
-      updateMessageWidget(currentConversationId, messageId, result).catch(() => {});
+      void updateMessageWidget(currentConversationId, messageId, result)
+        .then(() => {
+          queryClient.invalidateQueries({ queryKey: [QUERY_ROOTS.investmentScenarios] });
+          if (
+            result &&
+            typeof result === "object" &&
+            (result as { saved?: unknown }).saved === true
+          ) {
+            toastSuccess("toast.investmentScenarioSaved");
+          }
+        })
+        .catch((error) => {
+          // A failed save must not leave a card looking durably saved. Restore
+          // the exact prior message and let the user retry.
+          queryClient.setQueryData(messageKey, previousMessages);
+          if (
+            result &&
+            typeof result === "object" &&
+            (result as { saved?: unknown }).saved === true
+          ) {
+            toastError("toast.investmentScenarioSaveFailed");
+          } else {
+            toastApiError(error);
+          }
+        });
     },
     [currentConversationId, queryClient],
   );

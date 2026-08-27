@@ -12,6 +12,16 @@ export const API_ENDPOINTS = {
   statementOcrArtifactDownload: (id: string) => `/statements/${id}/ocr-result/download`,
   dashboard: "/dashboard",
   dashboardGoal: "/dashboard/goal",
+  investmentScenarios: "/investment-scenarios",
+  investmentScenario: (id: string) => `/investment-scenarios/${id}`,
+  investmentScenarioPurchase: (scenarioId: string, instrumentId: string) =>
+    `/investment-scenarios/${scenarioId}/allocations/${instrumentId}/purchase`,
+  investmentScenarioAllocation: (scenarioId: string, instrumentId: string) =>
+    `/investment-scenarios/${scenarioId}/allocations/${instrumentId}`,
+  investmentInstruments: "/investment-instruments",
+  investmentHoldings: "/investment-holdings",
+  investmentHolding: (id: string) => `/investment-holdings/${id}`,
+  investmentHoldingValuation: "/investment-holdings/valuation",
   budget: "/budget",
   categories: "/categories",
   budgetStarterTemplates: "/budget/starter-templates",

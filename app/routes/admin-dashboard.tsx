@@ -12,6 +12,7 @@ import {
   Wallet,
 } from "lucide-react";
 import { usePageTitle } from "@/lib/use-page-title";
+import { useSilentAdminSessionRefresh } from "@/lib/use-silent-token-refresh";
 import { useAdminAuthStore } from "@/store/use-admin-auth-store";
 import { useAdminOverviewCounts, useAdminLogout } from "@/queries/admin";
 import { ROUTE_SEGMENTS, localizedPath } from "@/lib/constants/routes";
@@ -40,6 +41,7 @@ export default function AdminDashboard() {
   const navigate = useNavigate();
   const { t } = useTranslation();
   usePageTitle(t("admin.dashboard.title"));
+  useSilentAdminSessionRefresh();
   const role = useAdminAuthStore((s) => s.role);
   const logout = useAdminAuthStore((s) => s.logout);
   const logoutMutation = useAdminLogout();

@@ -26,6 +26,7 @@ import { IncomeStabilityCard } from "@/components/dashboard/IncomeStabilityCard"
 import { RecurringTotalCard } from "@/components/dashboard/RecurringTotalCard";
 import { TopCategoryCard } from "@/components/dashboard/TopCategoryCard";
 import { AddItemFab } from "@/components/dashboard/AddItemFab";
+import { InvestmentPlansSummaryCard } from "@/components/dashboard/InvestmentPlansSummaryCard";
 import { useDashboard } from "@/queries/dashboard";
 import { useRecurringCharges } from "@/queries/recurring-charges";
 import { useAnomalies } from "@/queries/anomalies";
@@ -230,6 +231,8 @@ export default function Dashboard() {
                 </div>
               </div>
             </div>
+
+            {show("investmentPlans") && <InvestmentPlansSummaryCard />}
 
             {/* Tier 3: anything needing attention. */}
             {show("anomalies") && hasAnomalies && (
