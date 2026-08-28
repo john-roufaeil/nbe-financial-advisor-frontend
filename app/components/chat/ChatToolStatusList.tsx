@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Check, Loader2 } from "lucide-react";
 import { useTranslation } from "react-i18next";
+import { dedupeThinkingStepsForDisplay } from "@/lib/chat-thinking";
 import { useChatToolStatusStore } from "@/store/use-chat-tool-status-store";
 
 /** Ticks once a second off a fixed start time, for a live "thinking for Ns"
@@ -27,13 +28,16 @@ function useElapsedSeconds(startedAt: number): number {
  * Live "thinking" checklist for the analysis agent's tool-calling loop — a
  * ticking "Thinking for Ns" header plus one row per `chat_tool_status` step,
  * growing (each new row sliding up via .animate-entry) as tool calls start
- * and complete. Renders nothing once the conversation has no steps yet —
- * ChatThread falls back to the plain 3-dot indicator in that gap.
+ * and complete — one row per distinct tool (dedupeThinkingStepsForDisplay),
+ * since the agent can legitimately call the same tool more than once in a
+ * turn and that must not render as the same phrase twice. Renders nothing
+ * once the conversation has no steps yet — ChatThread falls back to the
+ * plain 3-dot indicator in that gap.
  *
- * This is only the *live* view — once the reply lands, use-event-stream.ts's
- * finish() snapshots this same data onto the message and clears the store,
- * so the persisted summary (ChatThinkingSummary) takes over from here
- * instead of this checklist just disappearing.
+ * This is only the *live* view — once the reply lands, the persisted
+ * Message.thinking_json (see api/chat.ts, ChatThinkingSummary) takes over
+ * from here; use-event-stream.ts's chat_message handler just clears this
+ * store rather than reading it back.
  *
  * The tool name is never shown raw — it's resolved through i18n with a
  * generic fallback, so an unmapped/future tool never leaks an internal
@@ -51,6 +55,7 @@ export function ChatToolStatusList({
   const elapsedSeconds = useElapsedSeconds(thinking?.startedAt ?? Date.now());
 
   if (!thinking || thinking.steps.length === 0) return null;
+  const displaySteps = dedupeThinkingStepsForDisplay(thinking.steps);
 
   return (
     <div className="flex flex-col gap-1.5 ps-10">
@@ -58,9 +63,9 @@ export function ChatToolStatusList({
         {t("chat.thinking.live", { count: Math.max(elapsedSeconds, 0) })}
       </span>
       <ul className="flex flex-col gap-1.5">
-        {thinking.steps.map((step) => (
+        {displaySteps.map((step) => (
           <li
-            key={step.callId}
+            key={step.tool}
             className="animate-entry text-base-content/70 flex items-center gap-2 text-sm"
           >
             {step.status === "completed" ? (
