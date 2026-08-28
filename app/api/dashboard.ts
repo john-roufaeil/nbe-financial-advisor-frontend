@@ -18,6 +18,7 @@ const PERIOD_PARAM: Record<DashboardPeriod, string> = {
   lastMonth: "last_month",
   last3Months: "last_3_months",
   thisYear: "this_year",
+  last5Years: "last_5_years",
 };
 
 interface RawAllocation {

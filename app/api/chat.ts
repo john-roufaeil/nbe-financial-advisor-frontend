@@ -1,7 +1,12 @@
 import { apiClient } from "@/api/client";
 import { API_ENDPOINTS } from "@/lib/constants/api";
 import { buildSuggestions } from "@/lib/demo-financials";
-import type { ChatConversation, ChatMessage, ChatToolCall } from "@/types/chat";
+import type {
+  ChatConversation,
+  ChatMessage,
+  ChatThinking,
+  ChatToolCall,
+} from "@/types/chat";
 
 interface RawConversation {
   id: string;
@@ -23,6 +28,18 @@ export interface RawWidget {
   payload: unknown;
 }
 
+export type RawThinkingStep =
+  | { kind: "agent"; agent: string }
+  | { kind: "tool"; call_id: string; tool: string; status: "started" | "completed" };
+
+/** Message.thinking_json's wire shape (REST) — the chat_message SSE event
+ *  carries the identical shape under the `thinking` key instead, same
+ *  widget/widget_json-style naming split as everywhere else in this file. */
+export interface RawThinking {
+  steps: RawThinkingStep[];
+  duration_ms: number;
+}
+
 interface RawMessage {
   id: string;
   sender: string;
@@ -33,7 +50,22 @@ interface RawMessage {
   /** Null/omitted on a user message and on any assistant message predating
    *  this field — falls back to the static, tool-keyed chips in that case. */
   suggestions?: string[] | null;
+  /** Null only for a turn that never routed anywhere at all — see
+   *  ChatThinkingSummary. */
+  thinking_json?: RawThinking | null;
   created_at: string;
+}
+
+function toChatThinking(raw: RawThinking | null | undefined): ChatThinking | undefined {
+  if (!raw) return undefined;
+  return {
+    steps: raw.steps.map((s) =>
+      s.kind === "agent"
+        ? { kind: "agent", agent: s.agent }
+        : { kind: "tool", callId: s.call_id, tool: s.tool, status: s.status },
+    ),
+    durationMs: raw.duration_ms,
+  };
 }
 
 /** Swagger doesn't specify whether list endpoints are paginated envelopes or
@@ -72,6 +104,7 @@ function toChatMessage(raw: RawMessage): ChatMessage {
       targetType: r.target_type,
       targetId: r.target_id,
     })),
+    thinking: toChatThinking(raw.thinking_json),
     // The AI service generates these alongside the reply; fall back to
     // static, topic-keyed chips only for older messages persisted before
     // this field existed (null/undefined `suggestions`).
@@ -97,6 +130,7 @@ export function assistantMessageFromEvent(payload: {
   widget: RawWidget | null;
   references: RawReference[] | null;
   suggestions?: string[] | null;
+  thinking?: RawThinking | null;
 }): ChatMessage {
   return toChatMessage({
     id: payload.id,
@@ -106,6 +140,7 @@ export function assistantMessageFromEvent(payload: {
     widget: payload.widget,
     references: payload.references,
     suggestions: payload.suggestions,
+    thinking_json: payload.thinking,
     created_at: new Date().toISOString(),
   });
 }

@@ -109,6 +109,37 @@
       "failed": "Couldn't process this file",
       "added": "Transactions added",
       "review": "Review"
+    },
+    "toolStatus": {
+      "get_transactions": "Looking up your transactions",
+      "compute_aggregate": "Crunching the numbers",
+      "find_similar_transactions": "Searching your transactions",
+      "show_spending_breakdown": "Building your spending breakdown",
+      "show_transactions": "Preparing your transaction list",
+      "show_savings_projection": "Projecting your savings",
+      "fallback": "Working on it"
+    },
+    "agent": {
+      "analysis": "Looking into your finances",
+      "planning": "Building your budget plan",
+      "investment_planning": "Working on your investment plan",
+      "recommendation": "Comparing banking products for you",
+      "general": "Working on an answer",
+      "fallback": "Getting started"
+    },
+    "thinking": {
+      "live_zero": "Thinking…",
+      "live_one": "Thinking for {{count}} second…",
+      "live_two": "Thinking for {{count}} seconds…",
+      "live_few": "Thinking for {{count}} seconds…",
+      "live_many": "Thinking for {{count}} seconds…",
+      "live_other": "Thinking for {{count}} seconds…",
+      "done_zero": "Thought briefly",
+      "done_one": "Thought for {{count}} second",
+      "done_two": "Thought for {{count}} seconds",
+      "done_few": "Thought for {{count}} seconds",
+      "done_many": "Thought for {{count}} seconds",
+      "done_other": "Thought for {{count}} seconds"
     }
   }
 }
