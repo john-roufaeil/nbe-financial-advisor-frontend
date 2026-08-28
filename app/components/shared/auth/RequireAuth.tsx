@@ -28,8 +28,14 @@ export function RequireAuth() {
   // basic profile fields) until it's re-granted from there; every other route
   // bounces to profile instead of rendering. Purely a frontend UX restriction
   // — unlike data_processing, terms_of_service isn't enforced by the backend.
-  const { isActive: hasAgreedToTerms, isPending: termsPending } =
-    useConsentStatus("terms_of_service");
+  // Do not start this protected query while session restoration is still
+  // minting the in-memory access token (or while redirecting an anonymous
+  // visitor). Otherwise its first request has no Authorization header and
+  // produces a spurious 401 before the route guard can render either branch.
+  const { isActive: hasAgreedToTerms, isPending: termsPending } = useConsentStatus(
+    "terms_of_service",
+    !restoring && hasSession,
+  );
 
   if (restoring) return <RestoringScreen />;
 
