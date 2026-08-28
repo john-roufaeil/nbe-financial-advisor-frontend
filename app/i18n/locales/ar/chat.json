@@ -109,6 +109,37 @@
       "failed": "تعذّرت معالجة هذا الملف",
       "added": "تمت إضافة المعاملات",
       "review": "مراجعة"
+    },
+    "toolStatus": {
+      "get_transactions": "جارٍ البحث في معاملاتك",
+      "compute_aggregate": "جارٍ حساب الأرقام",
+      "find_similar_transactions": "جارٍ البحث عن معاملات مشابهة",
+      "show_spending_breakdown": "جارٍ إعداد تفصيل إنفاقك",
+      "show_transactions": "جارٍ تجهيز قائمة معاملاتك",
+      "show_savings_projection": "جارٍ توقّع مدخراتك",
+      "fallback": "جارٍ العمل على ذلك"
+    },
+    "agent": {
+      "analysis": "جارٍ الاطلاع على أوضاعك المالية",
+      "planning": "جارٍ إعداد خطة ميزانيتك",
+      "investment_planning": "جارٍ العمل على خطتك الاستثمارية",
+      "recommendation": "جارٍ مقارنة المنتجات البنكية لك",
+      "general": "جارٍ إعداد الإجابة",
+      "fallback": "جارٍ البدء"
+    },
+    "thinking": {
+      "live_zero": "جارٍ التفكير…",
+      "live_one": "جارٍ التفكير منذ ثانية واحدة…",
+      "live_two": "جارٍ التفكير منذ ثانيتين…",
+      "live_few": "جارٍ التفكير منذ {{count}} ثوانٍ…",
+      "live_many": "جارٍ التفكير منذ {{count}} ثانية…",
+      "live_other": "جارٍ التفكير منذ {{count}} ثانية…",
+      "done_zero": "فكّر للحظة",
+      "done_one": "فكّر لمدة ثانية واحدة",
+      "done_two": "فكّر لمدة ثانيتين",
+      "done_few": "فكّر لمدة {{count}} ثوانٍ",
+      "done_many": "فكّر لمدة {{count}} ثانية",
+      "done_other": "فكّر لمدة {{count}} ثانية"
     }
   }
 }

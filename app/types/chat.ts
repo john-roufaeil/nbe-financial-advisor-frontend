@@ -9,6 +9,21 @@ export interface ChatReference {
   targetId: string;
 }
 
+export type ChatThinkingStep =
+  | { kind: "agent"; agent: string }
+  | { kind: "tool"; callId: string; tool: string; status: "started" | "completed" };
+
+/** Snapshot of one turn's thinking activity — which agent Maestro routed to
+ * plus any tool calls made along the way — taken once the reply lands
+ * (use-event-stream.ts's chat_message handler) so it persists on the
+ * message forever instead of vanishing with the live indicator that
+ * produced it — see ChatThinkingSummary/use-chat-tool-status-store's
+ * clear(). Absent only for a turn that never routed anywhere at all. */
+export interface ChatThinking {
+  steps: ChatThinkingStep[];
+  durationMs: number;
+}
+
 export interface ChatMessage {
   id: string;
   role: "user" | "assistant";
@@ -24,6 +39,7 @@ export interface ChatMessage {
   toolCall?: ChatToolCall;
   references?: ChatReference[];
   suggestions?: string[];
+  thinking?: ChatThinking;
 }
 
 export interface ChatConversation {
