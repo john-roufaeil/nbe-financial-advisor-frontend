@@ -40,5 +40,10 @@ export function dashboardPeriodRange(period: DashboardPeriod): {
         from: toIsoDate(new Date(now.getFullYear(), 0, 1)),
         to: toIsoDate(now),
       };
+    case "last5Years":
+      return {
+        from: toIsoDate(new Date(now.getFullYear() - 4, 0, 1)),
+        to: toIsoDate(now),
+      };
   }
 }
