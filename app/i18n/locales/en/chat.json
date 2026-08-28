@@ -109,6 +109,15 @@
       "failed": "Couldn't process this file",
       "added": "Transactions added",
       "review": "Review"
+    },
+    "toolStatus": {
+      "get_transactions": "Looking up your transactions",
+      "compute_aggregate": "Crunching the numbers",
+      "find_similar_transactions": "Searching your transactions",
+      "show_spending_breakdown": "Building your spending breakdown",
+      "show_transactions": "Preparing your transaction list",
+      "show_savings_projection": "Projecting your savings",
+      "fallback": "Working on it"
     }
   }
 }

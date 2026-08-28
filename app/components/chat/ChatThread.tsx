@@ -9,13 +9,22 @@ import {
   EmptyState,
   SuggestedQuestions,
 } from "@/components/chat/ChatMessages";
+import { ChatToolStatusList } from "@/components/chat/ChatToolStatusList";
 import { ChatScrollButtons } from "@/components/chat/ChatScrollButtons";
 import { ChatComposer } from "@/components/chat/ChatComposer";
 import { BankStatementDetailModal } from "@/components/bank-statements/BankStatementDetailModal";
 import { useStatementReviewStore } from "@/store/use-statement-review-store";
+import { useChatStore } from "@/store/use-chat-store";
+import { useChatToolStatusStore } from "@/store/use-chat-tool-status-store";
 
 export function ChatThread() {
   const { ref: viewportRef, atTop, atBottom } = useScrollEdges<HTMLDivElement>();
+  const currentConversationId = useChatStore((s) => s.currentConversationId);
+  const hasToolSteps = useChatToolStatusStore((s) =>
+    currentConversationId
+      ? (s.byConversationId[currentConversationId]?.length ?? 0) > 0
+      : false,
+  );
 
   // One review modal for the whole thread, opened by any message's statement card via the store.
   // Native <dialog> "close" (Esc/backdrop/close button) resets the store so it can reopen later.
@@ -43,15 +52,20 @@ export function ChatThread() {
           <div className="mx-auto flex w-full max-w-3xl min-w-0 flex-col gap-6 px-4 py-6">
             <ThreadPrimitive.Messages components={{ UserMessage, AssistantMessage }} />
             <ThreadPrimitive.If running>
-              <div className="flex items-center gap-2.5">
-                <span className="bg-primary/10 text-primary grid size-8 shrink-0 place-items-center rounded-full">
-                  <Bot className="size-4.5" />
-                </span>
-                <div className="flex items-center gap-1.5">
-                  <span className="bg-base-content/40 size-2 animate-bounce rounded-full [animation-delay:-0.3s]" />
-                  <span className="bg-base-content/40 size-2 animate-bounce rounded-full [animation-delay:-0.15s]" />
-                  <span className="bg-base-content/40 size-2 animate-bounce rounded-full" />
+              <div className="flex flex-col gap-2">
+                <div className="flex items-center gap-2.5">
+                  <span className="bg-primary/10 text-primary grid size-8 shrink-0 place-items-center rounded-full">
+                    <Bot className="size-4.5" />
+                  </span>
+                  {!hasToolSteps && (
+                    <div className="flex items-center gap-1.5">
+                      <span className="bg-base-content/40 size-2 animate-bounce rounded-full [animation-delay:-0.3s]" />
+                      <span className="bg-base-content/40 size-2 animate-bounce rounded-full [animation-delay:-0.15s]" />
+                      <span className="bg-base-content/40 size-2 animate-bounce rounded-full" />
+                    </div>
+                  )}
                 </div>
+                <ChatToolStatusList conversationId={currentConversationId} />
               </div>
             </ThreadPrimitive.If>
             <SuggestedQuestions />

@@ -109,6 +109,15 @@
       "failed": "تعذّرت معالجة هذا الملف",
       "added": "تمت إضافة المعاملات",
       "review": "مراجعة"
+    },
+    "toolStatus": {
+      "get_transactions": "جارٍ البحث في معاملاتك",
+      "compute_aggregate": "جارٍ حساب الأرقام",
+      "find_similar_transactions": "جارٍ البحث عن معاملات مشابهة",
+      "show_spending_breakdown": "جارٍ إعداد تفصيل إنفاقك",
+      "show_transactions": "جارٍ تجهيز قائمة معاملاتك",
+      "show_savings_projection": "جارٍ توقّع مدخراتك",
+      "fallback": "جارٍ العمل على ذلك"
     }
   }
 }

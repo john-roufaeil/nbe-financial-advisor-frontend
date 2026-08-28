@@ -4,6 +4,7 @@ import { mintSseTicket } from "@/api/events";
 import { assistantMessageFromEvent, type RawReference, type RawWidget } from "@/api/chat";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useChatStreamStore } from "@/store/use-chat-stream-store";
+import { useChatToolStatusStore } from "@/store/use-chat-tool-status-store";
 import { useToastStore } from "@/store/use-toast-store";
 import { chatKeys, bumpConversationToFront, isAwaitingReply } from "@/queries/chat";
 import { bankStatementKeys } from "@/queries/bank-statements";
@@ -38,6 +39,13 @@ interface ChatErrorPayload {
   message: string;
 }
 
+interface ChatToolStatusPayload {
+  conversation_id: string;
+  call_id: string;
+  tool: string;
+  status: "started" | "completed";
+}
+
 interface TransactionSyncedPayload {
   account_id: string;
 }
@@ -61,10 +69,22 @@ function registerListeners(es: EventSource, queryClient: QueryClient) {
     useChatStreamStore.getState().appendToken(payload.conversation_id, payload.data);
   });
 
+  es.addEventListener("chat_tool_status", (e: MessageEvent<string>) => {
+    const payload = parseData<ChatToolStatusPayload>(e);
+    if (!payload) return;
+    const store = useChatToolStatusStore.getState();
+    if (payload.status === "started") {
+      store.addStep(payload.conversation_id, payload.call_id, payload.tool);
+    } else {
+      store.completeStep(payload.conversation_id, payload.call_id);
+    }
+  });
+
   es.addEventListener("chat_message", (e: MessageEvent<string>) => {
     const payload = parseData<ChatMessagePayload>(e);
     if (!payload) return;
     useChatStreamStore.getState().clear(payload.conversation_id);
+    useChatToolStatusStore.getState().clear(payload.conversation_id);
     // Builds the finished reply straight from this event's own payload
     // instead of invalidating .../messages to refetch what it already told
     // us (see assistantMessageFromEvent's docstring for why that's safe).
@@ -85,6 +105,7 @@ function registerListeners(es: EventSource, queryClient: QueryClient) {
     const payload = parseData<ChatErrorPayload>(e);
     if (!payload) return;
     useChatStreamStore.getState().clear(payload.conversation_id);
+    useChatToolStatusStore.getState().clear(payload.conversation_id);
     useToastStore.getState().show(payload.message, "error");
 
     // Without this, isAwaitingReply (queries/chat.ts) has no way to learn the
