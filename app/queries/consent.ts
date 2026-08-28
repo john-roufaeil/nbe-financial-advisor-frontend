@@ -31,10 +31,11 @@ export function useGrantConsent() {
 /** Profile page's "Privacy & consent" toggles (Account Management) —
  * PrivacyConsentToggles derives each toggle's on/off state from this
  * full history rather than a dedicated "current state" endpoint. */
-export function useConsentHistory() {
+export function useConsentHistory(enabled = true) {
   return useQuery({
     queryKey: consentKeys.history,
     queryFn: () => consentApi.getConsentHistory(),
+    enabled,
   });
 }
 
@@ -45,8 +46,8 @@ export function useConsentHistory() {
  * rather than rendering the full toggle list). History is newest-first, so
  * the first matching record already is the latest one.
  */
-export function useConsentStatus(consentType: ConsentType) {
-  const { data, isPending } = useConsentHistory();
+export function useConsentStatus(consentType: ConsentType, enabled = true) {
+  const { data, isPending } = useConsentHistory(enabled);
   const latest = data?.find((record) => record.consentType === consentType);
   return { isActive: !!latest?.grantedAt && !latest?.revokedAt, isPending };
 }
