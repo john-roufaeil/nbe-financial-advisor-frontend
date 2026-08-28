@@ -9,17 +9,16 @@ export interface ChatReference {
   targetId: string;
 }
 
-export interface ChatThinkingStep {
-  callId: string;
-  tool: string;
-  status: "started" | "completed";
-}
+export type ChatThinkingStep =
+  | { kind: "agent"; agent: string }
+  | { kind: "tool"; callId: string; tool: string; status: "started" | "completed" };
 
-/** Snapshot of the analysis agent's tool-call activity for one turn, taken
- * once the reply lands (use-event-stream.ts's chat_message handler) so it
- * persists on the message forever instead of vanishing with the live
- * indicator that produced it — see ChatThinkingSummary/use-chat-tool-status-
- * store's finish(). Absent for any turn that never called a tool. */
+/** Snapshot of one turn's thinking activity — which agent Maestro routed to
+ * plus any tool calls made along the way — taken once the reply lands
+ * (use-event-stream.ts's chat_message handler) so it persists on the
+ * message forever instead of vanishing with the live indicator that
+ * produced it — see ChatThinkingSummary/use-chat-tool-status-store's
+ * clear(). Absent only for a turn that never routed anywhere at all. */
 export interface ChatThinking {
   steps: ChatThinkingStep[];
   durationMs: number;

@@ -29,6 +29,7 @@ interface ChatToolStatusState {
   byConversationId: Record<string, ConversationThinking | undefined>;
   addStep: (conversationId: string, callId: string, tool: string) => void;
   completeStep: (conversationId: string, callId: string) => void;
+  setAgent: (conversationId: string, agent: string) => void;
   clear: (conversationId: string) => void;
 }
 
@@ -37,14 +38,18 @@ export const useChatToolStatusStore = create<ChatToolStatusState>((set) => ({
   addStep: (conversationId, callId, tool) =>
     set((s) => {
       const existing = s.byConversationId[conversationId];
-      if (existing?.steps.some((step) => step.callId === callId)) return s;
+      if (
+        existing?.steps.some((step) => step.kind === "tool" && step.callId === callId)
+      ) {
+        return s;
+      }
       const steps = existing?.steps ?? [];
       return {
         byConversationId: {
           ...s.byConversationId,
           [conversationId]: {
             startedAt: existing?.startedAt ?? Date.now(),
-            steps: [...steps, { callId, tool, status: "started" }],
+            steps: [...steps, { kind: "tool", callId, tool, status: "started" }],
           },
         },
       };
@@ -59,8 +64,27 @@ export const useChatToolStatusStore = create<ChatToolStatusState>((set) => ({
           [conversationId]: {
             ...existing,
             steps: existing.steps.map((step) =>
-              step.callId === callId ? { ...step, status: "completed" } : step,
+              step.kind === "tool" && step.callId === callId
+                ? { ...step, status: "completed" }
+                : step,
             ),
+          },
+        },
+      };
+    }),
+  // agent_selected is single-shot per turn — inserted (or overwritten, on a
+  // redelivery) at the front so it always reads first regardless of
+  // whether any tool_call happened to arrive before it.
+  setAgent: (conversationId, agent) =>
+    set((s) => {
+      const existing = s.byConversationId[conversationId];
+      const rest = (existing?.steps ?? []).filter((step) => step.kind !== "agent");
+      return {
+        byConversationId: {
+          ...s.byConversationId,
+          [conversationId]: {
+            startedAt: existing?.startedAt ?? Date.now(),
+            steps: [{ kind: "agent", agent }, ...rest],
           },
         },
       };

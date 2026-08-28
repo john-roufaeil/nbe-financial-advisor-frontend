@@ -28,11 +28,9 @@ export interface RawWidget {
   payload: unknown;
 }
 
-export interface RawThinkingStep {
-  call_id: string;
-  tool: string;
-  status: "started" | "completed";
-}
+export type RawThinkingStep =
+  | { kind: "agent"; agent: string }
+  | { kind: "tool"; call_id: string; tool: string; status: "started" | "completed" };
 
 /** Message.thinking_json's wire shape (REST) — the chat_message SSE event
  *  carries the identical shape under the `thinking` key instead, same
@@ -52,7 +50,8 @@ interface RawMessage {
   /** Null/omitted on a user message and on any assistant message predating
    *  this field — falls back to the static, tool-keyed chips in that case. */
   suggestions?: string[] | null;
-  /** Null for any turn that called no tool — see ChatThinkingSummary. */
+  /** Null only for a turn that never routed anywhere at all — see
+   *  ChatThinkingSummary. */
   thinking_json?: RawThinking | null;
   created_at: string;
 }
@@ -60,7 +59,11 @@ interface RawMessage {
 function toChatThinking(raw: RawThinking | null | undefined): ChatThinking | undefined {
   if (!raw) return undefined;
   return {
-    steps: raw.steps.map((s) => ({ callId: s.call_id, tool: s.tool, status: s.status })),
+    steps: raw.steps.map((s) =>
+      s.kind === "agent"
+        ? { kind: "agent", agent: s.agent }
+        : { kind: "tool", callId: s.call_id, tool: s.tool, status: s.status },
+    ),
     durationMs: raw.duration_ms,
   };
 }

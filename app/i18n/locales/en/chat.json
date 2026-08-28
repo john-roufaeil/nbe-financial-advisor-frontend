@@ -119,6 +119,14 @@
       "show_savings_projection": "Projecting your savings",
       "fallback": "Working on it"
     },
+    "agent": {
+      "analysis": "Looking into your finances",
+      "planning": "Building your budget plan",
+      "investment_planning": "Working on your investment plan",
+      "recommendation": "Comparing banking products for you",
+      "general": "Working on an answer",
+      "fallback": "Getting started"
+    },
     "thinking": {
       "live_zero": "Thinking…",
       "live_one": "Thinking for {{count}} second…",

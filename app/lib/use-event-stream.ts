@@ -52,6 +52,11 @@ interface ChatToolStatusPayload {
   status: "started" | "completed";
 }
 
+interface ChatAgentSelectedPayload {
+  conversation_id: string;
+  agent: string;
+}
+
 interface TransactionSyncedPayload {
   account_id: string;
 }
@@ -84,6 +89,12 @@ function registerListeners(es: EventSource, queryClient: QueryClient) {
     } else {
       store.completeStep(payload.conversation_id, payload.call_id);
     }
+  });
+
+  es.addEventListener("chat_agent_selected", (e: MessageEvent<string>) => {
+    const payload = parseData<ChatAgentSelectedPayload>(e);
+    if (!payload) return;
+    useChatToolStatusStore.getState().setAgent(payload.conversation_id, payload.agent);
   });
 
   es.addEventListener("chat_message", (e: MessageEvent<string>) => {

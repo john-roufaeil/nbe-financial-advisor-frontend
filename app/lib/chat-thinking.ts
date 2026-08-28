@@ -19,14 +19,23 @@ import type { ChatThinkingStep } from "@/types/chat";
  * A tool's merged row is "started" (still spinning) if any of its
  * occurrences hasn't completed yet, and "completed" only once every
  * occurrence has. Row order follows first occurrence.
+ *
+ * The `agent` step (at most one per turn, already unique by construction —
+ * see AgentSelectedEvent) passes through untouched; only `kind: "tool"`
+ * steps go through the per-tool merge above.
  */
 export function dedupeThinkingStepsForDisplay(
   steps: ChatThinkingStep[],
 ): ChatThinkingStep[] {
   const order: string[] = [];
-  const byTool = new Map<string, ChatThinkingStep>();
+  const byTool = new Map<string, Extract<ChatThinkingStep, { kind: "tool" }>>();
+  const agentSteps: ChatThinkingStep[] = [];
 
   for (const step of steps) {
+    if (step.kind === "agent") {
+      agentSteps.push(step);
+      continue;
+    }
     const existing = byTool.get(step.tool);
     if (!existing) {
       order.push(step.tool);
@@ -43,5 +52,5 @@ export function dedupeThinkingStepsForDisplay(
     }
   }
 
-  return order.map((tool) => byTool.get(tool)!);
+  return [...agentSteps, ...order.map((tool) => byTool.get(tool)!)];
 }
