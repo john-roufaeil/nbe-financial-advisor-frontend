@@ -22,7 +22,7 @@ export function ChatThread() {
   const currentConversationId = useChatStore((s) => s.currentConversationId);
   const hasToolSteps = useChatToolStatusStore((s) =>
     currentConversationId
-      ? (s.byConversationId[currentConversationId]?.length ?? 0) > 0
+      ? (s.byConversationId[currentConversationId]?.steps.length ?? 0) > 0
       : false,
   );
 

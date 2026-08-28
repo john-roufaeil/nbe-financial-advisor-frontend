@@ -84,13 +84,19 @@ function registerListeners(es: EventSource, queryClient: QueryClient) {
     const payload = parseData<ChatMessagePayload>(e);
     if (!payload) return;
     useChatStreamStore.getState().clear(payload.conversation_id);
-    useChatToolStatusStore.getState().clear(payload.conversation_id);
+    // finish() reads the live step list + elapsed time and clears it in one
+    // step — the snapshot rides on the message itself from here on, so the
+    // "thinking" summary persists in history instead of vanishing with the
+    // live indicator that produced it (undefined for a turn with no tool
+    // calls, e.g. general/recommendation — nothing is attached for those).
+    const thinking = useChatToolStatusStore.getState().finish(payload.conversation_id);
     // Builds the finished reply straight from this event's own payload
     // instead of invalidating .../messages to refetch what it already told
     // us (see assistantMessageFromEvent's docstring for why that's safe).
     // No-ops if this conversation was never fetched into the cache, and
     // dedupes in case the event is ever redelivered.
     const message = assistantMessageFromEvent(payload);
+    if (thinking) message.thinking = thinking;
     queryClient.setQueryData<ChatMessage[]>(
       chatKeys.messages(payload.conversation_id),
       (old) => {

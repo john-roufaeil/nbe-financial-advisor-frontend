@@ -118,6 +118,20 @@
       "show_transactions": "Preparing your transaction list",
       "show_savings_projection": "Projecting your savings",
       "fallback": "Working on it"
+    },
+    "thinking": {
+      "live_zero": "Thinking…",
+      "live_one": "Thinking for {{count}} second…",
+      "live_two": "Thinking for {{count}} seconds…",
+      "live_few": "Thinking for {{count}} seconds…",
+      "live_many": "Thinking for {{count}} seconds…",
+      "live_other": "Thinking for {{count}} seconds…",
+      "done_zero": "Thought briefly",
+      "done_one": "Thought for {{count}} second",
+      "done_two": "Thought for {{count}} seconds",
+      "done_few": "Thought for {{count}} seconds",
+      "done_many": "Thought for {{count}} seconds",
+      "done_other": "Thought for {{count}} seconds"
     }
   }
 }

@@ -9,6 +9,7 @@ import { useTranslation } from "react-i18next";
 import { chatToolComponents } from "@/components/chat/tools";
 import { ChatFeedbackButton } from "@/components/chat/ChatFeedbackButton";
 import { ChatStatementCard } from "@/components/chat/ChatStatementCard";
+import { ChatThinkingSummary } from "@/components/chat/ChatThinkingSummary";
 import { MarkdownText } from "@/components/chat/MarkdownText";
 import { ToolPayloadError } from "@/components/chat/tools/ToolPayloadError";
 import { ErrorBoundary } from "@/components/shared/ErrorBoundary";
@@ -116,9 +117,10 @@ export function AssistantMessage() {
   // statement attachment the assistant posted, and surface its pipeline status.
   const conversationId = useChatStore((s) => s.currentConversationId);
   const { data: messages } = useMessages(conversationId);
-  const statementId = messages
-    ?.find((m) => m.id === id)
-    ?.references?.find((r) => r.targetType === "statement")?.targetId;
+  const thisMessage = messages?.find((m) => m.id === id);
+  const statementId = thisMessage?.references?.find(
+    (r) => r.targetType === "statement",
+  )?.targetId;
   return (
     <MessagePrimitive.Root id={`msg-${id}`}>
       <MessagePrimitive.If hasContent>
@@ -127,6 +129,9 @@ export function AssistantMessage() {
             <Bot className="size-4.5" />
           </span>
           <div className="flex max-w-[80%] min-w-0 flex-col items-start">
+            {thisMessage?.thinking && (
+              <ChatThinkingSummary thinking={thisMessage.thinking} />
+            )}
             <div className="w-full min-w-0 overflow-hidden wrap-anywhere select-text">
               {/* Thread-wide <ErrorBoundary> in chat.tsx only catches a crash
                   once — reopening this same conversation re-fetches the same
