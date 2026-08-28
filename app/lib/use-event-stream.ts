@@ -1,7 +1,12 @@
 import { useEffect, useRef } from "react";
 import { useQueryClient, type QueryClient } from "@tanstack/react-query";
 import { mintSseTicket } from "@/api/events";
-import { assistantMessageFromEvent, type RawReference, type RawWidget } from "@/api/chat";
+import {
+  assistantMessageFromEvent,
+  type RawReference,
+  type RawThinking,
+  type RawWidget,
+} from "@/api/chat";
 import { useAuthStore } from "@/store/use-auth-store";
 import { useChatStreamStore } from "@/store/use-chat-stream-store";
 import { useChatToolStatusStore } from "@/store/use-chat-tool-status-store";
@@ -32,6 +37,7 @@ interface ChatMessagePayload {
   widget: RawWidget | null;
   references: RawReference[] | null;
   suggestions: string[] | null;
+  thinking?: RawThinking | null;
 }
 
 interface ChatErrorPayload {
@@ -84,19 +90,18 @@ function registerListeners(es: EventSource, queryClient: QueryClient) {
     const payload = parseData<ChatMessagePayload>(e);
     if (!payload) return;
     useChatStreamStore.getState().clear(payload.conversation_id);
-    // finish() reads the live step list + elapsed time and clears it in one
-    // step — the snapshot rides on the message itself from here on, so the
-    // "thinking" summary persists in history instead of vanishing with the
-    // live indicator that produced it (undefined for a turn with no tool
-    // calls, e.g. general/recommendation — nothing is attached for those).
-    const thinking = useChatToolStatusStore.getState().finish(payload.conversation_id);
+    // The live checklist's job ends here — payload.thinking (persisted
+    // server-side as Message.thinking_json, see core/tasks/conversations.py)
+    // is now the source of truth for this turn's summary, not whatever the
+    // client happened to accumulate locally, so the store is just cleared
+    // rather than read from.
+    useChatToolStatusStore.getState().clear(payload.conversation_id);
     // Builds the finished reply straight from this event's own payload
     // instead of invalidating .../messages to refetch what it already told
     // us (see assistantMessageFromEvent's docstring for why that's safe).
     // No-ops if this conversation was never fetched into the cache, and
     // dedupes in case the event is ever redelivered.
     const message = assistantMessageFromEvent(payload);
-    if (thinking) message.thinking = thinking;
     queryClient.setQueryData<ChatMessage[]>(
       chatKeys.messages(payload.conversation_id),
       (old) => {
